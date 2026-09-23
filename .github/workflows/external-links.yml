@@ -1,5 +1,11 @@
 name: External documentation links
 on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/external-links.yml
+      - .github/documentation-policy.json
+      - tools/check_external_links.py
   schedule:
     - cron: "17 6 * * 1"
   workflow_dispatch:

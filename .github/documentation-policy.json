@@ -61,130 +61,28 @@
     "exceptions": [],
     "classifications": [
       {
-        "id": "d0052de4e329bd73075ab6ba5d5882856dcac83db70ad47d24bf96b427cef928",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
+        "id": "5aa72067a4e7a532c659fdde6498d65ae6cac3848462ee175d340d76cd60e73e",
+        "kind": "access-restricted",
+        "reason": "K-PRICING is private; authenticate to verify this exact target. Anonymous access is not public reachability evidence.",
+        "expires": "2027-09-23"
       },
       {
-        "id": "2a8b72ab37a4cac11d9dcfa9c638923f36468c50a54e95238d708880545bd68c",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
+        "id": "64717cebeffcdc02c56bcaac156bc4136cba91a1b115f37b6c2d8dafbe8d2377",
+        "kind": "access-restricted",
+        "reason": "K-PRICING is private; authenticate to verify this exact target. Anonymous access is not public reachability evidence.",
+        "expires": "2027-09-23"
       },
       {
-        "id": "20dc01a5552261837febee0320af55db39b1195ef4b4a6ed8b35e5b8469219dc",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
+        "id": "c353bffbc24b6253241e4a33e11cecdb0a00a1eb2559f01365c7ba01ced0d4e4",
+        "kind": "access-restricted",
+        "reason": "K-PRICING is private; authenticate to verify this exact target. Anonymous access is not public reachability evidence.",
+        "expires": "2027-09-23"
       },
       {
-        "id": "d3e5faa1c6617fe9ee41c6ca5f120d5397493d88230cc158e4caf6cc23386c01",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "736181b8977b1eb59667a7f98752b743c2fcd9e5cc7b8c01267f891733735ae5",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "4714ad41fbaad3683e9719e0de8d73ac7c5a972e13f0961ea61a07d4d91b83e9",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "4fd745716ef79b01899bb0f342e5ac0391329240a75bd23958a29e39636502c8",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "9697e9f5f7edeaf6b0227b54e26bdf4b4fa192b6dc62d02aa74010acee214ab1",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "d44223cae6c325299ff37a6ef99ade3d155593f3724cc78b1bd2fc4778cc2aca",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "319e33ca995b047d7a56ee0127759e0736763516c642d536af94efa40b2e520a",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "c1951545f4f58b96dea96a85c7b7fc7a9f8fff51dfbfbb7e04e7100703aced14",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "d7f1ee03283307209451dd771ce48ce117e910f0ea3c0aad97dcf173cda96910",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "0a768eec6860bd2a77f73c738aa0deaad601ab0bbd0e294b74caa02eb7ba2109",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "92e22b98fb048b1c5b3d24dead2bf0dafd3f4c997eac28cee4ae34fb2ae2c8b0",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "d7e0e301437860c28e81fcc724ca4c5f24fb948dd06f7fbab3bbe5476d689595",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "74411a80c8c016d610a4ff77b9231bf84ee883865dd019b8669c2f6fbb5ba714",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "e1693b636ae55c7c7a215621c82a0c5caf670df6ee0dfa6d960d74c73e75dbf2",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "0bdbf4fa5c30ba36557f50aaea8a66a66f7e7c5d01dc6eb5c395f5770e9a08c9",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "3212623592b5af5819a8ada9bc8efc905efe166559400f582a99a3a8c7bb5e99",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "e403b9c9f9daa737daf190e20bb7a239f3883ce80bcd0c59d632218e0b78be91",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
-      },
-      {
-        "id": "fab7bbf1acda246100926b7d7adfb8e907035fae2cd892303a6badbd855ea65e",
-        "kind": "restricted-historical",
-        "reason": "Authenticated v1.0.0 pilot evidence retained for historical audit; anonymous GitHub access is not expected.",
-        "expires": "2027-09-12"
+        "id": "e7017434bb3a0773f5c818fd385bd6d9f75d240ee7159b287382bbb1b905fe7e",
+        "kind": "access-restricted",
+        "reason": "K-PRICING is private; authenticate to verify this exact target. Anonymous access is not public reachability evidence.",
+        "expires": "2027-09-23"
       }
     ]
   }

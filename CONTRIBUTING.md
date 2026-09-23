@@ -48,7 +48,12 @@ and narrowly obvious fixes may go directly to a focused pull request.
 
 ## 🌿 Development workflow
 
-1. Start from the current protected development baseline and create one focused
+For prerequisites and commands, use [developer setup](docs/DEVELOPER_SETUP.md).
+Branch/tag rulesets are unavailable under the current private plan; manual PR
+and check review is not server-enforced protection. See
+[setup verification](docs/SETUP_VERIFICATION.md).
+
+1. Start from the current reviewed `main` development baseline and create one focused
    branch unless the repository's maintainer workflow explicitly says otherwise.
 2. Reproduce the current behavior before changing it.
 3. Define the observable contract, affected callers, compatibility impact and

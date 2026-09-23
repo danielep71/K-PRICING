@@ -104,6 +104,9 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Project-specific developer setup, neutral Excel runbook, dated GitHub verification
+  and a frozen-source migration inventory with issue traceability.
+
 - Initialized the K-PRICING application scaffold with project identity, private
   reporting contact, profile directories and reproducible initialization inputs.
 
@@ -118,6 +121,9 @@ Use only the categories needed by a release.
   explicit private-code eligibility before CodeQL execution.
 
 ### Fixed
+
+- Classify current private documentation targets as access restricted, without
+  treating anonymous 404s as public defects or claiming successful reachability.
 
 - Allow the retained `KPR_` VBA namespace and KPR source-provenance references
   through the project identity policy, while preserving unrelated donor and

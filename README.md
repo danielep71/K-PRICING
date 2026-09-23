@@ -105,17 +105,20 @@ Then import the applicable VBA components into a supported Excel host, run
 **Debug → Compile VBAProject**, and execute the documented regression or smoke
 entry point. The neutral baseline is `ProjectTests.RunProjectTests`.
 
-### 3. Provision GitHub settings
+### 3. Run the starter in Excel
 
-Template generation copies files, not labels, rulesets, topics, merge settings
-or security settings. Apply and verify the authoritative
-[`POST_CREATION_CHECKLIST.md`](docs/POST_CREATION_CHECKLIST.md) after generation.
+Follow the [developer setup](docs/DEVELOPER_SETUP.md) and
+[Windows Excel runbook](docs/EXCEL_SETUP_RUNBOOK.md). Initialization is complete.
+Current GitHub controls and limitations are recorded in
+[setup verification](docs/SETUP_VERIFICATION.md); migration is sequenced in
+[the migration plan](docs/MIGRATION_PLAN.md).
 
 <a id="supported-profiles"></a>
 
 ## 🧭 Supported profiles
 
-Choose one profile. Specialist controls may be added, but a profile never
+The application profile is already selected. The inherited profile taxonomy
+below explains the choice. Specialist controls may be added, but a profile never
 weakens source integrity, security, action pinning or release provenance.
 
 | Profile | Use when | Additional evidence |
@@ -160,13 +163,10 @@ legitimate profile-specific alternatives are authoritative in
 
 ## 🖥️ Requirements
 
-A generated project must state its actual support matrix before release:
-
-- supported Excel/Microsoft 365 versions/builds;
-- Windows/operating-system scope;
-- Office bitness and VBA generation;
-- required references, native APIs or external dependencies; and
-- supported deployment model.
+The initial target is Microsoft 365 Excel desktop on Windows, with 32-bit and
+64-bit Office evaluated separately. The neutral starter uses built-in VBA/Excel
+references only. No environment is runtime-certified yet. Mac, Excel for the web,
+older builds and a packaged deployment are not claimed as supported.
 
 Do not infer compatibility from source inspection or from one successful host.
 Installation, import, upgrade and removal procedures are authoritative in
@@ -211,7 +211,9 @@ document that owns your task:
 
 | Task | Authority |
 | --- | --- |
-| Initialize a generated repository | [`docs/INITIALIZATION.md`](docs/INITIALIZATION.md) |
+| Set up a developer checkout | [`docs/DEVELOPER_SETUP.md`](docs/DEVELOPER_SETUP.md) |
+| Verify repository setup | [`docs/SETUP_VERIFICATION.md`](docs/SETUP_VERIFICATION.md) |
+| Prepare source migration | [`docs/MIGRATION_PLAN.md`](docs/MIGRATION_PLAN.md) |
 | Understand source/repository structure | [`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md) |
 | Install, upgrade or remove | [`INSTALLATION.md`](INSTALLATION.md) |
 | Contribute or review a change | [`CONTRIBUTING.md`](CONTRIBUTING.md) |

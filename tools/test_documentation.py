@@ -267,6 +267,25 @@ class DocumentationTests(unittest.TestCase):
         self.assertEqual(report["counts"]["deterministic_public_defects"], 0)
         self.assertNotIn("private-history", json.dumps(report) + links.markdown(report))
 
+    def test_current_private_target_is_non_green_without_anonymous_probe(self):
+        url = "https://example.org/private-project"
+        identifier = hashlib.sha256(url.encode()).hexdigest()
+        (self.root / "README.md").write_text(f"[project]({url})\n")
+        self.policy["network"]["classifications"] = [{
+            "id": identifier,
+            "kind": "access-restricted",
+            "reason": "Current private repository requires authenticated verification",
+            "expires": "2026-09-10",
+        }]
+        self.save()
+        report = links.build_report(self.root, TODAY, lambda *args: self.fail("private target must not be probed"))
+        self.assertEqual(report["status"], "fail")
+        self.assertEqual(report["links"][0]["status"], "ACCESS_RESTRICTED")
+        self.assertEqual(report["links"][0]["attempts"], 0)
+        self.assertEqual(report["counts"]["access_restricted"], 1)
+        self.assertEqual(report["counts"]["deterministic_public_defects"], 0)
+        self.assertNotIn("private-project", json.dumps(report) + links.markdown(report))
+
     def test_pending_publication_is_distinct_non_green_classification(self):
         url = "https://example.org/compare/v1.0.0...v1.1.0"
         identifier = hashlib.sha256(url.encode()).hexdigest()

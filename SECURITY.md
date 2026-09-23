@@ -37,9 +37,15 @@ an approved trust mechanism; and source/artifacts come from an official channel.
 These are trust boundaries, not guarantees. VBA projects running in the same
 Excel process are not isolated security sandboxes.
 
-A generated project must replace any generic risk statement with verified facts
-about its own file, network, native-code, credential, UI, automation and external
-dependency surfaces.
+The current neutral VBA starter performs arithmetic through built-in VBA/Excel
+objects and reports test output. It contains no file/network/native-code access,
+credential handling, UI integration or third-party runtime dependency. Repository
+automation separately accesses GitHub and approved tool-download endpoints.
+Reassess this surface when migrating code or introducing packaging/UI.
+
+The repository is private. CodeQL is not enabled and Scorecard publication is
+skipped; neither is a successful scan claim. See the dated
+[setup verification](docs/SETUP_VERIFICATION.md) for observed security settings.
 
 <a id="supported-versions"></a>
 
@@ -47,7 +53,7 @@ dependency surfaces.
 
 | Source state | Security support |
 | --- | --- |
-| Latest tagged functional release | ✅ Supported |
+| Latest tagged functional release | None exists yet; no production-supported version |
 | Release candidate | ⚠️ Testing / best-effort remediation |
 | `main` | ⚠️ Development code / best effort |
 | Older tagged releases | ❌ Normally unsupported; upgrade first |
@@ -65,12 +71,10 @@ Do **not** disclose a suspected vulnerability in a public issue, discussion,
 pull request, commit message, Wiki page, sample workbook, screenshot or release
 thread.
 
-Use a private channel:
-
-1. On the repository **Security** page, select **Report a vulnerability** when
-   GitHub private vulnerability reporting is enabled.
-2. Otherwise use **danielep71@gmail.com** with subject
-   **Private security report — K-PRICING**.
+Use **danielep71@gmail.com** with subject
+**Private security report — K-PRICING**. GitHub private vulnerability-reporting
+UI was not available in the observed repository settings on 2026-09-23.
+Recheck eligibility when the plan changes before advertising an additional route.
 
 Include only the information needed to assess the issue:
 
