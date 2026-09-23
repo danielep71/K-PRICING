@@ -117,6 +117,12 @@ Use only the categories needed by a release.
 - Prevent Scorecard scans/publication on the private repository and require
   explicit private-code eligibility before CodeQL execution.
 
+### Fixed
+
+- Allow the retained `KPR_` VBA namespace and KPR source-provenance references
+  through the project identity policy, while preserving unrelated donor and
+  template restrictions ([#2](https://github.com/danielep71/K-PRICING/issues/2)).
+
 ### Known limitations
 
 - Pricing-source migration, Excel runtime validation and release packaging remain

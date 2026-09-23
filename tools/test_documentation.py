@@ -15,9 +15,57 @@ from unittest.mock import patch
 
 import check_documentation as docs
 import check_external_links as links
+import check_repo as repo_checks
+import initialize_repository as initializer
 
 ROOT = Path(__file__).resolve().parents[1]
 TODAY = date(2026, 9, 9)
+
+
+class ProjectIdentityTests(unittest.TestCase):
+    """Exercise the adopted identity policy, including reinitialization safety."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        (self.root / ".github").mkdir()
+        for path in (initializer.CONFIG_PATH, initializer.RECORD_PATH):
+            (self.root / path).write_bytes((ROOT / path).read_bytes())
+        self.config = json.loads((self.root / initializer.CONFIG_PATH).read_text())
+        self.sample = self.root / "README.md"
+        self.sample.write_text("K-PRICING retains KPR_Dates_AddDays from danielep71/KPR.\n")
+        subprocess.run(["git", "init", "-q", str(self.root)], check=True)
+        subprocess.run(["git", "-C", str(self.root), "add", "--all"], check=True)
+
+    def scan(self):
+        return repo_checks.check_identity(repo_checks.Repository(self.root), self.config)
+
+    def test_kpr_namespace_and_provenance_are_allowed(self):
+        self.assertEqual(self.scan()["status"], "pass")
+
+    def test_unrelated_donor_and_template_identities_remain_rejected(self):
+        policy = self.config["identity"]
+        self.assertEqual(len(policy["forbidden_tokens"]), 6)
+        self.assertEqual(len(policy["template_tokens"]), 1)
+        self.assertEqual(set(policy["exclude_paths"]),
+                         {initializer.CONFIG_PATH, initializer.RECORD_PATH})
+        for token in policy["forbidden_tokens"] + policy["template_tokens"]:
+            with self.subTest(token=token):
+                self.sample.write_text(f"Project identity: {token.lower()}\n")
+                result = self.scan()
+                self.assertEqual(result["status"], "fail")
+                self.assertTrue(any(item["path"] == "README.md"
+                                    for item in result["findings"]))
+
+    def test_repeat_initialization_preserves_evolved_identity_policy(self):
+        before = (self.root / initializer.CONFIG_PATH).read_bytes()
+        profile, scalars, repeatable = initializer._record_arguments(self.root)
+        changes, _ = initializer._build_changes(self.root, profile, scalars, repeatable)
+        self.assertEqual(changes, {})
+        initializer._apply_changes(self.root, changes)
+        self.assertEqual((self.root / initializer.CONFIG_PATH).read_bytes(), before)
+        self.assertEqual(self.scan()["status"], "pass")
 
 
 class DocumentationTests(unittest.TestCase):

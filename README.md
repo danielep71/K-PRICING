@@ -49,6 +49,10 @@ The pricing implementation has not yet been migrated and no Excel runtime
 certification or installable product is claimed. See the
 [initialization status](docs/INITIALIZATION_STATUS.md) for provenance and setup boundaries.
 
+The product and repository name is **K-PRICING**. The planned migration from
+[`KPR`](https://github.com/danielep71/KPR) retains the **`KPR_`** VBA namespace
+to preserve existing module and function names.
+
 K-PRICING is a source-first Excel/VBA project. Exported VBA, tests,
 versioned policy and documentation are the reviewable source of truth; Office
 packages are generated or release artifacts unless an exact path is explicitly
