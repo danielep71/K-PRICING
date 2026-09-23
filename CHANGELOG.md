@@ -124,6 +124,16 @@ Use only the categories needed by a release.
 
 ### Fixed
 
+- Stop release tagging/pushing after any failed prerequisite or check; reconcile
+  generated-mode, private-security and release-closeout documentation.
+
+- Documentation presentation checks now validate generated-project identity and
+  selected assets instead of requiring the upstream template's public badge and
+  banner after initialization.
+- Retained validation suites no longer import removed template-maintenance
+  tools. Their inapplicable consumer-generation, portfolio, Wiki and checker
+  maintenance cases are removed; operational validator coverage remains.
+
 - Replace stale pull-request setup fields with K-PRICING identity, current source authorities, validation commands, and neutral-starter entry points.
 
 - Classify current private documentation targets as access restricted, without
@@ -135,19 +145,11 @@ Use only the categories needed by a release.
 
 ### Known limitations
 
-- Pricing-source migration, Excel runtime validation and release packaging remain
-  pending; the retained neutral VBA starter is not a pricing implementation.
+- Pricing-source migration, migrated-code Excel parity and release packaging remain
+  pending; the neutral starter Excel run is accepted, and the retained neutral VBA starter is not a pricing implementation.
 - GitHub branch/tag rulesets are unavailable for this private repository on the
   current account plan; their enforcement is not claimed.
 
-### Fixed
-
-- Documentation presentation checks now validate generated-project identity and
-  selected assets instead of requiring the upstream template's public badge and
-  banner after initialization.
-- Retained validation suites no longer import removed template-maintenance
-  tools. Their inapplicable consumer-generation, portfolio, Wiki and checker
-  maintenance cases are removed; operational validator coverage remains.
 
 ---
 

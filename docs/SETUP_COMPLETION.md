@@ -1,7 +1,11 @@
 # v0.0.1 setup completion
 
-The setup milestone has met its technical acceptance criteria. Final issue and
-milestone closure are recorded in issues 8 and 10. This is a milestone checkpoint,
+The neutral starter runtime acceptance is retained below. The subsequent
+documentation audit reopened setup follow-up issues 3, 6 and 10. This correction
+repairs release command failure handling, generated-mode guidance, security
+eligibility and closeout evidence documentation. Final merged-CI evidence and
+current issue/milestone closure are recorded in
+[issue 10](https://github.com/danielep71/K-PRICING/issues/10). This is a milestone checkpoint,
 not a published release: VERSION remains 0.0.0 and no release tag is created.
 
 ## Accepted candidate and host

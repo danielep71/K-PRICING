@@ -53,7 +53,12 @@ rerun. Never compensate by manually editing an already-tested artifact.
 
 ## 1. Freeze and identify the candidate
 
-Start from the repository's protected release path, freeze scope, and record the
+Verify branch and tag protection before a functional release. These controls
+are currently unavailable on this private repository's account plan; see
+[setup verification](docs/SETUP_VERIFICATION.md). Do not treat this setup
+checkpoint as release authorization.
+
+Start from the repository's reviewed release path, freeze scope, and record the
 exact base/candidate revisions.
 
 ```bash
@@ -218,13 +223,15 @@ requirement unless they explicitly adopt an equivalent local policy.
 ### Initialized generated project
 
 Use this sequence for an initialized generated project under the default tag
-policy:
+policy. Run the entire subshell block; each failure stops subsequent commands
+and returns a nonzero status without exiting an interactive parent shell:
 
 ```bash
-git switch main
-git pull --ff-only
-candidate_sha="$(git rev-parse HEAD)"
-release_version="$(tr -d '\r\n' < VERSION)"
+(
+git switch main || exit $?
+git pull --ff-only || exit $?
+candidate_sha="$(git rev-parse HEAD)" || exit $?
+release_version="$(tr -d '\r\n' < VERSION)" || exit $?
 release_tag="v${release_version}"
 
 python3 tools/check_release.py \
@@ -233,18 +240,19 @@ python3 tools/check_release.py \
   --candidate-sha "$candidate_sha" \
   --evidence ../release-evidence.json \
   --output test-results/release-integrity.json \
-  --summary test-results/release-integrity.md
+  --summary test-results/release-integrity.md || exit $?
 
-git tag -a "$release_tag" -m "K-PRICING ${release_version}"
+git tag -a "$release_tag" "$candidate_sha" -m "K-PRICING ${release_version}" || exit $?
 
 python3 tools/check_release.py \
   --root . \
   --tag "$release_tag" \
   --candidate-sha "$candidate_sha" \
   --evidence ../release-evidence.json \
-  --require-tag-ref
+  --require-tag-ref || exit $?
 
-git push origin "$release_tag"
+git push origin "refs/tags/$release_tag:refs/tags/$release_tag" || exit $?
+)
 ```
 
 
@@ -268,7 +276,8 @@ its `excel-host-evidence` check and `--excel-evidence` in both pre-tag and
 post-tag validations. A manual run remains explicitly manual; an unavailable
 runner is not compile or regression evidence.
 
-Create the release from the protected annotated tag. Include:
+After verifying the required protection controls, create the release from the
+certified annotated tag. Include:
 
 - user-facing summary/highlights;
 - upgrade or migration notes;

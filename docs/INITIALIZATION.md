@@ -191,14 +191,13 @@ python3 tools/check_repo.py --root . \
   --summary test-results/static-checks.md
 ```
 
-The initializer self-test exercises missing, unknown, and unused inputs; dry-run
-immutability; application; second-run idempotence; template-only cleanup; and a
-green generated tree for every profile. It also verifies that template-maintainer
-checker-development/policy-coverage files are absent after generation while the
-operational gate set remains. For each profile it proves that a
-README-only tree and removal of the façade, core, or test module fail only the
-named `generated-vba-contract` rule, while removal of the optional example still
-passes.
+In canonical template mode, the initializer self-test exercises missing,
+unknown and unused inputs, dry-run immutability, application, idempotence,
+cleanup and generated VBA contracts for all three profiles. Those generation
+fixtures belong to canonical maintenance. In this initialized application
+repository, the self-test validates the recorded selected profile, identity,
+cleanup, repository quality and repeat-run safety; it does not regenerate all
+three profiles or require removed checker-development tools.
 
 After initialization, configure the live repository settings that a GitHub
 template cannot inherit. Follow

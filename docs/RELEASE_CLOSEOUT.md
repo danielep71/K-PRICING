@@ -2,7 +2,16 @@
 
 This procedure closes the gap between pre-tag certification and the provider state that exists only after a release is published. It is **read-only with respect to repository and release state**: the workflow captures provider facts, validates them, and retains evidence; it does not move tags, alter a GitHub Release, close issues, edit milestones, publish the Wiki, or upload release assets.
 
-## Canonical procedure
+## Mode applicability
+
+K-PRICING is an initialized application. Its closeout uses the selected generated
+profile; canonical certification-bundle and Wiki controls are not applicable.
+The workflow records that scope explicitly. A generated project must separately
+adopt and implement any stronger local policy; canonical requirements are not
+automatically inherited. The canonical template procedure below includes its
+additional certification and Wiki checks.
+
+## Procedure
 
 After the annotated tag, tag-triggered static checks, GitHub Release, release milestone, and (for the canonical template) Wiki publication are complete, run the **Release closeout** workflow manually from the released repository. Supply:
 
@@ -22,8 +31,8 @@ The closeout validator binds all deterministic checks to the same candidate SHA.
 1. the remote tag ref is an **annotated tag object**, the tag object has the expected name, and it resolves to the certified commit rather than a moved or lightweight tag;
 2. the canonical static-check workflow has a completed successful `push` run whose `head_branch` is the release tag and whose `head_sha` is the candidate;
 3. the GitHub Release exists for that tag, is published rather than draft, has the expected prerelease flag, and matches the expected latest-release state;
-4. actual **uploaded Release assets** are compared with the selected candidate profile's `allowed_asset_globs` from `.github/release-policy.json`;
-5. a source-only profile has no uploaded assets; binary-capable profiles may contain only names allowed by their candidate-bound patterns;
+4. the filtered **product assets** are compared with the selected candidate profile's `allowed_asset_globs` from `.github/release-policy.json`;
+5. a source-only profile has no product assets; binary-capable profiles may contain only names allowed by their candidate-bound patterns;
 6. `VERSION`, the released CHANGELOG heading, the released comparison link, and the `Unreleased` comparison link remain coherent with the tag;
 7. the provider comparison range resolves to the release range and contains the certified candidate when the range is ahead;
 8. milestone closure is evaluated from the actual captured milestone membership and item states, with the provider's open/closed counters reconciled to those items rather than trusted as a UI percentage.
@@ -36,10 +45,19 @@ GitHub's generated `zipball_url` and `tarball_url` are provider-generated source
 
 The closeout report therefore records these separately:
 
-- `uploaded_assets`: files explicitly uploaded to the GitHub Release and governed by `allowed_asset_globs`;
+- raw Release API `assets`: all explicitly uploaded files, retained in provider metadata;
+- canonical certification assets: the ZIP, detached `.zip.sig`, manifest and SHA-256
+  file, partitioned by `release_certification.py` and independently downloaded,
+  hash-checked and signature-verified against the candidate/current trust policy;
+- `uploaded_assets` in the normalized closeout report: the remaining product assets,
+  governed by `allowed_asset_globs`; in generated mode all raw assets remain product assets;
 - source ZIP/tar exposure and retrieval: provider observations confirming that GitHub's generated source archives are available.
 
-For the canonical template's source-only profile, `uploaded_assets` must remain empty even though GitHub-generated source ZIP and tar archives are expected to exist.
+For the canonical template's source-only profile, product `uploaded_assets` must
+remain empty while the four certification assets and generated source archives
+are required. Certification files are not exempt from verification: the workflow
+binds the separate certification verdict to its terminal result. The helper
+evaluates the filtered snapshot; helper success alone is not certification success.
 
 ## Wiki and UI observations
 
@@ -56,12 +74,20 @@ A missing or failed observation remains non-green, but its category is preserved
 
 The workflow retains, for 90 days:
 
+- captured provider metadata, including the unfiltered Release asset inventory;
+- `certification-plan.json`: certification/product partition or explicit not-applicable scope;
+- `certification-verification.json`: independent verification verdict or not-applicable scope;
 - `snapshot.json`: the normalized input facts used by the validator;
 - the authoritative Wiki comparison JSON/Markdown when applicable;
 - `release-closeout.json`: machine-readable closeout result;
 - `release-closeout.md`: concise human-readable closeout result.
 
 `release-closeout.json` records the SHA-256 of `snapshot.json`, the candidate/tag/profile identity, deterministic and observation status, tag/CI/Release/asset/comparison/milestone/Wiki state, and categorized findings. Retaining the snapshot makes the conclusion replayable without relying on a maintainer workstation.
+
+The 90-day Actions reports are diagnostic retention. Canonical certification
+assets remain attached unchanged to the GitHub Release for the lifetime of that
+release, as required by [RELEASE_EVIDENCE.md](RELEASE_EVIDENCE.md); an expiring
+Actions artifact does not replace that durable record.
 
 ## Offline fixture contract
 

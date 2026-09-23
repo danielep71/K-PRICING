@@ -115,13 +115,17 @@ Before merging a CodeQL, Scorecard, or dependency-workflow change:
    release digests;
 2. review permissions, triggers, checkout behavior, new network activity, and
    publication surfaces;
-3. run repository integrity, authoritative workflow validation, checker
-   development, and the dedicated supply-chain workflow fixtures;
+3. run repository integrity, authoritative workflow validation and the retained
+   supply-chain fixtures; checker-development tooling applies only to canonical
+   template maintenance and is removed from initialized projects;
 4. preserve manual dependency approval and rollback under
    [DEPENDENCY_UPDATES.md](DEPENDENCY_UPDATES.md);
-5. retain successful CodeQL and release-candidate Scorecard runs for the exact
-   reviewed revision, and after default-branch integration retain both the
-   publishing Action run and the exact-SHA public Scorecard verification result.
+5. retain exact-revision analyzer results when eligible under the private policy
+   above. Public Scorecard scan/publication and exact-SHA publication verification
+   apply only to a public repository. For this private repository, record skipped
+   analysis as unavailable coverage and retain the successful deterministic CI
+   result separately. Resolve required coverage before a functional release;
+   neither a skip nor static CI substitutes for a security scan.
 
 If a required security analyzer is unavailable, misconfigured, or denied its
 required permissions, its workflow is non-green when selected to run. The private eligibility skips above

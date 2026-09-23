@@ -1,6 +1,8 @@
 # Neutral starter: Windows Excel setup run
 
-This run closes [setup issue 8](https://github.com/danielep71/K-PRICING/issues/8).
+This reusable procedure produced the accepted run for closed
+[setup issue 8](https://github.com/danielep71/K-PRICING/issues/8); see
+[the retained completion record](SETUP_COMPLETION.md).
 It validates only the neutral starter. Pricing behavior, migrated date-layer
 parity, application lifecycle and a distributable package remain outside this run.
 
@@ -98,4 +100,6 @@ contains core, facade and tests; the example log is additional smoke evidence.
 Retain unsuccessful records too. Validate the assembled record using
 `tools/check_excel_evidence.py` and its documented command before linking it as
 accepted evidence. Never invent missing observations or infer a second bitness
-from the tested host. Issue 8 and final acceptance remain open until this is done.
+from the tested host. For future candidates, accept evidence only after this validation. The original
+issue 8 run is already accepted; current setup closeout is tracked in
+[issue 10](https://github.com/danielep71/K-PRICING/issues/10).

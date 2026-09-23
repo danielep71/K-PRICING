@@ -7,7 +7,8 @@
 
 K-PRICING completed initialization on 2026-09-23. Its dated disposition for each
 area below is [SETUP_VERIFICATION.md](SETUP_VERIFICATION.md), including unavailable
-controls and pending Excel evidence. The unchecked boxes here are the reusable
+controls. Accepted starter Excel evidence is recorded in
+[SETUP_COMPLETION.md](SETUP_COMPLETION.md). The unchecked boxes here are the reusable
 provisioning requirements, not a claim that observed unavailable controls passed.
 
 Use this checklist immediately after generating and initializing a repository.

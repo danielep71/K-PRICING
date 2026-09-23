@@ -65,8 +65,8 @@ Appropriate contents include:
 Focused report gates use the shared runner. Distinct CLI contracts retain their
 own entry points: release validation has atomic evidence writes and separate
 console rendering; workflow validation emits text-only evidence; initialization
-and disposable fixture creation provision source; snapshot collection captures
-observations. The canonical checker remains self-contained.
+provisions source. Disposable fixture creation and snapshot collection are
+canonical maintainer tooling removed from this generated repository. The canonical checker remains self-contained.
 
 
 ## Canonical repository-quality gate
@@ -374,7 +374,9 @@ second run.
 
 See [`docs/INITIALIZATION.md`](../docs/INITIALIZATION.md) for the token catalogue,
 profile commands, optional and repeatable values, and the transparent manual
-fallback. Exercise all three profile fixtures with:
+fallback. In this generated repository the self-test validates the recorded
+application profile, identity, cleanup, quality checks and repeat-run safety.
+Only canonical template mode generates fixtures for all three profiles. Run:
 
 ```bash
 python3 tools/initialize_repository.py --root . --self-test
