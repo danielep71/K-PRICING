@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "repository": "danielep71/K-PRICING",
+  "candidate_sha": "c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2",
+  "template_contract": {
+    "version": "1.2.0",
+    "source": "danielep71/EXCEL-VBA-PROJECT-TEMPLATE"
+  },
+  "execution": "manual",
+  "availability_reason": null,
+  "started_at": "2026-09-23T21:10:00+02:00",
+  "finished_at": "2026-09-23T21:10:00+02:00",
+  "runner": {
+    "class": "manual-interactive",
+    "identity": "Daniele Penza; interactive Windows workstation; session time approximate to one reported minute (see session.txt)",
+    "workflow": null
+  },
+  "environment": {
+    "excel_version": "16.0",
+    "excel_build": "16.0.20326.20072 (Microsoft 365 Version 2608)",
+    "office_bitness": "64-bit",
+    "os": "Windows (64-bit) NT 10.00",
+    "os_architecture": "64-bit",
+    "runtime": "VBA7+",
+    "macro_policy": "Disable VBA macros with notification; options grayed out in supplied screenshot; existing settings unchanged",
+    "vba_project_access": "Enabled (checked in supplied screenshot); manual import workflow",
+    "trust_changes": false
+  },
+  "sources": [
+    {
+      "path": "src/core/ProjectCore.bas",
+      "sha256": "f4f73b00ff1929f03540ed76194f9d624be78c79ccc37ed6fb7ff337754035df"
+    },
+    {
+      "path": "src/modules/ProjectFacade.bas",
+      "sha256": "1433f4dedcc7cbe1c5ef0bc6503fe55d10ff1cb02902be80cfdb61fdfca4c5fe"
+    },
+    {
+      "path": "tests/modules/ProjectTests.bas",
+      "sha256": "74eedac8b3c5ff628f3a748ffa1d546a93ed55394ea59db312655b29ff70c1b7"
+    }
+  ],
+  "stages": {
+    "import": {
+      "status": "PASS",
+      "detail": "Maintainer confirmed pinned candidate and fresh workbook; documented manual component import workflow.",
+      "log": {
+        "path": "session.txt",
+        "sha256": "e2dab545400b58cee274fb9125604acc5f7f2ccd0151a9e438b5e05879efddc1"
+      }
+    },
+    "compile": {
+      "status": "PASS",
+      "detail": "Successful complete regression execution and explicit maintainer confirmation.",
+      "log": {
+        "path": "session.txt",
+        "sha256": "e2dab545400b58cee274fb9125604acc5f7f2ccd0151a9e438b5e05879efddc1"
+      }
+    },
+    "regression": {
+      "status": "PASS",
+      "detail": "Complete maintainer-supplied raw Immediate-window output; 4 cases, 6 assertions, 0 failures.",
+      "log": {
+        "path": "harness.txt",
+        "sha256": "c4d92c746e9dcb2e637f6555d17dea920543383707c0f0e4cd208a4d902a91be"
+      }
+    },
+    "cleanup": {
+      "status": "PASS",
+      "detail": "Harness reports unchanged Excel state; maintainer confirmed normal workbook closure.",
+      "log": {
+        "path": "session.txt",
+        "sha256": "e2dab545400b58cee274fb9125604acc5f7f2ccd0151a9e438b5e05879efddc1"
+      }
+    }
+  },
+  "harness": {
+    "entry_point": "ProjectTests.RunProjectTests",
+    "cases": 4,
+    "assertions": 6,
+    "failures": 0,
+    "completeness": "COMPLETE",
+    "expected_errors": [
+      {
+        "case": "ratio.zero-denominator",
+        "status": "PASS",
+        "detail": "Inferred from the complete four-case/six-assertion passing starter suite, per the evidence contract."
+      }
+    ]
+  }
+}

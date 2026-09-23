@@ -45,8 +45,10 @@
 ## ✨ What this project is
 
 **Status: initialized private application scaffold, version `0.0.0`.**
-The pricing implementation has not yet been migrated and no Excel runtime
-certification or installable product is claimed. See the
+The neutral starter passed a manual Windows 64-bit Excel run at commit
+`c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2`; see
+[the setup completion record](docs/SETUP_COMPLETION.md). The pricing implementation
+has not yet been migrated and no installable product is claimed. See the
 [initialization status](docs/INITIALIZATION_STATUS.md) for provenance and setup boundaries.
 
 The product and repository name is **K-PRICING**. The planned migration from
@@ -165,7 +167,8 @@ legitimate profile-specific alternatives are authoritative in
 
 The initial target is Microsoft 365 Excel desktop on Windows, with 32-bit and
 64-bit Office evaluated separately. The neutral starter uses built-in VBA/Excel
-references only. No environment is runtime-certified yet. Mac, Excel for the web,
+references only. The neutral starter has been validated on the one Windows/64-bit host recorded
+in the setup completion record; broader support is not certified. Mac, Excel for the web,
 older builds and a packaged deployment are not claimed as supported.
 
 Do not infer compatibility from source inspection or from one successful host.
@@ -228,7 +231,7 @@ document that owns your task:
 Do not hide an unresolved support or assurance boundary.
 
 - Repository initialization only: the neutral starter is not a pricing implementation; migration of existing pricing work is pending.
-- No supported workbook or add-in, functional release, or exact-source Excel runtime certification is available.
+- No supported workbook or add-in or functional release is available. Starter evidence does not certify pricing or application lifecycle.
 
 If no project-specific limitation is rendered, the general evidence boundaries
 above still apply: static inspection is not Excel execution, and one tested

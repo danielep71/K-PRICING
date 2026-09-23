@@ -1,0 +1,11 @@
+{
+  "candidate_sha": "c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2",
+  "execution": "manual",
+  "findings": [],
+  "outcomes": [
+    "PASS"
+  ],
+  "release_environment": "execution=manual; environment={\"excel_build\":\"16.0.20326.20072 (Microsoft 365 Version 2608)\",\"excel_version\":\"16.0\",\"macro_policy\":\"Disable VBA macros with notification; options grayed out in supplied screenshot; existing settings unchanged\",\"office_bitness\":\"64-bit\",\"os\":\"Windows (64-bit) NT 10.00\",\"os_architecture\":\"64-bit\",\"runtime\":\"VBA7+\",\"trust_changes\":false,\"vba_project_access\":\"Enabled (checked in supplied screenshot); manual import workflow\"}",
+  "scope_note": "Validates retained host assertions and log bindings; does not execute Excel or authenticate execution.",
+  "status": "pass"
+}
