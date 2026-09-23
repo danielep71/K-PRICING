@@ -38,7 +38,31 @@ successful security scan is claimed. See
 
 ## Live setup
 
-GitHub settings and labels are separate from file initialization. Their final
-read-back status is recorded here after the initialization change is integrated.
+Read back on 2026-09-23 through the authenticated maintainer account:
+
+| Setting | Observed state |
+| --- | --- |
+| Visibility / default branch | Private / `main` |
+| Description / topics | Project description; `excel`, `vba`, `application`, `financial-analytics`, `instrument-pricing` |
+| Issues / template mode | Enabled / disabled |
+| Wiki / Discussions / Projects | Disabled |
+| Merge / squash / rebase | All enabled |
+| Auto-merge | Disabled |
+| Delete merged branches / suggest branch updates | Enabled / enabled |
+| Branch and tag rulesets | Unavailable: GitHub API returned HTTP 403 requiring GitHub Pro for this private repository |
+| Private vulnerability-reporting UI | Not offered in the repository security settings; the documented private email contact remains the reporting route |
+
+Ruleset enforcement is an unresolved platform limitation. No protected-branch,
+immutable-tag or mandatory-status-check enforcement is claimed. Development
+uses reviewed pull requests and verifies `Repository integrity` before merge;
+this process does not replace server-side enforcement. Resolve that limitation
+before a functional release without changing visibility implicitly.
+
+The selected label policy has 20 labels and no domain overlay. The trusted push
+after integration owns live reconciliation; its run and exact read-back evidence
+are retained with the initialization pull request. Pull-request label validation
+does not itself prove live reconciliation.
+
 The [post-creation checklist](POST_CREATION_CHECKLIST.md) remains the detailed
-setup authority.
+setup authority. CI and final integration evidence belong to the
+[initialization pull request](https://github.com/danielep71/K-PRICING/pull/1).

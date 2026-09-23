@@ -46,8 +46,22 @@ class DocumentationTests(unittest.TestCase):
             self.assertEqual(docs.build_report(self.root)["status"], "pass")
             self.assertTrue(all(call.args[0][0] == "git" for call in popen.call_args_list))
 
-    def test_template_readme_presentation_uses_live_canonical_assets(self):
+    def test_readme_presentation_uses_repository_identity_and_selected_assets(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        profile = json.loads((ROOT / ".github/repository-profile.json").read_text(encoding="utf-8"))
+        if profile.get("mode") == "generated":
+            record = json.loads((ROOT / ".github/initialization.json").read_text(encoding="utf-8"))
+            repository = profile["repository"]
+            self.assertIn(f"https://github.com/{repository}/actions/workflows/static-checks.yml", readme)
+            self.assertNotIn("{{", readme)
+            self.assertNotIn("<!-- template:", readme)
+            preview = record["values"].get("SOCIAL_PREVIEW_PATH")
+            if preview:
+                self.assertTrue((ROOT / preview).is_file())
+                self.assertIn(f"<!-- generated-social-preview: {preview} -->", readme)
+            else:
+                self.assertNotIn('src="assets/social-preview.png"', readme)
+            return
         repository_token = "{" + "{REPOSITORY_PATH}" + "}"
         preview_token = "{" + "{SOCIAL_PREVIEW_PATH}" + "}"
         self.assertNotIn(f"https://github.com/{repository_token}", readme)

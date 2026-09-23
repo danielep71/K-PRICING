@@ -121,6 +121,14 @@ Use only the categories needed by a release.
 
 - Pricing-source migration, Excel runtime validation and release packaging remain
   pending; the retained neutral VBA starter is not a pricing implementation.
+- GitHub branch/tag rulesets are unavailable for this private repository on the
+  current account plan; their enforcement is not claimed.
+
+### Fixed
+
+- Documentation presentation checks now validate generated-project identity and
+  selected assets instead of requiring the upstream template's public badge and
+  banner after initialization.
 
 ---
 
