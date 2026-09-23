@@ -35,7 +35,9 @@ in this order:
 Confirm the four component names match those filenames. Record the enabled
 references from **Tools > References**, including any `MISSING` reference.
 No additional reference should be required beyond built-in VBA/Excel references.
-Run **Debug > Compile VBAProject** and record the observed outcome. If it fails,
+For a new candidate, run **Debug > Compile VBAProject** and record the outcome.
+A completed successful regression run also establishes compilation of that
+project; no separate repeat confirmation is required for the accepted run. If compilation fails,
 capture the exact error, component and highlighted statement and stop the run.
 Do not change the frozen source just to make this evidence pass.
 

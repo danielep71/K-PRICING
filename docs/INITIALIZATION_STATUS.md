@@ -2,7 +2,9 @@
 
 **Closeout update:** the subsequent manual starter run passed. See
 [SETUP_COMPLETION.md](SETUP_COMPLETION.md) for the accepted candidate, evidence
-and limits. Pending-run statements below describe the earlier setup checkpoint.
+and limits. Current documentation follow-up and final milestone acceptance are
+tracked in [issue 10](https://github.com/danielep71/K-PRICING/issues/10).
+Pending-run statements below describe the earlier setup checkpoint.
 
 
 Initialized on 2026-09-23 for `danielep71/K-PRICING`, using the application
@@ -91,7 +93,7 @@ The [post-creation checklist](POST_CREATION_CHECKLIST.md) remains the detailed
 setup authority. CI and final integration evidence belong to the
 [initialization pull request](https://github.com/danielep71/K-PRICING/pull/1).
 
-## Setup closeout
+## Historical pre-Excel setup checkpoint
 
 The current project-specific record is [SETUP_VERIFICATION.md](SETUP_VERIFICATION.md).
 Use [DEVELOPER_SETUP.md](DEVELOPER_SETUP.md) and

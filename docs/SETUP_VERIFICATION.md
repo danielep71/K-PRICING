@@ -2,7 +2,9 @@
 
 **Closeout update:** the subsequent manual starter run passed. See
 [SETUP_COMPLETION.md](SETUP_COMPLETION.md) for the accepted candidate, evidence
-and limits. Pending-run statements below describe the earlier setup checkpoint.
+and limits. Current documentation follow-up and final milestone acceptance are
+tracked in [issue 10](https://github.com/danielep71/K-PRICING/issues/10).
+Pending-run statements below describe the earlier setup checkpoint.
 
 
 Observed on **2026-09-23** for private `danielep71/K-PRICING`, default branch
