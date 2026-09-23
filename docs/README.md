@@ -37,6 +37,7 @@ may summarize it, but must link here rather than restating a competing rule.
 | Dependency monitoring, provenance review, update evidence and manual approval | [`DEPENDENCY_UPDATES.md`](DEPENDENCY_UPDATES.md) | A PR evidence block or link only |
 | Private/public security-analysis eligibility and assurance gaps | [`SUPPLY_CHAIN_ASSURANCE.md`](SUPPLY_CHAIN_ASSURANCE.md) | Eligibility summary and result links |
 | Post-publication provider checks, asset partition and retained closeout evidence | [`RELEASE_CLOSEOUT.md`](RELEASE_CLOSEOUT.md) | Closeout navigation only |
+| Repository-local Action containment and tracked entry points | [`../tools/LOCAL_ACTIONS.md`](../tools/LOCAL_ACTIONS.md) | Link to the local Action gate contract |
 | Public VBA surface | [`PUBLIC_API.txt`](PUBLIC_API.txt) | Human-readable API summary only |
 | Live repository provisioning and verification after generation | [`POST_CREATION_CHECKLIST.md`](POST_CREATION_CHECKLIST.md) | One reminder that settings are not inherited |
 | Current version | [`../VERSION`](../VERSION) | Display/read the value; never redefine it |

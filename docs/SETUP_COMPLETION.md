@@ -1,12 +1,20 @@
 # v0.0.1 setup completion
 
-The neutral starter runtime acceptance is retained below. The subsequent
-documentation audit reopened setup follow-up issues 3, 6 and 10. This correction
-repairs release command failure handling, generated-mode guidance, security
-eligibility and closeout evidence documentation. Final merged-CI evidence and
-current issue/milestone closure are recorded in
-[issue 10](https://github.com/danielep71/K-PRICING/issues/10). This is a milestone checkpoint,
-not a published release: VERSION remains 0.0.0 and no release tag is created.
+Repository setup **v0.0.1 is complete and its milestone is closed**. The
+subsequent documentation audit temporarily reopened issues #3, #6 and #10;
+all three were closed again after PR #23 merged at
+`715eda63365ba4a94e619976acc4721411c875f0` (tree
+`b59908b04e2c3ef333c2d2fbac0e724579b32eb3`) and
+[merged-main CI passed](https://github.com/danielep71/K-PRICING/actions/runs/35915390210).
+Issue #10 closed on 2026-09-23 at 20:22:54 UTC and retains the
+[acceptance and milestone read-back](https://github.com/danielep71/K-PRICING/issues/10).
+
+PR #24 subsequently fixed a Python fixture's locale-dependent text read at
+`2e2d3dba198c1641468af277553dea13a42d6411`, with
+[main CI passing](https://github.com/danielep71/K-PRICING/actions/runs/35918139650).
+These documentation/tooling changes do not change the runtime-tested candidate
+below. This is a milestone checkpoint, not a published release: VERSION remains
+0.0.0 and no release tag was created. v0.0.2 owns migration execution.
 
 ## Accepted candidate and host
 

@@ -104,11 +104,11 @@ Use only the categories needed by a release.
 
 ### Added
 
-- Accepted manual neutral-starter Excel evidence for candidate `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2` on one Windows/64-bit Office host; no pricing or application-release certification.
-
+- Accepted manual neutral-starter Excel evidence for candidate
+  `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2` on one Windows/64-bit Office host; no pricing
+  or application-release certification.
 - Project-specific developer setup, neutral Excel runbook, dated GitHub verification
   and a frozen-source migration inventory with issue traceability.
-
 - Initialized the K-PRICING application scaffold with project identity, private
   reporting contact, profile directories and reproducible initialization inputs.
 
@@ -124,21 +124,21 @@ Use only the categories needed by a release.
 
 ### Fixed
 
+- Reconcile completed setup status, generated-project dependency guidance and
+  closeout inputs; enforce retained verification-depth tests in CI and remove
+  unused template dependency locks.
 - Stop release tagging/pushing after any failed prerequisite or check; reconcile
   generated-mode, private-security and release-closeout documentation.
-
 - Documentation presentation checks now validate generated-project identity and
   selected assets instead of requiring the upstream template's public badge and
   banner after initialization.
 - Retained validation suites no longer import removed template-maintenance
   tools. Their inapplicable consumer-generation, portfolio, Wiki and checker
   maintenance cases are removed; operational validator coverage remains.
-
-- Replace stale pull-request setup fields with K-PRICING identity, current source authorities, validation commands, and neutral-starter entry points.
-
+- Replace stale pull-request setup fields with K-PRICING identity, current source
+  authorities, validation commands, and neutral-starter entry points.
 - Classify current private documentation targets as access restricted, without
   treating anonymous 404s as public defects or claiming successful reachability.
-
 - Allow the retained `KPR_` VBA namespace and KPR source-provenance references
   through the project identity policy, while preserving unrelated donor and
   template restrictions ([#2](https://github.com/danielep71/K-PRICING/issues/2)).
@@ -146,10 +146,10 @@ Use only the categories needed by a release.
 ### Known limitations
 
 - Pricing-source migration, migrated-code Excel parity and release packaging remain
-  pending; the neutral starter Excel run is accepted, and the retained neutral VBA starter is not a pricing implementation.
+  pending; the neutral starter Excel run is accepted, and the retained neutral VBA starter
+  is not a pricing implementation.
 - GitHub branch/tag rulesets are unavailable for this private repository on the
   current account plan; their enforcement is not claimed.
-
 
 ---
 

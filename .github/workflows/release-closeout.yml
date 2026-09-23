@@ -17,11 +17,6 @@ on:
         description: GitHub milestone number for the release
         required: true
         type: string
-      wiki_browser_reviewed:
-        description: Confirm the template Wiki Home/sidebar/navigation browser review passed
-        required: true
-        default: false
-        type: boolean
       expect_prerelease:
         description: Expect the GitHub Release to be marked prerelease
         required: true
@@ -249,35 +244,24 @@ jobs:
             --candidate-sha "$CANDIDATE_SHA" \
             > "$EVIDENCE/certification-verification.json"
 
-      - name: Verify Wiki publication with its owning checker
+      - name: Record generated-project Wiki scope
         id: wiki
         env:
           EVIDENCE: ${{ steps.capture.outputs.evidence }}
         run: |
           set -euo pipefail
-          mode="$(python3 -c 'import json; print(json.load(open(".github/repository-profile.json"))["mode"])')"
-          if [[ "$mode" != "template" ]]; then
-            printf '{"status":"not-applicable","findings":[]}\n' > "$EVIDENCE/wiki.json"
-            exit 0
-          fi
-
-          wiki_checkout="$RUNNER_TEMP/wiki-readback"
-          if ! git clone --quiet "https://github.com/$GITHUB_REPOSITORY.wiki.git" "$wiki_checkout"; then
-            printf '{"status":"fail","findings":["Wiki clone/read-back unavailable"]}\n' \
-              > "$EVIDENCE/wiki.json"
-            exit 0
-          fi
-          set +e
-          python3 tools/check_wiki.py \
-            --root . \
-            --published-dir "$wiki_checkout" \
-            --output "$EVIDENCE/wiki.json" \
-            --summary "$EVIDENCE/wiki.md"
-          set -e
-          if [[ ! -f "$EVIDENCE/wiki.json" ]]; then
-            printf '{"status":"fail","findings":["Wiki comparison produced no report"]}\n' \
-              > "$EVIDENCE/wiki.json"
-          fi
+          python3 - <<'PYCODE'
+          import json
+          import os
+          from pathlib import Path
+          policy = json.loads(Path(".github/repository-profile.json").read_text(encoding="utf-8"))
+          if policy.get("mode") != "generated":
+              raise SystemExit("K-PRICING closeout requires a generated-project candidate")
+          (Path(os.environ["EVIDENCE"]) / "wiki.json").write_text(
+              json.dumps({"status": "not-applicable", "findings": []}) + "\n",
+              encoding="utf-8",
+          )
+          PYCODE
 
       - name: Verify provider-generated source archive retrieval
         id: archives
@@ -316,7 +300,6 @@ jobs:
           EVIDENCE: ${{ steps.capture.outputs.evidence }}
           ZIP_STATUS: ${{ steps.archives.outputs.zip }}
           TAR_STATUS: ${{ steps.archives.outputs.tar }}
-          WIKI_BROWSER_REVIEWED: ${{ inputs.wiki_browser_reviewed }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -352,10 +335,7 @@ jobs:
                   "tar": os.environ["TAR_STATUS"],
               },
               "ui_observations": {
-                  "wiki_browser_review": (
-                      "pass" if os.environ["WIKI_BROWSER_REVIEWED"].lower() == "true"
-                      else "not-run"
-                  ),
+                  "wiki_browser_review": "not-applicable",
               },
           }
           (source / "snapshot.json").write_text(
@@ -432,7 +412,6 @@ jobs:
             ${{ steps.capture.outputs.evidence }}/certification-plan.json
             ${{ steps.capture.outputs.evidence }}/certification-verification.json
             ${{ steps.capture.outputs.evidence }}/wiki.json
-            ${{ steps.capture.outputs.evidence }}/wiki.md
             test-results/release-closeout.json
             test-results/release-closeout.md
           if-no-files-found: error

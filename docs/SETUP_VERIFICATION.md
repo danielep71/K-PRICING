@@ -1,17 +1,19 @@
 # Repository setup verification
 
-**Closeout update:** the subsequent manual starter run passed. See
-[SETUP_COMPLETION.md](SETUP_COMPLETION.md) for the accepted candidate, evidence
-and limits. Current documentation follow-up and final milestone acceptance are
-tracked in [issue 10](https://github.com/danielep71/K-PRICING/issues/10).
-Pending-run statements below describe the earlier setup checkpoint.
+**Current status:** v0.0.1 repository setup is complete. Issues #3, #6, #8 and
+#10 are closed, and the milestone is closed. The accepted starter Excel run and
+final setup baseline are recorded in [SETUP_COMPLETION.md](SETUP_COMPLETION.md).
+Migration execution remains in v0.0.2; unavailable platform controls below are
+release prerequisites, not unfinished setup acceptance.
 
 
 Observed on **2026-09-23** for private `danielep71/K-PRICING`, default branch
 `main`, application profile, no domain overlay. Verification used the GitHub
 API and the authenticated maintainer UI (Daniele Penza). Final candidate/run
 links are retained in setup issues 4, 5 and 10 so the record does not attempt
-to embed its own future commit hash. No Excel execution is claimed here.
+to embed its own future commit hash. The accepted manual Excel run below is
+linked evidence supplied by the maintainer; this settings read-back did not
+independently execute Excel.
 
 ## Source and review evidence
 
@@ -46,7 +48,7 @@ are not marked passed.
 | Dependency graph/alerts/security updates | DISABLED in observed settings; version-update PR configuration is separate |
 | Private CodeQL opt-in | NOT ENABLED: Actions repository/environment variables empty; eligibility not established |
 | Application lifecycle/packaging | DEFERRED: no workbook/add-in, UI or packaging implementation in this setup milestone |
-| Neutral starter Excel test | PENDING issue 8; instructions prepared, no runtime evidence yet |
+| Neutral starter Excel test | ACCEPTED: issue #8 closed; exact candidate `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2`, four cases, six assertions, zero failures, cleanup PASS; [retained evidence](SETUP_COMPLETION.md) |
 | Issue milestones | Setup issues 2–10 assigned to v0.0.1; migration execution issues 11–18 assigned to v0.0.2 |
 
 Manual PR/check review is the current process control and **is not server-enforced
@@ -71,7 +73,8 @@ service. No publishing token is supplied to source validation.
 | Scorecard | Existing paths require a public repository | Skipped here; publication verification requires successful publication job; private source/results cannot enter its public publication path |
 | Release closeout | Manual verification of an already published release | Not applicable to setup; actions/contents/issues read only; validates candidate, tag, release and milestone facts without publishing |
 
-`Repository integrity` retains documentation tests, release/provenance/Excel
+`Repository integrity` runs the retained verification-depth Python suite as an
+enforced step and retains its output. It also runs documentation tests, release/provenance/Excel
 record fixtures, release semantics, initializer fixtures, committed-whitespace,
 VBA jump/conditional/public-API checks, local Action checks, template-contract
 checks and the 21-rule repository gate. Step-level collection does not mask
@@ -117,6 +120,9 @@ the final diff, then record the new adopted baseline and reconciled deviations.
 
 v0.0.1 is a **milestone-only setup checkpoint**. Keep `VERSION` at `0.0.0` and
 changes under Unreleased; no tag or release publication is authorized by the
-milestone name. Issue 10 can close after the exact starter evidence and all setup
-issues are accepted. Migration follows [MIGRATION_PLAN.md](MIGRATION_PLAN.md).
+milestone name. All setup issues #2–#10 and the milestone are closed. The
+final setup correction merged at `715eda63365ba4a94e619976acc4721411c875f0`
+in PR #23; issue #10 closed on 2026-09-23 at 20:22:54 UTC. The later Python
+fixture fix in PR #24 does not change the accepted runtime source. Migration
+follows [MIGRATION_PLAN.md](MIGRATION_PLAN.md).
 No migrated numerical result, supported package or functional release is claimed.

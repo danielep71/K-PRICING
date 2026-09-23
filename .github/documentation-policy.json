@@ -1,9 +1,7 @@
 {
   "schema_version": 1,
   "historical_documents": {
-    "CHANGELOG.md": "Released history is not a current command reference.",
-    "docs/PILOT_CERTIFICATION.md": "Frozen release evidence retains historical identities.",
-    "docs/IMPLEMENTATION_PLAN.md": "Temporary milestone tracking is not a user command contract."
+    "CHANGELOG.md": "Released history is not a current command reference."
   },
   "references": [
     {
