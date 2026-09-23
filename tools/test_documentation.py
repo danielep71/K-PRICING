@@ -27,8 +27,19 @@ TODAY = date(2026, 9, 9)
 class ReleaseCommandTests(unittest.TestCase):
     """Execute the actual documented block with offline shell-function stubs."""
 
+    def test_release_sequence_with_non_utf8_default_encoding(self):
+        original_read_text = Path.read_text
+
+        def locale_read_text(path, *args, **kwargs):
+            if path == ROOT / "RELEASING.md" and not args and not kwargs.get("encoding"):
+                kwargs["encoding"] = "cp932"
+            return original_read_text(path, *args, **kwargs)
+
+        with patch.object(Path, "read_text", locale_read_text):
+            self.test_release_sequence_stops_at_every_failure()
+
     def test_release_sequence_stops_at_every_failure(self):
-        section = (ROOT / "RELEASING.md").read_text().split(
+        section = (ROOT / "RELEASING.md").read_text(encoding="utf-8").split(
             "### Initialized generated project", 1
         )[1]
         block = section.split("```bash\n", 1)[1].split("```", 1)[0]
