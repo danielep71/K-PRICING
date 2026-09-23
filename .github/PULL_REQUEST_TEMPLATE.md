@@ -9,9 +9,9 @@
 
 <div align="center">
 
-# 🔀 [PROJECT_NAME] Pull Request
+# 🔀 K-PRICING Pull Request
 
-### [PROJECT PROFILE] · Exact evidence · Reviewable change · Honest boundaries
+### Application · Exact evidence · Reviewable change · Honest boundaries
 
 [![Contributing](https://img.shields.io/badge/guide-CONTRIBUTING-217346?style=flat-square)](../CONTRIBUTING.md)
 [![Security](https://img.shields.io/badge/security-private%20reporting-d73a49?style=flat-square)](../SECURITY.md)
@@ -23,7 +23,7 @@
 ---
 
 > [!IMPORTANT]
-> Replace every square-bracket field and delete every profile block that the project cannot exercise before the first pull request.
+> Complete the evidence fields for this change. Delete optional review blocks that do not apply. The current runtime is the neutral ratio starter; pricing migration is tracked in v0.0.2.
 
 ## 📌 Summary
 
@@ -50,14 +50,13 @@ Use a closing keyword only when this pull request satisfies the issue's complete
 - [ ] Documentation-only change
 - [ ] Repository tooling, workflow, or governance change
 - [ ] Packaging or release preparation
-- [ ] [PROJECT-SPECIFIC CHANGE TYPE]
 
 ## 🎚️ Affected surface
 
-- [ ] [PUBLIC API OR USER SURFACE]
-- [ ] [INTERNAL OR CORE ENGINE]
-- [ ] [EXCEL HOST OR UI INTEGRATION]
-- [ ] [TEST OR EVIDENCE SYSTEM]
+- [ ] Supported VBA API (`docs/PUBLIC_API.txt`)
+- [ ] VBA implementation in `src/`
+- [ ] Excel host, workbook integration, or shared state
+- [ ] Tests, examples, validators, or retained evidence
 - [ ] No runtime or supported surface — documentation/repository-only
 
 ---
@@ -90,7 +89,7 @@ Assess compatibility against documented behavior, not merely the VBA `Public` ke
 
 ### Production source and package
 
-[AUTHORITATIVE PRODUCTION SOURCE MANIFEST OR LINK]
+Use the component list and import order in `INSTALLATION.md`, the source boundaries in `.github/repository-profile.json`, and the supported API in `docs/PUBLIC_API.txt`.
 
 - [ ] Required source files and import order are unchanged.
 - [ ] Required source files or order changed and `INSTALLATION.md` was updated.
@@ -153,7 +152,11 @@ Evidence from another commit does not certify this candidate.
 
 ### Static and repository checks
 
-- [STATIC CHECK COMMAND]
+Use `docs/DEVELOPER_SETUP.md` for the complete local setup and `.github/workflows/static-checks.yml` for the hosted command inventory.
+
+- `python3 tools/check_repo.py --root .`
+- `python3 tools/check_documentation.py --root .`
+- `python3 tools/test_documentation.py -v`
 - `git diff --check`
 
 | Check | Result / evidence |
@@ -171,13 +174,13 @@ Evidence from another commit does not certify this candidate.
 
 Relevant entry points:
 
-- [COMPLETE REGRESSION OR CERTIFICATION ENTRY POINT]
-- [OPTIONAL UI OR MANUAL SMOKE ENTRY POINT]
+- `ProjectTests.RunProjectTests` — complete neutral-starter regression
+- `ProjectExample.RunProjectExample` — consumer smoke; expected `ProjectRatio(12, 4) = 3`
 
 | Evidence | Result |
 | --- | --- |
 | Tested commit SHA | <!-- Full SHA or N/A --> |
-| `Debug → Compile VBAProject` | <!-- PASS / FAIL / NOT RUN / N/A --> |
+| VBA compilation | <!-- PASS / FAIL / NOT RUN / N/A; successful harness execution is accepted as compilation evidence --> |
 | Regression/certification entry point | <!-- Exact procedure --> |
 | Completion state | <!-- PASS / FAIL / INCOMPLETE / NOT RUN --> |
 | Cases / assertions / failures | <!-- Counts or N/A --> |
@@ -193,7 +196,7 @@ Office bitness:                    32-bit / 64-bit
 Windows version/build:
 Workbook or add-in host:
 Deployment model:
-[PROJECT-SPECIFIC HOST OR TOOL VERSION]
+Python/tool versions (when applicable):
 ```
 
 Record only tested environments. Source inspection does not constitute host execution, and one Office bitness does not execute the other conditional branch.
@@ -282,7 +285,7 @@ Keep only for calculations, models, dates, curves, statistics, or other accuracy
 
 Keep only for workbooks, UserForms, RibbonX, WinAPI, events, timers, shapes, or shared Excel state.
 
-- [ ] Caller-owned Excel state is recorded before mutation and restored on success and failure.
+- [ ] Excel state is recorded before mutation; cleanup restores only state this operation changed and still owns, on success and failure.
 - [ ] Every registration, callback, timer, hook, form, or shape has an ownership and teardown rule.
 - [ ] 32-bit and 64-bit declarations and supported host boundaries are assessed.
 - [ ] Multi-window, reset, cancellation, partial-success, and recovery paths are covered as applicable.

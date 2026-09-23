@@ -124,6 +124,8 @@ Use only the categories needed by a release.
 
 ### Fixed
 
+- Replace stale pull-request setup fields with K-PRICING identity, current source authorities, validation commands, and neutral-starter entry points.
+
 - Classify current private documentation targets as access restricted, without
   treating anonymous 404s as public defects or claiming successful reachability.
 
