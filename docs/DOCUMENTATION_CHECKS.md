@@ -109,6 +109,8 @@ public-service decisions; temporary per-link exceptions always expire.
 Known non-public observations use the separate `classifications` array. Each
 entry has exactly `id`, `kind`, `reason` and `expires`. Supported kinds are:
 
+- `access-restricted` for an exact current private target verified through an
+  authenticated repository review;
 - `restricted-historical` for a preserved evidence URL known through prior
   authenticated review to belong to a private/restricted historical target; and
 - `pending-publication` for a reviewed candidate URL whose target does not exist
@@ -123,16 +125,17 @@ credential/query-bearing URL from local policy. A policy-clean classified URL
 still skips the anonymous request that cannot answer the intended question, and
 the resulting classification status remains non-green.
 
-`RESTRICTED_HISTORICAL` and `PENDING_PUBLICATION` therefore never become `PASS`
+`ACCESS_RESTRICTED`, `RESTRICTED_HISTORICAL` and `PENDING_PUBLICATION` never become `PASS`
 and never substitute for authenticated evidence or the later post-publication
 check.
 
 Classifications are exact URL-hash assertions, not domain or path wildcards.
 They require a rationale and an expiry/review date; unsupported kinds, duplicate
 IDs (including an ID also present in `exceptions`) and expired entries fail
-closed. The canonical policy currently records the 21 exact v1.0.0 pilot URLs
-preserved in `docs/PILOT_CERTIFICATION.md`. Those IDs were derived from the
-historical URLs already in the document; no credentials are stored.
+closed. K-PRICING records its current private targets with the
+`access-restricted` kind. Unused inherited pilot classifications were removed
+during setup. IDs derive from the exact maintained URLs; no credentials are
+stored. Review them when visibility changes or their review date expires.
 
 A release candidate may temporarily classify an exact tag-dependent URL as
 `pending-publication` only when its rationale and expiry are reviewed with the
@@ -147,7 +150,7 @@ exist.
 | `OK` | Anonymous HTTP success, possibly after retry; not content or anchor validation |
 | `PERMANENT_FAILURE` | Repeated non-transient public HTTP errors; counted as a deterministic public-documentation defect unless a policy-clean URL is explicitly classified before observation |
 | `TRANSIENT_FAILURE` | Timeout, transport failure, rate limit or server error; retry later |
-| `ACCESS_RESTRICTED` | Authentication/access response, user information or query-bearing URL; no private login attempted; takes precedence over classification |
+| `ACCESS_RESTRICTED` | Authentication/access response, user information/query-bearing URL, or explicitly classified current private target; no private login attempted; local URL policy takes precedence |
 | `RESTRICTED_HISTORICAL` | Exact reviewed private/restricted historical target; no anonymous probe attempted; remains non-green |
 | `PENDING_PUBLICATION` | Exact reviewed target depends on publication/tag creation; no probe attempted; remains non-green until publication |
 | `POLICY_BLOCKED` | Unapproved scheme/domain/port or non-public DNS destination; review policy and URL; local policy takes precedence over classification |

@@ -30,10 +30,20 @@ handling by [`SECURITY.md`](SECURITY.md), and release publication/provenance by
 
 ## 🧭 Support baseline
 
-Before a release is installable, document the actual supported Excel/Office
-versions, Windows scope, Office bitness, references/dependencies and deployment
-model. Compatibility claims apply only to environments actually certified for
-that release.
+The current installation path is manual source import into a disposable `.xlsm`
+for development. There is no supported workbook/add-in package or functional
+release. The initial target and evidence status are:
+
+| Target | Status |
+| --- | --- |
+| Microsoft 365 Excel desktop on Windows, 64-bit Office | Intended; awaiting exact-candidate starter run |
+| Microsoft 365 Excel desktop on Windows, 32-bit Office | Intended; untested separately |
+| Mac, Excel for the web, older desktop builds | No support claim |
+| References | Built-in VBA/Excel only; no additional external dependency for the starter |
+
+Use [developer setup](docs/DEVELOPER_SETUP.md) for a checkout and
+[the setup runbook](docs/EXCEL_SETUP_RUNBOOK.md) for the pending host run.
+Compatibility claims apply only to environments actually validated.
 
 | Item | Source of truth |
 | --- | --- |
@@ -58,7 +68,7 @@ will fail by design.
 
 ```text
 git clone https://github.com/danielep71/K-PRICING.git
-cd <repository-directory>
+cd K-PRICING
 ```
 
 Use a GitHub ZIP/tar source archive only when you intentionally need the

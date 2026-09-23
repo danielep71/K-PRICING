@@ -42,15 +42,21 @@ may summarize it, but must link here rather than restating a competing rule.
 | License terms | [`../LICENSE`](../LICENSE) | License name/link only |
 
 
+The project-specific authorities are [developer setup](DEVELOPER_SETUP.md),
+[dated setup verification](SETUP_VERIFICATION.md),
+[the neutral Excel runbook](EXCEL_SETUP_RUNBOOK.md), and
+[the staged migration plan](MIGRATION_PLAN.md).
+
 ## 🧭 First-use path
 
 A new maintainer should normally need only this sequence:
 
 1. Read the root [`README.md`](../README.md).
-2. Initialize one profile using [`INITIALIZATION.md`](INITIALIZATION.md).
+2. Follow [`DEVELOPER_SETUP.md`](DEVELOPER_SETUP.md); this repository is already initialized.
 3. Import/compile/test using [`INSTALLATION.md`](../INSTALLATION.md).
-4. Apply live GitHub settings using
-   [`POST_CREATION_CHECKLIST.md`](POST_CREATION_CHECKLIST.md).
+4. Read the dated [`SETUP_VERIFICATION.md`](SETUP_VERIFICATION.md) and the
+   pending [`EXCEL_SETUP_RUNBOOK.md`](EXCEL_SETUP_RUNBOOK.md).
+   Use [`MIGRATION_PLAN.md`](MIGRATION_PLAN.md) for the next milestone.
 5. For changes, use [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 6. For publication, use [`RELEASING.md`](../RELEASING.md) together with the
    release-semantics and release-evidence contracts.

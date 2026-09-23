@@ -23,6 +23,7 @@ from check_repo import _markdown_destinations
 from release_provenance import nonempty, require
 
 CLASSIFICATION_STATUSES = {
+    "access-restricted": "ACCESS_RESTRICTED",
     "restricted-historical": "RESTRICTED_HISTORICAL",
     "pending-publication": "PENDING_PUBLICATION",
 }

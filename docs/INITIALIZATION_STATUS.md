@@ -85,3 +85,12 @@ does not itself prove live reconciliation.
 The [post-creation checklist](POST_CREATION_CHECKLIST.md) remains the detailed
 setup authority. CI and final integration evidence belong to the
 [initialization pull request](https://github.com/danielep71/K-PRICING/pull/1).
+
+## Setup closeout
+
+The current project-specific record is [SETUP_VERIFICATION.md](SETUP_VERIFICATION.md).
+Use [DEVELOPER_SETUP.md](DEVELOPER_SETUP.md) and
+[EXCEL_SETUP_RUNBOOK.md](EXCEL_SETUP_RUNBOOK.md) for the pending neutral host run.
+The migration inventory and issue mapping are in [MIGRATION_PLAN.md](MIGRATION_PLAN.md).
+v0.0.1 is a milestone-only checkpoint; VERSION remains 0.0.0 and no release tag
+is created. Final acceptance remains dependent on actual Excel evidence.
