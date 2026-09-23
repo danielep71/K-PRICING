@@ -150,7 +150,8 @@ test cases, assertion counts, cleanup and machine-readable output must remain
 unchanged. A discovered semantic defect belongs in a separate change.
 
 Run the canonical repository gate, public API, jump and conditional-compilation
-checks, plus the initializer self-test for all three profiles. Verify CRLF
+checks, plus the initializer self-test for the recorded generated profile.
+Canonical template maintainers additionally exercise all three profile fixtures. Verify CRLF
 working-tree exports and clean whitespace. These checks confirm source
 contracts; they do not execute Excel or prove VBE importability by themselves.
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import subprocess
 import tempfile
 import threading
@@ -20,6 +21,47 @@ import initialize_repository as initializer
 
 ROOT = Path(__file__).resolve().parents[1]
 TODAY = date(2026, 9, 9)
+
+
+@unittest.skipUnless(shutil.which("bash"), "Bash required for release command fixture")
+class ReleaseCommandTests(unittest.TestCase):
+    """Execute the actual documented block with offline shell-function stubs."""
+
+    def test_release_sequence_stops_at_every_failure(self):
+        section = (ROOT / "RELEASING.md").read_text().split(
+            "### Initialized generated project", 1
+        )[1]
+        block = section.split("```bash\n", 1)[1].split("```", 1)[0]
+        stages = ["switch", "pull", "rev-parse", "version", "precheck", "tag", "postcheck", "push"]
+        stubs = r'''
+record() { printf '%s\n' "$1" >> calls.log; [ "$1" != "$fail_at" ]; }
+git() {
+  record "$1" || return 23
+  case "$1" in
+    rev-parse) printf '%040d\n' 1 ;;
+    tag) [ "$4" = "0000000000000000000000000000000000000001" ] || return 24 ;;
+    push) [ "$3" = "refs/tags/v1.0.0:refs/tags/v1.0.0" ] || return 25 ;;
+  esac
+}
+tr() { record version || return 23; printf '1.0.0'; }
+python3() {
+  case " $* " in
+    *" --require-tag-ref "*) record postcheck ;;
+    *) record precheck ;;
+  esac
+}
+'''
+        for fail_at in ["none", *stages]:
+            with self.subTest(fail_at=fail_at), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "VERSION").write_text("1.0.0\n")
+                result = subprocess.run(
+                    ["bash", "-c", f"fail_at={fail_at}\n" + stubs + block],
+                    cwd=root, capture_output=True, text=True, check=False,
+                )
+                expected = stages if fail_at == "none" else stages[:stages.index(fail_at) + 1]
+                self.assertEqual((root / "calls.log").read_text().splitlines(), expected)
+                self.assertEqual(result.returncode == 0, fail_at == "none", result.stderr)
 
 
 class ProjectIdentityTests(unittest.TestCase):
