@@ -19,6 +19,25 @@ The deterministic initializer was reviewed in dry-run mode before application.
 The generic facade, core, tests and example remain unchanged so that migration
 can replace them together with their API and regression contracts.
 
+## Project identity and future migration
+
+**K-PRICING** is the product and repository name. **`KPR_`** remains the VBA
+module/function namespace for the planned migration from
+[`danielep71/KPR`](https://github.com/danielep71/KPR). This preserves existing
+caller names without treating the source repository as unrelated donor branding.
+The identity policy permits these references while retaining all other donor
+and template identity restrictions and the existing scan scope.
+The checker rejects standalone old-product headings and explicit old product-name
+declarations; documentation tests also bind the README title to the recorded
+project name. Historical references remain legitimate, not blanket scan exclusions.
+
+The initialization record preserves the original inputs. Re-running the
+initializer with those same inputs returns a no-op and preserves the evolved
+identity policy; different inputs are rejected. Future template updates must
+preserve this project-specific policy and pass its regression tests. The neutral
+starter remains in place until source, tests, examples and API policy can be
+migrated together.
+
 ## Validation boundary
 
 The pre-initialization self-test passed all three profile fixtures, including

@@ -298,7 +298,6 @@
   "identity": {
     "forbidden_tokens": [
       "EXCEL-VBA-LOGISTIC-REGRESSION",
-      "KPR",
       "VBA-DATETIMEPICKER",
       "VBA-EXCEL_UI",
       "VBA-PERFORMANCE_MANAGER",
