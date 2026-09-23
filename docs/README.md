@@ -55,7 +55,8 @@ A new maintainer should normally need only this sequence:
 2. Follow [`DEVELOPER_SETUP.md`](DEVELOPER_SETUP.md); this repository is already initialized.
 3. Import/compile/test using [`INSTALLATION.md`](../INSTALLATION.md).
 4. Read the dated [`SETUP_VERIFICATION.md`](SETUP_VERIFICATION.md) and the
-   pending [`EXCEL_SETUP_RUNBOOK.md`](EXCEL_SETUP_RUNBOOK.md).
+   [`EXCEL_SETUP_RUNBOOK.md`](EXCEL_SETUP_RUNBOOK.md) and
+   accepted [`SETUP_COMPLETION.md`](SETUP_COMPLETION.md).
    Use [`MIGRATION_PLAN.md`](MIGRATION_PLAN.md) for the next milestone.
 5. For changes, use [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 6. For publication, use [`RELEASING.md`](../RELEASING.md) together with the

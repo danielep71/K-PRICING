@@ -1,0 +1,11 @@
+PROJECT TESTS
+ENVIRONMENT=host=Microsoft Excel; version=16.0; os=Windows (64-bit) NT 10.00; office=64-bit; runtime=VBA7+
+CASE=ratio.exact
+CASE=ratio.tolerance
+CASE=ratio.zero-denominator
+CASE=ratio.repeatability
+CASES=4
+ASSERTIONS=6
+FAILURES=0
+CLEANUP=PASS; detail=run flag cleared; verified Excel state unchanged (calculation/display alerts/events/screen updating)
+RESULT=PASS; completeness=COMPLETE; cases=4; assertions=6; failures=0; cleanup=PASS

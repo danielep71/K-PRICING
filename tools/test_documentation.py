@@ -55,7 +55,8 @@ class ProjectIdentityTests(unittest.TestCase):
         self.assertEqual(len(policy["forbidden_tokens"]), 6)
         self.assertEqual(len(policy["template_tokens"]), 1)
         self.assertEqual(set(policy["exclude_paths"]),
-                         {initializer.CONFIG_PATH, initializer.RECORD_PATH})
+                         {initializer.CONFIG_PATH, initializer.RECORD_PATH,
+                          "evidence/setup-2026-09-23/host.json"})
         for token in policy["forbidden_tokens"] + policy["template_tokens"]:
             with self.subTest(token=token):
                 self.sample.write_text(f"Project identity: {token.lower()}\n")

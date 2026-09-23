@@ -104,6 +104,8 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Accepted manual neutral-starter Excel evidence for candidate `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2` on one Windows/64-bit Office host; no pricing or application-release certification.
+
 - Project-specific developer setup, neutral Excel runbook, dated GitHub verification
   and a frozen-source migration inventory with issue traceability.
 

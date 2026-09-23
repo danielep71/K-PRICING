@@ -75,8 +75,8 @@ artifacts retain the validator reports and actual quality-tool versions for
 ## Windows Excel validation
 
 The intended initial host is **Microsoft 365 Excel desktop on Windows**, with
-32-bit and 64-bit Office as separate intended targets. Neither bitness is
-certified until actual evidence exists. Mac, Excel for the web and older desktop
+32-bit and 64-bit Office as separate intended targets. The neutral starter has passed on the single 64-bit host in
+[the completion record](SETUP_COMPLETION.md); 32-bit Office remains untested. Mac, Excel for the web and older desktop
 builds are not claimed as supported. The authoritative support state and import
 order are in [`INSTALLATION.md`](../INSTALLATION.md).
 

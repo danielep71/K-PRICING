@@ -36,13 +36,13 @@ release. The initial target and evidence status are:
 
 | Target | Status |
 | --- | --- |
-| Microsoft 365 Excel desktop on Windows, 64-bit Office | Intended; awaiting exact-candidate starter run |
+| Microsoft 365 Excel desktop on Windows, 64-bit Office | Starter validated on Version 2608, Build 16.0.20326.20072; see setup completion record |
 | Microsoft 365 Excel desktop on Windows, 32-bit Office | Intended; untested separately |
 | Mac, Excel for the web, older desktop builds | No support claim |
 | References | Built-in VBA/Excel only; no additional external dependency for the starter |
 
 Use [developer setup](docs/DEVELOPER_SETUP.md) for a checkout and
-[the setup runbook](docs/EXCEL_SETUP_RUNBOOK.md) for the pending host run.
+[the setup runbook](docs/EXCEL_SETUP_RUNBOOK.md) for the host procedure.
 Compatibility claims apply only to environments actually validated.
 
 | Item | Source of truth |
@@ -233,3 +233,6 @@ private vulnerability reporting and safe use.
 **Installation principle:** install one identifiable source version, compile it,
 exercise its real host behavior, and retain evidence of what was and was not
 validated.
+
+The accepted neutral-starter run is recorded in
+[SETUP_COMPLETION.md](docs/SETUP_COMPLETION.md), with its exact tested SHA and limits.

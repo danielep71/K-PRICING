@@ -1,0 +1,14 @@
+Manual evidence transcribed from Daniele Penza's supplied output and confirmations.
+Candidate: c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2; VERSION 0.0.0.
+Fresh workbook confirmed. Candidate source identity confirmed by full SHA.
+Compilation confirmed; successful complete test execution also establishes compilation of executed code.
+Normal workbook closure confirmed. Harness verified unchanged Excel state.
+Excel for Microsoft 365 MSO Version 2608, Build 16.0.20326.20072, 64-bit.
+Windows (64-bit) NT 10.00; VBA7+ (from harness); exact Windows build not separately captured.
+Checked references: Visual Basic For Applications; Microsoft Excel 16.0 Object Library; OLE Automation; Microsoft Office 16.0 Object Library.
+Trust Center screenshot: Disable VBA macros with notification selected; macro options grayed out. Cause of disabled UI not established.
+Trust access to the VBA project object model checked. Excel 4.0 macros unchecked.
+These are the supplied existing settings; no trust-setting change was requested or performed as part of this validation.
+Reported approximate session time: 2026-09-23 21:10 Europe/Rome, UTC+02:00.
+Timestamp precision: one reported session minute only. host.json uses that same approximate minute for both endpoints; it does not assert a measured zero duration or independently observed start/end times.
+Scope: neutral starter only, one Windows 64-bit Office host; no KPR parity, pricing accuracy, packaging or application-lifecycle certification.
