@@ -322,8 +322,7 @@ jobs:
               test-results/vba-conditionals.md \
               test-results/vba-public-api.md \
               test-results/local-actions.md \
-              test-results/workflow-validation.md
-            test-results/verification-depth.txt \
+              test-results/workflow-validation.md \
               test-results/release-self-test.md \
               test-results/release-semantics.md; do
               if [[ ! -f "$report" ]]; then
