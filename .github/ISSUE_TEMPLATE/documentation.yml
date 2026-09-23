@@ -1,0 +1,77 @@
+name: "📖 Documentation request"
+description: "Report incorrect, stale, missing, inaccessible, or unclear maintained documentation."
+title: "[Docs]: "
+labels: ["documentation"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Documentation must match supported behavior and reproducible evidence.
+
+        Do not disclose vulnerabilities, credentials, private workbooks, or restricted data. Follow `SECURITY.md` for private security reporting.
+
+  - type: input
+    id: location
+    attributes:
+      label: Document and location
+      description: Identify the file, heading, anchor, or public page. Use a stable link when available.
+      placeholder: README.md — Installation / https://github.com/owner/repository/blob/commit/README.md
+    validations:
+      required: true
+
+  - type: dropdown
+    id: problem_type
+    attributes:
+      label: Documentation problem
+      options:
+        - Incorrect behavior or contract
+        - Stale version, count, command, or evidence
+        - Missing explanation or example
+        - Unclear wording or navigation
+        - Broken link or asset
+        - Accessibility or rendering problem
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Current problem and impact
+      description: Quote only the minimum necessary text and explain how it misleads or blocks the reader.
+    validations:
+      required: true
+
+  - type: textarea
+    id: correction
+    attributes:
+      label: Proposed correction
+      description: Describe the corrected outcome, example, navigation, or wording.
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: Authoritative source or contract
+      description: Link the source code, issue, release, standard, or evidence that establishes the correction. State not applicable when appropriate.
+    validations:
+      required: true
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: Explain how to verify commands, links, examples, rendering, counts, and cross-document consistency.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Submission checks
+      options:
+        - label: I checked the current default-branch documentation and searched related issues.
+          required: true
+        - label: This request contains no vulnerability details, secrets, private links, or restricted data.
+          required: true

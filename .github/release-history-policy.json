@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "rules": {
+    "merge_commits": "block-unless-excepted",
+    "duplicate_subjects": "block-unless-excepted"
+  },
+  "exceptions": [],
+  "historical_records": [
+    {
+      "release": "v1.2.0",
+      "commit": "1256c86c0061163b8184a5b927eedb8ed69cf916",
+      "pull_request": 68,
+      "reason": "History-preserving merge accepted during the v1.2.0 clean-room stabilization before the release-history gate existed; ancestry is preserved and not rewritten."
+    },
+    {
+      "release": "v1.2.0",
+      "commit": "3d4fb96ab46ce6c7251c6f8ed8d29ba970f41eb4",
+      "pull_request": 71,
+      "reason": "History-preserving merge accepted during the v1.2.0 clean-room stabilization before the release-history gate existed; ancestry is preserved and not rewritten."
+    },
+    {
+      "release": "v1.2.0",
+      "commit": "e1d16103fe98b0f8f71c1ad8a855e1372793a0f4",
+      "pull_request": 74,
+      "reason": "History-preserving merge accepted during the v1.2.0 clean-room stabilization before the release-history gate existed; this commit is the published v1.2.0 source identity and remains immutable."
+    }
+  ]
+}

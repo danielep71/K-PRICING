@@ -1,0 +1,9 @@
+# Hash-locked CPython 3.10 / Ubuntu x64 coverage CI requirements.
+# CI installs with --only-binary=:all: --require-hashes.
+
+coverage[toml]==7.10.6 \
+    --hash=sha256:10356fdd33a7cc06e8051413140bbdc6f972137508a3572e3f59f805cd2832fd
+PyYAML==6.0.3 \
+    --hash=sha256:9c7708761fccb9397fe64bbc0395abcae8c4bf7b0eac081e12b809bf47700d0b
+tomli==2.2.1 \
+    --hash=sha256:cb55c73c5f4408779d0cf3eef9f762b9c9f147a77de7b258bef0a5628adc85cc

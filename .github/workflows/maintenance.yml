@@ -1,0 +1,125 @@
+name: Maintenance task
+
+# One permanent, dispatch-only home for maintenance tasks that must run in the
+# pinned CI environment and commit their result.
+#
+# It replaces the pattern of creating a disposable workflow per task. Each such
+# workflow triggered on its own path, granted itself `contents: write`, deleted
+# itself and pushed. That worked, but every one left a permanent entry in the
+# Actions tab, granted a fresh write scope, and executed at the same moment it
+# was introduced, so there was no window in which it could be reviewed.
+#
+# Rules this workflow keeps:
+#   - `workflow_dispatch` only: it never triggers itself, and never on push.
+#   - The task list is a closed `choice`. An arbitrary-command input would be a
+#     script-injection hole and exactly what Scorecard's Dangerous-Workflow
+#     check flags. Adding a task is a reviewed edit to this file.
+#   - The selected task reaches the shell through `env`, never through inline
+#     `${{ }}` interpolation.
+#   - Write scope is granted on the job, not the workflow.
+#   - The result is validated before it is committed, and a task that changes
+#     nothing exits cleanly instead of creating an empty commit.
+#   - It never deletes itself.
+#
+# Run it with:
+#   gh workflow run maintenance.yml --ref <branch> -f task=<task>
+#
+# Prerequisite, verified rather than assumed: GitHub registers a
+# `workflow_dispatch` workflow only once the file is on the DEFAULT branch.
+# Until this file reaches `main` the workflow does not exist as far as the API
+# is concerned, and both the Actions UI and
+# `POST /actions/workflows/maintenance.yml/dispatches` answer 404. Naming the
+# branch explicitly does not work around it; there is no dispatch path from a
+# feature branch alone.
+#
+# Once the file is on `main`, `--ref` may name any branch that carries it, and
+# the task runs against — and commits to — that branch.
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: Registered maintenance task to run
+        required: true
+        type: choice
+        options:
+          - regenerate-wiki-reference
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maintenance-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  maintenance:
+    name: Run one registered maintenance task
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Refuse to run outside a branch
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [[ "$REF" != refs/heads/* ]]; then
+            echo "::error::maintenance tasks commit their result and must be dispatched on a branch, not $REF"
+            exit 1
+          fi
+
+      - name: Check out the dispatched branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.ref }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Set up the declared Python runtime series
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.10"
+
+      - name: Run the selected task
+        env:
+          TASK: ${{ inputs.task }}
+        run: |
+          set -euo pipefail
+          case "$TASK" in
+            regenerate-wiki-reference)
+              python3 tools/check_wiki.py --root . --write-reference
+              ;;
+            *)
+              echo "::error::unregistered maintenance task: $TASK"
+              exit 1
+              ;;
+          esac
+
+      - name: Validate the result before committing
+        run: |
+          set -euo pipefail
+          python3 tools/check_wiki.py --root .
+          python3 tools/check_repo.py --root .
+          git diff --check
+
+      - name: Commit and push only when the tree changed
+        env:
+          TASK: ${{ inputs.task }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "Task $TASK produced no change; nothing to commit."
+            exit 0
+          fi
+          git config user.name "Daniele Penza"
+          git config user.email "104122869+danielep71@users.noreply.github.com"
+          git add -A
+          git commit -m "Run maintenance task: $TASK"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "Pushed the result of $TASK to $GITHUB_REF_NAME."

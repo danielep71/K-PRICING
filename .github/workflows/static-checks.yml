@@ -1,0 +1,433 @@
+name: Static repository checks
+run-name: Static checks — ${{ github.ref_name }} @ ${{ github.sha }}
+
+# Canonical portable source-integrity gate plus content-pinned authoritative
+# validators. These complement, but never replace, Excel compilation,
+# regression, numerical-accuracy, UI-state, packaging, or release certification.
+
+on:
+  pull_request:
+    branches:
+      - main
+      - "release/**"
+  push:
+    branches:
+      - main
+      - "release/**"
+    tags:
+      - "v*"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      expected-profile:
+        description: "Optional generated profile assertion: application, library, or ui-component"
+        type: string
+        required: false
+        default: ""
+    outputs:
+      candidate-sha:
+        description: Exact caller commit checked; valid only when the job succeeds
+        value: ${{ jobs.repository-integrity.outputs.candidate-sha }}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: static-checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  repository-integrity:
+    name: Repository integrity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      candidate-sha: ${{ steps.candidate.outputs.sha }}
+    env:
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      # Select a compatible series; setup-python resolves its available patch.
+      PYTHON_VERSION: "3.10"
+      RUFF_VERSION: "0.16.6"
+      MYPY_VERSION: "2.3.1"
+      ACTIONLINT_VERSION: "1.7.12"
+      ACTIONLINT_LINUX_AMD64_SHA256: "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+
+    steps:
+      - name: Check out the exact SHA under review
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Verify caller identity and optional profile assertion
+        id: candidate
+        env:
+          EXPECTED_PROFILE: ${{ inputs.expected-profile || '' }}
+          CANDIDATE_SHA: ${{ github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          expected = os.environ["EXPECTED_PROFILE"]
+          if expected:
+              if expected not in {"application", "library", "ui-component"}:
+                  raise SystemExit("Unsupported expected-profile")
+              config = json.loads(Path(".github/repository-profile.json").read_text())
+              if config.get("mode") != "generated" or config.get("profile") != expected:
+                  raise SystemExit("Caller is not the expected generated profile")
+          PY
+          printf 'sha=%s\n' "$CANDIDATE_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Set up the declared Python runtime series
+        id: python-runtime
+        continue-on-error: true
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pinned Python quality tools
+        id: python-quality-install
+        continue-on-error: true
+        run: |
+          mkdir -p test-results
+          python -m pip install \
+            --disable-pip-version-check \
+            --only-binary=:all: \
+            --require-hashes \
+            -r tools/requirements-quality-ci.txt
+          {
+            python --version
+            ruff --version
+            mypy --version
+          } | tee test-results/python-quality-versions.txt
+
+      - name: Enforce Python lint baseline
+        id: ruff
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ruff check tools 2>&1 | tee test-results/ruff.txt
+
+      - name: Enforce Python type baseline
+        id: mypy
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          mypy 2>&1 | tee test-results/mypy.txt
+
+      - name: Install the pinned authoritative workflow validator
+        id: validator-install
+        continue-on-error: true
+        run: |
+          validator_dir="${RUNNER_TEMP}/actionlint-${ACTIONLINT_VERSION}"
+          archive="${validator_dir}/actionlint.tar.gz"
+          validator="${validator_dir}/actionlint"
+          mkdir -p "$validator_dir" test-results
+          curl \
+            --fail \
+            --location \
+            --proto '=https' \
+            --retry 3 \
+            --retry-all-errors \
+            --show-error \
+            --silent \
+            --tlsv1.2 \
+            --output "$archive" \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          printf '%s  %s\n' "$ACTIONLINT_LINUX_AMD64_SHA256" "$archive" \
+            | sha256sum --check --strict
+          tar --no-same-owner -xzf "$archive" -C "$validator_dir" actionlint
+          "$validator" -version | tee test-results/actionlint-version.txt
+          printf 'path=%s\n' "$validator" >> "$GITHUB_OUTPUT"
+
+      - name: Validate workflows and authoritative fixtures
+        id: authoritative-workflows
+        continue-on-error: true
+        env:
+          ACTIONLINT_PATH: ${{ steps.validator-install.outputs.path }}
+        run: >-
+          python3 tools/test_workflow_validation.py
+          --root .
+          --actionlint "$ACTIONLINT_PATH"
+          --summary test-results/workflow-validation.md
+
+      - name: Exercise release-integrity candidates and failures
+        id: release-self-test
+        continue-on-error: true
+        run: |
+          python3 tools/check_release.py --root . --self-test --summary test-results/release-self-test.md
+          python3 tools/test_release_provenance.py -v
+          python3 tools/test_excel_evidence.py -v
+
+      - name: Check maintained documentation contracts
+        run: |
+          python3 tools/test_documentation.py -v
+          python3 tools/check_documentation.py --root .
+
+      - name: Exercise strict release-semantics fixtures
+        id: release-semantics-self-test
+        continue-on-error: true
+        run: python3 tools/check_release_semantics.py --root . --self-test
+
+      - name: Validate release semantics
+        id: release-semantics
+        continue-on-error: true
+        run: >-
+          python3 tools/check_release_semantics.py
+          --root .
+          --output test-results/release-semantics.json
+          --summary test-results/release-semantics.md
+
+      - name: Exercise all repository-initialization profiles
+        id: initializer-self-test
+        continue-on-error: true
+        run: python3 tools/initialize_repository.py --root . --self-test
+
+      - name: Exercise committed-whitespace fixtures
+        id: whitespace-self-test
+        continue-on-error: true
+        run: python3 tools/check_committed_whitespace.py --root . --self-test
+
+      - name: Validate committed candidate whitespace
+        id: committed-whitespace
+        continue-on-error: true
+        env:
+          CANDIDATE_SHA: ${{ github.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+        run: |
+          args=(
+            --root .
+            --mode committed
+            --head "$CANDIDATE_SHA"
+            --output test-results/committed-whitespace.json
+            --summary test-results/committed-whitespace.md
+          )
+          if [[ -n "$BASE_SHA" ]]; then
+            args+=(--base "$BASE_SHA")
+          fi
+          python3 tools/check_committed_whitespace.py "${args[@]}"
+
+      - name: Exercise procedure-scoped VBA jump fixtures
+        id: vba-jump-self-test
+        continue-on-error: true
+        run: python3 tools/check_vba_jumps.py --root . --self-test
+
+      - name: Validate procedure-scoped VBA jumps
+        id: vba-jumps
+        continue-on-error: true
+        run: >-
+          python3 tools/check_vba_jumps.py
+          --root .
+          --output test-results/vba-jumps.json
+          --summary test-results/vba-jumps.md
+
+      - name: Exercise VBA conditional-compilation fixtures
+        id: vba-conditional-self-test
+        continue-on-error: true
+        run: python3 tools/check_vba_conditionals.py --root . --self-test
+
+      - name: Validate VBA conditional compilation
+        id: vba-conditionals
+        continue-on-error: true
+        run: >-
+          python3 tools/check_vba_conditionals.py
+          --root .
+          --output test-results/vba-conditionals.json
+          --summary test-results/vba-conditionals.md
+
+      - name: Exercise complete VBA public API fixtures
+        id: vba-api-self-test
+        continue-on-error: true
+        run: python3 tools/check_vba_public_api.py --root . --self-test
+
+      - name: Validate complete VBA public API
+        id: vba-api
+        continue-on-error: true
+        run: >-
+          python3 tools/check_vba_public_api.py
+          --root .
+          --output test-results/vba-public-api.json
+          --summary test-results/vba-public-api.md
+
+      - name: Exercise repository-local Action fixtures
+        id: local-action-self-test
+        continue-on-error: true
+        run: python3 tools/check_local_actions.py --root . --self-test
+
+      - name: Validate repository-local Actions
+        id: local-actions
+        continue-on-error: true
+        run: >-
+          python3 tools/check_local_actions.py
+          --root .
+          --output test-results/local-actions.json
+          --summary test-results/local-actions.md
+
+      - name: Exercise template-contract fixtures
+        id: template-contract-self-test
+        continue-on-error: true
+        run: python3 tools/check_template_contract.py --root . --self-test
+
+      - name: Validate the adopted template contract
+        id: template-contract
+        continue-on-error: true
+        run: >-
+          python3 tools/check_template_contract.py
+          --root .
+          --output test-results/template-contract.json
+          --summary test-results/template-contract.md
+
+      - name: Exercise positive and degraded checker paths
+        id: self-test
+        continue-on-error: true
+        run: python3 tools/check_repo.py --root . --self-test
+
+      - name: Validate repository integrity
+        id: gate
+        continue-on-error: true
+        run: >-
+          python3 tools/check_repo.py
+          --root .
+          --output test-results/static-checks.json
+          --summary test-results/static-checks.md
+
+      - name: Publish readable job summary
+        id: summary
+        if: always()
+        continue-on-error: true
+        run: |
+          {
+            for report in \
+              test-results/python-quality-versions.txt \
+              test-results/ruff.txt \
+              test-results/mypy.txt \
+              test-results/static-checks.md \
+              test-results/committed-whitespace.md \
+              test-results/vba-jumps.md \
+              test-results/vba-conditionals.md \
+              test-results/vba-public-api.md \
+              test-results/local-actions.md \
+              test-results/workflow-validation.md \
+              test-results/release-self-test.md \
+              test-results/release-semantics.md; do
+              if [[ ! -f "$report" ]]; then
+                echo "## Missing required evidence"
+                echo
+                echo "Required report was not produced: $report"
+                exit 1
+              fi
+              cat "$report"
+              echo
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload static-check evidence
+        id: artifact
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: static-checks-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            test-results/python-quality-versions.txt
+            test-results/ruff.txt
+            test-results/mypy.txt
+            test-results/static-checks.json
+            test-results/static-checks.md
+            test-results/committed-whitespace.json
+            test-results/committed-whitespace.md
+            test-results/vba-jumps.json
+            test-results/vba-jumps.md
+            test-results/vba-conditionals.json
+            test-results/vba-conditionals.md
+            test-results/vba-public-api.json
+            test-results/vba-public-api.md
+            test-results/local-actions.json
+            test-results/local-actions.md
+            test-results/template-contract.json
+            test-results/template-contract.md
+            test-results/actionlint-version.txt
+            test-results/workflow-validation.md
+            test-results/release-self-test.md
+            test-results/release-semantics.json
+            test-results/release-semantics.md
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Enforce self-test and repository results
+        if: always()
+        env:
+          CANDIDATE_OUTCOME: ${{ steps.candidate.outcome }}
+          PYTHON_RUNTIME_OUTCOME: ${{ steps.python-runtime.outcome }}
+          PYTHON_QUALITY_INSTALL_OUTCOME: ${{ steps.python-quality-install.outcome }}
+          RUFF_OUTCOME: ${{ steps.ruff.outcome }}
+          MYPY_OUTCOME: ${{ steps.mypy.outcome }}
+          INITIALIZER_SELF_TEST_OUTCOME: ${{ steps.initializer-self-test.outcome }}
+          VALIDATOR_INSTALL_OUTCOME: ${{ steps.validator-install.outcome }}
+          AUTHORITATIVE_WORKFLOWS_OUTCOME: ${{ steps.authoritative-workflows.outcome }}
+          RELEASE_SELF_TEST_OUTCOME: ${{ steps.release-self-test.outcome }}
+          RELEASE_SEMANTICS_SELF_TEST_OUTCOME: ${{ steps.release-semantics-self-test.outcome }}
+          RELEASE_SEMANTICS_OUTCOME: ${{ steps.release-semantics.outcome }}
+          WHITESPACE_SELF_TEST_OUTCOME: ${{ steps.whitespace-self-test.outcome }}
+          COMMITTED_WHITESPACE_OUTCOME: ${{ steps.committed-whitespace.outcome }}
+          VBA_JUMP_SELF_TEST_OUTCOME: ${{ steps.vba-jump-self-test.outcome }}
+          VBA_JUMPS_OUTCOME: ${{ steps.vba-jumps.outcome }}
+          VBA_CONDITIONAL_SELF_TEST_OUTCOME: ${{ steps.vba-conditional-self-test.outcome }}
+          VBA_CONDITIONALS_OUTCOME: ${{ steps.vba-conditionals.outcome }}
+          VBA_API_SELF_TEST_OUTCOME: ${{ steps.vba-api-self-test.outcome }}
+          VBA_API_OUTCOME: ${{ steps.vba-api.outcome }}
+          LOCAL_ACTION_SELF_TEST_OUTCOME: ${{ steps.local-action-self-test.outcome }}
+          LOCAL_ACTIONS_OUTCOME: ${{ steps.local-actions.outcome }}
+          TEMPLATE_CONTRACT_SELF_TEST_OUTCOME: ${{ steps.template-contract-self-test.outcome }}
+          TEMPLATE_CONTRACT_OUTCOME: ${{ steps.template-contract.outcome }}
+          SELF_TEST_OUTCOME: ${{ steps.self-test.outcome }}
+          GATE_OUTCOME: ${{ steps.gate.outcome }}
+          SUMMARY_OUTCOME: ${{ steps.summary.outcome }}
+          ARTIFACT_OUTCOME: ${{ steps.artifact.outcome }}
+        run: |
+          failed=0
+          for item in \
+            "Caller identity and profile:$CANDIDATE_OUTCOME" \
+            "Python runtime series:$PYTHON_RUNTIME_OUTCOME" \
+            "Python quality-tool installation:$PYTHON_QUALITY_INSTALL_OUTCOME" \
+            "Ruff lint:$RUFF_OUTCOME" \
+            "mypy type check:$MYPY_OUTCOME" \
+            "Authoritative-validator installation:$VALIDATOR_INSTALL_OUTCOME" \
+            "Authoritative workflow-validation:$AUTHORITATIVE_WORKFLOWS_OUTCOME" \
+            "Release-integrity self-test:$RELEASE_SELF_TEST_OUTCOME" \
+            "Release-semantics self-test:$RELEASE_SEMANTICS_SELF_TEST_OUTCOME" \
+            "Release semantics:$RELEASE_SEMANTICS_OUTCOME" \
+            "Initializer self-test:$INITIALIZER_SELF_TEST_OUTCOME" \
+            "Committed-whitespace self-test:$WHITESPACE_SELF_TEST_OUTCOME" \
+            "Committed-whitespace candidate:$COMMITTED_WHITESPACE_OUTCOME" \
+            "Procedure-scoped VBA jump self-test:$VBA_JUMP_SELF_TEST_OUTCOME" \
+            "Procedure-scoped VBA jump:$VBA_JUMPS_OUTCOME" \
+            "VBA conditional-compilation self-test:$VBA_CONDITIONAL_SELF_TEST_OUTCOME" \
+            "VBA conditional-compilation:$VBA_CONDITIONALS_OUTCOME" \
+            "VBA public API self-test:$VBA_API_SELF_TEST_OUTCOME" \
+            "VBA public API:$VBA_API_OUTCOME" \
+            "Repository-local Action self-test:$LOCAL_ACTION_SELF_TEST_OUTCOME" \
+            "Repository-local Actions:$LOCAL_ACTIONS_OUTCOME" \
+            "Template-contract self-test:$TEMPLATE_CONTRACT_SELF_TEST_OUTCOME" \
+            "Template contract:$TEMPLATE_CONTRACT_OUTCOME" \
+            "Checker self-test:$SELF_TEST_OUTCOME" \
+            "Repository gate:$GATE_OUTCOME" \
+            "Job-summary:$SUMMARY_OUTCOME" \
+            "Evidence-upload:$ARTIFACT_OUTCOME"; do
+            name="${item%%:*}"
+            outcome="${item#*:}"
+            if [[ "$outcome" != "success" ]]; then
+              echo "::error::$name outcome: $outcome"
+              failed=1
+            fi
+          done
+          exit "$failed"

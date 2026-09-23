@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "workflow": {
+    "repository": "@repository",
+    "path": ".github/workflows/static-checks.yml",
+    "sha": "@candidate"
+  },
+  "signature": {
+    "mode": "none"
+  },
+  "tag_signature": {
+    "generated": {
+      "mode": "none"
+    },
+    "template": {
+      "mode": "ssh-github",
+      "principal": "danielep71",
+      "github_user": "danielep71"
+    }
+  }
+}

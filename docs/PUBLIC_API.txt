@@ -1,0 +1,8 @@
+# Supported VBA declarations: <component><TAB><kind><TAB><name>
+# Keep this manifest synchronized with public-role components in repository policy.
+# Mutually exclusive conditional declarations share one declaration row and list each distinct reachable signature.
+# Normalized signatures use: # SIG<TAB><component><TAB><kind><TAB><name><TAB><signature>
+ProjectFacade	Const	PROJECT_ERROR_ZERO_DENOMINATOR
+# SIG	ProjectFacade	Const	PROJECT_ERROR_ZERO_DENOMINATOR	Public Const PROJECT_ERROR_ZERO_DENOMINATOR As Long = ProjectCore.ERR_ZERO_DENOMINATOR
+ProjectFacade	Function	ProjectRatio
+# SIG	ProjectFacade	Function	ProjectRatio	Public Function ProjectRatio( ByVal numerator As Double, ByVal denominator As Double) As Double

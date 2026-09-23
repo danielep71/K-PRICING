@@ -1,0 +1,235 @@
+name: OpenSSF Scorecard
+run-name: Scorecard — ${{ github.ref_name }} @ ${{ github.sha }}
+
+# Public Scorecard publication is supported only from the default branch.
+# Release branches still receive a real Scorecard CLI scan bound to the exact
+# candidate SHA; untrusted pull requests never receive credentials here.
+
+on:
+  branch_protection_rule:
+  push:
+    branches:
+      - main
+      - "release/**"
+  schedule:
+    - cron: "23 5 * * 4"
+  workflow_dispatch:
+
+permissions: read-all
+
+concurrency:
+  group: scorecard-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-candidate:
+    name: Exact-SHA release-candidate scan
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      github.ref_name != github.event.repository.default_branch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      SCORECARD_CLI_VERSION: "5.5.0"
+      SCORECARD_CLI_LINUX_AMD64_SHA256: "83b90a05c1540ef1390db1cd5711e5fd04be9c1d8537fb84d39d02092d6a8dff"
+
+    steps:
+      - name: Check out the exact SHA under analysis
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install the pinned Scorecard CLI release
+        id: scorecard-cli
+        run: |
+          set -euo pipefail
+          tool_dir="${RUNNER_TEMP}/scorecard-${SCORECARD_CLI_VERSION}"
+          archive="${tool_dir}/scorecard.tar.gz"
+          mkdir -p "$tool_dir"
+          curl \
+            --fail \
+            --location \
+            --proto '=https' \
+            --retry 3 \
+            --retry-all-errors \
+            --show-error \
+            --silent \
+            --tlsv1.2 \
+            --output "$archive" \
+            "https://github.com/ossf/scorecard/releases/download/v${SCORECARD_CLI_VERSION}/scorecard_${SCORECARD_CLI_VERSION}_linux_amd64.tar.gz"
+          printf '%s  %s\n' "$SCORECARD_CLI_LINUX_AMD64_SHA256" "$archive" \
+            | sha256sum --check --strict
+          tar --no-same-owner -xzf "$archive" -C "$tool_dir" scorecard
+          "$tool_dir/scorecard" version | tee scorecard-version.txt
+          printf 'path=%s\n' "$tool_dir/scorecard" >> "$GITHUB_OUTPUT"
+
+      - name: Analyze the exact release-candidate commit
+        env:
+          GITHUB_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SCORECARD_PATH: ${{ steps.scorecard-cli.outputs.path }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          "$SCORECARD_PATH" \
+            --repo="github.com/${GITHUB_REPOSITORY}" \
+            --commit="$GITHUB_SHA" \
+            --format=json \
+            --output=scorecard.json
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          result = json.loads(Path("scorecard.json").read_text(encoding="utf-8"))
+          commit = result.get("repo", {}).get("commit") or result.get("repo", {}).get("commit_sha")
+          if commit and commit != os.environ["GITHUB_SHA"]:
+              raise SystemExit(f"Scorecard result commit mismatch: {commit}")
+          PY
+
+      - name: Retain exact-SHA Scorecard evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: scorecard-candidate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            scorecard.json
+            scorecard-version.txt
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+  published:
+    name: Published default-branch posture
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'branch_protection_rule' ||
+      github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+      security-events: write
+
+    steps:
+      - name: Check out the exact SHA under analysis
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Run OpenSSF Scorecard
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+          file_mode: git
+
+      - name: Retain Scorecard SARIF evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: scorecard-${{ github.run_id }}-${{ github.run_attempt }}
+          path: results.sarif
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Publish Scorecard result to code scanning
+        uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        with:
+          sarif_file: results.sarif
+
+  verify-publication:
+    name: Verify public Scorecard publication
+    needs: published
+    if: ${{ needs.published.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Verify exact-SHA public Scorecard result
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://api.scorecard.dev/projects/github.com/${GITHUB_REPOSITORY}?commit=${GITHUB_SHA}"
+          badge_url="https://api.scorecard.dev/projects/github.com/${GITHUB_REPOSITORY}/badge"
+          for attempt in 1 2 3 4 5 6; do
+            rm -f public-scorecard.json public-scorecard-badge.svg
+            if curl \
+              --fail \
+              --location \
+              --proto '=https' \
+              --show-error \
+              --silent \
+              --tlsv1.2 \
+              --header 'Cache-Control: no-cache' \
+              --output public-scorecard.json \
+              "$url"; then
+              if python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          result = json.loads(Path("public-scorecard.json").read_text(encoding="utf-8"))
+          repo = result.get("repo", {})
+          expected_name = f"github.com/{os.environ['GITHUB_REPOSITORY']}"
+          expected_commit = os.environ["GITHUB_SHA"]
+          if repo.get("name") != expected_name:
+              raise SystemExit(
+                  f"public Scorecard repository mismatch: {repo.get('name')!r} != {expected_name!r}"
+              )
+          if repo.get("commit") != expected_commit:
+              raise SystemExit(
+                  f"public Scorecard commit mismatch: {repo.get('commit')!r} != {expected_commit!r}"
+              )
+          PY
+              then
+                if curl \
+                  --fail \
+                  --location \
+                  --proto '=https' \
+                  --show-error \
+                  --silent \
+                  --tlsv1.2 \
+                  --header 'Cache-Control: no-cache' \
+                  --output public-scorecard-badge.svg \
+                  "$badge_url"; then
+                  if python3 - <<'PY'
+          from pathlib import Path
+
+          badge = Path("public-scorecard-badge.svg").read_text(encoding="utf-8")
+          lowered = badge.casefold()
+          if "<svg" not in lowered:
+              raise SystemExit("public Scorecard badge response is not SVG")
+          for marker in ("invalid repo path", "invalid repository", "not found"):
+              if marker in lowered:
+                  raise SystemExit(f"public Scorecard badge contains error marker: {marker}")
+          PY
+                  then
+                    exit 0
+                  fi
+                fi
+              fi
+            fi
+            if [[ "$attempt" -lt 6 ]]; then
+              sleep "$((attempt * 2))"
+            fi
+          done
+          echo "::error::Public Scorecard JSON/badge surface was not valid for exact SHA ${GITHUB_SHA}."
+          exit 1
+
+      - name: Retain verified public Scorecard evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: scorecard-public-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            public-scorecard.json
+            public-scorecard-badge.svg
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9

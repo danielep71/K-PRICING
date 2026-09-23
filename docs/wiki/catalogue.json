@@ -1,0 +1,885 @@
+{
+  "schema_version": 1,
+  "pages": [
+    {
+      "name": "Home",
+      "title": "Start here",
+      "authority": "docs/README.md"
+    },
+    {
+      "name": "Choose-a-profile",
+      "title": "Choose a profile",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    {
+      "name": "Create-the-repository",
+      "title": "Create the repository",
+      "authority": "docs/INITIALIZATION.md"
+    },
+    {
+      "name": "Initialize-the-project",
+      "title": "Initialize the project",
+      "authority": "docs/INITIALIZATION.md"
+    },
+    {
+      "name": "Configure-GitHub",
+      "title": "Configure GitHub",
+      "authority": "docs/POST_CREATION_CHECKLIST.md"
+    },
+    {
+      "name": "Run-the-quality-gates",
+      "title": "Run the quality gates",
+      "authority": "tools/README.md"
+    },
+    {
+      "name": "Develop-safely",
+      "title": "Develop safely",
+      "authority": "CONTRIBUTING.md"
+    },
+    {
+      "name": "Prepare-and-publish-a-release",
+      "title": "Prepare and publish a release",
+      "authority": "RELEASING.md"
+    },
+    {
+      "name": "File-and-directory-reference",
+      "title": "File and directory reference",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    {
+      "name": "Workflow-and-tool-reference",
+      "title": "Workflow and tool reference",
+      "authority": "tools/README.md"
+    },
+    {
+      "name": "Maintenance-and-migration",
+      "title": "Maintenance and migration",
+      "authority": "docs/TEMPLATE_CONTRACT.md"
+    },
+    {
+      "name": "Troubleshooting",
+      "title": "Troubleshooting",
+      "authority": "docs/README.md"
+    },
+    {
+      "name": "Glossary",
+      "title": "Glossary",
+      "authority": "docs/README.md"
+    },
+    {
+      "name": "Publish-the-wiki",
+      "title": "Publish the wiki",
+      "authority": "docs/WIKI_PUBLICATION.md"
+    }
+  ],
+  "kinds": {
+    "document": {
+      "owner": "Document maintainer",
+      "edit": "When the supported contract or instructions change.",
+      "guard": "Keep one authority; preserve historical evidence and private reporting boundaries.",
+      "validation": "Canonical links/identity plus documentation drift; review prose."
+    },
+    "policy": {
+      "owner": "Repository maintainer",
+      "edit": "Only for a reviewed control or profile change.",
+      "guard": "Do not weaken rules to silence findings or hand-edit adopted evidence.",
+      "validation": "Canonical structured-data and the owning focused gate; hosted integrity."
+    },
+    "workflow": {
+      "owner": "Automation maintainer",
+      "edit": "When triggers, permissions, pins or job contracts intentionally change.",
+      "guard": "Use reviewed immutable action pins, least permissions and honest failure handling.",
+      "validation": "Canonical action/YAML checks, pinned actionlint and workflow fixtures; see workflow reference."
+    },
+    "script": {
+      "owner": "Tool maintainer",
+      "edit": "For a scoped CLI/validation implementation change with failure fixtures.",
+      "guard": "Preserve exit/report contracts, boundaries and downstream compatibility; no embedded credentials.",
+      "validation": "Ruff/mypy, named tool fixtures and owning hosted workflow; Tools README."
+    },
+    "vba": {
+      "owner": "VBA component maintainer",
+      "edit": "For reviewed behavior or source-presentation changes.",
+      "guard": "Preserve export identity/CRLF, component visibility, API and cleanup; annotate variables and phases.",
+      "validation": "Canonical and focused VBA gates, generated profiles and actual Excel regression."
+    },
+    "asset": {
+      "owner": "Documentation maintainer",
+      "edit": "When replacing maintained preview artwork.",
+      "guard": "Keep formats and referenced paths coherent; no confidential screenshots or unrelated binaries.",
+      "validation": "Canonical artifact/path checks and visual review."
+    },
+    "git-policy": {
+      "owner": "Repository maintainer",
+      "edit": "For reviewed editor, normalization, exclusion or archive policy changes.",
+      "guard": "Do not convert binary companions to text, normalize VBA incorrectly or commit local secrets.",
+      "validation": "Canonical dotfile/line-ending/whitespace policy probes."
+    },
+    "wiki": {
+      "owner": "Template wiki maintainer",
+      "edit": "When the guided journey or a linked contract changes.",
+      "guard": "Keep authority notices, ordered navigation and exact-source publication; no independent online policy edits.",
+      "validation": "Wiki source/fixtures, canonical links, documentation drift and separate published comparison."
+    },
+    "directory": {
+      "owner": "Role owner under Repository Structure",
+      "edit": "When adding a component of this directory role.",
+      "guard": "Keep production, examples, tests, metadata and outputs in their owned locations.",
+      "validation": "Canonical required-directory/role checks; file-specific gates below."
+    }
+  },
+  "files": {
+    ".editorconfig": {
+      "purpose": "Editor defaults for indentation, final newlines and per-type line endings.",
+      "kind": "git-policy",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    ".gitattributes": {
+      "purpose": "Git normalization, binary treatment, language statistics and archive exclusions.",
+      "kind": "git-policy",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    ".github/ISSUE_TEMPLATE/bug.yml": {
+      "purpose": "Structured reproducible-defect intake with environment and evidence.",
+      "kind": "policy",
+      "authority": "docs/POST_CREATION_CHECKLIST.md"
+    },
+    ".github/ISSUE_TEMPLATE/config.yml": {
+      "purpose": "Disable blank issues and route vulnerabilities to the project security policy.",
+      "kind": "policy",
+      "authority": "docs/POST_CREATION_CHECKLIST.md"
+    },
+    ".github/ISSUE_TEMPLATE/documentation.yml": {
+      "purpose": "Documentation defect intake identifying the authority and proposed correction.",
+      "kind": "policy",
+      "authority": "docs/DOCUMENTATION_CHECKS.md"
+    },
+    ".github/ISSUE_TEMPLATE/feature.yml": {
+      "purpose": "Feature/change intake with scope, compatibility and acceptance criteria.",
+      "kind": "policy",
+      "authority": "docs/POST_CREATION_CHECKLIST.md"
+    },
+    ".github/PULL_REQUEST_TEMPLATE.md": {
+      "purpose": "PR review/evidence checklist, including dependency-update information.",
+      "kind": "document",
+      "authority": "CONTRIBUTING.md"
+    },
+    ".github/documentation-policy.json": {
+      "purpose": "Registered documentation references, HTTP bounds, allowed domains and expiring exceptions.",
+      "kind": "policy",
+      "authority": "docs/DOCUMENTATION_CHECKS.md"
+    },
+    ".github/excel-evidence-policy.json": {
+      "purpose": "Starter entry point, case registry, assertion count and expected-error case.",
+      "kind": "policy",
+      "authority": "docs/EXCEL_EVIDENCE.md"
+    },
+    ".github/labels.json": {
+      "purpose": "Canonical core/profile/domain label definitions and reconciliation policy.",
+      "kind": "policy",
+      "authority": "docs/POST_CREATION_CHECKLIST.md"
+    },
+    ".github/provisioning-policy.json": {
+      "purpose": "Reviewed metadata/features/merge/required-check goals and exception rationale.",
+      "kind": "policy",
+      "authority": "docs/PROVISIONING.md"
+    },
+    ".github/release-history-policy.json": {
+      "purpose": "Canonical-template merge-history rules, exact-SHA reviewed exceptions and preserved historical records.",
+      "kind": "policy",
+      "authority": "docs/RELEASE_SEMANTICS.md"
+    },
+    ".github/release-policy.json": {
+      "purpose": "Required candidate checks, allowed profile assets and construction-history exclusions.",
+      "kind": "policy",
+      "authority": "docs/RELEASE_EVIDENCE.md"
+    },
+    ".github/release-provenance.json": {
+      "purpose": "Expected source/workflow identity and optional committed SSH signing trust.",
+      "kind": "policy",
+      "authority": "docs/RELEASE_PROVENANCE.md"
+    },
+    ".github/repository-profile.json": {
+      "purpose": "Mode, profile, identity, roles, paths, placeholder schema and adopted control version.",
+      "kind": "policy",
+      "authority": "docs/INITIALIZATION.md"
+    },
+    ".github/scripts/labels-drift.mjs": {
+      "purpose": "Read-only label diff with planner cross-check and offline self-tests.",
+      "kind": "script",
+      "authority": "docs/POST_CREATION_CHECKLIST.md"
+    },
+    ".github/scripts/labels-sync.mjs": {
+      "purpose": "Validate label schema, resolve overlays, reconcile on trusted events and verify result.",
+      "kind": "script",
+      "authority": "docs/POST_CREATION_CHECKLIST.md"
+    },
+    ".github/workflows/checker-development.yml": {
+      "purpose": "Template-only independent checker contract and coverage execution.",
+      "kind": "workflow",
+      "authority": ".github/workflows/checker-development.yml"
+    },
+    ".github/workflows/external-links.yml": {
+      "purpose": "Separate weekly/manual anonymous external-link observation with retained reports.",
+      "kind": "workflow",
+      "authority": ".github/workflows/external-links.yml"
+    },
+    ".github/workflows/labels-drift.yml": {
+      "purpose": "PR label fixtures and separate daily/manual read-only live drift detection.",
+      "kind": "workflow",
+      "authority": ".github/workflows/labels-drift.yml"
+    },
+    ".github/workflows/labels-sync.yml": {
+      "purpose": "Read-only PR validation and trusted main/manual label reconciliation.",
+      "kind": "workflow",
+      "authority": ".github/workflows/labels-sync.yml"
+    },
+    ".github/workflows/maintenance.yml": {
+      "purpose": "Template-only dispatch-only home for registered maintenance tasks that commit their result.",
+      "kind": "workflow",
+      "authority": "docs/CHECKER_DEVELOPMENT.md"
+    },
+    ".github/workflows/portfolio-drift.yml": {
+      "purpose": "Template-only synthetic drift, quality and provisioner acceptance fixtures.",
+      "kind": "workflow",
+      "authority": ".github/workflows/portfolio-drift.yml"
+    },
+    ".github/workflows/release-closeout.yml": {
+      "purpose": "Manual read-only capture and deterministic post-release closeout evidence.",
+      "kind": "workflow",
+      "authority": "docs/RELEASE_CLOSEOUT.md"
+    },
+    ".github/workflows/static-checks.yml": {
+      "purpose": "Canonical/focused gates, quality tools, self-tests, artifacts and reusable interface.",
+      "kind": "workflow",
+      "authority": ".github/workflows/static-checks.yml"
+    },
+    ".github/workflows/wiki-checks.yml": {
+      "purpose": "Template-only offline wiki checks, publication fixtures and exact-source export artifact.",
+      "kind": "workflow",
+      "authority": ".github/workflows/wiki-checks.yml"
+    },
+    ".github/workflows/wiki-drift.yml": {
+      "purpose": "Separate weekly/manual anonymous wiki fetch and deterministic publication comparison.",
+      "kind": "workflow",
+      "authority": ".github/workflows/wiki-drift.yml"
+    },
+    ".gitignore": {
+      "purpose": "Exclude transient reports, editor state, credentials, Office locks and build outputs.",
+      "kind": "git-policy",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "CHANGELOG.md": {
+      "purpose": "User-visible release history, version comparison links and Unreleased changes.",
+      "kind": "document",
+      "authority": "docs/RELEASE_SEMANTICS.md"
+    },
+    "CODE_OF_CONDUCT.md": {
+      "purpose": "Participant expectations and private enforcement route.",
+      "kind": "document",
+      "authority": "CODE_OF_CONDUCT.md"
+    },
+    "CONTRIBUTING.md": {
+      "purpose": "Change scope, review discipline, source ownership and validation evidence.",
+      "kind": "document",
+      "authority": "CONTRIBUTING.md"
+    },
+    "INSTALLATION.md": {
+      "purpose": "Import, upgrade, recovery and removal procedure for exported VBA.",
+      "kind": "document",
+      "authority": "INSTALLATION.md"
+    },
+    "LICENSE": {
+      "purpose": "MIT reuse terms and copyright attribution.",
+      "kind": "document",
+      "authority": "LICENSE"
+    },
+    "README.md": {
+      "purpose": "Project identity, profile overview, quick start and main navigation.",
+      "kind": "document",
+      "authority": "README.md"
+    },
+    "RELEASING.md": {
+      "purpose": "Ordered release preparation, certification, tagging and publication procedure.",
+      "kind": "document",
+      "authority": "RELEASING.md"
+    },
+    "SECURITY.md": {
+      "purpose": "Vulnerability scope, private reporting, disclosure and response.",
+      "kind": "document",
+      "authority": "SECURITY.md"
+    },
+    "VERSION": {
+      "purpose": "Single product-version value; initializer resets it to the 0.0.0 sentinel.",
+      "kind": "policy",
+      "authority": "docs/RELEASE_SEMANTICS.md"
+    },
+    "assets/README.md": {
+      "purpose": "Rules for maintained visual/support assets.",
+      "kind": "document",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "assets/social-preview.png": {
+      "purpose": "Optional raster social preview removed unless explicitly selected.",
+      "kind": "asset",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "assets/social-preview.svg": {
+      "purpose": "Editable template preview source; removed during generation.",
+      "kind": "asset",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "docs/CHECKER_DEVELOPMENT.md": {
+      "purpose": "Independent checker-development and policy-coverage requirements.",
+      "kind": "document",
+      "authority": "docs/CHECKER_DEVELOPMENT.md"
+    },
+    "docs/DEPENDENCY_UPDATES.md": {
+      "purpose": "Manual dependency monitoring, provenance review and rollback.",
+      "kind": "document",
+      "authority": "docs/DEPENDENCY_UPDATES.md"
+    },
+    "docs/DOCUMENTATION_CHECKS.md": {
+      "purpose": "Offline command/reference validation and separate external-link policy.",
+      "kind": "document",
+      "authority": "docs/DOCUMENTATION_CHECKS.md"
+    },
+    "docs/EXCEL_EVIDENCE.md": {
+      "purpose": "Optional Windows/Excel runner interface and manual retained-log schema.",
+      "kind": "document",
+      "authority": "docs/EXCEL_EVIDENCE.md"
+    },
+    "docs/INITIALIZATION.md": {
+      "purpose": "Authoritative initialization inputs, profile rendering and no-op contract.",
+      "kind": "document",
+      "authority": "docs/INITIALIZATION.md"
+    },
+    "docs/PILOT_CERTIFICATION.md": {
+      "purpose": "Historical template pilot/certification evidence; not a fresh acceptance run.",
+      "kind": "document",
+      "authority": "docs/PILOT_CERTIFICATION.md"
+    },
+    "docs/PORTFOLIO_DRIFT.md": {
+      "purpose": "Read-only snapshot and structural adoption/conformance comparison contract.",
+      "kind": "document",
+      "authority": "docs/PORTFOLIO_DRIFT.md"
+    },
+    "docs/PORTFOLIO_QUALITY.md": {
+      "purpose": "Timestamped quality observations, freshness and missing-evidence interpretation; no overall score.",
+      "kind": "document",
+      "authority": "docs/PORTFOLIO_QUALITY.md"
+    },
+    "docs/POST_CREATION_CHECKLIST.md": {
+      "purpose": "Live settings and read-back controls that template creation does not transfer.",
+      "kind": "document",
+      "authority": "docs/POST_CREATION_CHECKLIST.md"
+    },
+    "docs/PROVISIONING.md": {
+      "purpose": "Guarded setup planner, approved-digest apply and durable journal contract.",
+      "kind": "document",
+      "authority": "docs/PROVISIONING.md"
+    },
+    "docs/PUBLIC_API.txt": {
+      "purpose": "Complete public declaration inventory with normalized signature records.",
+      "kind": "document",
+      "authority": "docs/PUBLIC_API.txt"
+    },
+    "docs/README.md": {
+      "purpose": "Documentation hub and single-authority mapping.",
+      "kind": "document",
+      "authority": "docs/README.md"
+    },
+    "docs/RELEASE_CLOSEOUT.md": {
+      "purpose": "Canonical post-publication release closeout procedure and evidence boundaries.",
+      "kind": "document",
+      "authority": "docs/RELEASE_CLOSEOUT.md"
+    },
+    "docs/RELEASE_EVIDENCE.md": {
+      "purpose": "Candidate-bound release JSON and profile/asset evidence schemas.",
+      "kind": "document",
+      "authority": "docs/RELEASE_EVIDENCE.md"
+    },
+    "docs/RELEASE_PROVENANCE.md": {
+      "purpose": "Complete payload inventory, build records and optional SSH trust/signatures.",
+      "kind": "document",
+      "authority": "docs/RELEASE_PROVENANCE.md"
+    },
+    "docs/RELEASE_SEMANTICS.md": {
+      "purpose": "Strict SemVer, changelog ordering and comparison-link rules.",
+      "kind": "document",
+      "authority": "docs/RELEASE_SEMANTICS.md"
+    },
+    "docs/REPOSITORY_STRUCTURE.md": {
+      "purpose": "Source layout, component roles, exports and distribution ownership.",
+      "kind": "document",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "docs/REUSABLE_WORKFLOWS.md": {
+      "purpose": "Immutable workflow interface pin, caller contract and adoption procedure.",
+      "kind": "document",
+      "authority": "docs/REUSABLE_WORKFLOWS.md"
+    },
+    "docs/TEMPLATE_CONTRACT.md": {
+      "purpose": "Independent adopted control versions and migration classification.",
+      "kind": "document",
+      "authority": "docs/TEMPLATE_CONTRACT.md"
+    },
+    "docs/VBA_HOUSE_STYLE.md": {
+      "purpose": "Procedure contracts, declaration annotations and explanatory body comments.",
+      "kind": "document",
+      "authority": "docs/VBA_HOUSE_STYLE.md"
+    },
+    "docs/WIKI_PUBLICATION.md": {
+      "purpose": "Reviewed wiki source, complete inventory, exact-SHA publication and drift.",
+      "kind": "document",
+      "authority": "docs/WIKI_PUBLICATION.md"
+    },
+    "docs/wiki/Choose-a-profile.md": {
+      "purpose": "Guided choose a profile page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "docs/wiki/Configure-GitHub.md": {
+      "purpose": "Guided configure github page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "docs/POST_CREATION_CHECKLIST.md"
+    },
+    "docs/wiki/Create-the-repository.md": {
+      "purpose": "Guided create the repository page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "docs/INITIALIZATION.md"
+    },
+    "docs/wiki/Develop-safely.md": {
+      "purpose": "Guided develop safely page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "CONTRIBUTING.md"
+    },
+    "docs/wiki/File-and-directory-reference.md": {
+      "purpose": "Generated exact tracked-file/directory inventory with per-profile initializer lifecycle.",
+      "kind": "wiki",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "docs/wiki/Glossary.md": {
+      "purpose": "Guided glossary page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "docs/README.md"
+    },
+    "docs/wiki/Home.md": {
+      "purpose": "Guided start here page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "docs/README.md"
+    },
+    "docs/wiki/Initialize-the-project.md": {
+      "purpose": "Guided initialize the project page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "docs/INITIALIZATION.md"
+    },
+    "docs/wiki/Maintenance-and-migration.md": {
+      "purpose": "Guided maintenance and migration page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "docs/TEMPLATE_CONTRACT.md"
+    },
+    "docs/wiki/Prepare-and-publish-a-release.md": {
+      "purpose": "Guided prepare and publish a release page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "RELEASING.md"
+    },
+    "docs/wiki/Publish-the-wiki.md": {
+      "purpose": "Guided publish the wiki page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "docs/WIKI_PUBLICATION.md"
+    },
+    "docs/wiki/Run-the-quality-gates.md": {
+      "purpose": "Guided run the quality gates page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "tools/README.md"
+    },
+    "docs/wiki/Troubleshooting.md": {
+      "purpose": "Guided troubleshooting page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "docs/README.md"
+    },
+    "docs/wiki/Workflow-and-tool-reference.md": {
+      "purpose": "Guided workflow and tool reference page; summarizes and links to the owning repository contracts.",
+      "kind": "wiki",
+      "authority": "tools/README.md"
+    },
+    "docs/wiki/_Sidebar.md": {
+      "purpose": "Generated ordered Wiki navigation; edit the page registry rather than this output.",
+      "kind": "wiki",
+      "authority": "docs/WIKI_PUBLICATION.md"
+    },
+    "docs/wiki/catalogue.json": {
+      "purpose": "Ordered page registry, per-path purpose/authority and shared inventory editing rules.",
+      "kind": "wiki",
+      "authority": "docs/WIKI_PUBLICATION.md"
+    },
+    "examples/README.md": {
+      "purpose": "Ownership and scope of reproducible usage examples.",
+      "kind": "document",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "examples/modules/ProjectExample.bas": {
+      "purpose": "Optional project-private example that prints one supported facade result.",
+      "kind": "vba",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "pyproject.toml": {
+      "purpose": "Python compatibility target, advisory line length, enforced lint selection, complexity ceiling and typing scope.",
+      "kind": "policy",
+      "authority": "tools/README.md"
+    },
+    "src/README.md": {
+      "purpose": "Production export organization and public/internal boundaries.",
+      "kind": "document",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "src/core/ProjectCore.bas": {
+      "purpose": "Stateless checked division and the internal zero-denominator error code.",
+      "kind": "vba",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "src/modules/ProjectFacade.bas": {
+      "purpose": "Supported scalar ratio entry point and normalized caller-facing error source.",
+      "kind": "vba",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "tests/README.md": {
+      "purpose": "Regression entry point, output contract, repeatability and cleanup expectations.",
+      "kind": "document",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "tests/modules/ProjectTests.bas": {
+      "purpose": "Four-case, six-assertion harness with host-state comparison and full reporting.",
+      "kind": "vba",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "tools/LOCAL_ACTIONS.md": {
+      "purpose": "Repository-local composite/Node/Docker action validation boundaries.",
+      "kind": "document",
+      "authority": "tools/LOCAL_ACTIONS.md"
+    },
+    "tools/README.md": {
+      "purpose": "Operational tool commands, reports and focused-gate responsibilities.",
+      "kind": "document",
+      "authority": "tools/README.md"
+    },
+    "tools/_gatelib.py": {
+      "purpose": "Shared Git, tracked-file, report and focused CLI orchestration primitives; imported helper.",
+      "kind": "script",
+      "authority": "tools/README.md"
+    },
+    "tools/_release_closeout.py": {
+      "purpose": "Private deterministic validator for retained post-release provider snapshots.",
+      "kind": "script",
+      "authority": "docs/RELEASE_CLOSEOUT.md"
+    },
+    "tools/check_committed_whitespace.py": {
+      "purpose": "Validate staged/unstaged feedback or an explicit committed Git range.",
+      "kind": "script",
+      "authority": "tools/README.md"
+    },
+    "tools/check_documentation.py": {
+      "purpose": "Parse literal documented Python commands and registered contract references.",
+      "kind": "script",
+      "authority": "docs/DOCUMENTATION_CHECKS.md"
+    },
+    "tools/check_excel_evidence.py": {
+      "purpose": "Validate exact-source host records, stage outcomes and retained-log hashes.",
+      "kind": "script",
+      "authority": "docs/EXCEL_EVIDENCE.md"
+    },
+    "tools/check_external_links.py": {
+      "purpose": "Bounded anonymous HTTPS observations with categorized access and transient failures.",
+      "kind": "script",
+      "authority": "docs/DOCUMENTATION_CHECKS.md"
+    },
+    "tools/check_local_actions.py": {
+      "purpose": "Resolve local action metadata, implementation files and supported invocation forms.",
+      "kind": "script",
+      "authority": "tools/LOCAL_ACTIONS.md"
+    },
+    "tools/check_policy_coverage.py": {
+      "purpose": "Independent policy-branch coverage entry point for the canonical checker.",
+      "kind": "script",
+      "authority": "docs/CHECKER_DEVELOPMENT.md"
+    },
+    "tools/check_portfolio_drift.py": {
+      "purpose": "Compare captured repository structure with the explicitly adopted control set.",
+      "kind": "script",
+      "authority": "docs/PORTFOLIO_DRIFT.md"
+    },
+    "tools/check_release.py": {
+      "purpose": "Validate an actual release candidate/evidence/assets/tag or synthetic self-tests.",
+      "kind": "script",
+      "authority": "docs/RELEASE_EVIDENCE.md"
+    },
+    "tools/check_release_semantics.py": {
+      "purpose": "Enforce strict version, dated changelog, comparison and canonical-template history semantics.",
+      "kind": "script",
+      "authority": "docs/RELEASE_SEMANTICS.md"
+    },
+    "tools/check_repo.py": {
+      "purpose": "Self-contained dependency-free canonical 21-rule repository-quality gate.",
+      "kind": "script",
+      "authority": "tools/README.md"
+    },
+    "tools/check_template_contract.py": {
+      "purpose": "Resolve adopted contract versions and reject invalid or unsupported identities.",
+      "kind": "script",
+      "authority": "docs/TEMPLATE_CONTRACT.md"
+    },
+    "tools/check_vba_conditionals.py": {
+      "purpose": "Validate conditional compilation and reachable PtrSafe declarations in three host models.",
+      "kind": "script",
+      "authority": "tools/README.md"
+    },
+    "tools/check_vba_jumps.py": {
+      "purpose": "Resolve jumps and labels within their owning VBA procedures.",
+      "kind": "script",
+      "authority": "tools/README.md"
+    },
+    "tools/check_vba_public_api.py": {
+      "purpose": "Compare complete public VBA declarations and normalized manifest signatures.",
+      "kind": "script",
+      "authority": "tools/README.md"
+    },
+    "tools/check_wiki.py": {
+      "purpose": "Validate complete wiki inventory/navigation, export pinned pages or compare a fetched publication.",
+      "kind": "script",
+      "authority": "docs/WIKI_PUBLICATION.md"
+    },
+    "tools/checker_development.py": {
+      "purpose": "Independent canonical-checker architecture, self-test and shared-runner contract.",
+      "kind": "script",
+      "authority": "docs/CHECKER_DEVELOPMENT.md"
+    },
+    "tools/collect_portfolio_snapshot.py": {
+      "purpose": "GET-only capture of explicit repositories and source/live observations.",
+      "kind": "script",
+      "authority": "docs/PORTFOLIO_DRIFT.md"
+    },
+    "tools/create_reusable_workflow_fixture.py": {
+      "purpose": "Create a disposable initialized caller pinned to an explicit provider commit.",
+      "kind": "script",
+      "authority": "docs/REUSABLE_WORKFLOWS.md"
+    },
+    "tools/dev_check.sh": {
+      "purpose": "Run the locally reproducible part of hosted CI with the pinned tool versions.",
+      "kind": "script",
+      "authority": "docs/CHECKER_DEVELOPMENT.md"
+    },
+    "tools/initialize_repository.py": {
+      "purpose": "Validate values, preview transformations, apply once and verify identical-input no-op.",
+      "kind": "script",
+      "authority": "docs/INITIALIZATION.md"
+    },
+    "tools/policy_coverage_cases_config.py": {
+      "purpose": "Synthetic configuration and policy-validation branch cases; imported helper.",
+      "kind": "script",
+      "authority": "docs/CHECKER_DEVELOPMENT.md"
+    },
+    "tools/policy_coverage_cases_quality.py": {
+      "purpose": "Synthetic content/source quality branch cases; imported helper.",
+      "kind": "script",
+      "authority": "docs/CHECKER_DEVELOPMENT.md"
+    },
+    "tools/policy_coverage_cases_repo.py": {
+      "purpose": "Synthetic repository/Git branch cases; imported helper.",
+      "kind": "script",
+      "authority": "docs/CHECKER_DEVELOPMENT.md"
+    },
+    "tools/policy_coverage_core.py": {
+      "purpose": "Coverage fixture data model and shared branch-observation primitives; imported helper.",
+      "kind": "script",
+      "authority": "docs/CHECKER_DEVELOPMENT.md"
+    },
+    "tools/policy_coverage_runner.py": {
+      "purpose": "Aggregate semantic branch observations into reproducible policy-coverage reports.",
+      "kind": "script",
+      "authority": "docs/CHECKER_DEVELOPMENT.md"
+    },
+    "tools/provision_repository.py": {
+      "purpose": "Plan live new-repository settings or apply a reviewed digest with a durable journal.",
+      "kind": "script",
+      "authority": "docs/PROVISIONING.md"
+    },
+    "tools/release_certification.py": {
+      "purpose": "Build or verify deterministic, candidate-bound release certification bundles.",
+      "kind": "script",
+      "authority": "docs/RELEASE_EVIDENCE.md"
+    },
+    "tools/release_provenance.py": {
+      "purpose": "Release helper for complete payloads, build identity and optional SSH verification.",
+      "kind": "script",
+      "authority": "docs/RELEASE_PROVENANCE.md"
+    },
+    "tools/report_portfolio_quality.py": {
+      "purpose": "Produce freshness-aware quality/conformance reports from captured observations.",
+      "kind": "script",
+      "authority": "docs/PORTFOLIO_QUALITY.md"
+    },
+    "tools/requirements-dev.txt": {
+      "purpose": "Local development pins mirroring the versions hosted CI installs.",
+      "kind": "policy",
+      "authority": "docs/CHECKER_DEVELOPMENT.md"
+    },
+    "tools/requirements-quality-ci.txt": {
+      "purpose": "Hash-locked CPython 3.10/Linux x64 wheels for hosted Ruff and mypy quality checks.",
+      "kind": "policy",
+      "authority": "docs/DEPENDENCY_UPDATES.md"
+    },
+    "tools/requirements-coverage-ci.txt": {
+      "purpose": "Hash-locked CPython 3.10/Linux x64 wheels for hosted coverage and PyYAML checks.",
+      "kind": "policy",
+      "authority": "docs/DEPENDENCY_UPDATES.md"
+    },
+    "tools/requirements-portfolio-ci.txt": {
+      "purpose": "Hash-locked CPython 3.10/Linux x64 PyYAML wheel for portfolio fixtures.",
+      "kind": "policy",
+      "authority": "docs/DEPENDENCY_UPDATES.md"
+    },
+    "tools/test_documentation.py": {
+      "purpose": "Offline command/reference and HTTP failure fixtures; no live website certification.",
+      "kind": "script",
+      "authority": "docs/DOCUMENTATION_CHECKS.md"
+    },
+    "tools/test_excel_evidence.py": {
+      "purpose": "Synthetic host-record and stage-failure fixtures; does not execute Excel.",
+      "kind": "script",
+      "authority": "docs/EXCEL_EVIDENCE.md"
+    },
+    "tools/test_portfolio_drift.py": {
+      "purpose": "Synthetic structural/adoption drift fixtures for all supported profiles.",
+      "kind": "script",
+      "authority": "docs/PORTFOLIO_DRIFT.md"
+    },
+    "tools/test_portfolio_quality.py": {
+      "purpose": "Synthetic quality, missing-evidence and freshness-boundary fixtures.",
+      "kind": "script",
+      "authority": "docs/PORTFOLIO_QUALITY.md"
+    },
+    "tools/test_provision_repository.py": {
+      "purpose": "Stateful simulated API fixtures for planning, guarded writes and partial failure.",
+      "kind": "script",
+      "authority": "docs/PROVISIONING.md"
+    },
+    "tools/test_release_provenance.py": {
+      "purpose": "Release-payload fixtures and ephemeral SSH signing/verification controls.",
+      "kind": "script",
+      "authority": "docs/RELEASE_PROVENANCE.md"
+    },
+    "tools/test_verification_depth.py": {
+      "purpose": "Focused behavioral failure-path coverage for release, contract, Wiki, initializer and closeout tooling.",
+      "kind": "script",
+      "authority": "tools/README.md"
+    },
+    "tools/test_wiki.py": {
+      "purpose": "Offline publication link, source identity, missing/extra/modified page and safe-export fixtures.",
+      "kind": "script",
+      "authority": "docs/WIKI_PUBLICATION.md"
+    },
+    "tools/test_workflow_validation.py": {
+      "purpose": "Authoritative pinned-actionlint validation of workflows and invalid fixtures.",
+      "kind": "script",
+      "authority": "tools/README.md"
+    },
+    ".github/dependabot.yml": {
+      "purpose": "Weekly proposal-only GitHub Actions dependency discovery.",
+      "kind": "policy",
+      "authority": "docs/DEPENDENCY_UPDATES.md"
+    },
+    ".github/workflows/codeql.yml": {
+      "purpose": "Trusted-context CodeQL analysis for maintained Python and JavaScript source.",
+      "kind": "workflow",
+      "authority": "docs/SUPPLY_CHAIN_ASSURANCE.md"
+    },
+    ".github/workflows/scorecard.yml": {
+      "purpose": "Trusted-context OpenSSF Scorecard publication and retained SARIF evidence.",
+      "kind": "workflow",
+      "authority": "docs/SUPPLY_CHAIN_ASSURANCE.md"
+    },
+    "docs/SUPPLY_CHAIN_ASSURANCE.md": {
+      "purpose": "Canonical CodeQL, Dependabot and Scorecard permission/evidence boundaries.",
+      "kind": "document",
+      "authority": "docs/SUPPLY_CHAIN_ASSURANCE.md"
+    }
+  },
+  "directories": {
+    ".github": {
+      "purpose": "GitHub metadata, policies, forms and workflow automation.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    ".github/ISSUE_TEMPLATE": {
+      "purpose": "Governed public intake forms and private-security routing.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    ".github/scripts": {
+      "purpose": "Reusable label policy and live reconciliation/detection implementations.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    ".github/workflows": {
+      "purpose": "Hosted triggers, permissions, orchestration and evidence retention.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "assets": {
+      "purpose": "Maintained project visuals and optional social preview.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "docs": {
+      "purpose": "Normative contracts, source references and template-maintenance guides.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "docs/wiki": {
+      "purpose": "Canonical reviewed Wiki source, ordered navigation and catalogue.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "examples": {
+      "purpose": "Reproducible demonstrations outside the production API.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "examples/modules": {
+      "purpose": "Project-private example module exports.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "src": {
+      "purpose": "Production VBA exports grouped by responsibility.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "src/core": {
+      "purpose": "Internal implementation behind the facade.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "src/modules": {
+      "purpose": "Public facade and standard production modules.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "tests": {
+      "purpose": "Regression contracts and source-controlled test harnesses.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "tests/modules": {
+      "purpose": "VBA regression module exports.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    },
+    "tools": {
+      "purpose": "Operational validators and template-maintenance tooling.",
+      "kind": "directory",
+      "authority": "docs/REPOSITORY_STRUCTURE.md"
+    }
+  }
+}

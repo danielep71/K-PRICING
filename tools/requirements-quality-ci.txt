@@ -1,0 +1,20 @@
+# Hash-locked CPython 3.10 / Ubuntu x64 CI requirements.
+# Regenerate only after reviewing package provenance and wheel hashes.
+# CI installs with --only-binary=:all: --require-hashes.
+
+ruff==0.16.6 \
+    --hash=sha256:d72c591a96986ee4268860e2b7235082129ca5e4cb9cbba653a4b57c11893757
+mypy==2.3.1 \
+    --hash=sha256:2166b29228835e1f88ff411e96639e6ca3c7fdde84b62ec211f70f86b4051167
+ast-serialize==0.8.0 \
+    --hash=sha256:252f883290d1cdb728eb7fe1d9a7221b88af5a329aae0bc91ddee4dafb820331
+librt==0.13.0 \
+    --hash=sha256:f125f5d46b20f89dc5587a55cc416b4ba2a5b2ffda36d048ee120e17598a653a
+mypy-extensions==1.1.0 \
+    --hash=sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505
+pathspec==1.0.0 \
+    --hash=sha256:1373719036e64a2b9de3b8ddd9e30afb082a915619f07265ed76d9ae507800ae
+tomli==2.2.1 \
+    --hash=sha256:cb55c73c5f4408779d0cf3eef9f762b9c9f147a77de7b258bef0a5628adc85cc
+typing-extensions==4.15.0 \
+    --hash=sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548

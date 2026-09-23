@@ -1,0 +1,331 @@
+{
+  "schema_version": 1,
+  "mode": "template",
+  "profile": null,
+  "repository": "danielep71/EXCEL-VBA-PROJECT-TEMPLATE",
+  "template_contract": {
+    "version": "1.2.0",
+    "source": "danielep71/EXCEL-VBA-PROJECT-TEMPLATE"
+  },
+  "label_domains": [],
+  "required_paths": [
+    ".editorconfig",
+    ".gitattributes",
+    ".github/documentation-policy.json",
+    ".github/excel-evidence-policy.json",
+    ".github/ISSUE_TEMPLATE/bug.yml",
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/documentation.yml",
+    ".github/ISSUE_TEMPLATE/feature.yml",
+    ".github/labels.json",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/release-policy.json",
+    ".github/release-provenance.json",
+    ".github/repository-profile.json",
+    ".github/scripts/labels-drift.mjs",
+    ".github/scripts/labels-sync.mjs",
+    ".github/workflows/external-links.yml",
+    ".github/workflows/labels-drift.yml",
+    ".github/workflows/labels-sync.yml",
+    ".github/workflows/static-checks.yml",
+    ".gitignore",
+    "assets/README.md",
+    "CHANGELOG.md",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "docs/DEPENDENCY_UPDATES.md",
+    "docs/DOCUMENTATION_CHECKS.md",
+    "docs/EXCEL_EVIDENCE.md",
+    "docs/INITIALIZATION.md",
+    "docs/POST_CREATION_CHECKLIST.md",
+    "docs/PUBLIC_API.txt",
+    "docs/README.md",
+    "docs/RELEASE_EVIDENCE.md",
+    "docs/RELEASE_PROVENANCE.md",
+    "docs/REPOSITORY_STRUCTURE.md",
+    "docs/TEMPLATE_CONTRACT.md",
+    "examples/README.md",
+    "INSTALLATION.md",
+    "LICENSE",
+    "README.md",
+    "RELEASING.md",
+    "SECURITY.md",
+    "src/README.md",
+    "tests/README.md",
+    "tools/_gatelib.py",
+    "tools/check_documentation.py",
+    "tools/check_excel_evidence.py",
+    "tools/check_external_links.py",
+    "tools/check_release.py",
+    "tools/check_repo.py",
+    "tools/check_template_contract.py",
+    "tools/initialize_repository.py",
+    "tools/README.md",
+    "tools/release_provenance.py",
+    "tools/test_documentation.py",
+    "tools/test_excel_evidence.py",
+    "tools/test_release_provenance.py",
+    "tools/test_workflow_validation.py",
+    "VERSION"
+  ],
+  "required_directories": [
+    "assets",
+    "docs",
+    "examples",
+    "src",
+    "tests",
+    "tools"
+  ],
+  "profiles": {
+    "application": {
+      "required_paths": [
+        ".github/initialization.json"
+      ],
+      "required_directories": [
+        "src/classes",
+        "src/core",
+        "src/modules",
+        "src/workbook",
+        "tests/modules"
+      ],
+      "vba_contract": {
+        "minimum_roles": {
+          "internal": 1,
+          "public": 1,
+          "test": 1
+        },
+        "required_components": {
+          "src/core/ProjectCore.bas": "internal",
+          "src/modules/ProjectFacade.bas": "public",
+          "tests/modules/ProjectTests.bas": "test"
+        }
+      }
+    },
+    "library": {
+      "required_paths": [
+        ".github/initialization.json"
+      ],
+      "required_directories": [
+        "src/core",
+        "src/modules",
+        "tests/modules"
+      ],
+      "vba_contract": {
+        "minimum_roles": {
+          "internal": 1,
+          "public": 1,
+          "test": 1
+        },
+        "required_components": {
+          "src/core/ProjectCore.bas": "internal",
+          "src/modules/ProjectFacade.bas": "public",
+          "tests/modules/ProjectTests.bas": "test"
+        }
+      }
+    },
+    "ui-component": {
+      "required_paths": [
+        ".github/initialization.json"
+      ],
+      "required_directories": [
+        "src/classes",
+        "src/core",
+        "src/modules",
+        "tests/modules"
+      ],
+      "vba_contract": {
+        "minimum_roles": {
+          "internal": 1,
+          "public": 1,
+          "test": 1
+        },
+        "required_components": {
+          "src/core/ProjectCore.bas": "internal",
+          "src/modules/ProjectFacade.bas": "public",
+          "tests/modules/ProjectTests.bas": "test"
+        }
+      }
+    }
+  },
+  "allowed_office_binary_globs": [],
+  "placeholders": {
+    "pattern": "\\{\\{([A-Z][A-Z0-9_]*)\\}\\}",
+    "catalogue": {
+      "ADDITIONAL_TEST_COMMAND": {
+        "category": "repeatable",
+        "description": "Zero or more project-specific validation commands rendered as shell command lines.",
+        "item_format": "{value}"
+      },
+      "COPYRIGHT_YEAR": {
+        "category": "required",
+        "description": "Four-digit first-publication or current copyright year used by the MIT licence."
+      },
+      "KNOWN_LIMITATION": {
+        "category": "repeatable",
+        "description": "Zero or more honest, user-visible limitations rendered as Markdown list items.",
+        "item_format": "- {value}"
+      },
+      "MAINTAINER_NAME": {
+        "category": "required",
+        "description": "Person or organization responsible for maintained project decisions and conduct enforcement."
+      },
+      "PROFILE_EVIDENCE": {
+        "category": "profile-specific",
+        "description": "Minimum runtime evidence appropriate to the selected repository profile.",
+        "values": {
+          "application": "startup, shutdown, upgrade, recovery, packaging and end-to-end smoke evidence",
+          "library": "public API, caller-contract and focused regression evidence",
+          "ui-component": "UI state, cleanup, recovery, DPI/accessibility and lifecycle evidence"
+        }
+      },
+      "PROFILE_NAME": {
+        "category": "profile-specific",
+        "description": "Human-readable name of the selected repository profile.",
+        "values": {
+          "application": "application",
+          "library": "library",
+          "ui-component": "UI component"
+        }
+      },
+      "PROFILE_PURPOSE": {
+        "category": "profile-specific",
+        "description": "Purpose boundary associated with the selected repository profile.",
+        "values": {
+          "application": "an end-to-end workbook or add-in solution that owns deployment and lifecycle",
+          "library": "reusable callable VBA with no owned end-user shell",
+          "ui-component": "an embeddable component that owns a bounded interactive surface"
+        }
+      },
+      "PROFILE_SOURCE_CONTRACT": {
+        "category": "profile-specific",
+        "description": "Expected source layout associated with the selected repository profile.",
+        "values": {
+          "application": "modules, classes and the applicable workbook, form, Ribbon or host-lifecycle exports",
+          "library": "public facade modules plus internal/core modules, with classes only when stateful objects are part of the API",
+          "ui-component": "modules and classes, plus forms, Ribbon XML and host callbacks only when used"
+        }
+      },
+      "PROJECT_DESCRIPTION": {
+        "category": "required",
+        "description": "One sentence stating the supported problem and audience without evidence claims."
+      },
+      "PROJECT_NAME": {
+        "category": "required",
+        "description": "Human-readable project name used in documentation and release text."
+      },
+      "PROJECT_TAGLINE": {
+        "category": "required",
+        "description": "Short identity line used below the project name."
+      },
+      "REPOSITORY_PATH": {
+        "category": "required",
+        "description": "GitHub owner/name path used by clone commands, badges and repository links."
+      },
+      "SOCIAL_PREVIEW_PATH": {
+        "category": "optional",
+        "description": "Tracked repository-relative banner path; omitting it removes the complete banner block."
+      },
+      "SUPPORT_CONTACT": {
+        "category": "required",
+        "description": "Private security-reporting email address or maintained private reporting URL."
+      }
+    },
+    "block_markers": {
+      "template_only": "template:remove",
+      "profile": "template:profile:{profile}",
+      "optional": "template:optional:{token}",
+      "repeatable": "template:repeatable:{token}"
+    },
+    "template_only_paths": [
+      ".github/release-history-policy.json",
+      ".github/workflows/checker-development.yml",
+      ".github/workflows/maintenance.yml",
+      ".github/workflows/portfolio-drift.yml",
+      ".github/workflows/wiki-checks.yml",
+      ".github/workflows/wiki-drift.yml",
+      "assets/social-preview.png",
+      "assets/social-preview.svg",
+      "docs/CHECKER_DEVELOPMENT.md",
+      "docs/PILOT_CERTIFICATION.md",
+      "docs/PORTFOLIO_DRIFT.md",
+      "docs/PORTFOLIO_QUALITY.md",
+      "docs/PROVISIONING.md",
+      "docs/wiki/_Sidebar.md",
+      "docs/wiki/catalogue.json",
+      "docs/wiki/Choose-a-profile.md",
+      "docs/wiki/Configure-GitHub.md",
+      "docs/wiki/Create-the-repository.md",
+      "docs/wiki/Develop-safely.md",
+      "docs/wiki/File-and-directory-reference.md",
+      "docs/wiki/Glossary.md",
+      "docs/wiki/Home.md",
+      "docs/wiki/Initialize-the-project.md",
+      "docs/wiki/Maintenance-and-migration.md",
+      "docs/wiki/Prepare-and-publish-a-release.md",
+      "docs/wiki/Publish-the-wiki.md",
+      "docs/wiki/Run-the-quality-gates.md",
+      "docs/wiki/Troubleshooting.md",
+      "docs/wiki/Workflow-and-tool-reference.md",
+      "docs/WIKI_PUBLICATION.md",
+      "tools/check_policy_coverage.py",
+      "tools/check_portfolio_drift.py",
+      "tools/check_wiki.py",
+      "tools/checker_development.py",
+      "tools/collect_portfolio_snapshot.py",
+      "tools/create_reusable_workflow_fixture.py",
+      "tools/dev_check.sh",
+      "tools/policy_coverage_cases_config.py",
+      "tools/policy_coverage_cases_quality.py",
+      "tools/policy_coverage_cases_repo.py",
+      "tools/policy_coverage_core.py",
+      "tools/policy_coverage_runner.py",
+      "tools/provision_repository.py",
+      "tools/report_portfolio_quality.py",
+      "tools/requirements-dev.txt",
+      "tools/test_portfolio_drift.py",
+      "tools/test_portfolio_quality.py",
+      "tools/test_provision_repository.py",
+      "tools/test_wiki.py"
+    ],
+    "exclude_paths": [
+      ".editorconfig",
+      ".github/repository-profile.json",
+      "tools/check_release.py",
+      "tools/check_repo.py",
+      "tools/initialize_repository.py"
+    ]
+  },
+  "identity": {
+    "forbidden_tokens": [
+      "EXCEL-VBA-LOGISTIC-REGRESSION",
+      "KPR",
+      "VBA-DATETIMEPICKER",
+      "VBA-EXCEL_UI",
+      "VBA-PERFORMANCE_MANAGER",
+      "VBA-PROBABILITY-DISTRIBUTIONS",
+      "VBA-PROGRESS_BAR"
+    ],
+    "template_tokens": [
+      "EXCEL-VBA-PROJECT-TEMPLATE"
+    ],
+    "exclude_paths": [
+      ".github/initialization.json",
+      ".github/repository-profile.json"
+    ]
+  },
+  "vba": {
+    "source_roots": [
+      "src"
+    ],
+    "test_roots": [
+      "tests"
+    ],
+    "components": {
+      "examples/modules/ProjectExample.bas": "example",
+      "src/core/ProjectCore.bas": "internal",
+      "src/modules/ProjectFacade.bas": "public",
+      "tests/modules/ProjectTests.bas": "test"
+    },
+    "public_api_manifest": "docs/PUBLIC_API.txt"
+  }
+}

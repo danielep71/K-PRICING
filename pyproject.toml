@@ -1,0 +1,54 @@
+# Python tooling quality contract for the repository-maintenance scripts.
+# The distributed VBA starter remains dependency-free; Ruff, mypy and coverage.py are CI/development tools only.
+
+[tool.ruff]
+target-version = "py310"
+# Formatting target only: E501 is not selected and CI does not run ruff format.
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I001", "C90", "S314"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 20
+
+[tool.mypy]
+python_version = "3.10"
+files = ["tools"]
+pretty = true
+show_error_codes = true
+warn_unused_configs = true
+
+# Incremental strict-typing boundary for the first promoted module. `strict = true`
+# is deliberately not used inside an override because it is a meta-option; spell out
+# the mypy 2.3.1 strict bundle so the settings remain scoped to `_gatelib` only.
+[[tool.mypy.overrides]]
+module = "_gatelib"
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+warn_unused_ignores = true
+warn_return_any = true
+implicit_reexport = false
+strict_equality = true
+extra_checks = true
+
+# Statement-coverage contract for maintained Python tooling. The subprocess patch
+# measures Python child processes started by the semantic fixtures, so exercised
+# release/checker behavior is not lost merely because a test uses subprocess.run.
+# The canonical local/hosted command sequence is the "Exercise maintained Python
+# tooling under coverage" block in .github/workflows/checker-development.yml.
+[tool.coverage.run]
+source = ["tools"]
+parallel = true
+relative_files = true
+patch = ["subprocess"]
+
+[tool.coverage.report]
+omit = ["tools/test_*.py"]
+show_missing = true
+fail_under = 95

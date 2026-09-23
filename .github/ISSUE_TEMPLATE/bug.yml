@@ -1,0 +1,107 @@
+name: "🐛 Bug report"
+description: "Report reproducible incorrect behavior in supported source, tooling, or documentation."
+title: "[Bug]: "
+labels: ["bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a reproducible defect.
+
+        Do not disclose suspected vulnerabilities, credentials, private workbooks, or restricted data here. Follow `SECURITY.md` and use the private security-reporting channel.
+
+  - type: dropdown
+    id: profile
+    attributes:
+      label: Affected repository profile
+      description: Select the narrowest profile whose supported behavior is affected.
+      options:
+        - Library
+        - UI component
+        - Application
+        - Template or repository tooling
+        - Not profile-specific
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Defect summary and impact
+      description: State what is wrong, who is affected, and the practical consequence.
+      placeholder: One precise paragraph describing the observable defect and impact.
+    validations:
+      required: true
+
+  - type: input
+    id: source
+    attributes:
+      label: Exact source identity
+      description: Provide the release tag or full 40-character commit SHA that reproduces the defect.
+      placeholder: v1.2.3 or 0123456789abcdef0123456789abcdef01234567
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide deterministic steps, inputs, entry points, and preconditions using safe synthetic data.
+      placeholder: |
+        1. Import or install ...
+        2. Run or call ... with ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: Describe the supported result, error, state, or cleanup contract.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Observed behavior
+      description: Include exact results or errors and state whether the failure is repeatable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Record Excel product/version/build, Office bitness, Windows version, locale, host, and deployment model as applicable.
+      placeholder: |
+        Excel product/version/build:
+        Office bitness:
+        Windows version/build:
+        Locale:
+        Workbook or add-in host:
+        Deployment model:
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence, workaround, and recovery
+      description: Add sanitized diagnostics, test output, screenshots, independent references, workarounds, and recovery details. State when none exist.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: acknowledgements
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched open and closed issues and did not find an equivalent report.
+          required: true
+        - label: I reproduced this against the exact source identity stated above.
+          required: true
+        - label: This report contains no vulnerability details, secrets, private links, or restricted data.
+          required: true

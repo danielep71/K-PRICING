@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title description">
+  <title id="title">Excel VBA Project Template</title>
+  <desc id="description">Social preview for a source-first Excel VBA repository template with library, UI component, and application profiles.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071a13"/>
+      <stop offset="0.55" stop-color="#0b3d2e"/>
+      <stop offset="1" stop-color="#0e6b4d"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#9bf0c8"/>
+      <stop offset="1" stop-color="#43d39e"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#001a11" flood-opacity="0.42"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#background)"/>
+  <g opacity="0.08" stroke="#d6fff0" stroke-width="1">
+    <path d="M0 80h1280M0 160h1280M0 240h1280M0 320h1280M0 400h1280M0 480h1280M0 560h1280"/>
+    <path d="M80 0v640M160 0v640M240 0v640M320 0v640M400 0v640M480 0v640M560 0v640M640 0v640M720 0v640M800 0v640M880 0v640M960 0v640M1040 0v640M1120 0v640M1200 0v640"/>
+  </g>
+
+  <circle cx="1130" cy="92" r="230" fill="#46d7a2" opacity="0.08"/>
+  <circle cx="1110" cy="630" r="320" fill="#001f16" opacity="0.28"/>
+
+  <g transform="translate(86 86)" filter="url(#shadow)">
+    <rect width="132" height="132" rx="26" fill="#f4fff9"/>
+    <rect x="20" y="20" width="92" height="92" rx="12" fill="#0d6b4c"/>
+    <path d="M40 46h52M40 66h52M40 86h52M58 32v68M78 32v68" stroke="#bdf6dc" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+    <rect x="20" y="20" width="92" height="92" rx="12" fill="none" stroke="#66e0b0" stroke-width="4"/>
+  </g>
+
+  <g font-family="DejaVu Sans, Arial, sans-serif">
+    <text x="258" y="128" fill="#9bf0c8" font-size="28" font-weight="700" letter-spacing="4">CANONICAL REPOSITORY STARTER</text>
+    <text x="258" y="190" fill="#ffffff" font-size="58" font-weight="700">Excel VBA</text>
+    <text x="258" y="252" fill="#ffffff" font-size="58" font-weight="700">Project Template</text>
+
+    <text x="88" y="352" fill="#d8fbed" font-size="26">Source-first structure, deterministic checks, and release evidence.</text>
+
+    <g transform="translate(88 406)" font-size="22" font-weight="700" letter-spacing="1">
+      <rect width="280" height="68" rx="16" fill="#ffffff" opacity="0.10" stroke="#9bf0c8" stroke-width="2"/>
+      <text x="140" y="43" text-anchor="middle" fill="#ffffff">LIBRARY</text>
+
+      <rect x="300" width="280" height="68" rx="16" fill="#ffffff" opacity="0.10" stroke="#9bf0c8" stroke-width="2"/>
+      <text x="440" y="43" text-anchor="middle" fill="#ffffff">UI COMPONENT</text>
+
+      <rect x="600" width="280" height="68" rx="16" fill="#ffffff" opacity="0.10" stroke="#9bf0c8" stroke-width="2"/>
+      <text x="740" y="43" text-anchor="middle" fill="#ffffff">APPLICATION</text>
+    </g>
+
+    <g transform="translate(88 540)">
+      <rect width="1104" height="3" rx="2" fill="url(#accent)"/>
+      <text x="0" y="42" fill="#bcefdc" font-size="21" font-weight="600" letter-spacing="2">EXCEL  •  VBA  •  GITHUB ACTIONS  •  TESTING  •  RELEASE READY</text>
+    </g>
+  </g>
+</svg>

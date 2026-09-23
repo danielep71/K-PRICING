@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "entry_point": "ProjectTests.RunProjectTests",
+  "cases": [
+    "ratio.exact",
+    "ratio.tolerance",
+    "ratio.zero-denominator",
+    "ratio.repeatability"
+  ],
+  "assertions": 6,
+  "expected_error_cases": [
+    "ratio.zero-denominator"
+  ]
+}

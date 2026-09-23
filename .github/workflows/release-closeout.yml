@@ -1,0 +1,463 @@
+name: Release closeout
+
+run-name: Release closeout — ${{ inputs.tag }} @ ${{ inputs.candidate_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published release tag, for example v1.2.1
+        required: true
+        type: string
+      candidate_sha:
+        description: Certified 40-character release candidate SHA
+        required: true
+        type: string
+      milestone_number:
+        description: GitHub milestone number for the release
+        required: true
+        type: string
+      wiki_browser_reviewed:
+        description: Confirm the template Wiki Home/sidebar/navigation browser review passed
+        required: true
+        default: false
+        type: boolean
+      expect_prerelease:
+        description: Expect the GitHub Release to be marked prerelease
+        required: true
+        default: false
+        type: boolean
+      allow_not_latest:
+        description: Allow this release not to be the current GitHub latest release
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  actions: read
+  contents: read
+  issues: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  closeout:
+    name: Post-release closeout
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      CLOSEOUT_TAG: ${{ inputs.tag }}
+      CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+      MILESTONE_NUMBER: ${{ inputs.milestone_number }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Check out the certified candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.candidate_sha }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.10"
+
+      - name: Capture GitHub provider facts
+        id: capture
+        env:
+          ALLOW_NOT_LATEST: ${{ inputs.allow_not_latest }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/release-closeout"
+          mkdir -p "$evidence"
+
+          gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$CLOSEOUT_TAG" > "$evidence/tag-ref.json"
+          tag_type="$(
+            EVIDENCE="$evidence" python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          ref = json.loads((Path(os.environ["EVIDENCE"]) / "tag-ref.json").read_text())
+          print(ref["object"]["type"])
+          PY
+          )"
+          if [[ "$tag_type" == "tag" ]]; then
+            tag_object_sha="$(
+              EVIDENCE="$evidence" python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          ref = json.loads((Path(os.environ["EVIDENCE"]) / "tag-ref.json").read_text())
+          print(ref["object"]["sha"])
+          PY
+            )"
+            gh api "repos/$GITHUB_REPOSITORY/git/tags/$tag_object_sha" > "$evidence/tag-object.json"
+          else
+            printf 'null\n' > "$evidence/tag-object.json"
+          fi
+
+          gh api \
+            "repos/$GITHUB_REPOSITORY/actions/runs?event=push&head_sha=$CANDIDATE_SHA&per_page=100" \
+            > "$evidence/workflow-runs.json"
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$CLOSEOUT_TAG" > "$evidence/release.json"
+
+          latest_response="$evidence/latest-release-response.json"
+          set +e
+          latest_status="$(
+            curl --silent --show-error --location \
+              --output "$latest_response" \
+              --write-out '%{http_code}' \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest"
+          )"
+          latest_curl_rc=$?
+          set -e
+          if [[ "$latest_curl_rc" -ne 0 ]]; then
+            echo "::error::Unable to query the latest GitHub Release (curl exit $latest_curl_rc)."
+            exit "$latest_curl_rc"
+          fi
+          if [[ "$latest_status" == "200" ]]; then
+            mv "$latest_response" "$evidence/latest-release.json"
+          elif [[ "$latest_status" == "404" && "$ALLOW_NOT_LATEST" == "true" ]]; then
+            printf 'null\n' > "$evidence/latest-release.json"
+            rm -f "$latest_response"
+          else
+            echo "::error::Latest-release query returned HTTP $latest_status."
+            exit 1
+          fi
+
+          gh api "repos/$GITHUB_REPOSITORY/milestones/$MILESTONE_NUMBER" > "$evidence/milestone.json"
+          gh api --paginate --slurp \
+            "repos/$GITHUB_REPOSITORY/issues?milestone=$MILESTONE_NUMBER&state=all&per_page=100" \
+            > "$evidence/milestone-items.json"
+
+          previous="$(
+            TAG="$CLOSEOUT_TAG" python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+          tag = os.environ["TAG"]
+          version = tag.removeprefix("v")
+          text = Path("CHANGELOG.md").read_text(encoding="utf-8")
+          match = re.search(
+              rf"^\[{re.escape(version)}\]:\s+\S+/compare/(?P<base>v[^\s]+)\.\.\.{re.escape(tag)}\s*$",
+              text,
+              re.MULTILINE,
+          )
+          if match is None:
+              raise SystemExit("released comparison link is unavailable")
+          print(match.group("base"))
+          PY
+          )"
+          gh api --paginate --slurp \
+            "repos/$GITHUB_REPOSITORY/compare/$previous...$CLOSEOUT_TAG" \
+            > "$evidence/compare.json"
+
+          echo "evidence=$evidence" >> "$GITHUB_OUTPUT"
+
+      - name: Retrieve and verify durable certification evidence
+        id: certification
+        continue-on-error: true
+        env:
+          EVIDENCE: ${{ steps.capture.outputs.evidence }}
+        run: |
+          set -euo pipefail
+          mode="$(python3 -c 'import json; print(json.load(open(".github/repository-profile.json"))["mode"])')"
+          if [[ "$mode" != "template" ]]; then
+            EVIDENCE="$EVIDENCE" python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          source = Path(os.environ["EVIDENCE"])
+          release = json.loads((source / "release.json").read_text(encoding="utf-8"))
+          plan = {
+              "schema_version": 1,
+              "status": "not-applicable",
+              "tag": os.environ["CLOSEOUT_TAG"],
+              "retention_surface": "not-applicable",
+              "retention_lifetime": "not-applicable",
+              "certification_assets": [],
+              "product_assets": release.get("assets", []),
+          }
+          (source / "certification-plan.json").write_text(
+              json.dumps(plan, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          (source / "certification-verification.json").write_text(
+              json.dumps({"status": "not-applicable"}, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+            exit 0
+          fi
+
+          if ! python3 tools/release_certification.py \
+            --plan-release-assets "$EVIDENCE/release.json" \
+            --release-tag "$CLOSEOUT_TAG" \
+            > "$EVIDENCE/certification-plan.json"; then
+            EVIDENCE="$EVIDENCE" python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          source = Path(os.environ["EVIDENCE"])
+          release = json.loads((source / "release.json").read_text(encoding="utf-8"))
+          fallback = {
+              "schema_version": 1,
+              "status": "fail",
+              "tag": os.environ["CLOSEOUT_TAG"],
+              "product_assets": release.get("assets", []),
+          }
+          (source / "certification-plan.json").write_text(
+              json.dumps(fallback, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          (source / "certification-verification.json").write_text(
+              json.dumps({"status": "fail", "detail": "certification asset planning failed"}, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+            exit 1
+          fi
+
+          download_dir="$RUNNER_TEMP/release-certification-download"
+          mkdir -p "$download_dir"
+          while IFS=$'\t' read -r name asset_id; do
+            gh api \
+              -H "Accept: application/octet-stream" \
+              "repos/$GITHUB_REPOSITORY/releases/assets/$asset_id" \
+              > "$download_dir/$name"
+          done < <(
+            EVIDENCE="$EVIDENCE" python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          plan = json.loads((Path(os.environ["EVIDENCE"]) / "certification-plan.json").read_text())
+          for row in plan["certification_assets"]:
+              print(f"{row['name']}\t{row['asset_id']}")
+          PY
+          )
+
+          python3 tools/release_certification.py \
+            --verify-release-plan "$EVIDENCE/certification-plan.json" \
+            --download-dir "$download_dir" \
+            --candidate-sha "$CANDIDATE_SHA" \
+            > "$EVIDENCE/certification-verification.json"
+
+      - name: Verify Wiki publication with its owning checker
+        id: wiki
+        env:
+          EVIDENCE: ${{ steps.capture.outputs.evidence }}
+        run: |
+          set -euo pipefail
+          mode="$(python3 -c 'import json; print(json.load(open(".github/repository-profile.json"))["mode"])')"
+          if [[ "$mode" != "template" ]]; then
+            printf '{"status":"not-applicable","findings":[]}\n' > "$EVIDENCE/wiki.json"
+            exit 0
+          fi
+
+          wiki_checkout="$RUNNER_TEMP/wiki-readback"
+          if ! git clone --quiet "https://github.com/$GITHUB_REPOSITORY.wiki.git" "$wiki_checkout"; then
+            printf '{"status":"fail","findings":["Wiki clone/read-back unavailable"]}\n' \
+              > "$EVIDENCE/wiki.json"
+            exit 0
+          fi
+          set +e
+          python3 tools/check_wiki.py \
+            --root . \
+            --published-dir "$wiki_checkout" \
+            --output "$EVIDENCE/wiki.json" \
+            --summary "$EVIDENCE/wiki.md"
+          set -e
+          if [[ ! -f "$EVIDENCE/wiki.json" ]]; then
+            printf '{"status":"fail","findings":["Wiki comparison produced no report"]}\n' \
+              > "$EVIDENCE/wiki.json"
+          fi
+
+      - name: Verify provider-generated source archive retrieval
+        id: archives
+        env:
+          EVIDENCE: ${{ steps.capture.outputs.evidence }}
+        run: |
+          set -euo pipefail
+          readarray -t archive_urls < <(
+            EVIDENCE="$EVIDENCE" python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          release = json.loads((Path(os.environ["EVIDENCE"]) / "release.json").read_text())
+          print(release.get("zipball_url") or "")
+          print(release.get("tarball_url") or "")
+          PY
+          )
+          zip_status="fail"
+          tar_status="fail"
+          if [[ -n "${archive_urls[0]}" ]] && \
+             curl -fsSL --retry 2 --output /dev/null \
+               -H "Authorization: Bearer $GH_TOKEN" "${archive_urls[0]}"; then
+            zip_status="pass"
+          fi
+          if [[ -n "${archive_urls[1]}" ]] && \
+             curl -fsSL --retry 2 --output /dev/null \
+               -H "Authorization: Bearer $GH_TOKEN" "${archive_urls[1]}"; then
+            tar_status="pass"
+          fi
+          echo "zip=$zip_status" >> "$GITHUB_OUTPUT"
+          echo "tar=$tar_status" >> "$GITHUB_OUTPUT"
+
+      - name: Assemble deterministic closeout snapshot
+        id: snapshot
+        env:
+          EVIDENCE: ${{ steps.capture.outputs.evidence }}
+          ZIP_STATUS: ${{ steps.archives.outputs.zip }}
+          TAR_STATUS: ${{ steps.archives.outputs.tar }}
+          WIKI_BROWSER_REVIEWED: ${{ inputs.wiki_browser_reviewed }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          source = Path(os.environ["EVIDENCE"])
+
+          def read(name):
+              return json.loads((source / name).read_text(encoding="utf-8"))
+
+          wiki = read("wiki.json")
+          wiki["source_sha"] = os.environ["CANDIDATE_SHA"]
+          release = read("release.json")
+          certification_plan = read("certification-plan.json")
+          release["assets"] = certification_plan.get("product_assets", release.get("assets", []))
+          snapshot = {
+              "schema_version": 1,
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "tag_ref": read("tag-ref.json"),
+              "tag_object": read("tag-object.json"),
+              "workflow_runs": read("workflow-runs.json"),
+              "release": release,
+              "latest_release": read("latest-release.json"),
+              "compare": read("compare.json"),
+              "milestone": read("milestone.json"),
+              "milestone_items": read("milestone-items.json"),
+              "wiki": wiki,
+              "certification_evidence": read("certification-verification.json"),
+              "source_archives": {
+                  "zip": os.environ["ZIP_STATUS"],
+                  "tar": os.environ["TAR_STATUS"],
+              },
+              "ui_observations": {
+                  "wiki_browser_review": (
+                      "pass" if os.environ["WIKI_BROWSER_REVIEWED"].lower() == "true"
+                      else "not-run"
+                  ),
+              },
+          }
+          (source / "snapshot.json").write_text(
+              json.dumps(snapshot, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          echo "path=${{ steps.capture.outputs.evidence }}/snapshot.json" >> "$GITHUB_OUTPUT"
+
+      - name: Validate post-release closeout
+        id: closeout
+        continue-on-error: true
+        run: |
+          args=(
+            --root .
+            --snapshot "${{ steps.snapshot.outputs.path }}"
+            --tag "$CLOSEOUT_TAG"
+            --candidate-sha "$CANDIDATE_SHA"
+            --milestone-number "$MILESTONE_NUMBER"
+            --output test-results/release-closeout.json
+            --summary test-results/release-closeout.md
+          )
+          if [[ "${{ inputs.expect_prerelease }}" == "true" ]]; then
+            args+=(--expect-prerelease)
+          fi
+          if [[ "${{ inputs.allow_not_latest }}" == "true" ]]; then
+            args+=(--allow-not-latest)
+          fi
+          python3 tools/_release_closeout.py "${args[@]}"
+
+      - name: Publish closeout summary
+        id: summary
+        if: always()
+        continue-on-error: true
+        env:
+          EVIDENCE: ${{ steps.capture.outputs.evidence }}
+        run: |
+          if [[ ! -f test-results/release-closeout.md ]]; then
+            echo "Release closeout report was not produced."
+            exit 1
+          fi
+          {
+            cat test-results/release-closeout.md
+            echo
+            echo "## Durable certification evidence"
+            if [[ -f "$EVIDENCE/certification-verification.json" ]]; then
+              python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          data = json.loads((Path(os.environ["EVIDENCE"]) / "certification-verification.json").read_text())
+          print()
+          print(f"- Status: **{str(data.get('status', 'unknown')).upper()}**")
+          if data.get("status") == "pass":
+              print(f"- Bundle: `{data['bundle']}`")
+              print(f"- SHA-256: `{data['bundle_sha256']}`")
+              print(f"- Candidate: `{data['candidate_sha']}`")
+              print(f"- Retention surface: `{data['retention_surface']}`")
+          PY
+            else
+              echo "- Status: **MISSING**"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Retain closeout evidence
+        id: artifact
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-closeout-${{ inputs.tag }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ steps.capture.outputs.evidence }}/snapshot.json
+            ${{ steps.capture.outputs.evidence }}/certification-plan.json
+            ${{ steps.capture.outputs.evidence }}/certification-verification.json
+            ${{ steps.capture.outputs.evidence }}/wiki.json
+            ${{ steps.capture.outputs.evidence }}/wiki.md
+            test-results/release-closeout.json
+            test-results/release-closeout.md
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 9
+
+      - name: Enforce closeout result
+        if: always()
+        env:
+          CERTIFICATION_OUTCOME: ${{ steps.certification.outcome }}
+          CLOSEOUT_OUTCOME: ${{ steps.closeout.outcome }}
+          SUMMARY_OUTCOME: ${{ steps.summary.outcome }}
+          ARTIFACT_OUTCOME: ${{ steps.artifact.outcome }}
+        run: |
+          failed=0
+          for item in \
+            "Certification retrieval and verification:$CERTIFICATION_OUTCOME" \
+            "Closeout validation:$CLOSEOUT_OUTCOME" \
+            "Closeout summary:$SUMMARY_OUTCOME" \
+            "Evidence retention:$ARTIFACT_OUTCOME"; do
+            name="${item%%:*}"
+            outcome="${item#*:}"
+            if [[ "$outcome" != "success" ]]; then
+              echo "::error::$name outcome: $outcome"
+              failed=1
+            fi
+          done
+          exit "$failed"

@@ -1,0 +1,429 @@
+# 🛠️ Tools and Validation Guide
+
+[![Runtime: Python 3.10](https://img.shields.io/badge/runtime-Python%203.10-1D76DB)](#python-presentation-and-lint-policy)
+[![Evidence: bounded](https://img.shields.io/badge/evidence-explicit%20scope-217346)](#canonical-repository-quality-gate)
+
+`tools/` contains repository validators, evidence collectors and setup tooling.
+
+Local source checks are deterministic. Network collectors and live setup tools
+have separately documented observation, credential and mutation boundaries.
+
+<a id="python-presentation-and-lint-policy"></a>
+
+## 📐 Python presentation and lint policy
+
+[`pyproject.toml`](../pyproject.toml) sets Python 3.10 as the compatibility target
+and 100 columns as a formatting target. CI runs `ruff check tools` with exactly
+`E4`, `E7`, `E9`, `F`, `I001`, `C90`, and `S314`; `I001` rejects unsorted or
+unformatted import blocks, and `C90` uses a McCabe ceiling of 20. CI also runs
+`mypy` across `tools/`; `_gatelib` is subject to the pinned mypy 2.3.1 strict
+bundle through its per-module override while the rest of the tree remains on the
+established whole-tree baseline. E501 is not selected and CI does not run
+`ruff format --check`; line length and formatter output are therefore not
+blocking rules. Prefer readable wrapping without changing literals or churning
+unrelated code. Editor indentation and line endings are defined in
+[`.editorconfig`](../.editorconfig).
+
+<!-- template:remove:start -->
+### Maintainer Python coverage
+
+The canonical reproducible coverage command is the complete `Exercise maintained Python
+tooling under coverage` shell block in
+[`.github/workflows/checker-development.yml`](../.github/workflows/checker-development.yml).
+It is intentionally CI-independent: after installing the pinned dependencies below, run
+that block verbatim from the repository root in Bash.
+
+```bash
+python -m pip install --disable-pip-version-check "coverage[toml]==7.10.6" "PyYAML==6.0.3"
+```
+
+The measurement scope is maintained `tools/*.py`. Test drivers matching
+`tools/test_*.py` are excluded from the denominator, while the maintained code they
+exercise remains measured. Coverage.py subprocess measurement is enabled so Python
+children launched by semantic fixtures are combined before reporting. The hosted and
+local contract uses a **95% statement-coverage floor** and emits both text and JSON
+evidence. Numeric coverage supplements the focused self-tests and policy-branch suites;
+it never replaces their behavioral or failure-semantics assertions.
+
+<!-- template:remove:end -->
+
+Comments and docstrings explain purpose, inputs, ownership, error handling and
+limits when these are not clear from the code. Check them whenever behavior
+changes. Distinguish synthetic fixtures, structural predicates, live observations
+and executed host evidence; a token variable does not constrain granted scopes.
+
+<!-- template:remove:start -->
+`check_wiki.py` checks the complete tracked-path catalogue and ordered page set,
+refreshes the generated reference/sidebar on request, exports an exact-source
+publication bundle, and compares a fetched Wiki checkout without network writes.
+`test_wiki.py` exercises publication failure boundaries. See
+[Wiki Publication](../docs/WIKI_PUBLICATION.md) and the
+[maintainer journey](../docs/wiki/Home.md). These are template-only tools.
+<!-- template:remove:end -->
+
+`check_documentation.py` checks literal documented Python commands and registered
+file/workflow/policy references without executing them. `check_external_links.py`
+produces separate bounded anonymous HTTP observations. Both use `run_gate`;
+`test_documentation.py` supplies offline failure fixtures. See
+[documentation checks](../docs/DOCUMENTATION_CHECKS.md) for policy and scope.
+
+`release_provenance.py` extends `check_release.py` with contract 1.2.0 build
+records, complete payload inventory and optional SSH verification. It has no
+separate CLI. See [the provenance contract](../docs/RELEASE_PROVENANCE.md);
+`test_release_provenance.py` exercises both the integrated gate and real
+ephemeral signatures without Office or publishing credentials.
+
+`check_excel_evidence.py` validates the optional
+[Windows/Excel host interface](../docs/EXCEL_EVIDENCE.md), using the shared
+`run_gate` runner. Its `test_excel_evidence.py` fixtures exercise synthetic
+manual/automated records and non-green outcomes; neither tool runs Office.
+
+Appropriate contents include:
+
+- VBA static checks and exported-source validators;
+- formatting and documentation-link checks;
+- release-provenance and hashing utilities;
+- fixture or report generators whose inputs and outputs are documented; and
+- local wrappers that reproduce a CI gate.
+
+### Shared focused-gate infrastructure
+
+`_gatelib.py` is the private, standard-library-only owner of Git, report-output, tracked-file, and common focused-gate CLI primitives. `check_repo.py` deliberately does not import it: the canonical checker remains a self-contained distributable artifact. The canonical template also carries checker-development and semantic policy-coverage harnesses; initialization strips those maintainer-only files while retaining the operational gates needed by generated projects.
+
+`_gatelib.run_gate` additionally owns the orchestration shared by focused gates: `--self-test` dispatch, canonical JSON serialization, Markdown summary writing, console output, and the `0` (pass) / `1` (findings) / `2` (could not complete) exit mapping. Each gate keeps its own semantic checks, fixtures, report schema, Markdown renderer and operational-exception tuple; the runner never widens exception handling, so a programming error still raises rather than being reported as exit `2`.
+
+Focused report gates use the shared runner. Distinct CLI contracts retain their
+own entry points: release validation has atomic evidence writes and separate
+console rendering; workflow validation emits text-only evidence; initialization
+and disposable fixture creation provision source; snapshot collection captures
+observations. The canonical checker remains self-contained.
+
+<!-- template:remove:start -->
+The complete consumer/exclusion registry is maintained and enforced in
+`checker_development.py`. Register any new entry point there as a shared-runner
+consumer or a documented exclusion; do not maintain a second count in prose.
+<!-- template:remove:end -->
+
+## Canonical repository-quality gate
+
+`check_repo.py` is the dependency-free baseline gate for all three supported
+repository profiles. Its versioned policy lives in
+`.github/repository-profile.json`; generated repositories set `mode` to
+`generated`, select `application`, `library`, or `ui-component`, and update the
+declared paths and VBA component roles instead of editing checker logic.
+
+Run the portable commands locally:
+
+```bash
+python3 tools/check_repo.py --root . --self-test
+python3 tools/check_repo.py --root . \
+  --output test-results/static-checks.json \
+  --summary test-results/static-checks.md
+```
+
+The first command exercises a passing fixture, one deliberately degraded
+fixture for each canonical rule, malformed YAML/XML, prohibited XML DTD/entity
+declarations, oversized XML, deterministic JSON and Markdown rendering, and
+read-only execution.
+The second command validates the current tracked tree, prints a readable result,
+and writes optional machine-readable evidence.
+
+The `generated-vba-contract` rule resolves the applicable profile contract and
+requires its registered, tracked façade, core, and test assets. Its JSON evidence
+records the selected profile, role minima, observed role counts, and mandatory
+component paths. In template mode it validates all three supported contracts.
+The `issue-forms` rule validates the three canonical intake forms, their
+manifest-backed labels, required evidence fields, empty reusable assignees,
+blank-issue policy and repository-specific private-security route.
+
+Exit status `0` means every applicable rule passed, `1` means policy findings
+were reported, and `2` means the checker could not complete. Reports contain no
+timestamps, so identical commits and configurations produce identical bytes.
+
+This gate validates repository evidence and exported VBA structure. It does not
+execute Excel, compile a VBA project, prove numerical accuracy, exercise UI
+state, or certify a release package. Profile and project gates retain those
+responsibilities.
+
+## Committed and working-tree whitespace
+
+`check_committed_whitespace.py` separates two different Git checks that must not
+be confused:
+
+- **committed mode** is the CI/release-facing gate. It runs `git diff --check`
+  over a committed candidate range. With `--base`, the range begins at the
+  merge base of that revision and `--head`; without `--base`, it checks the
+  first-parent delta, or the empty tree for a root commit;
+- **working-tree mode** is local feedback. It checks both staged and unstaged
+  changes without making those mutable files part of committed-candidate
+  evidence.
+
+Run the deterministic fixtures and local mode with:
+
+```bash
+python3 tools/check_committed_whitespace.py --root . --self-test
+python3 tools/check_committed_whitespace.py --root . --mode working-tree
+```
+
+To reproduce the hosted committed check explicitly:
+
+```bash
+python3 tools/check_committed_whitespace.py \
+  --root . \
+  --mode committed \
+  --head HEAD \
+  --output test-results/committed-whitespace.json \
+  --summary test-results/committed-whitespace.md
+```
+
+For pull requests, CI supplies the target-branch revision with `--base` and
+records the resolved merge base, exact head SHA, inspected range, and findings
+in JSON and Markdown evidence. The self-test proves that a committed
+trailing-whitespace defect fails from a clean checkout, a defective root commit
+fails against the empty tree, a valid commit passes, and staged/unstaged defects
+remain detectable only through the local working-tree path.
+
+## Procedure-scoped VBA jump validation
+
+`check_vba_jumps.py` is the authoritative hardening gate for `GoTo`, `GoSub`,
+and `Resume` target ownership. It parses logical VBA statements, including
+continued procedure declarations, and associates every label and jump with one
+owning Sub, Function, or Property procedure.
+
+The gate:
+
+- resolves named and numbered labels only inside the owning procedure;
+- accepts equivalent label names in different procedures without collision;
+- rejects duplicate labels within one procedure;
+- ignores jump-like text inside strings, including escaped quotes and continuations,
+  while still checking executable jumps following a string on the same line;
+- treats `On Error GoTo 0`, `On Error GoTo -1`, bare `Resume`, and
+  `Resume Next` as control forms rather than label references; and
+- reports component, procedure, source line, operation, and unresolved target
+  in deterministic JSON and Markdown evidence.
+
+Run the focused fixtures and repository check with:
+
+```bash
+python3 tools/check_vba_jumps.py --root . --self-test
+python3 tools/check_vba_jumps.py \
+  --root . \
+  --output test-results/vba-jumps.json \
+  --summary test-results/vba-jumps.md
+```
+
+The fixture matrix proves valid local handlers, `GoSub`/`Resume`, deliberate
+cross-procedure rejection, same-name labels in separate procedures, duplicate
+local labels, numbered labels, line continuations, and special error-control
+forms. This dedicated gate is authoritative for procedure-scoped target
+resolution; the broader `vba-structure` rule remains a compatibility and
+structural check. The hosted terminal verdict requires both gates, so the
+broader rule cannot make a cross-procedure target green in CI.
+
+## VBA conditional-compilation validation
+
+`check_vba_conditionals.py` is the authoritative hardening gate for reachable
+VBA `Declare` statements under the supported host model. It evaluates three
+explicit environments: `vba6-win32`, `vba7-win32`, and `vba7-win64`.
+
+The checker maintains a full nested conditional stack containing parent
+activity, branch selection, current activity, and `#Else` state. It evaluates
+`#If`, `#ElseIf`, `#Else`, and `#End If` consistently, so inactive descendants
+cannot accidentally become active when an outer branch is false. Supported
+expressions use `VBA6`, `VBA7`, `Win32`, `Win64`, Boolean literals, integer
+literals, parentheses, `Not`, `And`, `Or`, `=`, and `<>`.
+
+The boundary is deliberately conservative:
+
+- every `Declare` reachable in either supported VBA7 environment must include
+  `PtrSafe`;
+- VBA6-only declarations may retain legacy syntax;
+- unknown or project-defined symbols fail closed rather than being guessed;
+- `#Const` is rejected because project-defined compilation constants are outside
+  the reusable baseline; and
+- malformed, duplicate, or unbalanced branch directives produce actionable
+  diagnostics.
+
+Run the focused fixtures and repository check with:
+
+```bash
+python3 tools/check_vba_conditionals.py --root . --self-test
+python3 tools/check_vba_conditionals.py \
+  --root . \
+  --output test-results/vba-conditionals.json \
+  --summary test-results/vba-conditionals.md
+```
+
+The fixtures cover nested VBA6/VBA7 and Win32/Win64 branches, `#ElseIf`
+selection, inactive nesting, reachable non-`PtrSafe` failures in each VBA7
+bitness, continued declares, unsupported symbols, and unbalanced directives.
+This dedicated gate is authoritative for reachable conditional-compilation
+semantics; the broader `vba-structure` rule remains a compatibility and
+structural check. Both remain required in hosted CI, so the broader check cannot
+hide a reachable declaration defect.
+
+## Complete VBA public API validation
+
+`check_vba_public_api.py` is the authoritative hardening gate for the supported
+VBA surface and its checked-in `docs/PUBLIC_API.txt` manifest. Every generated
+profile requires that manifest from initialization onward because the manifest
+is a global required path and every profile requires a public-role component.
+There is no maturity-stage exemption.
+
+The reusable policy deliberately prohibits implicit public visibility. Supported
+API declarations must use explicit `Public` visibility; `Global` is accepted for
+legacy public variables. The gate normalizes line continuations and covers
+public Subs, Functions, Property Get/Let/Set members, constants, events,
+Declare Function/Sub members, variables, Enums, and Types. Public variable
+statements contain one identifier each so signatures remain unambiguous.
+
+`PUBLIC_API.txt` remains the single manifest. Its traditional three-column rows
+preserve compatibility with the canonical repository checker, while `# SIG`
+comment records bind every row to a normalized declaration signature. Those
+comments include meaningful VBA distinctions such as property direction,
+parameter modifiers and order, return types, Declare metadata, constant
+definitions, and Enum/Type bodies. The dedicated gate detects missing, stale,
+duplicate, or changed signatures and case-insensitive public-name collisions in
+standard modules.
+
+Conditional declarations are collected separately for the three supported
+compilation environments described above. Mutually exclusive variants share one
+three-column manifest row and require one `# SIG` record for each distinct
+reachable signature. Duplicate records, missing or stale variants, and declarations
+that collide in any shared environment fail. Unknown conditions fail closed;
+these static models do not certify execution in Excel.
+
+Run the focused fixtures and repository check with:
+
+```bash
+python3 tools/check_vba_public_api.py --root . --self-test
+python3 tools/check_vba_public_api.py \
+  --root . \
+  --output test-results/vba-public-api.json \
+  --summary test-results/vba-public-api.md
+```
+
+The fixtures cover every supported declaration family, continued declarations,
+implicit-public rejection, signature drift, name collisions, and the
+single-public-variable rule. This dedicated gate is authoritative for complete
+public-surface extraction and signature binding; the broader `vba-public-api`
+rule remains a compatibility check. Both are required in hosted CI, so the
+compatibility view cannot hide an unsupported or unrecorded public declaration.
+
+## Adopted template contract
+
+`check_template_contract.py` owns the semantics of the template contract: the
+versioned identity of the control set a repository adopts, recorded as
+`template_contract` in `.github/repository-profile.json`.
+
+The canonical checker only requires the key to exist among the configuration
+keys; every rule about its content lives in this gate, so the portable checker's
+policy-branch inventory is unchanged.
+
+The gate requires exactly `version` and `source`, rejects a non-canonical or
+unsupported version with a message naming the supported set, resolves the rule
+set registered for the *recorded* version so an older adopter is never judged
+against newer controls, requires migration notes for every supported version in
+`docs/TEMPLATE_CONTRACT.md`, and checks the template/generated source
+invariants: a template publishes its own contract, a generated repository names
+the template it adopted and never itself.
+
+The contract version is independent of the project `VERSION`; the self-test
+proves that changing `VERSION` does not alter the adopted contract.
+
+```bash
+python3 tools/check_template_contract.py --root .
+python3 tools/check_template_contract.py --root . --self-test
+```
+
+`docs/TEMPLATE_CONTRACT.md` is the authority for the SemVer policy and the
+migration notes.
+
+## Authoritative workflow validation
+
+The hosted gate complements the portable YAML subset check with
+[actionlint 1.7.12](https://github.com/rhysd/actionlint/releases/tag/v1.7.12),
+whose release tag resolves to upstream commit
+[`914e7df21a07ef503a81201c76d2b11c789d3fca`](https://github.com/rhysd/actionlint/commit/914e7df21a07ef503a81201c76d2b11c789d3fca).
+The workflow downloads only
+`actionlint_1.7.12_linux_amd64.tar.gz` and verifies the upstream-published
+SHA-256
+`8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8`
+before extraction or execution. The version and digest are explicit workflow
+constants; a failed download, digest, version, current-workflow check, fixture,
+report, or artifact fails the terminal verdict.
+
+`test_workflow_validation.py` requires that exact actionlint version. It
+accepts the tracked workflows and a valid local composite action, and requires
+rejection of malformed YAML, duplicate job IDs, an invalid job key, missing
+local-action metadata, and a missing local Node entry point. Run it locally with
+an independently verified binary:
+
+```bash
+python3 tools/test_workflow_validation.py \
+  --root . \
+  --actionlint /verified/path/to/actionlint \
+  --summary test-results/workflow-validation.md
+```
+
+The release archive and checksum catalogue are authoritative upstream assets;
+review both the [release notes](https://github.com/rhysd/actionlint/releases/tag/v1.7.12)
+and [published checksums](https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_checksums.txt)
+before changing either pin.
+
+## Release-integrity gate
+
+`check_release.py` validates one initialized generated-project candidate or the
+canonical template itself against the versioned `.github/release-policy.json`.
+It requires version, dated changelog, tag, Git source, external evidence,
+profile assurance, and any staged assets to name the same full candidate SHA.
+Reports are deterministic and written atomically.
+
+Exercise all three generated profiles, the template release profile, and every
+named failure path with:
+
+```bash
+python3 tools/check_release.py --root . --self-test \
+  --summary test-results/release-self-test.md
+```
+
+Candidate validation requires `--tag`, `--candidate-sha`, and `--evidence`.
+Binary UI/application distributions also require `--asset-manifest`; a
+source-only release omits it. After creating the local annotated tag, add
+`--require-tag-ref` to prove its object type and target. See
+[`docs/RELEASE_EVIDENCE.md`](../docs/RELEASE_EVIDENCE.md) for the exact JSON,
+manifest, profile, and command contracts.
+
+The hosted repository gate runs the complete self-test and fails if the tool or
+its report is missing. The tool validates recorded evidence but does not execute
+Excel or claim that a manually packaged Office file was built from source.
+
+## Canonical repository initializer
+
+`initialize_repository.py` converts a clean generated repository from template
+mode to one explicit profile. It validates the complete substitution set,
+defaults to a deterministic dry-run, applies only with `--apply`, removes
+non-applicable/template-only content, resets inherited changelog history, and
+resets the generated version to the `0.0.0` sentinel, and supports an idempotent
+second run.
+
+See [`docs/INITIALIZATION.md`](../docs/INITIALIZATION.md) for the token catalogue,
+profile commands, optional and repeatable values, and the transparent manual
+fallback. Exercise all three profile fixtures with:
+
+```bash
+python3 tools/initialize_repository.py --root . --self-test
+```
+
+## Rules
+
+- Tools must fail clearly and return a non-zero status for a blocking result.
+- Pin or document material runtime dependencies.
+- Separate generated output from the script and keep transient output ignored.
+- Record the exact command used by CI and release certification.
+- Never embed credentials, personal paths, private data, or workstation-specific assumptions.
+- Do not place production VBA, regression modules, examples, or GitHub workflow definitions here.
+
+Workflow orchestration belongs under `.github/workflows/`; `tools/` contains the reusable logic those workflows call.
+
+Delete this README only if real tools and equivalent maintainer documentation make the directory's role equally explicit.

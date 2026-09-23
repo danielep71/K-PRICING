@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_schema_version": 1,
+  "provenance_signature_mode": "none",
+  "core_checks": [
+    "repository-integrity",
+    "vba-compile",
+    "regression"
+  ],
+  "profiles": {
+    "application": {
+      "required_checks": [
+        "startup",
+        "shutdown",
+        "upgrade",
+        "recovery",
+        "packaging",
+        "end-to-end-smoke"
+      ],
+      "allowed_asset_globs": [
+        "dist/*.xlam",
+        "dist/*.xlsb",
+        "dist/*.xlsm",
+        "dist/*.zip"
+      ]
+    },
+    "library": {
+      "required_checks": [
+        "public-api",
+        "caller-contract"
+      ],
+      "allowed_asset_globs": []
+    },
+    "template": {
+      "required_checks": [
+        "generated-profile-pilots",
+        "live-governance"
+      ],
+      "allowed_asset_globs": []
+    },
+    "ui-component": {
+      "required_checks": [
+        "ui-state",
+        "cleanup",
+        "recovery",
+        "dpi-accessibility",
+        "lifecycle"
+      ],
+      "allowed_asset_globs": [
+        "dist/*.xlam",
+        "dist/*.xlsb",
+        "dist/*.xlsm",
+        "dist/*.zip"
+      ]
+    }
+  },
+  "source_scan_exclude_paths": [
+    ".github/release-policy.json",
+    ".github/repository-profile.json",
+    "tools/check_release.py",
+    "tools/initialize_repository.py"
+  ],
+  "template_construction_markers": [
+    "canonical template",
+    "implementation plan",
+    "portfolio audit"
+  ]
+}
