@@ -27,6 +27,9 @@ module/function namespace for the planned migration from
 caller names without treating the source repository as unrelated donor branding.
 The identity policy permits these references while retaining all other donor
 and template identity restrictions and the existing scan scope.
+The checker rejects standalone old-product headings and explicit old product-name
+declarations; documentation tests also bind the README title to the recorded
+project name. Historical references remain legitimate, not blanket scan exclusions.
 
 The initialization record preserves the original inputs. Re-running the
 initializer with those same inputs returns a no-op and preserves the evolved

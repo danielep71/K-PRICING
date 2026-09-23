@@ -44,6 +44,12 @@ class ProjectIdentityTests(unittest.TestCase):
     def test_kpr_namespace_and_provenance_are_allowed(self):
         self.assertEqual(self.scan()["status"], "pass")
 
+    def test_old_product_branding_is_rejected(self):
+        for text in ("# KPR\n", "# 📈 KPR\n", "KPR is the product name.\n"):
+            with self.subTest(text=text):
+                self.sample.write_text(text)
+                self.assertEqual(self.scan()["status"], "fail")
+
     def test_unrelated_donor_and_template_identities_remain_rejected(self):
         policy = self.config["identity"]
         self.assertEqual(len(policy["forbidden_tokens"]), 6)
@@ -99,6 +105,8 @@ class DocumentationTests(unittest.TestCase):
         profile = json.loads((ROOT / ".github/repository-profile.json").read_text(encoding="utf-8"))
         if profile.get("mode") == "generated":
             record = json.loads((ROOT / ".github/initialization.json").read_text(encoding="utf-8"))
+            self.assertEqual([line for line in readme.splitlines() if line.startswith("# ")],
+                             [f"# ⚡ {record['values']['PROJECT_NAME']}"])
             repository = profile["repository"]
             self.assertIn(f"https://github.com/{repository}/actions/workflows/static-checks.yml", readme)
             self.assertNotIn("{{", readme)
