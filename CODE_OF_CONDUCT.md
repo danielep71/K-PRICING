@@ -1,16 +1,8 @@
-<!-- template:remove:start -->
-<!--
-TEMPLATE INSTRUCTIONS
-- Initialize every registered token before publishing.
-- Keep conduct, private reporting, enforcement, confidentiality and attribution.
-- Technical evidence requirements belong in CONTRIBUTING.md.
--->
-<!-- template:remove:end -->
 <div align="center">
 
-# 🧭 {{PROJECT_NAME}} Code of Conduct
+# 🧭 K-PRICING Code of Conduct
 
-### {{PROJECT_TAGLINE}}
+### Financial analytics and instrument pricing for Excel/VBA
 
 [![Applies to](https://img.shields.io/badge/Applies_to-Everyone-217346?style=for-the-badge)](#scope)
 [![Standard](https://img.shields.io/badge/Standard-Respectful_%2B_Evidence--Led-6f42c1?style=for-the-badge)](#technical-collaboration)
@@ -130,7 +122,7 @@ It applies to maintainers, contributors, reviewers, users and visitors alike.
 
 Report conduct concerns **privately** to:
 
-**{{SUPPORT_CONTACT}}**
+**danielep71@gmail.com**
 
 Do not publish sensitive personal information in a public issue. Where useful,
 include what happened, where/approximately when, relevant links/screenshots,
@@ -223,6 +215,6 @@ this repository.
 
 <br>
 
-Maintained by **{{MAINTAINER_NAME}}**
+Maintained by **Daniele Penza**
 
 </div>

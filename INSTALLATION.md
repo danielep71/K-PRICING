@@ -2,7 +2,7 @@
 
 # 📦 Installation and Upgrade Guide
 
-### Install, validate, upgrade, troubleshoot, and remove {{PROJECT_NAME}}
+### Install, validate, upgrade, troubleshoot, and remove K-PRICING
 
 [![Deployment](https://img.shields.io/badge/Deployment-Source--first-0969da?style=flat-square)](#deployment-model)
 [![Validation](https://img.shields.io/badge/Validation-Required-d97706?style=flat-square)](#validation)
@@ -43,7 +43,7 @@ that release.
 | Security handling | [`SECURITY.md`](SECURITY.md) |
 | Published release evidence | [`docs/RELEASE_EVIDENCE.md`](docs/RELEASE_EVIDENCE.md) |
 
-This repository is currently rendered for the **{{PROFILE_NAME}}** profile.
+This repository is currently rendered for the **application** profile.
 
 ### Complete repository checkout
 
@@ -57,7 +57,7 @@ In particular, a ZIP snapshot can omit workflows and
 will fail by design.
 
 ```text
-git clone https://github.com/{{REPOSITORY_PATH}}.git
+git clone https://github.com/danielep71/K-PRICING.git
 cd <repository-directory>
 ```
 

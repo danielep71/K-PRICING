@@ -24,42 +24,12 @@ blocking rules. Prefer readable wrapping without changing literals or churning
 unrelated code. Editor indentation and line endings are defined in
 [`.editorconfig`](../.editorconfig).
 
-<!-- template:remove:start -->
-### Maintainer Python coverage
-
-The canonical reproducible coverage command is the complete `Exercise maintained Python
-tooling under coverage` shell block in
-[`.github/workflows/checker-development.yml`](../.github/workflows/checker-development.yml).
-It is intentionally CI-independent: after installing the pinned dependencies below, run
-that block verbatim from the repository root in Bash.
-
-```bash
-python -m pip install --disable-pip-version-check "coverage[toml]==7.10.6" "PyYAML==6.0.3"
-```
-
-The measurement scope is maintained `tools/*.py`. Test drivers matching
-`tools/test_*.py` are excluded from the denominator, while the maintained code they
-exercise remains measured. Coverage.py subprocess measurement is enabled so Python
-children launched by semantic fixtures are combined before reporting. The hosted and
-local contract uses a **95% statement-coverage floor** and emits both text and JSON
-evidence. Numeric coverage supplements the focused self-tests and policy-branch suites;
-it never replaces their behavioral or failure-semantics assertions.
-
-<!-- template:remove:end -->
 
 Comments and docstrings explain purpose, inputs, ownership, error handling and
 limits when these are not clear from the code. Check them whenever behavior
 changes. Distinguish synthetic fixtures, structural predicates, live observations
 and executed host evidence; a token variable does not constrain granted scopes.
 
-<!-- template:remove:start -->
-`check_wiki.py` checks the complete tracked-path catalogue and ordered page set,
-refreshes the generated reference/sidebar on request, exports an exact-source
-publication bundle, and compares a fetched Wiki checkout without network writes.
-`test_wiki.py` exercises publication failure boundaries. See
-[Wiki Publication](../docs/WIKI_PUBLICATION.md) and the
-[maintainer journey](../docs/wiki/Home.md). These are template-only tools.
-<!-- template:remove:end -->
 
 `check_documentation.py` checks literal documented Python commands and registered
 file/workflow/policy references without executing them. `check_external_links.py`
@@ -98,11 +68,6 @@ console rendering; workflow validation emits text-only evidence; initialization
 and disposable fixture creation provision source; snapshot collection captures
 observations. The canonical checker remains self-contained.
 
-<!-- template:remove:start -->
-The complete consumer/exclusion registry is maintained and enforced in
-`checker_development.py`. Register any new entry point there as a shared-runner
-consumer or a documented exclusion; do not maintain a second count in prose.
-<!-- template:remove:end -->
 
 ## Canonical repository-quality gate
 

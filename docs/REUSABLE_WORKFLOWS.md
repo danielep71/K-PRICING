@@ -96,36 +96,6 @@ restrictions in [Reuse workflows](https://docs.github.com/en/actions/how-tos/reu
    the old required check; never leave a protection gap. Do not merge on output
    SHA presence alone.
 
-<!-- template:remove:start -->
-The template's `tools/create_reusable_workflow_fixture.py` produces
-complete concrete callers from the current template. It is template-maintainer
-tooling and is removed from initialized projects; use its versioned source in
-the upstream template when you need to reproduce acceptance tests.
-
-## 🧪 Consumer acceptance fixtures
-
-From a clean template checkout, run this once per profile, choosing a distinct
-nonexistent destination and a real provider commit:
-
-```bash
-python3 tools/create_reusable_workflow_fixture.py --root . \
-  --destination /tmp/reusable-library --profile library \
-  --workflow-sha FULL_PROVIDER_COMMIT_SHA
-```
-
-Repeat for `ui-component` and `application`. Each fixture has a full initialized
-repository, a SHA-pinned remote job-level call, and a local specialist job that
-asserts the returned candidate SHA and requires the test module. That local
-requirement is deliberately stricter than the generic profile's ability to
-evolve component filenames; it is not an Excel regression test.
-
-Run the retained gates locally, then publish the disposable fixture commits on
-isolated test refs with Actions enabled. Record each profile, exact consumer
-commit, provider pin, hosted run and both job results in #23. Do not merge
-generated fixture snapshots into the template release branch. Acceptance needs
-real hosted calls, not just YAML parsing. Negative controls must show rejection
-of a mismatched/invalid profile and a failing local specialist requirement.
-<!-- template:remove:end -->
 
 ## 🔄 Compatibility, deprecation and rollback
 

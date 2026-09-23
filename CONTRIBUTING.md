@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🤝 Contributing to {{PROJECT_NAME}}
+# 🤝 Contributing to K-PRICING
 
-### {{PROJECT_DESCRIPTION}}
+### K-PRICING is an Excel/VBA project for practitioners developing transparent financial analytics and instrument pricing.
 
 [![Contributions](https://img.shields.io/badge/Contributions-Welcome-2ea44f?style=flat-square)](#ways-to-contribute)
 [![Conduct](https://img.shields.io/badge/Conduct-Required-6f42c1?style=flat-square)](CODE_OF_CONDUCT.md)
@@ -148,10 +148,6 @@ inspection cannot substitute for Excel execution. A skipped check is not a pass.
 Numerical or reference evidence must be independent of the implementation under
 test.
 
-<!-- template:remove:start -->
-For checker changes, additionally follow
-[`docs/CHECKER_DEVELOPMENT.md`](docs/CHECKER_DEVELOPMENT.md).
-<!-- template:remove:end -->
 For release-evidence schemas and exact-SHA binding, use
 [`docs/RELEASE_EVIDENCE.md`](docs/RELEASE_EVIDENCE.md).
 
@@ -194,9 +190,6 @@ documentation or evidence. Discussion remains technical and respectful under the
 | Release procedure | [`RELEASING.md`](RELEASING.md) |
 | SemVer/changelog semantics | [`docs/RELEASE_SEMANTICS.md`](docs/RELEASE_SEMANTICS.md) |
 | Release evidence | [`docs/RELEASE_EVIDENCE.md`](docs/RELEASE_EVIDENCE.md) |
-<!-- template:remove:start -->
-| Checker changes | [`docs/CHECKER_DEVELOPMENT.md`](docs/CHECKER_DEVELOPMENT.md) |
-<!-- template:remove:end -->
 | Full authority map | [`docs/README.md`](docs/README.md) |
 
 ## 📄 Licensing and maintainer
@@ -205,7 +198,7 @@ This project is distributed under the [MIT License](LICENSE). Contributors must
 have the right to submit every part of a contribution, including code, tests,
 data, images and generated material.
 
-Maintained by **{{MAINTAINER_NAME}}**.
+Maintained by **Daniele Penza**.
 
 ---
 

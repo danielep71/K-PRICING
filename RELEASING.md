@@ -1,4 +1,4 @@
-# 🚀 {{PROJECT_NAME}} Release Guide
+# 🚀 K-PRICING Release Guide
 
 [![Release model: exact source](https://img.shields.io/badge/release-exact%20source-0969da)](#release-invariants)
 [![SemVer contract](https://img.shields.io/badge/versioning-SemVer-3f4551)](docs/RELEASE_SEMANTICS.md)
@@ -20,7 +20,7 @@ profile evidence and asset-manifest schemas are owned by
 
 | Property | Authority |
 | --- | --- |
-| Project/profile | {{PROJECT_NAME}} / {{PROFILE_NAME}} |
+| Project/profile | K-PRICING / application |
 | Current version | [`VERSION`](VERSION) |
 | User-visible history | [`CHANGELOG.md`](CHANGELOG.md) |
 | SemVer/changelog policy | [`docs/RELEASE_SEMANTICS.md`](docs/RELEASE_SEMANTICS.md) |
@@ -123,11 +123,6 @@ Run every project-specific numerical, UI, lifecycle, performance or packaging
 gate as well. A stronger specialist gate is additive; the generic repository
 gate never replaces it.
 
-<!-- template:remove:start -->
-For changes to checker behavior in the canonical template, also run the
-checker-development and semantic policy-coverage contracts documented in
-[`docs/CHECKER_DEVELOPMENT.md`](docs/CHECKER_DEVELOPMENT.md).
-<!-- template:remove:end -->
 
 ## 5. Certify in Excel
 
@@ -201,17 +196,6 @@ and maintainer decision in the PR before merging. Availability of multiple merge
 methods in GitHub settings does not override this convention; this is a review
 policy, not a claim that repository settings enforce squash-only merging.
 
-<!-- template:remove:start -->
-For the canonical template, release certification also checks this convention
-against the complete Git range from the previous release tag to the candidate.
-An intentional history-preserving merge must be registered in
-`.github/release-history-policy.json` before certification with the previous
-`base_tag`, exact commit SHA, permitted finding type, GitHub issue/PR review
-reference, and a concrete reason. Stale, out-of-range or overbroad exceptions
-are blocking. This machine-check is template-maintainer policy; generated
-repositories do not inherit it unless they deliberately adopt an equivalent
-local control.
-<!-- template:remove:end -->
 
 An implementation PR may merge before release certification for stabilization.
 That does not authorize tagging or publication. Keep incomplete acceptance work
@@ -219,50 +203,10 @@ open, then certify the final `main` commit before tagging. A squash or merge
 creates a new source identity: retain original evidence attribution and obtain
 the required final-candidate evidence rather than silently rebinding old results.
 
-<!-- template:remove:start -->
-**Historical exception:** the v1.1.0 release PR used squash merging. The v1.2.0
-implementation entered `main` through PR #49 at
-`ac78ddca5de9de1fbfbf89d504b8ba93b06220c4` using a history-preserving merge
-during the move to stabilization on `main`. The later v1.2.0 clean-room
-stabilization merge commits from PRs #68, #71 and #74 are retained in
-`.github/release-history-policy.json` as descriptive historical records. Those
-records preserve the published ancestry but do not exempt any future release
-range. Keep all published v1.2.0 ancestry intact.
-<!-- template:remove:end -->
 
 Do not force-push shared `main` or rewrite published tags to make historical
 merges conform retroactively. Apply this convention to future merges.
 
-<!-- template:remove:start -->
-### Canonical-template release certification
-
-Before creating a release tag for the canonical template, complete and retain
-all of these additional checks against the same exact candidate SHA:
-
-- run `python3 tools/check_release_semantics.py --root . --self-test` and the
-  current-tree release-semantics validation; the previous-release-to-candidate
-  history range must contain no unapproved merge commit, duplicate commit
-  subject, stale exception or overbroad exception;
-- run the live external-link observation defined by
-  [`docs/DOCUMENTATION_CHECKS.md`](docs/DOCUMENTATION_CHECKS.md); deterministic
-  documentation defects must be zero, while restricted or transient network
-  outcomes remain explicitly reported and are never converted to `PASS`;
-- complete a clean-room maintainer journey from live GitHub template creation
-  through initialization, live repository provisioning, Excel validation and a
-  first release; retain numbered steps, any gaps/corrections, and elapsed-step
-  evidence;
-- export the complete Wiki from the exact candidate SHA, publish it, freshly
-  clone/read back the publication, byte-compare it with zero drift, and record
-  both the source SHA and resulting Wiki commit; and
-- review the published Wiki in a browser, confirming Home, the sidebar and the
-  complete page-navigation set render and navigate as intended.
-
-These are tag blockers, not optional observations. A missing execution, an
-unresolved deterministic defect, publication drift or an incomplete browser
-review prevents tag creation. Network restrictions and transient failures remain
-non-success observations until separately resolved or explicitly reported under
-the documentation policy.
-<!-- template:remove:end -->
 
 ## 9. Create and verify the release tag
 
@@ -291,7 +235,7 @@ python3 tools/check_release.py \
   --output test-results/release-integrity.json \
   --summary test-results/release-integrity.md
 
-git tag -a "$release_tag" -m "{{PROJECT_NAME}} ${release_version}"
+git tag -a "$release_tag" -m "K-PRICING ${release_version}"
 
 python3 tools/check_release.py \
   --root . \
@@ -303,73 +247,6 @@ python3 tools/check_release.py \
 git push origin "$release_tag"
 ```
 
-<!-- template:remove:start -->
-### Canonical-template SSH-signed tag
-
-**Do not use the generated-project `git tag -a` command above for the canonical
-template.** The maintainer must have an SSH signing key whose private half
-remains outside the repository and whose public half is registered on GitHub
-**as an SSH signing key** for the `github_user` named by the candidate's
-`.github/release-provenance.json`. For the current canonical policy, that account
-and verification principal are both `danielep71`.
-
-Set `RELEASE_SIGNING_KEY` to the local private-key path. Do not commit the private
-key, a copy of it, an agent socket, or signing credentials. Then run:
-
-```bash
-git switch main
-git pull --ff-only
-candidate_sha="$(git rev-parse HEAD)"
-release_version="$(tr -d '\r\n' < VERSION)"
-release_tag="v${release_version}"
-: "${RELEASE_SIGNING_KEY:?set RELEASE_SIGNING_KEY to the canonical SSH signing private key}"
-
-python3 tools/check_release.py \
-  --root . \
-  --tag "$release_tag" \
-  --candidate-sha "$candidate_sha" \
-  --evidence ../release-evidence.json \
-  --output test-results/release-integrity.json \
-  --summary test-results/release-integrity.md
-
-git -c gpg.format=ssh -c user.signingkey="$RELEASE_SIGNING_KEY" \
-  tag -s "$release_tag" -m "{{PROJECT_NAME}} ${release_version}"
-
-python3 tools/check_release.py \
-  --root . \
-  --tag "$release_tag" \
-  --candidate-sha "$candidate_sha" \
-  --evidence ../release-evidence.json \
-  --require-tag-ref
-
-git push origin "$release_tag"
-```
-
-The authoritative post-tag gate retrieves only the configured GitHub account's
-public SSH signing keys and builds a temporary OpenSSH allowed-signers file. It
-requires all three facts before the tag can be pushed: the ref is an annotated
-tag object, it resolves to the certified candidate SHA, and its SSH signature
-verifies against current trusted signer material. Failure to read the registry,
-no usable registered signing key, an unsigned tag, another key, a corrupted
-signature, or a moved/recreated tag is blocking. Pre-tag candidate validation
-remains network-independent because tag-signature verification starts only after
-the local tag exists.
-
-#### Canonical signer rotation and revocation
-
-For planned rotation, register the replacement public key on GitHub as an SSH
-signing key before retiring the old key. During the overlap, either registered
-key can satisfy current trust; sign the next candidate with the replacement and
-verify it through the release gate before removing the old key. For compromise,
-remove the affected public key from the GitHub signing-key registry immediately
-and stop release publication until a replacement is registered and verified.
-
-The registry is deliberately a **current-trust** source. After a key is removed,
-a fresh verification of an older tag signed only by that key becomes non-green.
-Retain the exact successful release-gate evidence from publication as historical
-evidence; do not re-add a compromised key merely to make an old verification
-green.
-<!-- template:remove:end -->
 
 Add `--asset-manifest ../release-assets.sha256` to both applicable release-gate
 invocations when the release distributes binary assets. For contract 1.2.0 add
@@ -424,10 +301,6 @@ publication.
 ## 11. Verify after publication
 
 - [ ] Tag resolves to the certified SHA.
-<!-- template:remove:start -->
-- [ ] Canonical-template tag signature still verifies against the current trusted GitHub SSH signing-key registry.
-- [ ] Canonical-template certification ZIP signature still verifies against the same current trusted GitHub SSH signing-key registry.
-<!-- template:remove:end -->
 - [ ] `VERSION` and changelog agree with the tag.
 - [ ] Published assets download and hashes match.
 - [ ] Installation and documentation links work.

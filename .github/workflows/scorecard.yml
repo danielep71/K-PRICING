@@ -1,6 +1,7 @@
 name: OpenSSF Scorecard
 run-name: Scorecard — ${{ github.ref_name }} @ ${{ github.sha }}
 
+# All Scorecard jobs require a public repository; private setup must not publish.
 # Public Scorecard publication is supported only from the default branch.
 # Release branches still receive a real Scorecard CLI scan bound to the exact
 # candidate SHA; untrusted pull requests never receive credentials here.
@@ -25,6 +26,7 @@ jobs:
   release-candidate:
     name: Exact-SHA release-candidate scan
     if: >-
+      github.event.repository.private == false &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
       github.ref_name != github.event.repository.default_branch
     runs-on: ubuntu-24.04
@@ -103,9 +105,10 @@ jobs:
   published:
     name: Published default-branch posture
     if: >-
-      github.event_name == 'schedule' ||
+      github.event.repository.private == false &&
+      (github.event_name == 'schedule' ||
       github.event_name == 'branch_protection_rule' ||
-      github.ref_name == github.event.repository.default_branch
+      github.ref_name == github.event.repository.default_branch)
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:

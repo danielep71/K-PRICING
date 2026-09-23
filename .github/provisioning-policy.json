@@ -2,7 +2,13 @@
   "schema_version": 1,
   "contract_version": "1.2.0",
   "description": "@initialization:PROJECT_DESCRIPTION",
-  "topics": ["excel", "vba"],
+  "topics": [
+    "excel",
+    "vba",
+    "application",
+    "financial-analytics",
+    "instrument-pricing"
+  ],
   "features": {
     "has_issues": true,
     "has_wiki": false,
@@ -16,6 +22,8 @@
     "delete_branch_on_merge": true,
     "allow_update_branch": true
   },
-  "required_checks": ["Repository integrity"],
+  "required_checks": [
+    "Repository integrity"
+  ],
   "exceptions": {}
 }
