@@ -1,17 +1,8 @@
-<!-- template:remove:start -->
-<!--
-TEMPLATE INSTRUCTIONS
-- Initialize every registered token before publishing.
-- Review the supported-version policy before the first public release.
-- Keep private reporting, disclosure, safe-harbor, and secret-handling sections.
-- Replace project-specific risk surfaces with verified facts.
--->
-<!-- template:remove:end -->
 <div align="center">
 
-# 🔒 {{PROJECT_NAME}} Security Policy
+# 🔒 K-PRICING Security Policy
 
-### {{PROJECT_TAGLINE}}
+### Financial analytics and instrument pricing for Excel/VBA
 
 [![Reporting](https://img.shields.io/badge/Reporting-Private-d97706?style=for-the-badge)](#reporting-a-vulnerability)
 [![Support](https://img.shields.io/badge/Support-Latest_release-217346?style=for-the-badge)](#supported-versions)
@@ -78,8 +69,8 @@ Use a private channel:
 
 1. On the repository **Security** page, select **Report a vulnerability** when
    GitHub private vulnerability reporting is enabled.
-2. Otherwise use **{{SUPPORT_CONTACT}}** with subject
-   **Private security report — {{PROJECT_NAME}}**.
+2. Otherwise use **danielep71@gmail.com** with subject
+   **Private security report — K-PRICING**.
 
 Include only the information needed to assess the issue:
 
@@ -273,6 +264,6 @@ Conduct for participant behavior and this policy for software/security risk.
 
 <br>
 
-Maintained by **{{MAINTAINER_NAME}}**
+Maintained by **Daniele Penza**
 
 </div>

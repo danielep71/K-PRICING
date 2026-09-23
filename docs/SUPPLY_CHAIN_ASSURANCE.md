@@ -1,8 +1,25 @@
 # 🔐 Supply-Chain Assurance
 
-This document owns the repository's public supply-chain analysis layer.
+This document owns the repository's supply-chain analysis layer.
 It complements the deterministic repository gates and the controlled dependency
 update policy; it does not replace either one.
+
+## Private repository policy
+
+This repository is private. All Scorecard scan/publication jobs are skipped
+while it remains private, and the README does not request public Scorecard,
+release or issue-count badges for it. No public Scorecard result is claimed.
+
+CodeQL jobs are skipped for private repositories unless the maintainer has
+confirmed the applicable private-code license/entitlement and sets the repository
+variable `ENABLE_PRIVATE_CODEQL=true`. This variable is not enabled during
+initialization. Skipped security analysis is an explicit assurance gap, never a
+successful scan. The deterministic repository, workflow, VBA and release gates
+remain active. Before a functional release, resolve and record the required
+security-analysis coverage for the chosen private distribution model.
+
+The public-publication paths described below apply only if the owner later
+explicitly changes the repository visibility; initialization does not do so.
 
 ## Controls
 
@@ -107,5 +124,6 @@ Before merging a CodeQL, Scorecard, or dependency-workflow change:
    publishing Action run and the exact-SHA public Scorecard verification result.
 
 If a required security analyzer is unavailable, misconfigured, or denied its
-required permissions, its workflow is non-green. Do not convert an unavailable
+required permissions, its workflow is non-green when selected to run. The private eligibility skips above
+remain documented limitations, not completed analysis. Do not convert an unavailable
 result into a pass or weaken deterministic gates to recover a public score.

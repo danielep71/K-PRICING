@@ -28,9 +28,6 @@ explicit maintainer review cadence.
 | Reusable workflows | Caller job-level `uses:`, [published interface pin](REUSABLE_WORKFLOWS.md), template source and its compatibility notes | Full provider SHA plus interface revision; review coupled caller-local scripts separately |
 | actionlint | `ACTIONLINT_VERSION` and archive digest in the static workflow; `EXPECTED_ACTIONLINT_VERSION` in `tools/test_workflow_validation.py`; official `rhysd/actionlint` releases | Version, platform-specific archive SHA-256 and expected validator version together |
 | Python quality tools | `RUFF_VERSION` and `MYPY_VERSION` in the static workflow; `tools/requirements-*-ci.txt`; official PyPI distribution metadata and upstream release notes | Exact direct/transitive versions plus reviewed wheel SHA-256 hashes for hosted CPython 3.10/Ubuntu x64; local cross-platform pins must mirror the CI locks |
-<!-- template:remove:start -->
-| Template snapshot parser | PyYAML pin in `portfolio-drift.yml` and `check_portfolio_drift.py`; [parser review](PORTFOLIO_DRIFT.md) and official PyPI/upstream metadata | Keep installer and runtime version assertion synchronized; template maintenance only |
-<!-- template:remove:end -->
 | Runtime and execution environment | `PYTHON_VERSION`, `runs-on`, Action `runs.using`, `pyproject.toml` target/lint/type configuration and workflow install commands | Explicit compatibility change, not an incidental pin refresh |
 | Local validation code and fixtures | Retained `tools/` scripts, template-only checker-development tools, generated consumer fixtures and their embedded pins | Reviewed source commit; not a separately fetched package |
 
