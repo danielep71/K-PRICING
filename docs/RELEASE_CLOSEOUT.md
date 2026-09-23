@@ -8,21 +8,21 @@ K-PRICING is an initialized application. Its closeout uses the selected generate
 profile; canonical certification-bundle and Wiki controls are not applicable.
 The workflow records that scope explicitly. A generated project must separately
 adopt and implement any stronger local policy; canonical requirements are not
-automatically inherited. The canonical template procedure below includes its
-additional certification and Wiki checks.
+automatically inherited. This repository’s workflow rejects template-mode
+candidates and has no Wiki browser-review input or removed Wiki checker call.
 
 ## Procedure
 
-After the annotated tag, tag-triggered static checks, GitHub Release, release milestone, and (for the canonical template) Wiki publication are complete, run the **Release closeout** workflow manually from the released repository. Supply:
+After the annotated tag, tag-triggered static checks, GitHub Release and release
+milestone are complete, run **Release closeout** manually. Supply:
 
 - `tag`: the published tag, for example `v1.2.1`;
 - `candidate_sha`: the exact 40-character SHA that was certified before tagging;
 - `milestone_number`: the GitHub milestone number used for that release;
-- `wiki_browser_reviewed`: `true` only after a human has opened the published Wiki and checked Home, sidebar/navigation, and representative links in a browser;
 - `expect_prerelease`: normally `false`; set it only for an intentionally prerelease publication;
 - `allow_not_latest`: normally `false`; set it only when the release is intentionally not expected to be GitHub's current latest release.
 
-The workflow checks out the exact candidate, captures GitHub REST facts, performs the existing Wiki read-back comparison, tests GitHub-generated source archive retrieval, builds one retained snapshot, and evaluates that snapshot with `tools/_release_closeout.py`. The terminal workflow verdict is green only when the closeout report, readable summary, and retained evidence are all produced successfully.
+The workflow checks out the exact candidate, captures GitHub REST facts, records Wiki scope as not applicable, tests GitHub-generated source archive retrieval, builds one retained snapshot, and evaluates that snapshot with `tools/_release_closeout.py`. The terminal workflow verdict is green only when the closeout report, readable summary, and retained evidence are all produced successfully.
 
 ## Deterministic provider controls
 
@@ -43,42 +43,34 @@ An unexpected uploaded asset, lightweight or moved tag, failed/missing tag CI, d
 
 GitHub's generated `zipball_url` and `tarball_url` are provider-generated source archives. They are **not** entries in the Release API `assets` array and are never interpreted as runtime binaries or uploaded release payloads.
 
-The closeout report therefore records these separately:
+For this generated application, every uploaded Release asset is a product asset
+and is checked against its candidate-bound allowed patterns. The normalized
+snapshot retains that asset inventory. Provider-generated source ZIP/tar
+availability and retrieval are recorded separately.
 
-- raw Release API `assets`: all explicitly uploaded files, retained in provider metadata;
-- canonical certification assets: the ZIP, detached `.zip.sig`, manifest and SHA-256
-  file, partitioned by `release_certification.py` and independently downloaded,
-  hash-checked and signature-verified against the candidate/current trust policy;
-- `uploaded_assets` in the normalized closeout report: the remaining product assets,
-  governed by `allowed_asset_globs`; in generated mode all raw assets remain product assets;
-- source ZIP/tar exposure and retrieval: provider observations confirming that GitHub's generated source archives are available.
+Canonical template releases additionally partition and verify four durable
+certification attachments. That is a different release mode; K-PRICING records
+certification scope as `not-applicable` and does not silently exempt uploaded
+files from product-asset checks. See [RELEASE_EVIDENCE.md](RELEASE_EVIDENCE.md)
+for the distinction between certification evidence and product payloads.
 
-For the canonical template's source-only profile, product `uploaded_assets` must
-remain empty while the four certification assets and generated source archives
-are required. Certification files are not exempt from verification: the workflow
-binds the separate certification verdict to its terminal result. The helper
-evaluates the filtered snapshot; helper success alone is not certification success.
+## Wiki and network observations
 
-## Wiki and UI observations
+The Wiki is disabled for K-PRICING. No Wiki review is requested. The workflow
+writes a `not-applicable` Wiki record and snapshot observation; it does not call
+a removed checker, clone a Wiki or claim that a Wiki review passed.
 
-Wiki publication remains owned by `tools/check_wiki.py`; the closeout helper does not implement a second Wiki policy. For template-mode releases, the workflow clones the published Wiki, invokes the existing checker against the exact candidate source, and includes that checker's result in the closeout snapshot.
-
-Some evidence is necessarily an **observation**, not a repository fact. The report labels these separately from deterministic provider controls:
-
-- successful retrieval of GitHub-generated ZIP/tar source archives;
-- the explicit browser review of the Wiki Home/sidebar/navigation.
-
-A missing or failed observation remains non-green, but its category is preserved so the report does not imply that a browser review or network retrieval was derived from Git history.
+Source archive retrieval remains a network observation. A missing or failed
+retrieval is non-green and is not represented as a fact derived from Git history.
 
 ## Evidence retained
 
 The workflow retains, for 90 days:
 
-- captured provider metadata, including the unfiltered Release asset inventory;
-- `certification-plan.json`: certification/product partition or explicit not-applicable scope;
-- `certification-verification.json`: independent verification verdict or not-applicable scope;
+- `certification-plan.json`: explicit not-applicable certification scope and full product-asset inventory;
+- `certification-verification.json`: explicit not-applicable certification scope;
 - `snapshot.json`: the normalized input facts used by the validator;
-- the authoritative Wiki comparison JSON/Markdown when applicable;
+- `wiki.json`: the explicit not-applicable Wiki record;
 - `release-closeout.json`: machine-readable closeout result;
 - `release-closeout.md`: concise human-readable closeout result.
 
@@ -101,4 +93,4 @@ The fixture matrix covers the valid path plus VERSION/tag mismatch, lightweight 
 
 ## Scope boundary
 
-Post-release closeout supplements, but does not replace, pre-tag `check_release.py` certification, provenance validation, Excel runtime evidence, or the Wiki publication checker. A green closeout report means the captured post-publication state is coherent with the certified candidate under this contract; it is not a new claim about Excel execution, numerical accuracy, UI runtime behavior, or release-binary provenance.
+Post-release closeout supplements, but does not replace, pre-tag `check_release.py` certification, provenance validation, Excel runtime evidence or candidate-specific packaging checks. A green closeout report means the captured post-publication state is coherent with the certified candidate under this contract; it is not a new claim about Excel execution, numerical accuracy, UI runtime behavior, or release-binary provenance.

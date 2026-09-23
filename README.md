@@ -228,7 +228,10 @@ document that owns your task:
 
 ## ⚠️ Known limitations
 
-Do not hide an unresolved support or assurance boundary.
+These are the current limitations, updated after the accepted starter run.
+The [initialization record](.github/initialization.json) preserves the original
+2026-09-23 inputs, including the then-pending Excel certification; it is
+provenance, not a live copy of this section.
 
 - Repository initialization only: the neutral starter is not a pricing implementation; migration of existing pricing work is pending.
 - No supported workbook or add-in or functional release is available. Starter evidence does not certify pricing or application lifecycle.

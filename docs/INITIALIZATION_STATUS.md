@@ -1,10 +1,10 @@
 # Initialization status
 
-**Closeout update:** the subsequent manual starter run passed. See
-[SETUP_COMPLETION.md](SETUP_COMPLETION.md) for the accepted candidate, evidence
-and limits. Current documentation follow-up and final milestone acceptance are
-tracked in [issue 10](https://github.com/danielep71/K-PRICING/issues/10).
-Pending-run statements below describe the earlier setup checkpoint.
+**Current status:** v0.0.1 repository setup is complete. Issues #3, #6, #8 and
+#10 are closed, and the milestone is closed. The accepted starter Excel run and
+final setup baseline are recorded in [SETUP_COMPLETION.md](SETUP_COMPLETION.md).
+Migration execution remains in v0.0.2; unavailable platform controls below are
+release prerequisites, not unfinished setup acceptance.
 
 
 Initialized on 2026-09-23 for `danielep71/K-PRICING`, using the application
@@ -38,7 +38,9 @@ The checker rejects standalone old-product headings and explicit old product-nam
 declarations; documentation tests also bind the README title to the recorded
 project name. Historical references remain legitimate, not blanket scan exclusions.
 
-The initialization record preserves the original inputs. Re-running the
+The initialization record preserves the original inputs, including the original
+absence of exact-source Excel evidence. The README limitations evolved after
+the accepted starter run; the original input is intentionally not rewritten. Re-running the
 initializer with those same inputs returns a no-op and preserves the evolved
 identity policy; different inputs are rejected. Future template updates must
 preserve this project-specific policy and pass its regression tests. The neutral
@@ -52,8 +54,10 @@ The pre-initialization self-test passed all three profile fixtures, including
 absence cases. The initialized source passes the 21-rule portable repository
 gate. These are repository checks, not VBA compilation or Excel execution.
 
-No pricing implementation, workbook/add-in package, functional release or
-exact-candidate Windows Excel certification is included in this initialization.
+Initialization itself did not execute Excel. The subsequent neutral-starter
+run was accepted on its exact candidate; see [SETUP_COMPLETION.md](SETUP_COMPLETION.md).
+Pricing implementation, workbook/add-in packaging and functional-release
+certification remain outside this completed setup milestone.
 
 ## Private automation
 
@@ -93,11 +97,14 @@ The [post-creation checklist](POST_CREATION_CHECKLIST.md) remains the detailed
 setup authority. CI and final integration evidence belong to the
 [initialization pull request](https://github.com/danielep71/K-PRICING/pull/1).
 
-## Historical pre-Excel setup checkpoint
+## Completed setup and next work
 
-The current project-specific record is [SETUP_VERIFICATION.md](SETUP_VERIFICATION.md).
-Use [DEVELOPER_SETUP.md](DEVELOPER_SETUP.md) and
-[EXCEL_SETUP_RUNBOOK.md](EXCEL_SETUP_RUNBOOK.md) for the pending neutral host run.
+[SETUP_VERIFICATION.md](SETUP_VERIFICATION.md) records the observed repository
+settings and accepted starter result. [SETUP_COMPLETION.md](SETUP_COMPLETION.md)
+records the final setup baseline and closure of issues #3, #6 and #10.
+Use [DEVELOPER_SETUP.md](DEVELOPER_SETUP.md) for ongoing development and
+[EXCEL_SETUP_RUNBOOK.md](EXCEL_SETUP_RUNBOOK.md) for evidence capture on a new
+candidate, together with the active validation issue's scope and commands.
 The migration inventory and issue mapping are in [MIGRATION_PLAN.md](MIGRATION_PLAN.md).
-v0.0.1 is a milestone-only checkpoint; VERSION remains 0.0.0 and no release tag
-is created. Final acceptance remains dependent on actual Excel evidence.
+v0.0.1 is a completed milestone-only checkpoint; VERSION remains 0.0.0 and no
+release tag was created.

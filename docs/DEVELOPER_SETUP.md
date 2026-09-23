@@ -56,6 +56,7 @@ the pinned actionlint binary itself.
 python3 tools/check_repo.py --root . --self-test
 python3 tools/check_repo.py --root .
 python3 tools/test_documentation.py -v
+python3 tools/test_verification_depth.py -v
 python3 tools/check_documentation.py --root .
 python3 tools/check_release.py --root . --self-test
 python3 tools/check_release_semantics.py --root . --self-test

@@ -5,6 +5,17 @@
 
 `tools/` contains repository validators, evidence collectors and setup tooling.
 
+The [local Action contract](LOCAL_ACTIONS.md) owns repository-local Action and
+reusable-workflow containment checks. `test_verification_depth.py` exercises
+retained validator failure paths and is required by `Repository integrity`:
+
+```bash
+python3 tools/test_verification_depth.py -v
+```
+
+Its output includes expected diagnostics from negative fixtures; the unittest
+exit status determines success. These are Python tests, not Excel execution.
+
 Local source checks are deterministic. Network collectors and live setup tools
 have separately documented observation, credential and mutation boundaries.
 

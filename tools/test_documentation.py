@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import re
 import shutil
 import subprocess
+import sys
 import tempfile
+import textwrap
 import threading
 import time
 import unittest
@@ -73,6 +77,53 @@ python3() {
                 expected = stages if fail_at == "none" else stages[:stages.index(fail_at) + 1]
                 self.assertEqual((root / "calls.log").read_text().splitlines(), expected)
                 self.assertEqual(result.returncode == 0, fail_at == "none", result.stderr)
+
+
+class GeneratedWorkflowTests(unittest.TestCase):
+    """Execute changed workflow boundaries without provider or Excel access."""
+
+    def test_closeout_wiki_scope_is_generated_only(self):
+        workflow = (ROOT / ".github/workflows/release-closeout.yml").read_text(encoding="utf-8")
+        self.assertNotIn("wiki_browser_reviewed:", workflow)
+        self.assertNotIn("tools/check_wiki.py", workflow)
+        block = workflow.split("- name: Record generated-project Wiki scope", 1)[1]
+        code = textwrap.dedent(block.split("<<'PYCODE'\n", 1)[1].split("\n          PYCODE", 1)[0])
+        for mode in ("generated", "template"):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                (root / ".github").mkdir()
+                (root / ".github/repository-profile.json").write_text(
+                    json.dumps({"mode": mode}), encoding="utf-8"
+                )
+                result = subprocess.run(
+                    [sys.executable, "-c", code], cwd=root,
+                    env={**os.environ, "EVIDENCE": str(root)},
+                    capture_output=True, text=True, check=False,
+                )
+                self.assertEqual(result.returncode == 0, mode == "generated", result.stderr)
+                if mode == "generated":
+                    record = json.loads((root / "wiki.json").read_text(encoding="utf-8"))
+                    self.assertEqual(record, {"status": "not-applicable", "findings": []})
+                else:
+                    self.assertFalse((root / "wiki.json").exists())
+
+    @unittest.skipUnless(shutil.which("bash"), "Bash required for terminal verdict fixture")
+    def test_verification_depth_failure_blocks_terminal_verdict(self):
+        workflow = (ROOT / ".github/workflows/static-checks.yml").read_text(encoding="utf-8")
+        self.assertIn("python3 tools/test_verification_depth.py -v", workflow)
+        block = workflow.split("- name: Enforce self-test and repository results", 1)[1]
+        self.assertIn("${{ steps.verification-depth.outcome }}", block)
+        outcomes = re.findall(r"(?m)^          ([A-Z_]+):", block)
+        code = textwrap.dedent(block.split("        run: |\n", 1)[1])
+        for outcome in ("success", "failure", "skipped"):
+            with self.subTest(outcome=outcome):
+                environment = {**os.environ, **dict.fromkeys(outcomes, "success")}
+                environment["VERIFICATION_DEPTH_OUTCOME"] = outcome
+                result = subprocess.run(
+                    ["bash", "-c", code], env=environment,
+                    capture_output=True, text=True, check=False,
+                )
+                self.assertEqual(result.returncode == 0, outcome == "success", result.stdout)
 
 
 class ProjectIdentityTests(unittest.TestCase):

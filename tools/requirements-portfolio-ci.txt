@@ -1,5 +1,0 @@
-# Hash-locked CPython 3.10 / Ubuntu x64 portfolio CI requirement.
-# CI installs with --only-binary=:all: --require-hashes.
-
-PyYAML==6.0.3 \
-    --hash=sha256:9c7708761fccb9397fe64bbc0395abcae8c4bf7b0eac081e12b809bf47700d0b

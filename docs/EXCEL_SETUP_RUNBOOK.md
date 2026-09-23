@@ -8,8 +8,11 @@ parity, application lifecycle and a distributable package remain outside this ru
 
 ## Before opening Excel
 
-1. Use the full 40-character candidate SHA pinned in issue 8 after setup PRs
-   merge. Obtain that revision with Git, record `git rev-parse HEAD`, and check
+1. Use the full 40-character candidate SHA approved in the active validation
+   issue after its implementation PRs merge: issue #8 identifies the historical
+   starter run; [issue #17](https://github.com/danielep71/K-PRICING/issues/17) owns
+   the future migration parity run. Obtain that revision with Git, record
+   `git rev-parse HEAD`, and check
    that `git status --short` is empty. Do not import files from a moving branch
    or mix versions.
 2. Create a fresh evidence directory outside the checkout. Record operator,
@@ -20,6 +23,16 @@ parity, application lifecycle and a distributable package remain outside this ru
    a clean disposable workbook containing no personal or client data.
 4. Set a 15-minute session limit. If import, compilation or execution stalls,
    record where it stopped; a timeout or incomplete run is not a pass.
+
+## Scope for a new validation run
+
+The component inventory, entry points and expected four-case/six-assertion
+summary below describe the neutral starter only. For migration parity, use the
+active issue’s approved import inventory, harness commands, expected case and
+assertion counts, comparison baseline and acceptance criteria. Issue #17 must
+define those before execution; do not reuse issue #8’s candidate or treat the
+starter example as pricing parity. Reuse the host, cleanup and evidence-capture
+steps with that candidate-specific scope.
 
 ## Import and compile
 

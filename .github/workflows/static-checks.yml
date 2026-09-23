@@ -167,6 +167,13 @@ jobs:
           python3 tools/test_release_provenance.py -v
           python3 tools/test_excel_evidence.py -v
 
+      - name: Exercise retained verification-depth tests
+        id: verification-depth
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          python3 tools/test_verification_depth.py -v 2>&1 | tee test-results/verification-depth.txt
+
       - name: Check maintained documentation contracts
         run: |
           python3 tools/test_documentation.py -v
@@ -315,7 +322,8 @@ jobs:
               test-results/vba-conditionals.md \
               test-results/vba-public-api.md \
               test-results/local-actions.md \
-              test-results/workflow-validation.md \
+              test-results/workflow-validation.md
+            test-results/verification-depth.txt \
               test-results/release-self-test.md \
               test-results/release-semantics.md; do
               if [[ ! -f "$report" ]]; then
@@ -356,6 +364,7 @@ jobs:
             test-results/template-contract.md
             test-results/actionlint-version.txt
             test-results/workflow-validation.md
+            test-results/verification-depth.txt
             test-results/release-self-test.md
             test-results/release-semantics.json
             test-results/release-semantics.md
@@ -374,6 +383,7 @@ jobs:
           INITIALIZER_SELF_TEST_OUTCOME: ${{ steps.initializer-self-test.outcome }}
           VALIDATOR_INSTALL_OUTCOME: ${{ steps.validator-install.outcome }}
           AUTHORITATIVE_WORKFLOWS_OUTCOME: ${{ steps.authoritative-workflows.outcome }}
+          VERIFICATION_DEPTH_OUTCOME: ${{ steps.verification-depth.outcome }}
           RELEASE_SELF_TEST_OUTCOME: ${{ steps.release-self-test.outcome }}
           RELEASE_SEMANTICS_SELF_TEST_OUTCOME: ${{ steps.release-semantics-self-test.outcome }}
           RELEASE_SEMANTICS_OUTCOME: ${{ steps.release-semantics.outcome }}
@@ -403,6 +413,7 @@ jobs:
             "mypy type check:$MYPY_OUTCOME" \
             "Authoritative-validator installation:$VALIDATOR_INSTALL_OUTCOME" \
             "Authoritative workflow-validation:$AUTHORITATIVE_WORKFLOWS_OUTCOME" \
+            "Retained verification-depth tests:$VERIFICATION_DEPTH_OUTCOME" \
             "Release-integrity self-test:$RELEASE_SELF_TEST_OUTCOME" \
             "Release-semantics self-test:$RELEASE_SEMANTICS_SELF_TEST_OUTCOME" \
             "Release semantics:$RELEASE_SEMANTICS_OUTCOME" \
