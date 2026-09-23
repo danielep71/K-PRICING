@@ -129,6 +129,9 @@ Use only the categories needed by a release.
 - Documentation presentation checks now validate generated-project identity and
   selected assets instead of requiring the upstream template's public badge and
   banner after initialization.
+- Retained validation suites no longer import removed template-maintenance
+  tools. Their inapplicable consumer-generation, portfolio, Wiki and checker
+  maintenance cases are removed; operational validator coverage remains.
 
 ---
 

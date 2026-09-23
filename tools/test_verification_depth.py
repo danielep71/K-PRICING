@@ -3,12 +3,9 @@
 
 from __future__ import annotations
 
-import ast
-import base64
 import json
 import tempfile
 import unittest
-from email.message import Message
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
@@ -21,12 +18,7 @@ import check_local_actions as local_actions
 import check_release as release
 import check_release_semantics as semantics
 import check_template_contract as contract
-import check_wiki as wiki
-import checker_development as checker_dev
-import collect_portfolio_snapshot as snapshot
 import initialize_repository as initializer
-import policy_coverage_runner as coverage_runner
-import provision_repository as provision
 
 
 class InitializerDepthTests(unittest.TestCase):
@@ -618,43 +610,7 @@ class ContractAndWikiDepthTests(unittest.TestCase):
             self.assertIsNone(contract._check_record(root, {"mode": "generated"}, "1.2.0", "owner/template", findings))
             self.assertTrue(findings)
 
-    def test_wiki_helpers_failure_boundaries(self) -> None:
-        self.assertEqual(wiki.directories({"a/b/c.txt"}), {"a", "a/b"})
-        with tempfile.TemporaryDirectory() as name:
-            root = Path(name)
-            path = root / "x.json"
-            path.write_text('{"a":1,"a":2}', encoding="utf-8")
-            with self.assertRaises(ValueError):
-                wiki.read_json(path)
-            path.write_text("[]", encoding="utf-8")
-            with self.assertRaises(ValueError):
-                wiki.read_json(path)
-            with self.assertRaises(ValueError):
-                wiki.bundle(root, {"pages": []}, "bad")
-            with self.assertRaises(ValueError):
-                wiki.compare_bundle({}, root / "missing")
-            outside = Path(name).parent / (Path(name).name + "-export")
-            try:
-                wiki.write_bundle({"x": b"1"}, outside, root)
-                self.assertEqual((outside / "x").read_bytes(), b"1")
-                with self.assertRaises(ValueError):
-                    wiki.write_bundle({}, outside, root)
-            finally:
-                if outside.exists():
-                    for item in outside.iterdir():
-                        item.unlink()
-                    outside.rmdir()
 
-    def test_wiki_render_and_compare(self) -> None:
-        text = "[remote](https://example.com) [anchor](#x) [page](Other.md#y) [file](../../README.md)"
-        rendered = wiki.render_page(text, "Home.md", {"Home", "Other"}, "owner/repo", "a" * 40)
-        self.assertIn("](Other#y)", rendered)
-        self.assertIn("/blob/" + "a" * 40, rendered)
-        with tempfile.TemporaryDirectory() as name:
-            root = Path(name)
-            (root / "x").write_bytes(b"bad")
-            differences = wiki.compare_bundle({"x": b"good", "y": b"new"}, root)
-            self.assertEqual(len(differences), 2)
 
 
 class ReleaseSemanticsDepthTests(unittest.TestCase):
@@ -1032,91 +988,6 @@ class ExtendedReleaseAndCloseoutDepthTests(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, "own template contract source"):
                 initializer._assert_adopted_contract(root, config)
 
-class WikiPublicationDepthTests(unittest.TestCase):
-    def test_wiki_json_link_bundle_and_publication_paths(self) -> None:
-        with tempfile.TemporaryDirectory() as name:
-            root = Path(name)
-            bad = root / "bad.json"
-            bad.write_text('{"x": 1, "x": 2}', encoding="utf-8")
-            with self.assertRaises(ValueError):
-                wiki.read_json(bad)
-            bad.write_text("[]", encoding="utf-8")
-            with self.assertRaises(ValueError):
-                wiki.read_json(bad)
-
-            rendered = wiki.render_page(
-                "[Guide](Other.md#part) [Root](../../README.md) [Remote](https://example.com/x) [A](#a)",
-                "Home.md",
-                {"Home", "Other"},
-                "owner/repo",
-                "a" * 40,
-            )
-            self.assertIn("](Other#part)", rendered)
-            self.assertIn("/blob/" + "a" * 40 + "/README.md)", rendered)
-            self.assertIn("https://example.com/x", rendered)
-            self.assertIn("](#a)", rendered)
-            with self.assertRaises(ValueError):
-                wiki.render_page("[Escape](../../../outside.md)", "Home.md", {"Home"}, "owner/repo", "a" * 40)
-
-            profile = root / ".github/repository-profile.json"
-            profile.parent.mkdir(parents=True)
-            profile.write_text(json.dumps({"repository": "owner/repo"}), encoding="utf-8")
-            wiki_dir = root / "docs/wiki"
-            wiki_dir.mkdir(parents=True)
-            for page in ("Home.md", "_Sidebar.md"):
-                (wiki_dir / page).write_text("# Page\n", encoding="utf-8")
-            data = {"pages": [{"name": "Home"}]}
-            with self.assertRaises(ValueError):
-                wiki.bundle(root, data, "short")
-            profile.write_text(json.dumps({"repository": "bad"}), encoding="utf-8")
-            with self.assertRaises(ValueError):
-                wiki.bundle(root, data, "a" * 40)
-            profile.write_text(json.dumps({"repository": "owner/repo"}), encoding="utf-8")
-            bundle = wiki.bundle(root, data, "a" * 40)
-            self.assertIn("Wiki-Source.json", bundle)
-
-            outside = root.parent / (root.name + "-wiki-export")
-            if outside.exists():
-                import shutil
-                shutil.rmtree(outside)
-            wiki.write_bundle({"Home.md": b"x"}, outside, root)
-            self.assertEqual((outside / "Home.md").read_bytes(), b"x")
-            with self.assertRaises(ValueError):
-                wiki.write_bundle({"Home.md": b"x"}, outside, root)
-            inside = root / "inside"
-            with self.assertRaises(ValueError):
-                wiki.write_bundle({"Home.md": b"x"}, inside, root)
-            import shutil
-            shutil.rmtree(outside)
-
-    def test_wiki_build_report_export_and_compare(self) -> None:
-        with tempfile.TemporaryDirectory() as name:
-            root = Path(name)
-            wiki_dir = root / "docs/wiki"
-            wiki_dir.mkdir(parents=True)
-            (wiki_dir / wiki.INVENTORY).write_text("inventory\n", encoding="utf-8")
-            (wiki_dir / "_Sidebar.md").write_text("sidebar\n", encoding="utf-8")
-            export_dir = root.parent / (root.name + "-export")
-            published_dir = root.parent / (root.name + "-published")
-            args = type("Args", (), {"root": root, "write_reference": False, "export_dir": export_dir, "published_dir": published_dir})()
-            git_result = type("GitResult", (), {"stdout": "a" * 40 + "\n"})()
-            clean_result = type("GitResult", (), {"stdout": ""})()
-            with (
-                patch.object(wiki, "tracked_files", return_value=set()),
-                patch.object(wiki, "read_json", return_value={}),
-                patch.object(wiki, "validate_catalogue"),
-                patch.object(wiki, "inventory", return_value="inventory\n"),
-                patch.object(wiki, "sidebar", return_value="sidebar\n"),
-                patch.object(wiki, "git_text", side_effect=[git_result, clean_result]),
-                patch.object(wiki, "bundle", return_value={"Home.md": b"x"}),
-                patch.object(wiki, "write_bundle") as write_bundle,
-                patch.object(wiki, "compare_bundle", return_value=["published bytes differ: Home.md"]) as compare,
-            ):
-                report = wiki.build_report(args)
-            self.assertEqual(report["status"], "fail")
-            write_bundle.assert_called_once()
-            compare.assert_called_once()
-            self.assertIn("published bytes differ", report["findings"][0])
 
 
 class TemplateContractBoundaryTests(unittest.TestCase):
@@ -1192,99 +1063,8 @@ class LocalActionDepthTests(unittest.TestCase):
         self.assertTrue(any("Unsupported" in item["message"] for item in findings))
 
 
-class PolicyCoverageRunnerDepthTests(unittest.TestCase):
-    def test_policy_report_failure_matrix_and_markdown(self) -> None:
-        core = {
-            "source": "tools/check_repo.py",
-            "sites": 2,
-            "covered": [{"id": "covered", "function": "f", "line": 1, "cases": ["a"], "expression": "x"}],
-            "uncovered": [{"id": "miss", "function": "g", "line": 2, "cases": [], "expression": "y"}],
-            "unexpected_sites": [{"id": "z", "cases": ["b"]}],
-            "cases": [{"id": "bad-case", "owner": "rule", "status": "fail", "detail": "bad"}],
-        }
-        failed_tool = {"tool": "tools/check_release.py", "status": "fail", "exit_code": 1, "summary": "bad"}
-        operational = {"id": "top-level-operational-error", "status": "fail", "exit_code": 1, "expected_exit_code": 2}
-        delegated = {"owner": "tools/test_workflow_validation.py", "execution": "delegated", "fixtures": ["x"], "status": "fail", "missing": ["x"], "terminally_required": False}
-        with (
-            patch.object(coverage_runner, "run_core_coverage", return_value=core),
-            patch.object(coverage_runner, "run_tool_selftest", return_value=failed_tool),
-            patch.object(coverage_runner, "operational_exit_fixture", return_value=operational),
-            patch.object(coverage_runner, "delegated_workflow_fixtures", return_value=delegated),
-        ):
-            report = coverage_runner.build_report(Path("."))
-        self.assertEqual(report["status"], "fail")
-        self.assertGreaterEqual(len(report["failures"]), 6)
-        rendered = coverage_runner.markdown_report(report)
-        self.assertIn("Uncovered canonical finding sites", rendered)
-        self.assertIn("Failed fixture assertions", rendered)
-        self.assertIn("Coverage failures", rendered)
-
-    def test_policy_selftest_and_main_failure_paths(self) -> None:
-        report = {"status": "fail", "counts": {"canonical_sites": 0, "canonical_covered": 0, "canonical_uncovered": 0, "canonical_cases": 0, "focused_selftests": 0, "matrix_rows": 0, "exclusions": 0}, "uncovered": [], "canonical_cases": [], "failures": ["incomplete"], "exclusions": []}
-        with patch.object(coverage_runner, "build_report", return_value=report):
-            self.assertEqual(coverage_runner.run_self_test(Path(".")), 1)
-        with patch.object(coverage_runner, "run_gate", return_value=9):
-            self.assertEqual(coverage_runner.main([]), 9)
 
 
-class SnapshotCollectorDepthTests(unittest.TestCase):
-    def test_pages_and_tag_resolution_boundaries(self) -> None:
-        with patch.object(snapshot, "get", return_value=[]):
-            self.assertEqual(snapshot.pages("owner/repo/items"), [])
-        with patch.object(snapshot, "get", return_value={"total_count": 1000, "items": []}):
-            with self.assertRaises(ValueError):
-                snapshot.pages("owner/repo/items", "items")
-        with patch.object(snapshot, "get", return_value={}):
-            with self.assertRaises(ValueError):
-                snapshot.pages("owner/repo/items")
-        with patch.object(snapshot, "get", return_value=[None] * 100):
-            with self.assertRaises(ValueError):
-                snapshot.pages("owner/repo/items")
-
-        with patch.object(snapshot, "get", return_value={"object": {"type": "commit", "sha": "a" * 40}}):
-            self.assertEqual(snapshot.tag_commit("owner/repo", "v1"), "a" * 40)
-        with patch.object(snapshot, "get", return_value={"object": {"type": "blob", "sha": "a" * 40}}):
-            with self.assertRaises(ValueError):
-                snapshot.tag_commit("owner/repo", "v1")
-        tag_obj = {"object": {"type": "tag", "sha": "a" * 40}}
-        with patch.object(snapshot, "get", return_value=tag_obj):
-            with self.assertRaises(ValueError):
-                snapshot.tag_commit("owner/repo", "v1")
-
-    def test_quality_collect_and_main_degraded_paths(self) -> None:
-        repo = {"repository": "owner/repo", "commit": "a" * 40, "captured_at": "2026-09-12T00:00:00+00:00", "unavailable": {}}
-        with patch.object(snapshot, "pages", side_effect=ValueError("unavailable")):
-            quality = snapshot.quality_evidence(repo)
-        self.assertIsNone(quality["workflows"])
-        self.assertIsNone(quality["releases"])
-        self.assertIn("workflows", repo["unavailable"])
-        self.assertIn("releases", repo["unavailable"])
-
-        with self.assertRaises(ValueError):
-            snapshot.collect("bad repo")
-
-        metadata = {"default_branch": "main", "description": "x", "has_issues": True, "allow_auto_merge": False}
-        tree = {"tree": [], "truncated": True}
-        with (
-            patch.object(snapshot, "get", side_effect=[metadata, {"sha": "a" * 40}, tree]),
-            patch.object(snapshot, "pages", side_effect=snapshot.urllib.error.HTTPError("u", 403, "no", Message(), None)),
-        ):
-            collected = snapshot.collect("owner/repo")
-        self.assertIsNone(collected["paths"])
-        self.assertIn("paths", collected["unavailable"])
-        self.assertIn("labels", collected["unavailable"])
-        self.assertIn("rulesets", collected["unavailable"])
-
-        with patch.object(snapshot.sys, "argv", ["collector", "owner/repo", "owner/repo", "--contract-commit", "a" * 40]):
-            self.assertEqual(snapshot.main(), 2)
-        with patch.object(snapshot.sys, "argv", ["collector", "owner/repo", "--contract-commit", "bad"]):
-            self.assertEqual(snapshot.main(), 2)
-        with (
-            patch.object(snapshot.sys, "argv", ["collector", "owner/repo", "--contract-commit", "a" * 40, "--quality"]),
-            patch.object(snapshot, "collect", return_value=dict(repo)),
-            patch.object(snapshot, "quality_evidence", return_value={"workflows": [], "releases": []}),
-        ):
-            self.assertEqual(snapshot.main(), 0)
 
 
 class SharedGateAndWhitespaceDepthTests(unittest.TestCase):
@@ -1539,157 +1319,8 @@ class TemplateContractFailureDepthTests(unittest.TestCase):
             self.assertEqual(contract.run_self_test(), 1)
 
 
-class SnapshotCollectorAdditionalDepthTests(unittest.TestCase):
-    def test_get_pagination_tag_and_release_success_boundaries(self) -> None:
-        class Response:
-            def __enter__(self) -> "Response":
-                return self
-
-            def __exit__(self, *_args: Any) -> None:
-                return None
-
-            @staticmethod
-            def read(_limit: int) -> bytes:
-                return b"x" * 10_000_001
-
-        class Opener:
-            @staticmethod
-            def open(*_args: Any, **_kwargs: Any) -> Response:
-                return Response()
-
-        with patch.object(snapshot.urllib.request, "build_opener", return_value=Opener()):
-            with self.assertRaisesRegex(ValueError, "size limit"):
-                snapshot.get("owner/repo")
-
-        with patch.object(snapshot, "get", return_value={"total_count": 1000, "items": []}):
-            with self.assertRaisesRegex(ValueError, "Actions search limit"):
-                snapshot.pages("x", "items")
-        with patch.object(snapshot, "get", return_value={"x": 1}):
-            with self.assertRaisesRegex(ValueError, "Expected paginated"):
-                snapshot.pages("x")
-        with patch.object(snapshot, "get", return_value=[0] * 100):
-            with self.assertRaisesRegex(ValueError, "Pagination limit"):
-                snapshot.pages("x")
-
-        with patch.object(snapshot, "get", return_value={"object": {"type": "blob", "sha": "a" * 40}}):
-            with self.assertRaisesRegex(ValueError, "does not resolve"):
-                snapshot.tag_commit("owner/repo", "v1")
-        with patch.object(snapshot, "get", return_value={"object": {"type": "tag", "sha": "a" * 40}}):
-            with self.assertRaisesRegex(ValueError, "indirection limit"):
-                snapshot.tag_commit("owner/repo", "v1")
-
-        repo = {
-            "repository": "owner/repo",
-            "commit": "a" * 40,
-            "captured_at": "2026-09-12T00:00:00+00:00",
-            "unavailable": {},
-        }
-        release_row = {
-            "id": 7, "tag_name": "v1.2.0", "draft": False, "prerelease": False,
-            "published_at": "2026-09-12T00:00:00Z", "body": "notes", "assets": [],
-        }
-        with (
-            patch.object(snapshot, "pages", side_effect=[[], [release_row]]),
-            patch.object(snapshot, "tag_commit", return_value="a" * 40),
-        ):
-            quality = snapshot.quality_evidence(repo)
-        self.assertEqual(quality["releases"][0]["resolved_commit"], "a" * 40)
-
-    def test_collect_blob_failure_is_explicit(self) -> None:
-        config_path = snapshot.CONFIG
-        metadata = {
-            "default_branch": "main", "description": "x", "has_issues": True,
-            "allow_auto_merge": False,
-        }
-        tree = {"tree": [{"path": config_path, "sha": "b" * 40, "type": "blob"}], "truncated": False}
-
-        def fake_get(path: str) -> Any:
-            if path == "owner/repo":
-                return metadata
-            if "/commits/" in path:
-                return {"sha": "a" * 40}
-            if "/git/trees/" in path:
-                return tree
-            if "/git/blobs/" in path:
-                raise snapshot.urllib.error.HTTPError("u", 403, "no", Message(), None)
-            raise AssertionError(path)
-
-        with (
-            patch.object(snapshot, "get", side_effect=fake_get),
-            patch.object(snapshot, "pages", return_value=[]),
-        ):
-            report = snapshot.collect("owner/repo")
-        self.assertIn(config_path, report["unavailable"])
-        self.assertNotIn(config_path, report["files"])
 
 
-class ProvisioningPrimitiveDepthTests(unittest.TestCase):
-    def test_transport_collection_and_source_json_boundaries(self) -> None:
-        with self.assertRaises(ValueError):
-            provision.GitHub("bad", None)
-        api = provision.GitHub("owner/repo", None)
-        with self.assertRaises(ValueError):
-            api.request("GET", "relative")
-        with self.assertRaises(ValueError):
-            api.request("POST", "/labels", {})
-
-        class Response:
-            def __init__(self, data: bytes):
-                self.data = data
-
-            def __enter__(self) -> "Response":
-                return self
-
-            def __exit__(self, *_args: Any) -> None:
-                return None
-
-            def read(self, _limit: int) -> bytes:
-                return self.data
-
-        class Opener:
-            def __init__(self, data: bytes):
-                self.data = data
-
-            def open(self, *_args: Any, **_kwargs: Any) -> Response:
-                return Response(self.data)
-
-        with patch.object(provision, "build_opener", return_value=Opener(b'{"ok": true}')):
-            self.assertEqual(api.request("GET"), {"ok": True})
-        with patch.object(provision, "build_opener", return_value=Opener(b"x" * 10_000_001)):
-            with self.assertRaises(ValueError):
-                api.request("GET")
-
-        class BadCollection:
-            @staticmethod
-            def request(*_args: Any, **_kwargs: Any) -> dict[str, int]:
-                return {"bad": 1}
-
-        with self.assertRaisesRegex(ValueError, "Invalid collection"):
-            provision.collection(BadCollection(), "/labels")
-
-        class FullCollection:
-            @staticmethod
-            def request(*_args: Any, **_kwargs: Any) -> list[int]:
-                return [0] * 100
-
-        with self.assertRaisesRegex(ValueError, "Incomplete collection"):
-            provision.collection(FullCollection(), "/labels")
-
-        class Source:
-            def __init__(self, value: dict[str, Any]):
-                self.value = value
-
-            def request(self, *_args: Any, **_kwargs: Any) -> dict[str, Any]:
-                return self.value
-
-        with self.assertRaisesRegex(ValueError, "Expected source JSON"):
-            provision.source_json(Source({"encoding": "utf-8", "type": "file"}), "x.json", "a" * 40)
-        encoded = provision.base64.b64encode(b'{"x": 1}').decode("ascii")
-        parsed = provision.source_json(
-            Source({"encoding": "base64", "type": "file", "content": encoded}),
-            "x.json", "a" * 40,
-        )
-        self.assertEqual(parsed, {"x": 1})
 
 class CloseoutCliDepthTests(unittest.TestCase):
     def test_closeout_parse_and_main_paths(self) -> None:
@@ -1768,43 +1399,6 @@ class RemainingCoverageDepthTests(unittest.TestCase):
         with patch.object(semantics, "_history_self_test_cases", return_value=[("forced", False)]):
             self.assertEqual(semantics.run_self_test(), 1)
 
-    def test_checker_development_ast_failure_boundaries(self) -> None:
-        with patch.object(checker_dev.importlib.util, "spec_from_file_location", return_value=None):
-            with self.assertRaises(checker_dev.ContractError):
-                checker_dev.load_checker(Path("missing.py"))
-        with self.assertRaises(checker_dev.ContractError):
-            checker_dev.node_name(ast.Expr(value=ast.Constant(value="x")))
-
-        tree = ast.parse("def first():\n    pass\n\ndef second():\n    pass\n")
-        with patch.object(checker_dev, "SECTION_STARTS", (("one", "missing"),)):
-            rows, failures = checker_dev.section_report("", tree)
-        self.assertEqual(rows, [])
-        self.assertTrue(failures)
-
-        with patch.object(
-            checker_dev,
-            "SECTION_STARTS",
-            (("one", "second"), ("two", "first")),
-        ):
-            rows, failures = checker_dev.section_report("", tree)
-        self.assertEqual(rows, [])
-        self.assertTrue(any("strictly ordered" in item for item in failures))
-
-        with patch.object(checker_dev, "SECTION_STARTS", (("one", "second"),)):
-            rows, failures = checker_dev.section_report("", tree)
-        self.assertEqual(len(rows), 1)
-        self.assertTrue(any("ownership covers" in item for item in failures))
-
-        imports_tree = ast.parse("from .local import x\nimport definitely_not_stdlib\n")
-        observed, failures = checker_dev.import_report(imports_tree)
-        self.assertIn("definitely_not_stdlib", observed)
-        self.assertTrue(any("relative imports" in item for item in failures))
-        self.assertTrue(any("non-approved" in item for item in failures))
-
-        fake_module: Any = type("FakeModule", (), {"CHECKS": (lambda: None,)})()
-        functions, failures = checker_dev.check_ids(fake_module)
-        self.assertEqual(functions, ["<lambda>"])
-        self.assertTrue(failures)
 
     def test_whitespace_operational_and_selftest_failure_boundaries(self) -> None:
         failed = type("Result", (), {"returncode": 1, "stdout": "", "stderr": "git failed"})()
@@ -1852,114 +1446,6 @@ class RemainingCoverageDepthTests(unittest.TestCase):
         ):
             self.assertEqual(whitespace.run_self_test(), 1)
 
-    def test_snapshot_success_paths_and_token_transport(self) -> None:
-        run_old = {
-            "id": 1,
-            "path": ".github/workflows/ci.yml",
-            "head_sha": "a" * 40,
-            "head_branch": "main",
-            "event": "push",
-            "status": "completed",
-            "conclusion": "success",
-            "run_attempt": 1,
-            "updated_at": "2026-09-12T00:00:00Z",
-        }
-        run_new = {**run_old, "id": 2}
-        ignored = {**run_old, "id": 3, "head_sha": "b" * 40}
-        job = {"id": 9, "name": "gate", "status": "completed", "conclusion": "success"}
-        release_row = {
-            "id": 5,
-            "tag_name": "v1.2.0",
-            "draft": False,
-            "prerelease": False,
-            "published_at": "2026-09-12T00:00:00Z",
-            "body": "notes",
-            "assets": [
-                {
-                    "name": "asset.zip",
-                    "size": 1,
-                    "digest": "sha256:x",
-                    "browser_download_url": "https://example.invalid/asset.zip",
-                }
-            ],
-        }
-
-        def fake_pages(path: str, key: str | None = None) -> list[Any]:
-            del key
-            if "actions/runs?" in path:
-                return [run_old, run_new, ignored]
-            if "/attempts/" in path:
-                return [job]
-            if path.endswith("/releases"):
-                return [release_row]
-            raise AssertionError(path)
-
-        repo: dict[str, Any] = {
-            "repository": "owner/repo",
-            "commit": "a" * 40,
-            "unavailable": {},
-        }
-        with (
-            patch.object(snapshot, "pages", side_effect=fake_pages),
-            patch.object(snapshot, "tag_commit", return_value="a" * 40),
-        ):
-            quality = snapshot.quality_evidence(repo)
-        self.assertEqual([item["id"] for item in quality["workflows"]], [2])
-        self.assertEqual(quality["workflows"][0]["jobs"][0]["name"], "gate")
-        self.assertEqual(quality["releases"][0]["resolved_commit"], "a" * 40)
-
-        metadata = {
-            "default_branch": "main",
-            "description": "demo",
-            "has_issues": True,
-            "allow_auto_merge": False,
-        }
-        tree = {
-            "tree": [{"path": snapshot.CONFIG, "sha": "blob", "type": "blob"}],
-            "truncated": False,
-        }
-
-        def fake_get(path: str) -> Any:
-            if path == "owner/repo":
-                return metadata
-            if path.endswith("/commits/main"):
-                return {"sha": "c" * 40}
-            if "/git/trees/" in path:
-                return tree
-            if path.endswith("/git/blobs/blob"):
-                return {"content": base64.b64encode(b'{"profile":"library"}').decode("ascii")}
-            raise AssertionError(path)
-
-        with (
-            patch.object(snapshot, "get", side_effect=fake_get),
-            patch.object(snapshot, "pages", return_value=[]),
-        ):
-            collected = snapshot.collect("owner/repo")
-        self.assertIn(snapshot.CONFIG, collected["files"])
-        self.assertEqual(collected["labels"], [])
-        self.assertEqual(collected["rulesets"], [])
-
-        class Response:
-            def __enter__(self) -> "Response":
-                return self
-
-            def __exit__(self, *args: Any) -> None:
-                return None
-
-            def read(self, size: int) -> bytes:
-                self.assert_size = size
-                return b"{}"
-
-        class Opener:
-            def open(self, request: Any, timeout: int) -> Response:
-                del request, timeout
-                return Response()
-
-        with (
-            patch.dict(snapshot.os.environ, {"GH_TOKEN": "token"}, clear=True),
-            patch.object(snapshot.urllib.request, "build_opener", return_value=Opener()),
-        ):
-            self.assertEqual(snapshot.get("owner/repo"), {})
 
     def test_template_contract_selftest_failure_matrix(self) -> None:
         case_mismatch = {"status": "fail", "findings": []}
@@ -2044,27 +1530,6 @@ class RemainingCoverageDepthTests(unittest.TestCase):
                     (".github/workflows/test.yml",),
                 )
 
-    def test_policy_selftest_determinism_failure_branches(self) -> None:
-        first = {
-            "status": "pass",
-            "counts": {
-                "canonical_sites": 1,
-                "canonical_covered": 1,
-                "canonical_uncovered": 0,
-                "canonical_cases": 0,
-                "focused_selftests": 0,
-                "matrix_rows": 0,
-                "exclusions": 0,
-            },
-            "uncovered": [],
-            "canonical_cases": [],
-            "failures": [],
-            "exclusions": [],
-            "nonce": 1,
-        }
-        second = {**first, "nonce": 2}
-        with patch.object(coverage_runner, "build_report", side_effect=[first, second]):
-            self.assertEqual(coverage_runner.run_self_test(Path(".")), 1)
 
 
 if __name__ == "__main__":
