@@ -10,8 +10,8 @@ parity, application lifecycle and a distributable package remain outside this ru
 
 1. Use the full 40-character candidate SHA approved in the active validation
    issue after its implementation PRs merge: issue #8 identifies the historical
-   starter run; [issue #17](https://github.com/danielep71/K-PRICING/issues/17) owns
-   the future migration parity run. Obtain that revision with Git, record
+   starter run; [issue #17](https://github.com/danielep71/K-PRICING/issues/17)
+   identifies the migration parity run. Obtain that revision with Git, record
    `git rev-parse HEAD`, and check
    that `git status --short` is empty. Do not import files from a moving branch
    or mix versions.

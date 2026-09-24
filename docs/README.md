@@ -38,7 +38,7 @@ may summarize it, but must link here rather than restating a competing rule.
 | Private/public security-analysis eligibility and assurance gaps | [`SUPPLY_CHAIN_ASSURANCE.md`](SUPPLY_CHAIN_ASSURANCE.md) | Eligibility summary and result links |
 | Post-publication provider checks, asset partition and retained closeout evidence | [`RELEASE_CLOSEOUT.md`](RELEASE_CLOSEOUT.md) | Closeout navigation only |
 | Repository-local Action containment and tracked entry points | [`../tools/LOCAL_ACTIONS.md`](../tools/LOCAL_ACTIONS.md) | Link to the local Action gate contract |
-| Migrated date-layer behavior (runtime parity pending) | [`DATE_LAYER_CONTRACT.md`](DATE_LAYER_CONTRACT.md) | Behavioral summaries only |
+| Migrated date-layer behavior (runtime parity verified on one Windows 64-bit host, #17) | [`DATE_LAYER_CONTRACT.md`](DATE_LAYER_CONTRACT.md) | Behavioral summaries only |
 | VBA exchange format and character set | [`VBE_EXPORT.md`](VBE_EXPORT.md) | Link to format; procedures remain in Installation |
 | Frozen migration source and attribution | [`MIGRATION_PROVENANCE.md`](MIGRATION_PROVENANCE.md) | Source reference and migration status |
 | Migrated regression coverage, evidence boundary and source/destination parity procedure | [`MIGRATION_REGRESSION.md`](MIGRATION_REGRESSION.md) | Links to execution/parity requirements only |

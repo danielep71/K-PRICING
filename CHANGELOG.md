@@ -107,8 +107,8 @@ Use only the categories needed by a release.
 - Retained the #17 exact-source Excel parity evidence for candidate
   `db98e506358ab74893ab28d52183fa2e216352b9`: the frozen KPR source compiled
   and passed its own 557 checks, the destination passed 568 assertions, and
-  source and destination observations matched on one Windows 64-bit Excel
-  host, apart from the registered #32 correction.
+  source and destination observations matched exactly on one Windows 64-bit
+  Excel host; the #32 correction is registered as a known source difference.
 - Added a synthetic worksheet usage example for the migrated date API, covering
   ISO inputs, month-end clipping, pillars, dynamic-array spills and the 1904
   date-system boundary; its results are contract expectations, since the #17
