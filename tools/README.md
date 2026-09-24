@@ -286,6 +286,31 @@ public-surface extraction and signature binding; the broader `vba-public-api`
 rule remains a compatibility check. Both are required in hosted CI, so the
 compatibility view cannot hide an unsupported or unrecorded public declaration.
 
+## KPR migrated date-layer contract
+
+`check_kpr_contract.py` is the project-specific additive guard for the migrated
+KPR date implementation. It does not replace the generic repository or complete
+public-API validators. It pins the six migrated component roles and the frozen
+date-layer architecture: exact 22-function facade surface, Variant return types,
+core dependency direction, strict locale-independent parsing, date-window
+constants, caller/date-system guard placement, volatility scope, caller-workbook
+authority, array-engine purity, required in-project members, and boundary-safe
+date construction.
+
+Run the focused positive/degraded fixtures and the candidate check with:
+
+```bash
+python3 tools/check_kpr_contract.py --root . --self-test
+python3 tools/check_kpr_contract.py \
+  --root . \
+  --output test-results/kpr-contract.json \
+  --summary test-results/kpr-contract.md
+```
+
+The hosted Repository integrity workflow retains both reports and treats either
+specialist-check failure as terminal. Excel compilation and source/destination
+runtime parity remain separate evidence owned by migration issue #17.
+
 ## Adopted template contract
 
 `check_template_contract.py` owns the semantics of the template contract: the
