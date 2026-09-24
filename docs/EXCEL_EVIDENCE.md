@@ -108,23 +108,26 @@ values, all digest markers, environment and timestamps with observed values:
     "trust_changes": false
   },
   "sources": [
-    {"path": "src/core/ProjectCore.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
-    {"path": "src/modules/ProjectFacade.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
-    {"path": "tests/modules/ProjectTests.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"}
+    {"path": "src/core/KPR_Core_Array.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "src/core/KPR_Core_Dates.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "src/core/KPR_Core_Err.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "src/core/KPR_Core_Parse.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "src/modules/KPR_DATES_DAYS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "tests/modules/KPR_REGRESSION_TESTS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"}
   ],
   "stages": {
     "import": {"status": "PASS", "detail": "Imported exact inventory into fresh test project", "log": {"path": "session.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}},
     "compile": {"status": "PASS", "detail": "Record observed compile outcome and basis", "log": {"path": "session.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}},
-    "regression": {"status": "PASS", "detail": "Complete deterministic harness", "log": {"path": "harness.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}},
-    "cleanup": {"status": "PASS", "detail": "Harness state verified and owned test workbook closed", "log": {"path": "session.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}}
+    "regression": {"status": "PASS", "detail": "Complete KPR evidence adapter run", "log": {"path": "harness.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}},
+    "cleanup": {"status": "PASS", "detail": "Adapter completed without owned host-state changes", "log": {"path": "session.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}}
   },
   "harness": {
-    "entry_point": "ProjectTests.RunProjectTests",
-    "cases": 4,
-    "assertions": 6,
+    "entry_point": "KPR_Tests_RunEvidence",
+    "cases": 12,
+    "assertions": 557,
     "failures": 0,
     "completeness": "COMPLETE",
-    "expected_errors": [{"case": "ratio.zero-denominator", "status": "PASS", "detail": "Number, source and description assertions passed in the complete suite"}]
+    "expected_errors": []
   }
 }
 ```
@@ -149,12 +152,16 @@ preserve observed counts and mark completeness `INCOMPLETE`.
 
 For a passing regression, the raw log must contain exactly one ordered `CASE=`
 line per policy case, one `CASES=`, `ASSERTIONS=` and `FAILURES=` line matching
-the record, and one complete `RESULT=` line in the starter harness format.
-An adapter for a different harness must emit that documented format while
-retaining its native log as supporting evidence. The starter's complete
-four-case/six-assertion PASS proves its three expected-error assertions passed;
-the JSON result records that inference, not a separate instrumented observation.
-Never infer an expected-error PASS from a `CASE=` line alone or an incomplete run.
+the record, and one complete `RESULT=` line. The destination-only
+`KPR_Tests_RunEvidence` adapter emits that format by delegating the actual run
+to `KPR_Tests_RunAll("all")`; it does not duplicate test dispatch or production
+logic. The 12 `CASE=` records follow the dispatcher order. Because the two
+LongLong parser assertions are compiled only on `Win64`, the policy expects
+**555 assertions on 32-bit Office** and **557 on 64-bit Office**. The validator
+selects the required count from `environment.office_bitness`; the JSON example
+above illustrates a 64-bit run. `expected_errors` is empty because native Excel
+error behavior is asserted inside the KPR suites rather than exposed as separate
+top-level evidence cases.
 
 ## 🧑‍💻 Manual Fallback
 
@@ -165,12 +172,15 @@ Never infer an expected-error PASS from a `CASE=` line alone or an incomplete ru
    Account → About Excel** version/build and bitness, Windows version/build and
    architecture, and the existing Trust Center settings. Do not change trust
    settings to make the test run. Record start time with timezone.
-3. In the VBA editor, import the exact source and test modules. Review references,
-   compile, and run `ProjectTests.RunProjectTests`. Preserve the complete
-   Immediate-window report as `harness.log`. If it fails, retain the failure;
-   do not replace it with the last passing report.
-4. Record the compile basis, expected-error assertion result and cleanup in
-   `session.log`; close the owned test workbook. Record finish time. Populate
+3. In the VBA editor, import the exact candidate inventory in the documented
+   order: the four `KPR_Core_*` modules, `KPR_DATES_DAYS`, and
+   `KPR_REGRESSION_TESTS`. Review references, compile, and run
+   `KPR_Tests_RunEvidence`. Preserve its complete Immediate-window output as
+   `harness.log`. The adapter delegates to the native all-suite dispatcher and
+   emits the structured evidence records required by the validator. If it fails,
+   retain the failure; do not replace it with the last passing report.
+4. Record the compile basis, regression result and cleanup in `session.log`;
+   close the owned test workbook. Record finish time. Populate
    the shared JSON with `execution: "manual"` and `workflow: null`.
 5. Validate the bundle and retain it with the release evidence. A manual PASS
    is eligible evidence but is never described as a hosted execution.
