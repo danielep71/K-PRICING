@@ -46,7 +46,7 @@ Create these `src/` subdirectories only when the project has corresponding compo
 | `src/core/` | Internal standard modules for calculations, parsing, validation, and shared implementation |
 | `src/classes/` | Production class modules, state managers, event sinks, and UI hook classes |
 | `src/forms/` | Production UserForms with each `.frm` adjacent to its `.frx` resource |
-| `src/documents/` | Host-bound workbook and worksheet document-module source snapshots such as `ThisWorkbook` and sheet modules |
+| `src/workbook/` | Host-bound workbook and worksheet document-module source snapshots such as `ThisWorkbook` and sheet modules |
 
 ### Public modules
 
@@ -64,7 +64,7 @@ State the status in the component header or architecture documentation.
 UserForms belong in `src/forms/`; keep binary `.frx` companions adjacent and
 never import an `.frx` separately.
 
-Host-bound VBA document modules belong in `src/documents/`. This includes
+Host-bound VBA document modules belong in `src/workbook/`. This includes
 `ThisWorkbook` and worksheet modules. They are **not** interchangeable with
 ordinary class modules: importing a document-module export as a new component
 does not recreate its workbook/sheet binding. Installation or certification
