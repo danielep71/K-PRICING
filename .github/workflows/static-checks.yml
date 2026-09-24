@@ -278,6 +278,20 @@ jobs:
           --output test-results/kpr-contract.json
           --summary test-results/kpr-contract.md
 
+      - name: Exercise KPR migrated-contract fixtures
+        id: kpr-contract-self-test
+        continue-on-error: true
+        run: python3 tools/check_kpr_contract.py --root . --self-test
+
+      - name: Validate KPR migrated date-layer contract
+        id: kpr-contract
+        continue-on-error: true
+        run: >-
+          python3 tools/check_kpr_contract.py
+          --root .
+          --output test-results/kpr-contract.json
+          --summary test-results/kpr-contract.md
+
       - name: Exercise repository-local Action fixtures
         id: local-action-self-test
         continue-on-error: true
