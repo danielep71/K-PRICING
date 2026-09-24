@@ -87,15 +87,20 @@ requirements.
 Future delivery retains the source dependency structure unless a reviewed
 destination plan explicitly changes it:
 
-- registration foundation: KPR#18;
-- independent test hardening: KPR#19 → KPR#20 → KPR#21, with KPR#22 dependent
-  on KPR#20;
-- demo/UI delivery: KPR#23 depends on #18; KPR#24 and #25 depend on
-  #18/#20/#23;
-- final supported/infrastructure inventory: KPR#26 depends on #24/#25;
-- final static/register controls: KPR#27 depends on #21/#22/#26;
-- functional candidate assembly: KPR#28 depends on #27;
-- full source-roadmap certification/publication: KPR#29 depends on #28.
+- registration foundation: danielep71/KPR#18;
+- independent test hardening: danielep71/KPR#19 → danielep71/KPR#20 →
+  danielep71/KPR#21, with danielep71/KPR#22 dependent on danielep71/KPR#20;
+- demo/UI delivery: danielep71/KPR#23 depends on danielep71/KPR#18;
+  danielep71/KPR#24 and danielep71/KPR#25 depend on danielep71/KPR#18,
+  danielep71/KPR#20 and danielep71/KPR#23;
+- final supported/infrastructure inventory: danielep71/KPR#26 depends on
+  danielep71/KPR#24 and danielep71/KPR#25;
+- final static/register controls: danielep71/KPR#27 depends on
+  danielep71/KPR#21, danielep71/KPR#22 and danielep71/KPR#26;
+- functional candidate assembly: danielep71/KPR#28 depends on
+  danielep71/KPR#27;
+- full source-roadmap certification/publication: danielep71/KPR#29 depends on
+  danielep71/KPR#28.
 
 These are unscheduled future delivery phases in K-PRICING. When a phase is
 activated, create or map destination issues with an explicit milestone and
@@ -134,7 +139,7 @@ not itself proof of correctness.
 - KPR remains available through migration acceptance. Archiving, redirecting or
   changing its visibility is a separate maintainer action after K-PRICING #18;
   this register grants no such action.
-- K-PRICING is public. The maintainer's #29 decision permits the already
+- K-PRICING is public. The maintainer's K-PRICING #29 decision permits the already
   reviewed email/host evidence to remain public; it does not authorize
   publishing new sensitive material.
 
