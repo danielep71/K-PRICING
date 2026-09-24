@@ -342,8 +342,6 @@ Validate a real retained bundle only after #17 has executed Excel:
 python3 tools/check_migration_evidence.py \
   --root . \
   --manifest /path/to/evidence/migration.json \
-  --source-sha f26450d1fa7b11261162e901dedba062f21c99a7 \
-  --destination-sha FULL_DESTINATION_SHA \
   --output test-results/migration-evidence.json
 ```
 
