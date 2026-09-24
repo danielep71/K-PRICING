@@ -174,14 +174,15 @@ component names intentionally collide and Excel would rename duplicates.
     python3 tools/check_migration_evidence.py \
       --root . \
       --manifest /path/to/evidence/migration.json \
-      --source-sha f26450d1fa7b11261162e901dedba062f21c99a7 \
-      --destination-sha FULL_DESTINATION_SHA \
       --output test-results/migration-evidence.json
     ```
 
-    The migration validator verifies both SHAs, the instrumentation digest,
+    The migration validator hard-codes the frozen KPR source SHA and resolves the
+destination SHA from the checked-out Git `HEAD`; it then verifies the manifest
+uses those exact identities, the instrumentation digest,
     every required supplemental-log digest, the 64-bit parity environment,
-    source/destination observation equality, the required baseline observation IDs
+    zero-failure summaries for all stateful host/shape/array runners,
+source/destination observation equality, the required baseline observation IDs
     (while allowing additional IDs emitted by the same common instrumentation),
     explicit PASS cleanup records for the host, shape and array runners, and the
     manifest's explicit register of
