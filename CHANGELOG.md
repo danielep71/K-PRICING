@@ -104,6 +104,8 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Imported the frozen KPR date and VBE export contracts with verified source
+  hashes, licence attribution and explicit pending destination runtime evidence.
 - Accepted manual neutral-starter Excel evidence for candidate
   `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2` on one Windows/64-bit Office host; no pricing
   or application-release certification.

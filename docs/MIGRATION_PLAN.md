@@ -4,6 +4,15 @@ Prepared on 2026-09-23 for setup issue 9. Execution belongs to **v0.0.2 - Repo
 Migration**, issues 11–18. This plan imports no code and transfers no runtime
 certification. Product identity remains K-PRICING; VBA names retain `KPR_`.
 
+## Contract migration started
+
+The frozen source inventory and 22 source signatures were rechecked on
+2026-09-24. [Migration provenance](MIGRATION_PROVENANCE.md) records the
+source hashes, licence and editorial adaptations for issue #11. The
+[date-layer contract](DATE_LAYER_CONTRACT.md) and
+[VBE export contract](VBE_EXPORT.md) are imported; code migration and
+destination Excel parity remain pending.
+
 ## Frozen source and evidence boundary
 
 Source repository: [danielep71/KPR](https://github.com/danielep71/KPR).
