@@ -669,8 +669,12 @@ def self_test(root: Path) -> None:
     base = load_inputs(root)
     baseline = report(root, base)
     if baseline["status"] != "pass":
-        failed = ", ".join(item["id"] for item in baseline["rules"] if item["status"] == "fail")
-        raise RuntimeError(f"Positive KPR contract fixture is not green: {failed}")
+        failed_summary = ", ".join(
+            item["id"] for item in baseline["rules"] if item["status"] == "fail"
+        )
+        raise RuntimeError(
+            f"Positive KPR contract fixture is not green: {failed_summary}"
+        )
 
     facade = "src/modules/KPR_DATES_DAYS.bas"
     parse = "src/core/KPR_Core_Parse.bas"
@@ -684,7 +688,18 @@ def self_test(root: Path) -> None:
     spill["sources"][facade] += "\r\nPublic Function KPR_Dates_AddDays_Spill(ByVal DateIn As Variant) As Variant\r\nEnd Function\r\n"
     scenarios.append(("_Spill twin", "kpr-public-surface", spill))
     scenarios.append(("legacy plural pillar", "kpr-public-surface", mutate(base, facade, "KPR_Dates_DateFromPillar", "KPR_Dates_DatesFromPillar")))
-    scenarios.append(("narrow return type", "kpr-public-surface", mutate(base, facade, "ByVal nDays As Variant) As Variant", "ByVal nDays As Variant) As Long")))
+    scenarios.append(
+        (
+            "narrow return type",
+            "kpr-public-surface",
+            mutate(
+                base,
+                facade,
+                "ByVal nDays As Variant) _\r\n    As Variant",
+                "ByVal nDays As Variant) _\r\n    As Long",
+            ),
+        )
+    )
     locale = copy.deepcopy(base)
     locale["sources"][parse] += "\r\nPublic Function ProbeLocale(ByVal S As String) As Boolean\r\n    ProbeLocale = IsDate(S)\r\nEnd Function\r\n"
     scenarios.append(("locale parser", "kpr-locale-parsing", locale))
@@ -708,9 +723,14 @@ def self_test(root: Path) -> None:
 
     for name, expected, case in scenarios:
         rep = report(root, case)
-        failed = {item["id"] for item in rep["rules"] if item["status"] == "fail"}
-        if expected not in failed:
-            raise RuntimeError(f"Degraded self-test {name!r} did not fail {expected}; failed={sorted(failed)}")
+        failed_ids = {
+            item["id"] for item in rep["rules"] if item["status"] == "fail"
+        }
+        if expected not in failed_ids:
+            raise RuntimeError(
+                f"Degraded self-test {name!r} did not fail {expected}; "
+                f"failed={sorted(failed_ids)}"
+            )
         print(f"PASS degraded self-test: {name} -> {expected}")
     print(f"PASS positive self-test: {len(RULES)} rules; {len(scenarios)} degraded cases")
 
