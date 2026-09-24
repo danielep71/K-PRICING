@@ -323,9 +323,10 @@ run Excel. Given a completed `migration.json` manifest, it:
 - binds the exact candidate `KPR_REGRESSION_TESTS.bas` instrumentation bytes;
 - requires one recorded 64-bit Windows/Excel environment for exact parity;
 - hashes every required supplemental compile, observation and host-record file,
-  requires canonical PASS import/compile/native-run records, and cross-checks
-  the bound destination host record against the same candidate SHA and complete
-  parity environment;
+  requires canonical PASS import/compile/native-run records, invokes the
+  authoritative `check_excel_evidence.py` validation logic on the exact bound
+  destination host record, and cross-checks that validated record against the
+  same candidate SHA and complete parity environment;
 - requires the baseline `OBS` IDs and `CLEANUP` records from both common
   observation hosts while allowing additional common probe IDs; and
 - rejects different source/destination observations or non-PASS
@@ -350,8 +351,9 @@ python3 tools/check_migration_evidence.py \
 The validator authenticates file bindings and parity records, requires every
 stateful runner summary to report zero failures, and binds the destination to
 the checked-out candidate rather than a user-supplied SHA. It does not
-authenticate the human or host that produced them; `check_excel_evidence.py` remains authoritative for
-the destination host-record schema.
+authenticate the human or host that produced them. The destination host-record
+schema and its source/log/harness bindings are validated through the existing
+`check_excel_evidence.py` authority rather than duplicated here.
 
 ## Adopted template contract
 
