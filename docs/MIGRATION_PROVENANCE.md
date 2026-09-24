@@ -136,6 +136,14 @@ outputs-on-success-only contract on failure. This is a destination-only
 behavioral correction required by the already-migrated date contract; the
 frozen source repository remains unchanged.
 
+After the #32 correction, the destination blob IDs are
+`af040517adfd6d54a6e1e85bd3760555f2df272d` for
+`src/core/KPR_Core_Dates.bas` (source baseline blob
+`7e0929474e1ae1311df2081eb7a64fe126f1b688`) and
+`08d69639a4022d564abb96071bb122b5387b7405` for
+`tests/modules/KPR_REGRESSION_TESTS.bas` (source baseline blob
+`b339d4b932f390c143973fe5fcc106e79ffbcad1`).
+
 Repository-path adaptations remain `src/modules/KPR_Core_*` to
 `src/core/KPR_Core_*` and `test/` to `tests/`. The neutral starter modules
 were removed, and a new minimal `KPR_DateExample` consumer was added as
