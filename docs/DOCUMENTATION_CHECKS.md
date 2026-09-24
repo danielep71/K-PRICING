@@ -133,9 +133,11 @@ Classifications are exact URL-hash assertions, not domain or path wildcards.
 They require a rationale and an expiry/review date; unsupported kinds, duplicate
 IDs (including an ID also present in `exceptions`) and expired entries fail
 closed. The four K-PRICING private-target classifications were removed after
-the 2026-09-24 public-visibility read-back. These URLs now receive ordinary
-anonymous probes. Query-bearing URLs and other access restrictions still remain
-non-green under the network policy. Unused inherited pilot classifications were
+the 2026-09-24 public-visibility read-back. Three policy-clean targets now
+receive ordinary anonymous probes. The query-bearing README badge target is
+classified locally as `ACCESS_RESTRICTED` before transport and is therefore
+not requested anonymously. Other query-bearing URLs and access restrictions
+likewise remain non-green under the network policy. Unused inherited pilot classifications were
 removed during setup. IDs derive from the exact maintained URLs; no credentials are
 stored. Review them when visibility changes or their review date expires.
 
