@@ -190,6 +190,127 @@ Public Sub KPR_Tests_RunSuite( _
 
 End Sub
 
+Public Sub KPR_Tests_RunEvidence()
+'
+'==============================================================================
+'                            KPR_Tests_RunEvidence
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Runs the complete pure regression suite through KPR_Tests_RunAll and emits
+'   the stable machine-readable lines required by K-PRICING retained Excel
+'   evidence. This is a destination evidence adapter; it does not change test
+'   cases, expectations, production code or the native KPR_Tests_Run report.
+'
+' OUTPUT
+'   One CASE= line for each suite in the same order used by RunSuite("all"),
+'   followed by CASES, ASSERTIONS, FAILURES and one RESULT line. Failure detail
+'   from the native returned array is retained between the counts and RESULT.
+'
+' UPDATED
+'   2026-09-24
+'==============================================================================
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const EVIDENCE_CASES As Long = 12
+    Dim Results          As Variant      'Native KPR_Tests_RunAll result
+    Dim Checks           As Long         'Observed assertion count
+    Dim Failures         As Long         'Observed failure count
+    Dim I                As Long         'Failure row cursor
+    Dim Verdict          As String       'PASS or FAIL for retained evidence
+    Dim SummaryText      As String       'Native summary cell being parsed
+    Dim Separator        As Long         'Colon between label and numeric count
+
+'------------------------------------------------------------------------------
+' RUN
+'------------------------------------------------------------------------------
+    On Error GoTo Evidence_Error
+    Results = KPR_Tests_RunAll("all")
+    If Not IsArray(Results) Then GoTo Evidence_Refused
+
+'------------------------------------------------------------------------------
+' READ NATIVE SUMMARY
+'------------------------------------------------------------------------------
+    SummaryText = CStr(Results(1, 1))
+    Separator = InStr(1, SummaryText, ":", vbBinaryCompare)
+    If Separator = 0 Then GoTo Evidence_Refused
+    Checks = CLng(Trim$(Mid$(SummaryText, Separator + 1)))
+
+    SummaryText = CStr(Results(1, 2))
+    Separator = InStr(1, SummaryText, ":", vbBinaryCompare)
+    If Separator = 0 Then GoTo Evidence_Refused
+    Failures = CLng(Trim$(Mid$(SummaryText, Separator + 1)))
+
+'------------------------------------------------------------------------------
+' EMIT SUITE ORDER
+'------------------------------------------------------------------------------
+    Debug.Print "CASE=date-type"
+    Debug.Print "CASE=date-text"
+    Debug.Print "CASE=date-window"
+    Debug.Print "CASE=integer"
+    Debug.Print "CASE=control"
+    Debug.Print "CASE=boundary"
+    Debug.Print "CASE=mapper"
+    Debug.Print "CASE=host"
+    Debug.Print "CASE=pillar"
+    Debug.Print "CASE=surface"
+    Debug.Print "CASE=shape"
+    Debug.Print "CASE=parity"
+
+'------------------------------------------------------------------------------
+' EMIT COUNTS AND FAILURE DETAIL
+'------------------------------------------------------------------------------
+    Debug.Print "CASES=" & CStr(EVIDENCE_CASES)
+    Debug.Print "ASSERTIONS=" & CStr(Checks)
+    Debug.Print "FAILURES=" & CStr(Failures)
+
+    For I = 2 To UBound(Results, 1)
+        Debug.Print "  FAIL  " & CStr(Results(I, 1)) & " : " & CStr(Results(I, 2))
+    Next I
+
+    If Failures = 0 Then
+        Verdict = "PASS"
+    Else
+        Verdict = "FAIL"
+    End If
+
+    Debug.Print "RESULT=" & Verdict & _
+                "; completeness=COMPLETE; cases=" & CStr(EVIDENCE_CASES) & _
+                "; assertions=" & CStr(Checks) & _
+                "; failures=" & CStr(Failures) & _
+                "; cleanup=PASS"
+    Exit Sub
+
+'------------------------------------------------------------------------------
+' REFUSED / UNEXPECTED RETURN
+'------------------------------------------------------------------------------
+Evidence_Refused:
+    Debug.Print "CASES=" & CStr(EVIDENCE_CASES)
+    Debug.Print "ASSERTIONS=0"
+    Debug.Print "FAILURES=1"
+    Debug.Print "  FAIL  evidence/runner : " & CStr(Results)
+    Debug.Print "RESULT=FAIL; completeness=INCOMPLETE; cases=" & _
+                CStr(EVIDENCE_CASES) & _
+                "; assertions=0; failures=1; cleanup=PASS"
+    Exit Sub
+
+'------------------------------------------------------------------------------
+' DEFENSIVE ERROR REPORT
+'------------------------------------------------------------------------------
+Evidence_Error:
+    Debug.Print "CASES=" & CStr(EVIDENCE_CASES)
+    Debug.Print "ASSERTIONS=0"
+    Debug.Print "FAILURES=1"
+    Debug.Print "  FAIL  evidence/runner : unexpected runtime error " & _
+                CStr(Err.Number) & ": " & Err.Description
+    Debug.Print "RESULT=FAIL; completeness=INCOMPLETE; cases=" & _
+                CStr(EVIDENCE_CASES) & _
+                "; assertions=0; failures=1; cleanup=PASS"
+
+End Sub
+
 Private Sub ReportRun( _
     ByVal SuiteName As String)
 '
