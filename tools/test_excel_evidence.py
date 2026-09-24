@@ -34,7 +34,7 @@ class HostEvidenceTests(unittest.TestCase):
         (self.root / release.PROFILE_PATH).write_text(json.dumps(config))
         self.policy = json.loads((ROOT / host.POLICY).read_text())
         self.case_count = len(self.policy["cases"])
-        self.assertion_count = self.policy["assertions"]
+        self.assertion_count = self.policy["assertions_by_office_bitness"]["64-bit"]
         (self.root / host.POLICY).write_text(json.dumps(self.policy))
         release._git(self.root, "add", "--all")
         release._git(self.root, "commit", "-m", "Synthetic host policy")
@@ -97,6 +97,25 @@ class HostEvidenceTests(unittest.TestCase):
         self.assertEqual(first["status"], "pass", first)
         self.assertEqual(first, self.evaluate())
         self.assertEqual(first["execution"], "manual")
+
+    def test_bitness_specific_assertion_counts(self):
+        self.record["environment"]["office_bitness"] = "32-bit"
+        expected = self.policy["assertions_by_office_bitness"]["32-bit"]
+        self.record["harness"]["assertions"] = expected
+        raw = self.log.replace(
+            f"ASSERTIONS={self.assertion_count}",
+            f"ASSERTIONS={expected}",
+        ).replace(
+            f"assertions={self.assertion_count}",
+            f"assertions={expected}",
+        )
+        (self.bundle / "host.log").write_text(raw)
+        digest = hashlib.sha256(raw.encode()).hexdigest()
+        for stage in self.record["stages"].values():
+            stage["log"]["sha256"] = digest
+        self.assertEqual(self.evaluate()["status"], "pass")
+        self.record["harness"]["assertions"] = self.assertion_count
+        self.invalid()
 
     def test_automated_identity(self):
         self.record["execution"] = "automated"
