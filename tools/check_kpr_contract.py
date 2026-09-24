@@ -741,8 +741,8 @@ def self_test(root: Path) -> None:
             mutate(
                 base,
                 parse,
-                "\r\nOption Private Module\r\n",
-                "\r\n' Option Private Module removed by self-test\r\n",
+                "    Option Private Module   'Internal module: invisible outside this VBA project",
+                "    ' Option Private Module removed by self-test",
             ),
         )
     )
