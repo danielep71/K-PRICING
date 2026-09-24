@@ -738,6 +738,7 @@ Public Function TryPillar_Parse( _
     Dim S               As String    'Upper-cased, trimmed pillar text
     Dim SBody           As String    'Pillar body after the optional leading sign
     Dim ChCode          As Long      'Character code at the current scan position
+    Dim UnitChar        As String    'Validated unit for the current numeric token
     Dim HasSign         As Boolean   'TRUE when a leading sign was consumed
 
     Dim ScanPos         As Long      'Current scan position in SBody
@@ -846,34 +847,39 @@ Public Function TryPillar_Parse( _
                         Loop
                     'Reject a component with no digits
                         If TokenStart = ScanPos Then GoTo Fail
-                    'Coerce the numeric token once. Grammar is already known to
-                    'be digits-only, so conversion failure is numerical range,
-                    'not malformed syntax.
-                        On Error GoTo RangeFail
-                        QtyD = CDbl(Mid$(SBody, TokenStart, ScanPos - TokenStart))
-                        On Error GoTo Fail
-                    'Reject a quantity with no trailing unit
+                    'Grammar and duplicate-unit precedence are resolved before
+                    'numeric conversion. An oversized quantity with no unit,
+                    'an unknown unit or a repeated unit is still a grammar
+                    'error, never a numerical-range error.
                         If ScanPos > BodyLen Then GoTo Fail
-                    'Record the component by unit, rejecting any repeat
-                        Select Case Mid$(SBody, ScanPos, 1)
+                        UnitChar = Mid$(SBody, ScanPos, 1)
+                        Select Case UnitChar
                             Case "Y"
                                 If SeenY Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
                                 SeenY = True
-                                YearsD = QtyD
                             Case "M"
                                 If SeenM Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
                                 SeenM = True
-                                MonthsD = QtyD
                             Case "W"
                                 If SeenW Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
                                 SeenW = True
-                                WeeksD = QtyD
                             Case "D"
                                 If SeenD Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
                                 SeenD = True
-                                DaysD = QtyD
                             Case Else
                                 GoTo Fail
+                        End Select
+                    'The component is now grammatically valid. Conversion
+                    'failure therefore belongs to PILLAR_AGGREGATE_RANGE.
+                        On Error GoTo RangeFail
+                        QtyD = CDbl(Mid$(SBody, TokenStart, ScanPos - TokenStart))
+                        On Error GoTo Fail
+                    'Store the validated component quantity.
+                        Select Case UnitChar
+                            Case "Y": YearsD = QtyD
+                            Case "M": MonthsD = QtyD
+                            Case "W": WeeksD = QtyD
+                            Case "D": DaysD = QtyD
                         End Select
                     'Count the component and step past the unit
                         TokenCount = TokenCount + 1
