@@ -49,14 +49,10 @@ def source_inventory(root: Path, sha: str, config: dict[str, Any]) -> list[dict[
 
 def load_policy(root: Path, sha: str) -> dict[str, Any]:
     policy = decode(committed(root, sha, POLICY))
-    object_keys(policy, "schema_version entry_point cases assertions_by_office_bitness expected_error_cases", "host policy")
+    object_keys(policy, "schema_version entry_point cases assertions expected_error_cases", "host policy")
     require(type(policy["schema_version"]) is int and policy["schema_version"] == 1,
             "unsupported host policy schema")
-    require(nonempty(policy["entry_point"]), "invalid harness policy")
-    assertion_counts = policy["assertions_by_office_bitness"]
-    object_keys(assertion_counts, "32-bit 64-bit", "assertion-count policy")
-    require(all(positive(assertion_counts[key]) for key in ("32-bit", "64-bit")),
-            "invalid assertion counts by Office bitness")
+    require(nonempty(policy["entry_point"]) and positive(policy["assertions"]), "invalid harness policy")
     for field in ("cases", "expected_error_cases"):
         values = policy[field]
         require(isinstance(values, list) and all(nonempty(value) for value in values),
@@ -168,10 +164,7 @@ def validate_harness(record: dict[str, Any], policy: dict[str, Any], log: str) -
     require(observed == policy["expected_error_cases"], "expected-error results differ from policy")
     if record["stages"]["regression"]["status"] != "PASS":
         return
-    office_bitness = record["environment"]["office_bitness"]
-    expected_assertions = policy["assertions_by_office_bitness"].get(office_bitness)
-    require(expected_assertions is not None, "Office bitness has no harness assertion policy")
-    require(harness["cases"] == len(policy["cases"]) and harness["assertions"] == expected_assertions
+    require(harness["cases"] == len(policy["cases"]) and harness["assertions"] == policy["assertions"]
             and harness["failures"] == 0 and harness["completeness"] == "COMPLETE"
             and all(error["status"] == "PASS" for error in errors), "test PASS contradicts harness results")
     cases = re.findall(r"^CASE=(.+)$", log, re.MULTILINE)
