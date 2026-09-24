@@ -41,3 +41,6 @@ manual/automated execution. Its validator does not execute Excel.
 A legacy `test/` directory is legitimate only when an existing public path, build script, or release contract makes migration materially disruptive. Document that exception and never keep both `test/` and `tests/`.
 
 Delete this README only if the real harness and equivalent test documentation make the directory's role equally explicit.
+
+
+`KPR_Tests_RunMigrationEvidence` is the migration-only common observation adapter used by #17.
