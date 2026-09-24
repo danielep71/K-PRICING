@@ -181,8 +181,10 @@ component names intentionally collide and Excel would rename duplicates.
 
     The migration validator verifies both SHAs, the instrumentation digest,
     every required supplemental-log digest, the 64-bit parity environment,
-    source/destination observation equality, explicit PASS cleanup records for
-    the host, shape and array runners, and the manifest's explicit register of
+    source/destination observation equality, the required baseline observation IDs
+    (while allowing additional IDs emitted by the same common instrumentation),
+    explicit PASS cleanup records for the host, shape and array runners, and the
+    manifest's explicit register of
     known source/destination correctness differences. Issue #32 must remain
     named as a known source defect/destination correction rather than being
     hidden inside an equality exception.
