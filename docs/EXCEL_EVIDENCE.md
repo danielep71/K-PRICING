@@ -124,7 +124,7 @@ values, all digest markers, environment and timestamps with observed values:
   "harness": {
     "entry_point": "KPR_Tests_RunEvidence",
     "cases": 12,
-    "assertions": 568,
+    "assertions": 557,
     "failures": 0,
     "completeness": "COMPLETE",
     "expected_errors": []
@@ -144,6 +144,12 @@ candidate SHA identifies the VBA source being tested. Manual records must have
 no workflow object and cannot claim the automated runner class. The validator
 checks identities and bindings, not whether a service really executed that run.
 
+For v0.0.2 migration acceptance, this host record is only the destination side
+of the evidence. [MIGRATION_REGRESSION.md](MIGRATION_REGRESSION.md) defines the
+separate frozen-source comparison and the additional macro-only host, Range-shape
+and dynamic-array logs required by #17. Those migration logs do not weaken or
+replace this generic host-record validation.
+
 Every executed stage requires a nonempty detail and retained-log reference.
 `NOT_RUN` requires `log: null`. When regression did not run, `harness` is null;
 otherwise keep the observed counts and one result per expected-error case, in
@@ -157,7 +163,7 @@ the record, and one complete `RESULT=` line. The destination-only
 to `KPR_Tests_RunAll("all")`; it does not duplicate test dispatch or production
 logic. The 12 `CASE=` records follow the dispatcher order. Because the two
 LongLong parser assertions are compiled only on `Win64`, the policy expects
-**566 assertions on 32-bit Office** and **568 on 64-bit Office**. The validator
+**555 assertions on 32-bit Office** and **557 on 64-bit Office**. The validator
 selects the required count from `environment.office_bitness`; the JSON example
 above illustrates a 64-bit run. `expected_errors` is empty because native Excel
 error behavior is asserted inside the KPR suites rather than exposed as separate

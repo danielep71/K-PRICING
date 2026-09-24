@@ -41,6 +41,7 @@ may summarize it, but must link here rather than restating a competing rule.
 | Migrated date-layer behaviour (runtime parity pending) | [`DATE_LAYER_CONTRACT.md`](DATE_LAYER_CONTRACT.md) | Behavioural summaries only |
 | Imported VBA export requirements | [`VBE_EXPORT.md`](VBE_EXPORT.md) | Link to format and round-trip requirements |
 | Frozen migration source and attribution | [`MIGRATION_PROVENANCE.md`](MIGRATION_PROVENANCE.md) | Source reference and migration status |
+| Migrated regression coverage, evidence boundary and source/destination parity procedure | [`MIGRATION_REGRESSION.md`](MIGRATION_REGRESSION.md) | Links to execution/parity requirements only |
 | Public VBA surface | [`PUBLIC_API.txt`](PUBLIC_API.txt) | Human-readable API summary only |
 | Live repository provisioning and verification after generation | [`POST_CREATION_CHECKLIST.md`](POST_CREATION_CHECKLIST.md) | One reminder that settings are not inherited |
 | Current version | [`../VERSION`](../VERSION) | Display/read the value; never redefine it |

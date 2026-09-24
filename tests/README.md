@@ -20,9 +20,10 @@ also adds `KPR_Tests_RunEvidence`, a destination-only adapter that delegates to
 `KPR_Tests_RunAll("all")` and emits the structured retained-evidence log format.
 
 The source expectations and condition identifiers are preserved. Historical KPR
-run counts are not destination certification: exact-candidate execution,
-failures/skips, environment and source-versus-destination parity are recorded
-under migration issues #14 and #17.
+run counts are not destination certification. The authoritative
+[regression/parity protocol](../docs/MIGRATION_REGRESSION.md) documents the
+entry-point roles, existing coverage and gaps, exact source-versus-destination
+comparison and the additional host/shape/array logs required by #17.
 
 The optional [Windows/Excel evidence interface](../docs/EXCEL_EVIDENCE.md)
 records this harness output, source identity and host environment with explicit

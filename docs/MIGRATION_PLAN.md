@@ -11,10 +11,12 @@ The frozen source inventory and 22 source signatures were rechecked on
 2026-09-24. [Migration provenance](MIGRATION_PROVENANCE.md) records the
 source hashes, licence and editorial adaptations for issue #11. The
 [date-layer contract](DATE_LAYER_CONTRACT.md) and
-[VBE export contract](VBE_EXPORT.md) are imported. The five production modules,
-focused regression harness, API manifest and specialist static rules are now
-migrated on the v0.0.2 integration branch; destination Excel parity remains
-pending.
+[VBE export contract](VBE_EXPORT.md) are imported. PR #28 merged the five
+production modules, focused regression harness, API manifest, specialist static
+rules and retained-evidence adapter as `70ba37ac9f8df4049b44cabd6bc013559b8f618f`.
+The [regression/parity protocol](MIGRATION_REGRESSION.md) owns issue #14's
+execution and comparison method; destination Excel parity remains pending in
+#17.
 
 ## Frozen source and evidence boundary
 
@@ -108,14 +110,14 @@ spill twins. No calendar/business-day extension is part of parity.
    profile component inventory, API manifest and evidence-policy changes in the
    same reviewed candidate. Delete obsolete starter artifacts only when their
    complete replacements are included; no knowingly broken intermediate main.
-3. **#13 and #14 — static/API and regression adaptation:** keep the generic
-   `tools/check_repo.py` and all retained CI. Adapt the source specialist
-   checker as a separate additive checker, preserving its implemented 24-rule/
-   37-negative-fixture baseline where applicable. Review changed path/identity
-   assumptions explicitly. Update `docs/PUBLIC_API.txt` for supported facade
-   and classified internal/test procedures. Preserve current regression cases;
-   adapt entry-point/evidence format coherently, without claiming the unbuilt
-   final source runner is already implemented.
+3. **#13 and #14 — static/API and regression adaptation:** #13 is complete in
+   PR #28: the generic `tools/check_repo.py` remains authoritative for generic
+   repository policy and `tools/check_kpr_contract.py` adds the migrated KPR
+   rules and negative fixtures. #14 is governed by
+   [MIGRATION_REGRESSION.md](MIGRATION_REGRESSION.md): preserve the existing
+   focused suites, distinguish native/common runners from the destination-only
+   evidence adapter, and define exact-source parity without claiming the
+   unfinished source #19-#22 regression architecture is already implemented.
 4. **#15 and #16 — documentation/history:** publish accurate developer/import
    guidance and reconcile every source issue/comment against the mapping below.
    Preserve qualified links, original evidence revisions, errors/corrections,

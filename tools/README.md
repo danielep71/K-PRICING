@@ -311,6 +311,44 @@ The hosted Repository integrity workflow retains both reports and treats either
 specialist-check failure as terminal. Excel compilation and source/destination
 runtime parity remain separate evidence owned by migration issue #17.
 
+## KPR migration evidence binding
+
+`check_migration_evidence.py` validates the retained v0.0.2 source-versus-
+destination parity bundle defined by
+[`docs/MIGRATION_REGRESSION.md`](../docs/MIGRATION_REGRESSION.md). It does not
+run Excel. Given a completed `migration.json` manifest, it:
+
+- binds the frozen KPR source SHA and exact K-PRICING destination SHA;
+- binds the exact candidate `KPR_REGRESSION_TESTS.bas` instrumentation bytes;
+- requires one recorded 64-bit Windows/Excel environment for exact parity;
+- hashes every required supplemental compile, observation and host-record file;
+- parses the `OBS` and `CLEANUP` records from both common observation
+  hosts; and
+- rejects different source/destination observations or non-PASS
+  host/shape/array cleanup while requiring known source corrections such as #32
+  to be explicitly registered rather than silently waived.
+
+Run the deterministic positive/degraded fixtures with:
+
+```bash
+python3 tools/check_migration_evidence.py --self-test
+```
+
+Validate a real retained bundle only after #17 has executed Excel:
+
+```bash
+python3 tools/check_migration_evidence.py \
+  --root . \
+  --manifest /path/to/evidence/migration.json \
+  --source-sha f26450d1fa7b11261162e901dedba062f21c99a7 \
+  --destination-sha FULL_DESTINATION_SHA \
+  --output test-results/migration-evidence.json
+```
+
+The validator authenticates file bindings and parity records, not the human or
+host that produced them; `check_excel_evidence.py` remains authoritative for
+the destination host-record schema.
+
 ## Adopted template contract
 
 `check_template_contract.py` owns the semantics of the template contract: the
