@@ -672,6 +672,7 @@ Public Function TryPillar_Parse( _
 '       PILLAR_TYPE_REJECTED     non-text payload
 '       PILLAR_ALIAS_SIGNED      whole-token alias carrying a leading sign
 '       PILLAR_DUPLICATE_UNIT    a unit appearing more than once
+'       PILLAR_AGGREGATE_RANGE   valid numeric component/aggregate out of range
 '       PILLAR_TOKEN_MALFORMED   every other grammar violation
 '
 '   TotalDays (ByRef)
@@ -683,7 +684,7 @@ Public Function TryPillar_Parse( _
 '   Boolean
 '     TRUE  => the token matched the accepted grammar
 '     FALSE => blank, malformed, unknown unit, repeated unit, signed alias,
-'              or non-text payload
+'              non-text payload, or valid numeric component/aggregate out of range
 '
 ' BEHAVIOR
 '   - Trims and upper-cases, consumes an optional leading sign, then checks the
@@ -712,9 +713,10 @@ Public Function TryPillar_Parse( _
 '   - A repeated unit is a typo, not a sum. Accepting "1M1M" as two months
 '     would return a plausible number for input the caller did not intend;
 '     contract section 3.4 therefore rejects duplicate units.
-'   - Quantities are not bounded here. A token such as "999999999999M" parses
-'     and the magnitude is left for the shift layer to reject, which it does
-'     at its month-index gate.
+'   - Finite quantities are not bounded here. A token such as "999999999999M"
+'     parses and the magnitude is left for the shift layer to reject at its
+'     month-index gate. A digits-only component that cannot be represented as
+'     Double, or an aggregate that overflows Double, is PILLAR_AGGREGATE_RANGE.
 '   - CDbl is applied to a digits-only substring, so no locale decimal
 '     separator is involved. Replacing it with Val or CLng would change the
 '     overflow behaviour.
@@ -755,6 +757,8 @@ Public Function TryPillar_Parse( _
     Dim MonthsD         As Double    'M component
     Dim WeeksD          As Double    'W component
     Dim DaysD           As Double    'D component, or the resolved alias
+    Dim ParsedMonths    As Double    'Local month aggregate; assigned out only on success
+    Dim ParsedDays      As Double    'Local day aggregate; assigned out only on success
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -842,8 +846,12 @@ Public Function TryPillar_Parse( _
                         Loop
                     'Reject a component with no digits
                         If TokenStart = ScanPos Then GoTo Fail
-                    'Coerce the numeric token once
+                    'Coerce the numeric token once. Grammar is already known to
+                    'be digits-only, so conversion failure is numerical range,
+                    'not malformed syntax.
+                        On Error GoTo RangeFail
                         QtyD = CDbl(Mid$(SBody, TokenStart, ScanPos - TokenStart))
+                        On Error GoTo Fail
                     'Reject a quantity with no trailing unit
                         If ScanPos > BodyLen Then GoTo Fail
                     'Record the component by unit, rejecting any repeat
@@ -882,14 +890,28 @@ Public Function TryPillar_Parse( _
 '------------------------------------------------------------------------------
 ' ASSIGN RESULTS
 '------------------------------------------------------------------------------
-    'Aggregate Y / M into a signed month delta
-        TotalMonths = SignMul * ((12# * YearsD) + MonthsD)
-    'Aggregate W / D into a signed day delta
-        TotalDays = SignMul * ((7# * WeeksD) + DaysD)
-    'Contract: TRUE only when both outputs were assigned
+    'Aggregate into locals first so a range failure never partially modifies
+    'the caller's ByRef outputs.
+        On Error GoTo RangeFail
+        ParsedMonths = SignMul * ((12# * YearsD) + MonthsD)
+        ParsedDays = SignMul * ((7# * WeeksD) + DaysD)
+        On Error GoTo Fail
+
+    'Contract: both outputs are assigned only after both aggregates succeed.
+        TotalMonths = ParsedMonths
+        TotalDays = ParsedDays
         Condition = KPR_COND_NONE
         TryPillar_Parse = True
         Exit Function
+
+'------------------------------------------------------------------------------
+' RANGE FAIL
+'------------------------------------------------------------------------------
+RangeFail:
+    'The token grammar is valid; the numeric component or aggregate is not
+    'representable in the parser's Double domain.
+        Condition = KPR_COND_PILLAR_AGGREGATE_RANGE
+        Resume Fail
 
 '------------------------------------------------------------------------------
 ' FAIL
