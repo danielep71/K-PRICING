@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "entry_point": "ProjectTests.RunProjectTests",
+  "entry_point": "KPR_Tests_RunEvidence",
   "cases": [
     "ratio.exact",
     "ratio.tolerance",
