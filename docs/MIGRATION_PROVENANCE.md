@@ -97,14 +97,26 @@ and focused 1900/1904 behaviour. Source final certification remains owned by
 
 ## Destination source import status
 
-The four core modules and `KPR_REGRESSION_TESTS` harness are imported
-byte-for-byte from the frozen source: their destination Git blob IDs remain the
-same as the source inventory. `KPR_DATES_DAYS.bas` has one documented
-format-only destination delta required by K-PRICING's committed-whitespace gate:
-seven trailing spaces on section-banner comment lines were removed. Its source
-blob is `37e997107c4c030d69bfa9b16d8aae3d22c97fc7`; the normalized destination
-blob is `07656d21f01770e2d74d9de77d5f956949ff1301`. No executable statement,
+The four core modules are imported byte-for-byte from the frozen source: their
+destination Git blob IDs remain the same as the source inventory.
+
+`KPR_DATES_DAYS.bas` has one documented format-only destination delta required
+by K-PRICING's committed-whitespace gate: seven trailing spaces on
+section-banner comment lines were removed. Its source blob is
+`37e997107c4c030d69bfa9b16d8aae3d22c97fc7`; the normalized destination blob
+is `07656d21f01770e2d74d9de77d5f956949ff1301`. No executable statement,
 declaration, attribute, signature, default, error rule or algorithm changed.
+
+`KPR_REGRESSION_TESTS.bas` has one test-only portability correction identified
+during destination review: the two `CLngLng` regression cases are guarded by
+`#If Win64 Then` rather than the frozen source's `#If VBA7 Then`. On 32-bit
+Office with VBA7, `VBA7` is true while `CLngLng` is unavailable, so the
+source guard can prevent the regression project from compiling. The destination
+blob after this correction is `e4df5f950c592b856e0784027c39e8b3dcff1d3f`.
+This changes only whether the LongLong-specific test cases are compiled on a
+64-bit host; it does not change production code, supported API behavior or any
+date algorithm. The source repository remains unchanged.
+
 Repository-path adaptations remain `src/modules/KPR_Core_*` to
 `src/core/KPR_Core_*` and `test/` to `tests/`. The neutral starter modules
 were removed, and a new minimal `KPR_DateExample` consumer was added as
