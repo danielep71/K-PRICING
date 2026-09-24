@@ -21,6 +21,39 @@ REQUIRED_LOG_IDS = {
     "destination-host-record",
 }
 REQUIRED_CLEANUP = {"host", "shape", "array"}
+REQUIRED_OBSERVATIONS = {
+    "direct/days-in-month",
+    "direct/add-days",
+    "direct/strict-date-error",
+    "host/1900/diagnostic",
+    "host/1900/value",
+    "host/1900/propagated-na",
+    "host/1904/diagnostic",
+    "host/1904/value",
+    "host/1904/propagated-na",
+    "host/1900-again/diagnostic",
+    "host/1900-again/value",
+    "host/1900-again/propagated-na",
+    "shape/row",
+    "shape/column",
+    "shape/rectangle",
+    "shape/single",
+    "shape/multi-area",
+    "shape/beyond-usedrange",
+    "shape/blank-b2",
+    "shape/error-c3",
+    "shape/value-b3",
+    "shape/state-application",
+    "shape/state-selection",
+    "array/api",
+    "array/1900-spill",
+    "array/1900-row1",
+    "array/1900-row2",
+    "array/1900-row3",
+    "array/1904-call",
+    "array/1904-spill",
+    "array/1904-neighbour-c2",
+}
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
@@ -76,7 +109,15 @@ def parse_observations(text: str, side: str) -> tuple[list[tuple[str, str]], dic
             require(fields[1] not in cleanup, f"{side}: duplicate cleanup record {fields[1]}")
             cleanup[fields[1]] = fields[2]
 
-    require(len(observations) >= 12, f"{side}: too few serialized observations ({len(observations)})")
+    require(seen == REQUIRED_OBSERVATIONS,
+            f"{side}: observation ids differ from required v0.0.2 set")
+    payloads = dict(observations)
+    require(payloads["array/api"] == "TEXT:SUPPORTED",
+            f"{side}: dynamic-array API is not supported")
+    require(payloads["shape/state-application"] == "UNCHANGED",
+            f"{side}: application state changed during shape observations")
+    require(payloads["shape/state-selection"] == "UNCHANGED",
+            f"{side}: selection state changed during shape observations")
     require(set(cleanup) == REQUIRED_CLEANUP, f"{side}: cleanup runners differ from required set")
     for runner, status in cleanup.items():
         require(status == "PASS", f"{side}: cleanup {runner} is {status}")
@@ -191,8 +232,12 @@ def self_test() -> None:
         instrumentation = b"synthetic migration observer\n"
         (root / "tests/modules/KPR_REGRESSION_TESTS.bas").write_bytes(instrumentation)
 
+        payloads = {name: "TEXT:synthetic" for name in REQUIRED_OBSERVATIONS}
+        payloads["array/api"] = "TEXT:SUPPORTED"
+        payloads["shape/state-application"] = "UNCHANGED"
+        payloads["shape/state-selection"] = "UNCHANGED"
         obs = "\n".join(
-            [f"OBS\tcase/{i:02d}\tLONG:{i}" for i in range(12)]
+            [f"OBS\t{name}\t{payloads[name]}" for name in sorted(REQUIRED_OBSERVATIONS)]
             + ["CLEANUP\thost\tPASS", "CLEANUP\tshape\tPASS", "CLEANUP\tarray\tPASS", ""]
         )
         files = {
@@ -245,7 +290,10 @@ def self_test() -> None:
 
         degraded = json.loads(path.read_text())
         dest = next(x for x in degraded["logs"] if x["id"] == "destination-observations")
-        changed = obs.replace("OBS\tcase/05\tLONG:5", "OBS\tcase/05\tLONG:999")
+        changed = obs.replace(
+            "OBS\tdirect/days-in-month\tTEXT:synthetic",
+            "OBS\tdirect/days-in-month\tLONG:999",
+        )
         (bundle / dest["path"]).write_text(changed, encoding="utf-8")
         dest["sha256"] = hashlib.sha256(changed.encode()).hexdigest()
         path.write_text(json.dumps(degraded), encoding="utf-8")
