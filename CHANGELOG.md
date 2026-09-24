@@ -104,6 +104,10 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added a synthetic worksheet usage example for the migrated date API, covering
+  ISO inputs, month-end clipping, pillars, dynamic-array spills and the 1904
+  date-system boundary; its results are contract expectations until the
+  destination Excel run in #17.
 - Added the KPR migration handover register: source-to-destination issue
   disposition, destination-only corrections, the carried-forward KPR#18-#29
   roadmap and the rollback/reference policy for the frozen source.
@@ -119,6 +123,10 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- Updated the migration plan to record completed migration issues with their
+  merge commits, the source implementation-plan disposition and the pending
+  #17/#18 gates; the production source guide now states which modules are
+  byte-identical to the frozen KPR source and which carry destination deltas.
 - Reset the development version to `0.0.0` and removed template-maintenance
   history, assets and tools through the deterministic initializer.
 

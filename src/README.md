@@ -29,6 +29,18 @@ The five production modules are migrated from the frozen source revision recorde
 in `docs/MIGRATION_PROVENANCE.md`. The four cores remain `Option Private Module`;
 the façade alone defines the supported calculation API in `docs/PUBLIC_API.txt`.
 
+Provenance boundary against that frozen source:
+
+| Component | Relationship to the frozen source |
+| --- | --- |
+| `KPR_Core_Err`, `KPR_Core_Parse`, `KPR_Core_Array` | Byte-for-byte imports; source Git blob IDs unchanged |
+| `KPR_Core_Dates` | Destination-adapted: issue #32 corrects the pillar range classification so oversized valid quantities return `PILLAR_AGGREGATE_RANGE` (`#NUM!`) |
+| `KPR_DATES_DAYS` | Format-only delta: seven trailing spaces removed from comment banners; no executable change |
+
+The frozen source repository is unchanged; these are destination deltas, not
+source history. `docs/MIGRATION_PROVENANCE.md` holds the exact source and
+destination blob IDs and the justification for each delta.
+
 ## Rules
 
 - Preserve exported VBE component names, headers, and text encoding.
