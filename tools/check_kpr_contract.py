@@ -79,6 +79,15 @@ REQUIRED_MEMBERS = {
         }
     ),
     "kpr_dates_days": frozenset({"KPR_Dates_HostDateSystem"}),
+    "kpr_regression_tests": frozenset({
+        "KPR_Tests_Run",
+        "KPR_Tests_RunSuite",
+        "KPR_Tests_RunAll",
+        "KPR_Tests_RunEvidence",
+        "KPR_Tests_RunHost",
+        "KPR_Tests_RunShape",
+        "KPR_Tests_RunArray",
+    }),
 }
 FORBIDDEN_PARSE_CALLS = ("IsDate", "DateValue", "CVDate", "IsNumeric")
 HOST_GUARD = "PassHostGuard"
