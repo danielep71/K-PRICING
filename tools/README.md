@@ -322,8 +322,8 @@ run Excel. Given a completed `migration.json` manifest, it:
 - binds the exact candidate `KPR_REGRESSION_TESTS.bas` instrumentation bytes;
 - requires one recorded 64-bit Windows/Excel environment for exact parity;
 - hashes every required supplemental compile, observation and host-record file;
-- parses the `OBS` and `CLEANUP` records from both common observation
-  hosts; and
+- requires the baseline `OBS` IDs and `CLEANUP` records from both common
+  observation hosts while allowing additional common probe IDs; and
 - rejects different source/destination observations or non-PASS
   host/shape/array cleanup while requiring known source corrections such as #32
   to be explicitly registered rather than silently waived.
