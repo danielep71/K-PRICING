@@ -1,7 +1,5 @@
 # Supported VBA declarations: <component><TAB><kind><TAB><name>
-# K-PRICING supported calculation API: exact frozen KPR date-layer facade.
-# Internal cores, regression entry points and examples may expose Public members
-# for in-project VBA access but are not part of the supported calculation API.
+# Keep this manifest synchronized with public-role components in repository policy.
 # Normalized signatures use: # SIG<TAB><component><TAB><kind><TAB><name><TAB><signature>
 KPR_DATES_DAYS	Function	KPR_Dates_DayOfWeek
 # SIG	KPR_DATES_DAYS	Function	KPR_Dates_DayOfWeek	Public Function KPR_Dates_DayOfWeek( ByVal DateIn As Variant, Optional ByVal Opt_WeekBaseMonday As Variant = True) As Variant
