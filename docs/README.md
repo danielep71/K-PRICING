@@ -22,7 +22,7 @@ may summarize it, but must link here rather than restating a competing rule.
 | Template initialization, token categories, profile rendering and manual fallback | [`INITIALIZATION.md`](INITIALIZATION.md) | A minimal initializer command |
 | Repository/source layout and VBA component ownership | [`REPOSITORY_STRUCTURE.md`](REPOSITORY_STRUCTURE.md) | A small directory summary |
 | VBA banners, procedure contracts, indentation and formatting review | [`VBA_HOUSE_STYLE.md`](VBA_HOUSE_STYLE.md) | A link to the source presentation rules |
-| Installation, import, upgrade, recovery and removal | [`../INSTALLATION.md`](../INSTALLATION.md) | Links and release prerequisites |
+| Installation, import, export, upgrade, recovery and removal | [`../INSTALLATION.md`](../INSTALLATION.md) | Links and release prerequisites |
 | Contribution workflow, review discipline and PR evidence | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Contributor links only |
 | Participant conduct and enforcement | [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) | Conduct link only |
 | Vulnerability scope, private reporting, disclosure and safe harbor | [`../SECURITY.md`](../SECURITY.md) | Private-reporting link and brief warning |
@@ -38,11 +38,13 @@ may summarize it, but must link here rather than restating a competing rule.
 | Private/public security-analysis eligibility and assurance gaps | [`SUPPLY_CHAIN_ASSURANCE.md`](SUPPLY_CHAIN_ASSURANCE.md) | Eligibility summary and result links |
 | Post-publication provider checks, asset partition and retained closeout evidence | [`RELEASE_CLOSEOUT.md`](RELEASE_CLOSEOUT.md) | Closeout navigation only |
 | Repository-local Action containment and tracked entry points | [`../tools/LOCAL_ACTIONS.md`](../tools/LOCAL_ACTIONS.md) | Link to the local Action gate contract |
-| Migrated date-layer behaviour (runtime parity pending) | [`DATE_LAYER_CONTRACT.md`](DATE_LAYER_CONTRACT.md) | Behavioural summaries only |
-| Imported VBA export requirements | [`VBE_EXPORT.md`](VBE_EXPORT.md) | Link to format and round-trip requirements |
+| Migrated date-layer behavior (runtime parity pending) | [`DATE_LAYER_CONTRACT.md`](DATE_LAYER_CONTRACT.md) | Behavioral summaries only |
+| VBA exchange format and character set | [`VBE_EXPORT.md`](VBE_EXPORT.md) | Link to format; procedures remain in Installation |
 | Frozen migration source and attribution | [`MIGRATION_PROVENANCE.md`](MIGRATION_PROVENANCE.md) | Source reference and migration status |
 | Public VBA surface | [`PUBLIC_API.txt`](PUBLIC_API.txt) | Human-readable API summary only |
 | Live repository provisioning and verification after generation | [`POST_CREATION_CHECKLIST.md`](POST_CREATION_CHECKLIST.md) | One reminder that settings are not inherited |
+| Historical initialization provenance and original inputs | [`INITIALIZATION_STATUS.md`](INITIALIZATION_STATUS.md) | Provenance link only |
+| Dated live settings, visibility and control read-back | [`SETUP_VERIFICATION.md`](SETUP_VERIFICATION.md) | Link to the latest dated observation |
 | Current version | [`../VERSION`](../VERSION) | Display/read the value; never redefine it |
 | User-visible release history | [`../CHANGELOG.md`](../CHANGELOG.md) | Link or current Unreleased summary only |
 | License terms | [`../LICENSE`](../LICENSE) | License name/link only |

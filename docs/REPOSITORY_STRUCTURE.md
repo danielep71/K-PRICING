@@ -46,6 +46,7 @@ Create these `src/` subdirectories only when the project has corresponding compo
 | `src/core/` | Internal standard modules for calculations, parsing, validation, and shared implementation |
 | `src/classes/` | Production class modules, state managers, event sinks, and UI hook classes |
 | `src/forms/` | Production UserForms with each `.frm` adjacent to its `.frx` resource |
+| `src/documents/` | Host-bound workbook and worksheet document-module source snapshots such as `ThisWorkbook` and sheet modules |
 
 ### Public modules
 
@@ -55,9 +56,20 @@ Public worksheet functions, macros, supported enums, and entry points belong in 
 
 Private algorithms, parsers, numerical kernels, and host-independent helpers belong in `src/core/`. Internal modules may be imported with the product but are not automatically part of the supported public API.
 
-### Classes and UI
+### Classes, document modules and UI
 
-Production `.cls` files belong in `src/classes/`, whether they implement public objects or internal state, events, or UI hooks. State the status in the component header or architecture documentation. UserForms belong in `src/forms/`; keep binary `.frx` companions adjacent and never import an `.frx` separately.
+Production ordinary class-module `.cls` files belong in `src/classes/`,
+whether they implement public objects or internal state, events, or UI hooks.
+State the status in the component header or architecture documentation.
+UserForms belong in `src/forms/`; keep binary `.frx` companions adjacent and
+never import an `.frx` separately.
+
+Host-bound VBA document modules belong in `src/documents/`. This includes
+`ThisWorkbook` and worksheet modules. They are **not** interchangeable with
+ordinary class modules: importing a document-module export as a new component
+does not recreate its workbook/sheet binding. Installation or certification
+instructions must therefore name the controlled host-specific replacement or
+round-trip procedure whenever such a component is part of a project.
 
 ### Test modules
 
@@ -70,6 +82,9 @@ A very small project may keep production components directly under `src/` and te
 An example demonstrates supported use and may prioritize clarity. A test establishes a repeatable assertion and must report failure deterministically. Do not make one file silently serve both roles.
 
 - Put runnable learning material and demo builders in `examples/`.
+- Put VBE-exported standard modules used only as examples or demo builders in
+  `examples/modules/`; keep non-VBA example assets under the nearest
+  responsibility-specific path inside `examples/`.
 - Put assertions, fixtures, oracles, and release-certification entry points in `tests/`.
 - Put a reusable test-data generator in `tools/`, with generated fixtures written to `tests/fixtures/` only when they are reviewed and stable.
 
@@ -105,7 +120,8 @@ A repository created from this template passes the structure gate when:
 - the selected profile's `vba_contract` resolves at least one registered and tracked public façade, internal core, and test component;
 - every path named by `vba_contract.required_components` exists with its declared role;
 - every production component has one documented source location;
-- public modules, internal/core modules, classes, forms, and tests are distinguishable;
+- public modules, internal/core modules, ordinary classes, host-bound document
+  modules, forms, examples, and tests are distinguishable;
 - `INSTALLATION.md` lists the exact production manifest and import order;
 - tests and examples do not share an ambiguous home;
 - no pair of `tests/` and `test/`, `examples/` and `demo/`, or `assets/` and `images/` serves the same purpose;

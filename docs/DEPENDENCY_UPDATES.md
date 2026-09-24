@@ -123,8 +123,8 @@ Before executing a candidate, finish the source/trust review above. Then:
 5. Have the maintainer review the evidence block and full diff, then record an
    explicit approval bound to the final candidate SHA. With one maintainer this
    is a recorded maintainer decision, not a claim of independent approval.
-6. Merge manually through the reviewed PR workflow. K-PRICING’s current plan
-   cannot enforce branch/tag rulesets; see
+6. Merge manually through the reviewed PR workflow. Verify the active branch/tag
+   rulesets in
    [SETUP_VERIFICATION.md](SETUP_VERIFICATION.md). Keep repository automatic
    merging disabled; do not introduce auto-approve, auto-merge, bypass tokens or
    unattended pin-changing workflows. If stronger review rules are configured,

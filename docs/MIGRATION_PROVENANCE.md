@@ -40,7 +40,7 @@ belongs to issue #16; the source plan is not copied as a competing authority.
 
 ## Contract preservation and adaptations
 
-The [date-layer contract](DATE_LAYER_CONTRACT.md) preserves source behaviour, including amendments, defaults, errors, caller
+The [date-layer contract](DATE_LAYER_CONTRACT.md) preserves source behavior, including amendments, defaults, errors, caller
 rules, date window and array semantics. Editorial adaptations include a migration-scope notice,
 fully qualified source issue references and the implementation-plan link
 redirected to the destination migration plan, plus the explicit registry
@@ -52,10 +52,11 @@ an opening parenthesis; the KPR_ namespace is unchanged. The destination
 internal core and regression members remain project infrastructure rather than
 supported calculation API.
 
-The [VBE export contract](VBE_EXPORT.md) preserves format and round-trip
-requirements. Editorial changes add source/destination evidence boundaries,
-qualify the source certification issue, map source `test/` to `tests/` and
-`demo/` to `examples/`, and split production destinations into core and facade.
+The [VBE export contract](VBE_EXPORT.md) preserves the source format
+requirements and source/destination evidence boundaries.
+[Installation](../INSTALLATION.md) owns export/import procedures and
+[repository structure](REPOSITORY_STRUCTURE.md) owns destination placement.
+Round-trip evidence belongs to [release evidence](RELEASE_EVIDENCE.md).
 KPR-specific static rules are retained additively in
 `tools/check_kpr_contract.py` and wired into Repository integrity; generic
 K-PRICING repository, VBE, API-manifest and release controls remain authoritative
@@ -77,7 +78,7 @@ a documented source wording correction, not a changed algorithm or new runtime
 result. Source files remain untouched; downstream fixture review belongs to
 issues #13–#14 and source-history reconciliation to #16.
 
-## Licence and attribution
+## License and attribution
 
 Source is MIT, copyright (c) 2026 Daniele Penza. Source LICENSE blob
 `51f4dbcee64abe24d6f607a9a7a8f491e11b5c57` is byte-identical to the destination
@@ -92,7 +93,7 @@ reports `KPR_Tests_Run`: 557 checks, zero failures, and
 SUPPORTED, at `a750cd5a935529b807c43631e92cd9f1b15ee8b3`.
 This verifies what the source record reports; it is not a new execution or
 certification of the later frozen source. It describes one dynamic-array host
-and focused 1900/1904 behaviour. Source final certification remains owned by
+and focused 1900/1904 behavior. Source final certification remains owned by
 [KPR #29](https://github.com/danielep71/KPR/issues/29).
 
 ## Destination source import status
@@ -157,5 +158,12 @@ destination-only example code.
 
 **Destination runtime verification remains pending** in
 [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
-The accepted neutral-starter run remains setup history and is not evidence for
-the migrated date layer.
+The accepted neutral starter run is not evidence for the migrated date layer.
+
+## Subsequent documentation reconciliation
+
+The visibility correction in issue #29 normalizes destination prose to US
+spelling and makes Installation the sole procedure authority, repository
+structure the placement authority, and VBE Export the ASCII format authority.
+These editorial adaptations do not change frozen-source hashes or date behavior.
+The regression harness retains its documented visibility exception.

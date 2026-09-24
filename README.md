@@ -44,14 +44,15 @@
 
 ## ✨ What this project is
 
-**Status: initialized private application scaffold, version `0.0.0`.**
+**Status: public application development repository, version `0.0.0`.**
 The neutral starter passed a manual Windows 64-bit Excel run at commit
 `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2`; see
-[the setup completion record](docs/SETUP_COMPLETION.md). The pricing implementation
-has not yet been migrated and no installable product is claimed. See the
+[the setup completion record](docs/SETUP_COMPLETION.md). The frozen KPR date layer
+is now migrated; destination Excel parity remains pending in #17 and no
+installable product is claimed. See the
 [initialization status](docs/INITIALIZATION_STATUS.md) for provenance and setup boundaries.
 
-The product and repository name is **K-PRICING**. The planned migration from
+The product and repository name is **K-PRICING**. The migration from
 [`KPR`](https://github.com/danielep71/KPR) retains the **`KPR_`** VBA namespace
 to preserve existing module and function names.
 
@@ -60,7 +61,7 @@ versioned policy and documentation are the reviewable source of truth; Office
 packages are generated or release artifacts unless an exact path is explicitly
 governed.
 
-The template separates five evidence layers that must not be conflated:
+K-PRICING separates five evidence layers that must not be conflated:
 repository integrity, VBA compilation, regression execution, specialist
 assurance, and release certification.
 

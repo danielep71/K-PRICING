@@ -1,19 +1,61 @@
 # Repository setup verification
 
-**Current status:** v0.0.1 repository setup is complete. Issues #3, #6, #8 and
-#10 are closed, and the milestone is closed. The accepted starter Excel run and
-final setup baseline are recorded in [SETUP_COMPLETION.md](SETUP_COMPLETION.md).
-Migration execution remains in v0.0.2; unavailable platform controls below are
-release prerequisites, not unfinished setup acceptance.
+This is the single authority for dated repository settings and visibility
+read-backs. [Initialization status](INITIALIZATION_STATUS.md) owns historical
+provenance; [setup completion](SETUP_COMPLETION.md) owns the accepted starter
+checkpoint. Neither settings checks nor tooling scans execute Excel.
 
+## Current read-back — 2026-09-24
 
-Observed on **2026-09-23** for private `danielep71/K-PRICING`, default branch
-`main`, application profile, no domain overlay. Verification used the GitHub
-API and the authenticated maintainer UI (Daniele Penza). Final candidate/run
-links are retained in setup issues 4, 5 and 10 so the record does not attempt
-to embed its own future commit hash. The accepted manual Excel run below is
-linked evidence supplied by the maintainer; this settings read-back did not
-independently execute Excel.
+Repository: `danielep71/K-PRICING`; default branch `main`; application profile,
+no domain overlay. Collected through GitHub API and authenticated maintainer UI
+as Daniele Penza. The repository was already public when inspected. This
+correction did not change visibility. The actor, time and intent of the earlier
+visibility change were not established; this read-back is not retroactive
+approval of publication. The maintainer subsequently confirmed on 2026-09-24 that the existing email
+and host details should remain public. That decision is recorded in
+[K-PRICING #29](https://github.com/danielep71/K-PRICING/issues/29).
+
+| Setting | Current observation |
+| --- | --- |
+| Visibility / default branch | Public / `main` |
+| Branch ruleset | Active `Protect main` (23919706), default branch; no bypass actors; PR required, zero required approvals, all review conversations resolved; strict `Repository integrity` from GitHub Actions; deletion and force-push blocked |
+| Tag ruleset | Active `Protect version tags` (23919838), `refs/tags/v*`; no bypass actors; all updates, deletions and force-pushes blocked; creation allowed |
+| Private vulnerability reporting | Enabled; authenticated UI offers Disable; reporting route in [SECURITY.md](../SECURITY.md) |
+| CodeQL | Public eligibility active; advanced setup; Python and JavaScript/TypeScript analysis, not VBA |
+| Scorecard | Public default-branch publication and verification active |
+| Dependency graph | Enabled |
+| Dependabot alerts / security updates | Disabled; configured version-update PRs are a separate control |
+| Issues / template / wiki / discussions / projects | Enabled / disabled / disabled / disabled / disabled |
+| Merge / squash / rebase | Enabled; auto-merge disabled; delete merged branches and suggest updates enabled |
+
+The zero-approval baseline supports one maintainer; it does not claim independent
+approval. Re-read controls before release and whenever visibility or plan changes.
+Successful main tooling runs at `01f50be937be181e32a21b4e7b8acd1415c49bf1`:
+[static checks](https://github.com/danielep71/K-PRICING/actions/runs/35956382063),
+[CodeQL](https://github.com/danielep71/K-PRICING/actions/runs/35956382017), and
+[Scorecard](https://github.com/danielep71/K-PRICING/actions/runs/35956382038).
+These are exact-revision results, not destination Excel certification.
+
+### Public exposure and maintainer disposition
+
+Tracked files, Git history and Actions logs are public; retained Actions artifacts
+are available to readers subject to GitHub's sign-in and retention requirements.
+The existing `evidence/` records include operator, run time and host/software
+configuration. Personal contact text also remains in historical initialization
+inputs, conduct policy and Git history. The current security-reporting route is
+GitHub private reporting. On 2026-09-24, Daniele Penza explicitly chose to keep
+the existing email and host details public, including their existing historical
+records. This resolves the disclosure decision in issue #29; no redaction,
+history rewrite or visibility reversal is requested. This decision concerns the
+existing material; future evidence must still be reviewed for public disclosure.
+
+## Historical setup observation — 2026-09-23
+
+The repository was private at this checkpoint. The historical observations below
+are retained to explain the accepted setup and former platform limitations;
+current controls are recorded only in the table above. Exact starter Excel
+results were supplied by the maintainer, not independently rerun here.
 
 ## Source and review evidence
 
@@ -28,11 +70,11 @@ The namespace/branding correction merged in PR 19 at
 `35829333395`. Both actionable bot threads were answered with fix/evidence and
 resolved. This does not claim that the bot reviewed the final revisions.
 
-## Live post-creation read-back
+## Historical post-creation read-back
 
-This table is the K-PRICING completion record for
-[the provisioning checklist](POST_CREATION_CHECKLIST.md). Unavailable controls
-are not marked passed.
+This table records the 2026-09-23 setup checkpoint against
+[the provisioning checklist](POST_CREATION_CHECKLIST.md). Formerly unavailable
+controls are not marked passed retrospectively.
 
 | Checklist area | Observed state / disposition |
 | --- | --- |
@@ -51,17 +93,15 @@ are not marked passed.
 | Neutral starter Excel test | ACCEPTED: issue #8 closed; exact candidate `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2`, four cases, six assertions, zero failures, cleanup PASS; [retained evidence](SETUP_COMPLETION.md) |
 | Issue milestones | Setup issues 2–10 assigned to v0.0.1; migration execution issues 11–18 assigned to v0.0.2 |
 
-Manual PR/check review is the current process control and **is not server-enforced
-protection**. Daniele Penza owns resolving branch/tag protection before a
-functional release and rechecking reporting/security eligibility whenever the
-plan or visibility changes. Private visibility is deliberate. Application
-lifecycle and exact-candidate host evidence remain release prerequisites.
+At that checkpoint, manual PR/check review was a process control without
+server enforcement. The public-visibility recheck above supersedes those settings.
+Application lifecycle and exact-candidate host evidence remain release prerequisites.
 
 ## Retained automation and permissions
 
-All third-party actions remain pinned to full commit hashes. Hosted artifacts
-and logs remain within this private repository; do not copy them to a public
-service. No publishing token is supplied to source validation.
+All third-party actions remain pinned to full commit hashes. Hosted logs and
+retained artifacts belong to a public repository; do not include confidential
+inputs. No publishing token is supplied to source validation.
 
 | Workflow | Trigger and execution boundary | Permissions / evidence |
 | --- | --- | --- |
@@ -69,8 +109,8 @@ service. No publishing token is supplied to source validation.
 | Sync issue labels | Relevant PRs run offline fixtures; relevant trusted main push/manual reconciles | PR contents read; trusted issues write; exact post-read verification |
 | Detect issue-label drift | Relevant PR fixtures; daily 05:17 UTC, manual and changes to its workflow on main run live | Contents/ issues read only; no mutation; reports 30 days |
 | External documentation links | Monday 06:17 UTC, manual and checker/policy/workflow changes on main | Anonymous probes, contents read; reports 14 days; restricted/transient observations remain non-green |
-| CodeQL | Existing PR/push/schedule/manual paths gated by visibility/explicit private opt-in | Private jobs skipped; eligible tooling-language scans cover Python/JavaScript, not VBA; trusted upload uses security-events write |
-| Scorecard | Existing paths require a public repository | Skipped here; publication verification requires successful publication job; private source/results cannot enter its public publication path |
+| CodeQL | Existing PR/push/schedule/manual paths gated by visibility/explicit private opt-in | Public jobs active; tooling-language scans cover Python/JavaScript, not VBA; PR analysis is read-only without SARIF upload; trusted upload uses security-events write |
+| Scorecard | Existing paths require a public repository | Active here; publication verification requires successful publication job; the public path remains excluded for private repositories |
 | Release closeout | Manual verification of an already published release | Not applicable to setup; actions/contents/issues read only; validates candidate, tag, release and milestone facts without publishing |
 
 `Repository integrity` runs the retained verification-depth Python suite as an
@@ -88,11 +128,10 @@ five PRs, labeled `ci` and `tests`. Python lock updates require deliberate revie
 and regeneration; there is no automatic pip-update configuration. Auto-merge
 remains disabled. Follow [dependency review](DEPENDENCY_UPDATES.md).
 
-Private repository URLs are classified individually by fragment-free URL hash
-as `ACCESS_RESTRICTED`, with a reason and expiry. They are not interpreted as
-public 404 defects or successful reachability checks. Anonymous public probes
-remain enabled. Revisit these classifications on visibility changes or expiry;
-authenticated issue/settings verification above remains separate evidence.
+The four stale private-target classifications were removed after the visibility
+read-back. Anonymous probes now determine their status. Restricted, transient or
+policy-blocked results remain non-green; public visibility alone is not proof
+that every external link passes. See [documentation checks](DOCUMENTATION_CHECKS.md).
 
 ## Upstream lessons and safe updates
 
@@ -111,7 +150,7 @@ product branding and other forbidden identities. Preserve these deviations.
 
 For a template update, pin the proposed upstream SHA, compare it with the adopted
 revision, and identify applicable source/policy changes in a focused PR. Preserve
-K-PRICING identity, private visibility conditions, selected labels and product
+K-PRICING identity, visibility-dependent safeguards, selected labels and product
 contracts. Review schema/version changes explicitly; do not rerun initialization
 to overwrite the project. Run all retained CI and initializer fixtures, review
 the final diff, then record the new adopted baseline and reconciled deviations.

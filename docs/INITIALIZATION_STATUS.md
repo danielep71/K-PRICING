@@ -1,15 +1,11 @@
 # Initialization status
 
-**Current status:** v0.0.1 repository setup is complete. Issues #3, #6, #8 and
-#10 are closed, and the milestone is closed. The accepted starter Excel run and
-final setup baseline are recorded in [SETUP_COMPLETION.md](SETUP_COMPLETION.md).
-Migration execution remains in v0.0.2; unavailable platform controls below are
-release prerequisites, not unfinished setup acceptance.
-
-
-Initialized on 2026-09-23 for `danielep71/K-PRICING`, using the application
-profile. The repository is private. This is a development scaffold, not a
-functional pricing release.
+This page records the historical initialization on 2026-09-23, when the
+repository was private. It is the authority for initialization provenance, not
+live settings. [Setup verification](SETUP_VERIFICATION.md) owns the current
+visibility and controls; [setup completion](SETUP_COMPLETION.md) records the
+accepted starter run and closed v0.0.1 checkpoint. Migration is tracked in
+[MIGRATION_PLAN.md](MIGRATION_PLAN.md).
 
 ## Source provenance
 
@@ -23,8 +19,8 @@ functional pricing release.
   [the initialization record](../.github/initialization.json).
 
 The deterministic initializer was reviewed in dry-run mode before application.
-The generic facade, core, tests and example remain unchanged so that migration
-can replace them together with their API and regression contracts.
+At initialization, the generic facade, core, tests and example were unchanged.
+Migration replaces them together with their API and regression contracts.
 
 ## Project identity and future migration
 
@@ -43,9 +39,9 @@ absence of exact-source Excel evidence. The README limitations evolved after
 the accepted starter run; the original input is intentionally not rewritten. Re-running the
 initializer with those same inputs returns a no-op and preserves the evolved
 identity policy; different inputs are rejected. Future template updates must
-preserve this project-specific policy and pass its regression tests. The neutral
-starter remains in place until source, tests, examples and API policy can be
-migrated together.
+preserve this project-specific policy and pass its regression tests. The
+initialization checkpoint did not migrate source, tests, examples or API
+policy; their current status belongs to the migration plan.
 
 ## Validation boundary
 
@@ -59,42 +55,15 @@ run was accepted on its exact candidate; see [SETUP_COMPLETION.md](SETUP_COMPLET
 Pricing implementation, workbook/add-in packaging and functional-release
 certification remain outside this completed setup milestone.
 
-## Private automation
+## Settings and automation
 
-Public Scorecard publication is excluded while the repository is private.
-Private CodeQL requires confirmed eligibility and explicit enablement; no
-successful security scan is claimed. See
-[Supply-chain assurance](SUPPLY_CHAIN_ASSURANCE.md).
+The original private-repository observations and the subsequent public settings
+read-back are retained in [SETUP_VERIFICATION.md](SETUP_VERIFICATION.md). Recheck
+that authority whenever visibility or the account plan changes; do not change
+visibility implicitly to satisfy a control.
 
-## Live setup
-
-Read back on 2026-09-23 through the authenticated maintainer account:
-
-| Setting | Observed state |
-| --- | --- |
-| Visibility / default branch | Private / `main` |
-| Description / topics | Project description; `excel`, `vba`, `application`, `financial-analytics`, `instrument-pricing` |
-| Issues / template mode | Enabled / disabled |
-| Wiki / Discussions / Projects | Disabled |
-| Merge / squash / rebase | All enabled |
-| Auto-merge | Disabled |
-| Delete merged branches / suggest branch updates | Enabled / enabled |
-| Branch and tag rulesets | Unavailable: GitHub API returned HTTP 403 requiring GitHub Pro for this private repository |
-| Private vulnerability-reporting UI | Not offered in the repository security settings; the documented private email contact remains the reporting route |
-
-Ruleset enforcement is an unresolved platform limitation. No protected-branch,
-immutable-tag or mandatory-status-check enforcement is claimed. Development
-uses reviewed pull requests and verifies `Repository integrity` before merge;
-this process does not replace server-side enforcement. Resolve that limitation
-before a functional release without changing visibility implicitly.
-
-The selected label policy has 20 labels and no domain overlay. The trusted push
-after integration owns live reconciliation; its run and exact read-back evidence
-are retained with the initialization pull request. Pull-request label validation
-does not itself prove live reconciliation.
-
-The [post-creation checklist](POST_CREATION_CHECKLIST.md) remains the detailed
-setup authority. CI and final integration evidence belong to the
+The selected label policy has 20 labels and no domain overlay. Trusted label
+reconciliation and read-back evidence belong to the
 [initialization pull request](https://github.com/danielep71/K-PRICING/pull/1).
 
 ## Completed setup and next work
