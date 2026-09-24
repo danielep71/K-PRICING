@@ -177,6 +177,7 @@ Use `docs/DEVELOPER_SETUP.md` for the complete local setup and `.github/workflow
 Relevant entry points:
 
 - `KPR_Tests_Run` — primary migrated regression dispatcher
+- `KPR_Tests_RunEvidence` — retained-evidence adapter; delegates to the all-suite dispatcher and emits the validator format
 - `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, `KPR_Tests_RunArray` — focused host/shape/dynamic-array runners
 - `KPR_DateExample.RunDateExample` — minimal direct-VBA consumer smoke
 
