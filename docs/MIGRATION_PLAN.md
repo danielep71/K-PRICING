@@ -1,22 +1,33 @@
 # KPR migration plan
 
 Prepared on 2026-09-23 for setup issue 9. Execution belongs to **v0.0.2 - Repo
-Migration**, issues 11–18. The plan itself transferred no runtime certification;
+Migration**, issues 11–18, plus destination issues #29 and #32 added during
+execution. The plan itself transferred no runtime certification;
 execution now imports the frozen candidate while preserving that evidence
 boundary. Product identity remains K-PRICING; VBA names retain `KPR_`.
 
-## Contract migration started
+## Migration status
 
-The frozen source inventory and 22 source signatures were rechecked on
-2026-09-24. [Migration provenance](MIGRATION_PROVENANCE.md) records the
-source hashes, license and editorial adaptations for issue #11. The
-[date-layer contract](DATE_LAYER_CONTRACT.md) and
-[VBE export contract](VBE_EXPORT.md) are imported. PR #28 merged the five
-production modules, focused regression harness, API manifest, specialist static
-rules and retained-evidence adapter as `70ba37ac9f8df4049b44cabd6bc013559b8f618f`.
-The [regression/parity protocol](MIGRATION_REGRESSION.md) owns issue #14's
-execution and comparison method; destination Excel parity remains pending in
-#17.
+Status as of 2026-09-24. The frozen source inventory and 22 source signatures
+were rechecked on that date. [Migration provenance](MIGRATION_PROVENANCE.md)
+records the source hashes, license, destination adaptations and blob
+identities; the [handover register](MIGRATION_HANDOVER.md) records the current
+source-to-destination disposition.
+
+| Issue | Outcome | Merged as |
+| --- | --- | --- |
+| #11 | [Date-layer contract](DATE_LAYER_CONTRACT.md), [VBE export contract](VBE_EXPORT.md) and source provenance imported | PR #27, `01f50be937be181e32a21b4e7b8acd1415c49bf1` |
+| #12, #13 | Five production modules, focused regression harness, example, API manifest, specialist static rules and retained-evidence adapter | PR #28, `70ba37ac9f8df4049b44cabd6bc013559b8f618f` |
+| #32 | Destination correction: oversized valid pillar quantities classify as `PILLAR_AGGREGATE_RANGE` | PR #33, `a8ffa458186c51ec28ee778d27a86d45ed9fad49` |
+| #29 | Public visibility, live controls and documentation authorities reconciled | PR #30, `47aa4c181306a4668383631888d2267589ea5906` |
+| #14 | [Regression/parity protocol](MIGRATION_REGRESSION.md), migration instrumentation and evidence validator | PR #31, `118555ddf5c2cd8f944688f02fc9813713bf30c2` |
+| #16 | [Handover register](MIGRATION_HANDOVER.md) of source issue history and carried-forward roadmap | Issue closed; register merged in PR #34, `184e4b6976a51a3b29e17460ba06f7e919e7fbc6` |
+| #15 | Documentation, examples and destination status reconciliation | This reconciliation |
+| #17 | Exact-source Windows Excel compilation and source/destination parity | **Pending**; no destination runtime claim until it passes |
+| #18 | Migration acceptance and handover of the next delivery backlog | **Pending**; follows #15 and #17 |
+
+#29 and #32 were added to the milestone during execution; they are
+destination work, not source history.
 
 ## Frozen source and evidence boundary
 
@@ -43,7 +54,7 @@ Record new SHA-256 Git-byte digests when preparing host evidence.
 | Source path | Git blob SHA | Intended destination/disposition |
 | --- | --- | --- |
 | `docs/DATE_LAYER_CONTRACT.md` | `6984e9354cd2a32986f6504ac7ae4f95b0a472e2` | docs/DATE_LAYER_CONTRACT.md |
-| `docs/IMPLEMENTATION_PLAN.md` | `0355dc71cd59d9dab08e11d456172d922e7b38be` | Reconcile into this migration plan and issue register |
+| `docs/IMPLEMENTATION_PLAN.md` | `0355dc71cd59d9dab08e11d456172d922e7b38be` | Not imported; reconciled through the [handover register](MIGRATION_HANDOVER.md) (see below) |
 | `docs/VBE_EXPORT.md` | `f37eba3de6f3feb28a0d686bbf68b5fea5ff044e` | docs/VBE_EXPORT.md |
 | `src/modules/KPR_Core_Array.bas` | `a6c98c192dc2746a59a418bf2190a40f1c13c233` | src/core/KPR_Core_Array.bas |
 | `src/modules/KPR_Core_Dates.bas` | `7e0929474e1ae1311df2081eb7a64fe126f1b688` | src/core/KPR_Core_Dates.bas |
@@ -198,11 +209,23 @@ trip. Issues 13 and 17 contain focused host results with narrower scope than
 the open full certification work. Source issue 28 explicitly retains unverified
 final-state conditions.
 
+## Source implementation plan disposition
+
+The source `docs/IMPLEMENTATION_PLAN.md` at the frozen revision is KPR's own
+roadmap and live milestone register. It is not copied into K-PRICING: its issue
+numbers, milestone names and states belong to danielep71/KPR. Its completed
+work is mapped to destination issues, and its unfinished work
+(danielep71/KPR#18 through danielep71/KPR#29, with their dependency chain) is
+carried forward without completion claims, in the
+[handover register](MIGRATION_HANDOVER.md). K-PRICING's own roadmap is its
+milestones and issues; future phases get destination issues with an explicit
+milestone only when they are scheduled.
+
 ## Exit from preparation
 
-The migration backlog already exists in milestone v0.0.2: issues 11–18. Setup
-preparation ends with this inventory and executable sequence; it does not close
-those execution issues. See [developer setup](DEVELOPER_SETUP.md) and
+Preparation ended with issue #9: this inventory and executable sequence. The
+[migration status](#migration-status) table above records execution. See
+[developer setup](DEVELOPER_SETUP.md) and
 [setup verification](SETUP_VERIFICATION.md) for the destination baseline.
 
 ## Test-module visibility decision
