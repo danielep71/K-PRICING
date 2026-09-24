@@ -67,7 +67,7 @@ range checking precedence over integrality, but the section 7 registry limited
 INTEGER_RANGE to integral values. The destination registry now includes all
 out-of-range numeric values, including fractions; INTEGER_FRACTION is explicitly
 limited to values inside the Long range in both the matrix and registry.
-This matches the frozen KPR_Core_Parse.TryParseInteger implementation, which
+This matches the frozen KPR_Core_Parse.TryParseLongScalar implementation, which
 checks the Long bounds before its Int comparison. For example, 2147483648.5
 therefore yields INTEGER_RANGE/#NUM!, as section 3.2 already requires. This is
 a documented source wording correction, not a changed algorithm or new runtime
