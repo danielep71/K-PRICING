@@ -139,9 +139,11 @@ Use the exact candidate source in each advertised Excel environment:
 4. run applicable UI/lifecycle/platform/manual checks; and
 5. record environment, counts, failures, completeness and cleanup.
 
-The neutral starter baseline is `ProjectTests.RunProjectTests`; until replaced by
-the generated project's own contract it reports four cases, six assertions,
-zero failures, complete execution and passing cleanup.
+For the migrated date layer, the primary regression entry point is
+`KPR_Tests_Run`, with focused host, shape and dynamic-array runners retained in
+`KPR_REGRESSION_TESTS`. Release evidence must bind the exact candidate to the
+actual suite/case results, failures/skips and tested Excel environment; historical
+KPR runs are not destination certification.
 
 Source inspection is not Excel execution. If code changes, recertify.
 
