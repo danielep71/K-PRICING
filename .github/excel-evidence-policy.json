@@ -1,14 +1,20 @@
 {
   "schema_version": 1,
-  "entry_point": "ProjectTests.RunProjectTests",
+  "entry_point": "KPR_Tests_Run",
   "cases": [
-    "ratio.exact",
-    "ratio.tolerance",
-    "ratio.zero-denominator",
-    "ratio.repeatability"
+    "date-type",
+    "date-text",
+    "date-window",
+    "integer",
+    "control",
+    "boundary",
+    "mapper",
+    "host",
+    "pillar",
+    "surface",
+    "shape",
+    "parity"
   ],
-  "assertions": 6,
-  "expected_error_cases": [
-    "ratio.zero-denominator"
-  ]
+  "assertions": 557,
+  "expected_error_cases": []
 }
