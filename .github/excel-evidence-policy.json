@@ -16,8 +16,8 @@
     "parity"
   ],
   "assertions_by_office_bitness": {
-    "32-bit": 557,
-    "64-bit": 559
+    "32-bit": 559,
+    "64-bit": 561
   },
   "expected_error_cases": []
 }
