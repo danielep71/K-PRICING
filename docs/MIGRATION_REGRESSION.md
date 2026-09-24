@@ -136,9 +136,11 @@ component names intentionally collide and Excel would rename duplicates.
 1. Freeze and record the exact K-PRICING candidate SHA and the frozen KPR source
    SHA above. Reconcile the source/destination inventory against
    `MIGRATION_PROVENANCE.md`.
-2. Use the same Excel version/build, Office bitness, Windows build, locale,
-   references and macro policy for every parity host. Record start/finish
-   timestamps and the operator/runner identity.
+2. Use the same complete host identity for every parity host: Excel
+   version/build, Office bitness, Windows identity/architecture, VBA runtime,
+   locale, resolved reference inventory, macro policy, VBA-project-access
+   setting and unchanged trust configuration. Record start/finish timestamps
+   and the operator/runner identity.
 3. Use a **64-bit Office host** for exact frozen-source parity. The frozen
    source's `VBA7`/LongLong guard makes an unmodified 32-bit source regression
    project an invalid exact-source baseline. A 32-bit K-PRICING run may be
@@ -187,9 +189,13 @@ source/destination observation equality, the required baseline observation IDs
     (while allowing additional IDs emitted by the same common instrumentation),
     explicit PASS cleanup records for the host, shape and array runners, and the
     manifest's explicit register of
-    known source/destination correctness differences. Issue #32 must remain
-    named as a known source defect/destination correction rather than being
-    hidden inside an equality exception.
+    known source/destination correctness differences. The bound
+    `destination-host-record` is parsed and must use the same candidate SHA
+    and **exactly the same environment object** as the migration manifest, in
+    addition to having PASS import/compile/regression/cleanup stages and a
+    complete zero-failure harness. Issue #32 must remain named as a known
+    source defect/destination correction rather than being hidden inside an
+    equality exception.
 
 ## Minimum #17 evidence bundle
 
