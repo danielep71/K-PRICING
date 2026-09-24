@@ -61,6 +61,7 @@
     "tools/check_excel_evidence.py",
     "tools/check_external_links.py",
     "tools/check_kpr_contract.py",
+    "tools/check_migration_evidence.py",
     "tools/check_release.py",
     "tools/check_repo.py",
     "tools/check_template_contract.py",
