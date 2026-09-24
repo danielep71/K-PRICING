@@ -29,10 +29,12 @@ v0.0.2 and is carried forward through the migration backlog.
 This synthetic example uses the same imported production modules in a new,
 blank macro-enabled workbook that uses the default **1900** date system. The
 expected results are taken from
-[`docs/DATE_LAYER_CONTRACT.md`](../docs/DATE_LAYER_CONTRACT.md). Worksheet
-execution in the destination is still pending
-[issue #17](https://github.com/danielep71/K-PRICING/issues/17), so they are
-contract expectations, not recorded destination runs.
+[`docs/DATE_LAYER_CONTRACT.md`](../docs/DATE_LAYER_CONTRACT.md). The
+[issue #17](https://github.com/danielep71/K-PRICING/issues/17) parity run
+exercised destination worksheet calls (date-system, Range-shape and
+dynamic-array probes) on one Windows 64-bit Excel host, but it did not execute
+these exact formulas. Their results below are therefore contract expectations,
+not recorded destination runs.
 
 Date-valued results are VBA `Date` values; apply a date number format if a cell
 shows a serial number. Date arguments may be real dates, date serials or text
