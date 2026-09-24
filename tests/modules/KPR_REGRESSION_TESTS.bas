@@ -2306,6 +2306,7 @@ Public Sub KPR_Tests_RunArray()
     Dim Anchor          As Range        'Cell the formula is entered in
     Dim Spill           As Range        'The spilled range, late-bound
     Dim ApiState        As String       'SUPPORTED or NOT_AVAILABLE
+    Dim CleanupStatus   As String       'Migration cleanup record
     Dim I               As Long         'Row cursor
 
 '------------------------------------------------------------------------------
@@ -2313,6 +2314,7 @@ Public Sub KPR_Tests_RunArray()
 '------------------------------------------------------------------------------
     Set mFailures = New Collection
     mChecks = 0
+    CleanupStatus = "PASS"
     Source = "'" & Replace(ThisWorkbook.Name, "'", "''") & "'!"
     On Error GoTo Cleanup
     PriorCalc = Application.Calculation
@@ -2338,6 +2340,7 @@ Public Sub KPR_Tests_RunArray()
         Err.Clear
         On Error GoTo Cleanup
         Debug.Print "KPR array regression  dynamic-array API: " & ApiState
+        MigrationPrintText "array/api", "TEXT:" & ApiState
         If ApiState <> "SUPPORTED" Then
             Record "array/api", "Formula2 is not available on this host; the multi-cell claim cannot be tested here"
             GoTo Cleanup
@@ -2382,17 +2385,71 @@ Public Sub KPR_Tests_RunArray()
         If Not IsEmpty(Sheet.Range("C2").Value) Then Record "array/1904 neighbours untouched", "C2 holds a value after a refused call"
 
 '------------------------------------------------------------------------------
+' MIGRATION OBSERVATIONS
+'------------------------------------------------------------------------------
+        Scratch.Date1904 = False
+        CallByName Anchor, "Formula2", VbLet, "=" & Source & "KPR_Dates_EndOfMonth(A1:A3)"
+        Application.Calculate
+        Set Spill = Nothing
+        On Error Resume Next
+        Set Spill = CallByName(Anchor, "SpillingToRange", VbGet)
+        Err.Clear
+        On Error GoTo Cleanup
+        If Spill Is Nothing Then
+            MigrationPrintText "array/1900-spill", "NONE"
+        Else
+            MigrationPrintText "array/1900-spill", _
+                               "RANGE:" & CStr(Spill.Rows.Count) & "x" & CStr(Spill.Columns.Count)
+        End If
+        MigrationPrintValue "array/1900-row1", Sheet.Range("C1").Value
+        MigrationPrintValue "array/1900-row2", Sheet.Range("C2").Value
+        MigrationPrintValue "array/1900-row3", Sheet.Range("C3").Value
+
+        Scratch.Date1904 = True
+        CallByName Anchor, "Formula2", VbLet, "=" & Source & "KPR_Dates_EndOfMonth(A1:A3)"
+        Application.Calculate
+        Set Spill = Nothing
+        On Error Resume Next
+        Set Spill = CallByName(Anchor, "SpillingToRange", VbGet)
+        Err.Clear
+        On Error GoTo Cleanup
+        MigrationPrintValue "array/1904-call", Sheet.Range("C1").Value
+        If Spill Is Nothing Then
+            MigrationPrintText "array/1904-spill", "NONE"
+        Else
+            MigrationPrintText "array/1904-spill", _
+                               "RANGE:" & CStr(Spill.Rows.Count) & "x" & CStr(Spill.Columns.Count)
+        End If
+        MigrationPrintValue "array/1904-neighbour-c2", Sheet.Range("C2").Value
+
+'------------------------------------------------------------------------------
 ' CLEANUP
 '------------------------------------------------------------------------------
 Cleanup:
     If Err.Number <> 0 Then
+        CleanupStatus = "FAIL:runtime-" & CStr(Err.Number)
         Record "array/runner", "unexpected runtime error " & CStr(Err.Number) & ": " & Err.Description
         Err.Clear
     End If
     On Error Resume Next
-    If Not Scratch Is Nothing Then Scratch.Close SaveChanges:=False
-    If CalcChanged Then Application.Calculation = PriorCalc
+    If Not Scratch Is Nothing Then
+        Scratch.Close SaveChanges:=False
+        If Err.Number <> 0 Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:close-" & CStr(Err.Number)
+            Err.Clear
+        End If
+    End If
+    If CalcChanged Then
+        Application.Calculation = PriorCalc
+        If Err.Number <> 0 Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-" & CStr(Err.Number)
+            Err.Clear
+        ElseIf Application.Calculation <> PriorCalc Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-not-restored"
+        End If
+    End If
     On Error GoTo 0
+    MigrationPrintCleanup "array", CleanupStatus
 
 '------------------------------------------------------------------------------
 ' REPORT
