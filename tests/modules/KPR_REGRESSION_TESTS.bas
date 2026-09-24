@@ -2114,6 +2114,7 @@ Public Sub KPR_Tests_RunShape()
     Dim ScreenBefore    As Boolean      'Caller state snapshot
     Dim CalcBefore      As XlCalculation 'Caller state snapshot
     Dim SelBefore       As String       'Caller state snapshot
+    Dim CleanupStatus   As String       'Migration cleanup record
     Dim I               As Long         'Row cursor
 
 '------------------------------------------------------------------------------
@@ -2121,6 +2122,7 @@ Public Sub KPR_Tests_RunShape()
 '------------------------------------------------------------------------------
     Set mFailures = New Collection
     mChecks = 0
+    CleanupStatus = "PASS"
     On Error GoTo Cleanup
     PriorCalc = Application.Calculation
     CalcChanged = True
@@ -2187,17 +2189,59 @@ Public Sub KPR_Tests_RunShape()
         End If
 
 '------------------------------------------------------------------------------
+' MIGRATION OBSERVATIONS
+'------------------------------------------------------------------------------
+        MigrationPrintText "shape/row", MigrationShapePayload(Sheet.Range("A1:C1"))
+        MigrationPrintText "shape/column", MigrationShapePayload(Sheet.Range("A1:A3"))
+        MigrationPrintText "shape/rectangle", MigrationShapePayload(Sheet.Range("A1:C3"))
+        MigrationPrintText "shape/single", MigrationShapePayload(Sheet.Range("B1"))
+        MigrationPrintText "shape/multi-area", _
+                           MigrationShapePayload(Application.Union(Sheet.Range("A1"), Sheet.Range("C3")))
+        MigrationPrintText "shape/beyond-usedrange", MigrationShapePayload(Sheet.Range("A1:A50"))
+        MigrationPrintValue "shape/blank-b2", Sheet.Range("B2").Value
+        MigrationPrintValue "shape/error-c3", Sheet.Range("C3").Value
+        MigrationPrintValue "shape/value-b3", Sheet.Range("B3").Value
+        If Application.EnableEvents = EventsBefore And _
+           Application.ScreenUpdating = ScreenBefore And _
+           Application.Calculation = CalcBefore Then
+            MigrationPrintText "shape/state-application", "UNCHANGED"
+        Else
+            MigrationPrintText "shape/state-application", "CHANGED"
+        End If
+        If Selection.Address(External:=True) = SelBefore Then
+            MigrationPrintText "shape/state-selection", "UNCHANGED"
+        Else
+            MigrationPrintText "shape/state-selection", "CHANGED"
+        End If
+
+'------------------------------------------------------------------------------
 ' CLEANUP
 '------------------------------------------------------------------------------
 Cleanup:
     If Err.Number <> 0 Then
+        CleanupStatus = "FAIL:runtime-" & CStr(Err.Number)
         Record "shape/runner", "unexpected runtime error " & CStr(Err.Number) & ": " & Err.Description
         Err.Clear
     End If
     On Error Resume Next
-    If Not Scratch Is Nothing Then Scratch.Close SaveChanges:=False
-    If CalcChanged Then Application.Calculation = PriorCalc
+    If Not Scratch Is Nothing Then
+        Scratch.Close SaveChanges:=False
+        If Err.Number <> 0 Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:close-" & CStr(Err.Number)
+            Err.Clear
+        End If
+    End If
+    If CalcChanged Then
+        Application.Calculation = PriorCalc
+        If Err.Number <> 0 Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-" & CStr(Err.Number)
+            Err.Clear
+        ElseIf Application.Calculation <> PriorCalc Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-not-restored"
+        End If
+    End If
     On Error GoTo 0
+    MigrationPrintCleanup "shape", CleanupStatus
 
 '------------------------------------------------------------------------------
 ' REPORT
