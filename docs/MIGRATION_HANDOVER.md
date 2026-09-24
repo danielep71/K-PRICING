@@ -49,8 +49,10 @@ must never be back-attributed to KPR.
    guarded with `Win64` rather than the frozen source's `VBA7` condition.
    Production behavior is unchanged.
 3. **Retained-evidence instrumentation.** K-PRICING adds destination test
-   adapters required by its evidence contract. They do not become supported
-   calculation API.
+   adapters required by its evidence contract: `KPR_Tests_RunEvidence` for the
+   retained host record and, from #14, `KPR_Tests_RunMigrationEvidence` with
+   serialized `OBS`/`CLEANUP` records from the stateful runners. They add no
+   assertions and do not become supported calculation API.
 4. **Pillar range classification (#32).** K-PRICING validates the entire pillar
    grammar before numeric conversion and maps grammatically valid numeric
    component/aggregate overflow to `PILLAR_AGGREGATE_RANGE/#NUM!`. The source
@@ -108,7 +110,7 @@ Evidence is classified by where and when it was produced.
   certify K-PRICING.
 - Hosted K-PRICING static checks prove only their documented static properties.
 - Migration regression/parity evidence follows K-PRICING #14 and
-  `docs/MIGRATION_REGRESSION.md` once that authority is merged.
+  [MIGRATION_REGRESSION.md](MIGRATION_REGRESSION.md), merged in PR #31.
 - Exact Windows Excel import, compile and source/destination parity are owned by
   K-PRICING #17.
 - Packaging, registration and UI certification are outside the migrated
@@ -138,7 +140,8 @@ not itself proof of correctness.
 
 ## Exit from migration handover
 
-K-PRICING #16 may close when this register is linked from the destination
-documentation authority map, the final #14 evidence protocol is referenced by
-its merged path, documentation #15 consumes the register, and repository checks
-pass. K-PRICING #18 remains the final migration-acceptance gate.
+K-PRICING #16 closed on 2026-09-24 with its working register in the issue
+body. This document is the durable repository copy of that register. It is
+linked from the [documentation authority map](README.md), references the
+merged #14 evidence protocol by path, and is the register that documentation
+issue #15 consumes. K-PRICING #18 remains the final migration-acceptance gate.
