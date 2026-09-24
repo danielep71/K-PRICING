@@ -177,8 +177,9 @@ component names intentionally collide and Excel would rename duplicates.
       --output test-results/migration-evidence.json
     ```
 
-    The migration validator hard-codes the frozen KPR source SHA and resolves the
-destination SHA from the checked-out Git `HEAD`; it then verifies the manifest
+    The migration validator hard-codes the frozen KPR source SHA, requires a clean
+tracked checkout, and resolves the destination SHA from that checkout's Git
+`HEAD`; it then verifies the manifest
 uses those exact identities, the instrumentation digest,
     every required supplemental-log digest, the 64-bit parity environment,
     zero-failure summaries for all stateful host/shape/array runners,
@@ -195,8 +196,11 @@ source/destination observation equality, the required baseline observation IDs
 The retained bundle contains a validated `migration.json` manifest plus these
 five bound artifacts:
 
-- `source-exact-compile`: exact frozen-source import/compile/native-run log;
-- `destination-compile`: exact destination candidate import/compile log;
+- `source-exact-compile`: exact frozen-source import/compile/native-run log,
+  ending with canonical `IMPORT=PASS`, `COMPILE=PASS` and
+  `NATIVE_RUN=PASS` records;
+- `destination-compile`: exact destination candidate import/compile log,
+  ending with canonical `IMPORT=PASS` and `COMPILE=PASS` records;
 - `source-observations`: complete `KPR_Tests_RunMigrationEvidence` output
   from frozen-source production modules plus the common candidate
   instrumentation harness;
