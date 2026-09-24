@@ -2276,7 +2276,7 @@ Private Sub Run_DateTypeCases()
         AssertDateValue "serial/fractional", 46096.75, DateSerial(2026, 3, 15)
         AssertDateValue "serial/currency", CCur(46096.75), DateSerial(2026, 3, 15)
         AssertDateValue "serial/decimal", CDec(46096.75), DateSerial(2026, 3, 15)
-#If VBA7 Then
+#If Win64 Then
         AssertDateValue "serial/longlong", CLngLng(46096), DateSerial(2026, 3, 15)
 #End If
 
@@ -2427,7 +2427,7 @@ Private Sub Run_IntegerCases()
         AssertLongCondition "long/double", CDbl(12), True, "NONE"
         AssertLongCondition "long/currency", CCur(12), True, "NONE"
         AssertLongCondition "long/decimal", CDec(12), True, "NONE"
-#If VBA7 Then
+#If Win64 Then
         AssertLongCondition "long/longlong", CLngLng(12), True, "NONE"
 #End If
 
