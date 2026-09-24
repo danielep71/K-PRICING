@@ -47,18 +47,21 @@ redirected to the destination migration plan, plus the explicit registry
 clarification below. All 22 declaration signatures
 in its public-surface block match the source facade declarations after joining
 VBA line continuations and normalizing whitespace, including whitespace after
-an opening parenthesis; the KPR_ namespace is unchanged. Destination
-PUBLIC_API.txt remains the installed starter surface until the coordinated
-code/API replacement in issues #12–#14.
+an opening parenthesis; the KPR_ namespace is unchanged. The destination
+`PUBLIC_API.txt` now records exactly the same 22 supported facade functions;
+internal core and regression members remain project infrastructure rather than
+supported calculation API.
 
 The [VBE export contract](VBE_EXPORT.md) preserves format and round-trip
 requirements. Editorial changes add source/destination evidence boundaries,
 qualify the source certification issue, map source `test/` to `tests/` and
 `demo/` to `examples/`, and split production destinations into core and facade.
-The source's blanket static-enforcement claim is scoped to pending specialist
-checker migration in #13. References to MacroOptions and demo infrastructure
+KPR-specific static rules are retained additively in
+`tools/check_kpr_contract.py` and wired into Repository integrity; generic
+K-PRICING repository, VBE, API-manifest and release controls remain authoritative
+for their existing scopes. References to MacroOptions and demo infrastructure
 remain requirements for future source-roadmap work, not claims of existing
-implementation. Existing destination export and release controls still apply.
+implementation.
 
 ## Reviewed source-contract clarification
 
@@ -92,6 +95,16 @@ certification of the later frozen source. It describes one dynamic-array host
 and focused 1900/1904 behaviour. Source final certification remains owned by
 [KPR #29](https://github.com/danielep71/KPR/issues/29).
 
+## Destination source import status
+
+The four core modules, `KPR_DATES_DAYS` facade and
+`KPR_REGRESSION_TESTS` harness are imported from the frozen source with the
+source Git blob IDs preserved exactly; only repository paths changed
+(`src/modules/KPR_Core_*` to `src/core/KPR_Core_*` and `test/` to
+`tests/`). The neutral starter modules were removed, and a new minimal
+`KPR_DateExample` consumer was added as destination-only example code.
+
 **Destination runtime verification remains pending** in
 [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
-The accepted neutral starter run is not evidence for the migrated date layer.
+The accepted neutral-starter run remains setup history and is not evidence for
+the migrated date layer.
