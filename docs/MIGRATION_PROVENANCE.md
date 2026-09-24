@@ -112,8 +112,9 @@ section-banner comment lines were removed. Its source blob is
 is `07656d21f01770e2d74d9de77d5f956949ff1301`. No executable statement,
 declaration, attribute, signature, default, error rule or algorithm changed.
 
-`KPR_REGRESSION_TESTS.bas` has two destination-only test-infrastructure
-adaptations identified during review. First, the two `CLngLng` regression
+`KPR_REGRESSION_TESTS.bas` has three destination-only test-infrastructure
+adaptations. The first two were identified during PR #28 review; the third
+is described after the #32 correction below. First, the two `CLngLng` regression
 cases are guarded by `#If Win64 Then` rather than the frozen source's
 `#If VBA7 Then`. On 32-bit Office with VBA7, `VBA7` is true while
 `CLngLng` is unavailable, so the source guard can prevent the regression
@@ -150,6 +151,19 @@ After the #32 correction, the destination blob IDs are
 `c44101222bbd1f5a7de58452ee53c5fb27e9ea57` for
 `tests/modules/KPR_REGRESSION_TESTS.bas` (source baseline blob
 `b339d4b932f390c143973fe5fcc106e79ffbcad1`).
+
+Issue #14 then adds a third destination-only test-infrastructure adaptation
+to `KPR_REGRESSION_TESTS.bas`: the migration observation instrumentation
+defined in [MIGRATION_REGRESSION.md](MIGRATION_REGRESSION.md). It adds the
+public macro `KPR_Tests_RunMigrationEvidence` and private serialization
+helpers. The host, shape and array stateful runners now also emit `OBS`
+records for their observed values, shapes and application/selection state.
+Their existing scratch-workbook close and calculation-mode restoration
+records the outcome as a `CLEANUP` line instead of discarding close or
+restore errors. It adds no assertions, changes no expectations, does not
+touch the pure-suite dispatcher and does not change production code. The
+566/568 retained-evidence totals above are unchanged. The resulting
+destination harness blob is `23397bbe4353771b66169b1531f413ed09e38c85`.
 
 Repository-path adaptations remain `src/modules/KPR_Core_*` to
 `src/core/KPR_Core_*` and `test/` to `tests/`. The neutral starter modules
