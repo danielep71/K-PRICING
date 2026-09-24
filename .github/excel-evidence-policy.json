@@ -15,6 +15,9 @@
     "shape",
     "parity"
   ],
-  "assertions": 557,
+  "assertions_by_office_bitness": {
+    "32-bit": 555,
+    "64-bit": 557
+  },
   "expected_error_cases": []
 }
