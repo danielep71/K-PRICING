@@ -171,8 +171,9 @@ Use only the categories needed by a release.
 ### Known limitations
 
 - The frozen KPR date-layer source, regression harness and project-specific static
-  contract guard are migrated; exact-source destination Excel compilation/parity
-  and release packaging remain pending.
+  contract guard are migrated. Exact-source Excel compilation and parity passed
+  on one Windows 64-bit host only (#17); 32-bit Office, other builds and locales
+  are untested, and release packaging remains pending.
 - The accepted neutral-starter Excel run remains setup history only and does not
   certify the migrated pricing/date implementation.
 
