@@ -65,11 +65,11 @@ The exact file hashes and destination blob identities are maintained in
 
 | KPR issue | Remaining source scope | Destination disposition |
 | --- | --- | --- |
-| [KPR#18](https://github.com/danielep71/KPR/issues/18) | MacroOptions manifest and registration/cleanup lifecycle | Not implemented by migration. Future registration delivery. |
-| [KPR#19](https://github.com/danielep71/KPR/issues/19) | Independent Python fixture generator, canonical TSV and generated VBA fixture module | Not implemented. Current migrated tests are not claimed to be an independent fixture oracle. |
-| [KPR#20](https://github.com/danielep71/KPR/issues/20) | Final durable regression interface and broad structured evidence schema | Partially overlapped by migration-specific K-PRICING evidence work; the full source issue is not complete. |
-| [KPR#21](https://github.com/danielep71/KPR/issues/21) | Complete contract/shape/parity/error/state regression matrix | Focused migrated suites exist, but the complete source-roadmap matrix remains future work. |
-| [KPR#22](https://github.com/danielep71/KPR/issues/22) | Native Excel cross-oracle module | Not implemented. |
+| [KPR#18](https://github.com/danielep71/KPR/issues/18) | MacroOptions manifest and registration/cleanup lifecycle | Not implemented by migration. Future registration delivery. Scheduled in v0.0.3 as #42. |
+| [KPR#19](https://github.com/danielep71/KPR/issues/19) | Independent Python fixture generator, canonical TSV and generated VBA fixture module | Not implemented. Current migrated tests are not claimed to be an independent fixture oracle. Scheduled in v0.0.3 as #38. |
+| [KPR#20](https://github.com/danielep71/KPR/issues/20) | Final durable regression interface and broad structured evidence schema | Partially overlapped by migration-specific K-PRICING evidence work; the full source issue is not complete. Scheduled in v0.0.3 as #39. |
+| [KPR#21](https://github.com/danielep71/KPR/issues/21) | Complete contract/shape/parity/error/state regression matrix | Focused migrated suites exist, but the complete source-roadmap matrix remains future work. Scheduled in v0.0.3 as #40. |
+| [KPR#22](https://github.com/danielep71/KPR/issues/22) | Native Excel cross-oracle module | Not implemented. Scheduled in v0.0.3 as #41. |
 | [KPR#23](https://github.com/danielep71/KPR/issues/23) | Deterministic date-demo builder | Not implemented. The destination carries only a minimal direct-VBA consumer example. |
 | [KPR#24](https://github.com/danielep71/KPR/issues/24) | Ribbon callbacks, RibbonX and safe package injection | Not implemented. |
 | [KPR#25](https://github.com/danielep71/KPR/issues/25) | Idempotent classic CommandBars lifecycle | Not implemented. |
@@ -102,8 +102,10 @@ destination plan explicitly changes it:
 - full source-roadmap certification/publication: danielep71/KPR#29 depends on
   danielep71/KPR#28.
 
-These are unscheduled future delivery phases in K-PRICING. When a phase is
-activated, create or map destination issues with an explicit milestone and
+At v0.0.2 acceptance (#18) the maintainer scheduled independent test hardening
+(danielep71/KPR#19–#22 as #38–#41) followed by registration (danielep71/KPR#18
+as #42) in milestone v0.0.3. The remaining phases are unscheduled. When a phase
+is activated, create or map destination issues with an explicit milestone and
 fully qualified KPR source links. Do not invent release commitments to clear
 this register.
 

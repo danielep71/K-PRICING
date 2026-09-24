@@ -104,6 +104,9 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Recorded v0.0.2 migration acceptance in `docs/MIGRATION_COMPLETION.md`, with
+  the accepted candidate, inventory, evidence, limitations and the v0.0.3 next
+  delivery scope (#38–#42); no release, tag or version change.
 - Retained the #17 exact-source Excel parity evidence for candidate
   `db98e506358ab74893ab28d52183fa2e216352b9`: the frozen KPR source compiled
   and passed its own 557 checks, the destination passed 568 assertions, and

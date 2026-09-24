@@ -23,8 +23,8 @@ source-to-destination disposition.
 | #14 | [Regression/parity protocol](MIGRATION_REGRESSION.md), migration instrumentation and evidence validator | PR #31, `118555ddf5c2cd8f944688f02fc9813713bf30c2` |
 | #16 | [Handover register](MIGRATION_HANDOVER.md) of source issue history and carried-forward roadmap | Issue closed; register merged in PR #34, `184e4b6976a51a3b29e17460ba06f7e919e7fbc6` |
 | #15 | Documentation, examples and destination status reconciliation | PR #35, `80e992df73c2a3209dc104045aeed14119f22534` |
-| #17 | Exact-source Windows Excel compilation and source/destination parity on candidate `db98e506358ab74893ab28d52183fa2e216352b9`, one Windows 64-bit Excel host | Evidence in [`evidence/migration-2026-09-24`](../evidence/migration-2026-09-24/session.txt); both validators PASS |
-| #18 | Migration acceptance and handover of the next delivery backlog | **Pending**; follows #15 and #17 |
+| #17 | Exact-source Windows Excel compilation and source/destination parity on candidate `db98e506358ab74893ab28d52183fa2e216352b9`, one Windows 64-bit Excel host | Evidence in [`evidence/migration-2026-09-24`](../evidence/migration-2026-09-24/session.txt); both validators PASS; PR #37, `b0794e2dab1bab9ff0cc948cf1d5734863c6bece` |
+| #18 | Migration acceptance and handover of the next delivery backlog | [Completion record](MIGRATION_COMPLETION.md); next scope in milestone v0.0.3 (#38–#42) |
 
 #29 and #32 were added to the milestone during execution; they are
 destination work, not source history.
