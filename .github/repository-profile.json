@@ -95,9 +95,12 @@
           "test": 1
         },
         "required_components": {
-          "src/core/ProjectCore.bas": "internal",
-          "src/modules/ProjectFacade.bas": "public",
-          "tests/modules/ProjectTests.bas": "test"
+          "src/core/KPR_Core_Err.bas": "internal",
+          "src/core/KPR_Core_Parse.bas": "internal",
+          "src/core/KPR_Core_Dates.bas": "internal",
+          "src/core/KPR_Core_Array.bas": "internal",
+          "src/modules/KPR_DATES_DAYS.bas": "public",
+          "tests/modules/KPR_REGRESSION_TESTS.bas": "test"
         }
       }
     },
@@ -117,9 +120,12 @@
           "test": 1
         },
         "required_components": {
-          "src/core/ProjectCore.bas": "internal",
-          "src/modules/ProjectFacade.bas": "public",
-          "tests/modules/ProjectTests.bas": "test"
+          "src/core/KPR_Core_Err.bas": "internal",
+          "src/core/KPR_Core_Parse.bas": "internal",
+          "src/core/KPR_Core_Dates.bas": "internal",
+          "src/core/KPR_Core_Array.bas": "internal",
+          "src/modules/KPR_DATES_DAYS.bas": "public",
+          "tests/modules/KPR_REGRESSION_TESTS.bas": "test"
         }
       }
     },
@@ -140,9 +146,12 @@
           "test": 1
         },
         "required_components": {
-          "src/core/ProjectCore.bas": "internal",
-          "src/modules/ProjectFacade.bas": "public",
-          "tests/modules/ProjectTests.bas": "test"
+          "src/core/KPR_Core_Err.bas": "internal",
+          "src/core/KPR_Core_Parse.bas": "internal",
+          "src/core/KPR_Core_Dates.bas": "internal",
+          "src/core/KPR_Core_Array.bas": "internal",
+          "src/modules/KPR_DATES_DAYS.bas": "public",
+          "tests/modules/KPR_REGRESSION_TESTS.bas": "test"
         }
       }
     }
@@ -321,10 +330,13 @@
       "tests"
     ],
     "components": {
-      "examples/modules/ProjectExample.bas": "example",
-      "src/core/ProjectCore.bas": "internal",
-      "src/modules/ProjectFacade.bas": "public",
-      "tests/modules/ProjectTests.bas": "test"
+      "examples/modules/KPR_DateExample.bas": "example",
+      "src/core/KPR_Core_Err.bas": "internal",
+      "src/core/KPR_Core_Parse.bas": "internal",
+      "src/core/KPR_Core_Dates.bas": "internal",
+      "src/core/KPR_Core_Array.bas": "internal",
+      "src/modules/KPR_DATES_DAYS.bas": "public",
+      "tests/modules/KPR_REGRESSION_TESTS.bas": "test"
     },
     "public_api_manifest": "docs/PUBLIC_API.txt"
   }
