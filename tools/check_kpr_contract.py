@@ -734,7 +734,18 @@ def self_test(root: Path) -> None:
     engine = copy.deepcopy(base)
     engine["sources"][array] += "\r\nPublic Function ProbeDate(ByVal V As Variant) As Variant\r\n    ProbeDate = Year(V)\r\nEnd Function\r\n"
     scenarios.append(("array date math", "kpr-array-purity", engine))
-    scenarios.append(("missing private visibility", "kpr-components", mutate(base, parse, "Option Private Module", "' removed by self-test")))
+    scenarios.append(
+        (
+            "missing private visibility",
+            "kpr-components",
+            mutate(
+                base,
+                parse,
+                "\r\nOption Private Module\r\n",
+                "\r\n' Option Private Module removed by self-test\r\n",
+            ),
+        )
+    )
     scenarios.append(("missing required member", "kpr-required-members", mutate(base, dates, "Public Function DaysInMonth", "Public Function DaysInMonth_Missing")))
     dependency = copy.deepcopy(base)
     dependency["sources"][err] += "\r\nPublic Function ProbeDependency() As Boolean\r\n    ProbeDependency = TryParseDateScalar(0, 0, 0)\r\nEnd Function\r\n"
