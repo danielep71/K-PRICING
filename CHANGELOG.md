@@ -105,7 +105,7 @@ Use only the categories needed by a release.
 ### Added
 
 - Imported the frozen KPR date and VBE export contracts with verified source
-  hashes, licence attribution and explicit pending destination runtime evidence.
+  hashes, license attribution and explicit pending destination runtime evidence.
 - Accepted manual neutral-starter Excel evidence for candidate
   `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2` on one Windows/64-bit Office host; no pricing
   or application-release certification.
@@ -121,8 +121,10 @@ Use only the categories needed by a release.
 
 ### Security
 
-- Prevent Scorecard scans/publication on the private repository and require
-  explicit private-code eligibility before CodeQL execution.
+- Enable public-repository CodeQL/Scorecard paths, private vulnerability reporting
+  and branch/tag rulesets; retain conditional safeguards for private visibility.
+- Record the maintainer's 2026-09-24 decision to retain the existing email and
+  host details publicly, as documented in setup verification and issue #29.
 
 ### Fixed
 
@@ -142,8 +144,10 @@ Use only the categories needed by a release.
   maintenance cases are removed; operational validator coverage remains.
 - Replace stale pull-request setup fields with K-PRICING identity, current source
   authorities, validation commands, and neutral-starter entry points.
-- Classify current private documentation targets as access restricted, without
-  treating anonymous 404s as public defects or claiming successful reachability.
+- Remove obsolete private-link classifications after the public-visibility
+  read-back; retain honest anonymous reachability results.
+- Reconcile visibility records, documentation authorities, ASCII source rules
+  and the migrated regression harness visibility exception.
 - Allow the retained `KPR_` VBA namespace and KPR source-provenance references
   through the project identity policy, while preserving unrelated donor and
   template restrictions ([#2](https://github.com/danielep71/K-PRICING/issues/2)).
@@ -155,8 +159,6 @@ Use only the categories needed by a release.
   and release packaging remain pending.
 - The accepted neutral-starter Excel run remains setup history only and does not
   certify the migrated pricing/date implementation.
-- GitHub branch/tag rulesets are unavailable for this private repository on the
-  current account plan; their enforcement is not claimed.
 
 ---
 

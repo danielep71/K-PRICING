@@ -63,10 +63,11 @@ run `35830974169` passed with zero differences. External-link observation run
 deterministic public defects; that workflow remains non-green. CodeQL and
 Scorecard were skipped under the private-repository policy.
 
-[Setup verification](SETUP_VERIFICATION.md) owns source/template provenance,
-control read-back and upstream lessons. Branch/tag rulesets remain unavailable
-under the private plan; manual review is not server-enforced protection. Daniele
-Penza owns resolving release prerequisites before a functional release.
+[Initialization status](INITIALIZATION_STATUS.md) owns initialization provenance.
+[Setup verification](SETUP_VERIFICATION.md) owns control read-back and upstream
+lessons, including the public-visibility recheck
+on 2026-09-24. The private-plan limitations above describe the historical setup
+checkpoint. Daniele Penza owns remaining functional-release prerequisites.
 
 This validates only the neutral starter on one Windows/64-bit Office host.
 32-bit Office, migrated KPR parity, pricing accuracy, application lifecycle and

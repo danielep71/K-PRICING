@@ -53,8 +53,8 @@ rerun. Never compensate by manually editing an already-tested artifact.
 
 ## 1. Freeze and identify the candidate
 
-Verify branch and tag protection before a functional release. These controls
-are currently unavailable on this private repository's account plan; see
+Verify branch and tag protection before a functional release. Re-read the active
+controls recorded in
 [setup verification](docs/SETUP_VERIFICATION.md). Do not treat this setup
 checkpoint as release authorization.
 

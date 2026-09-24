@@ -375,10 +375,9 @@ has been removed from current trust. It also proves planned signer overlap and
 that generated projects do not inherit the canonical signed-tag requirement.
 
 An active, verified `v*` ruleset provides complementary server-side
-immutability. This repository currently cannot enable branch/tag rulesets on
-its account plan, as recorded in [setup verification](SETUP_VERIFICATION.md).
-Protection must be resolved and verified before a functional release; no live
-tag immutability enforcement is claimed by this setup milestone. A valid signature authenticates the tag signer; it does not
+immutability. Re-read the active controls in
+[setup verification](SETUP_VERIFICATION.md) before a functional release.
+A valid signature authenticates the tag signer; it does not
 prove Excel/runtime behavior, build provenance, or the truth of external
 evidence.
 

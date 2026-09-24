@@ -9,7 +9,7 @@ boundary. Product identity remains K-PRICING; VBA names retain `KPR_`.
 
 The frozen source inventory and 22 source signatures were rechecked on
 2026-09-24. [Migration provenance](MIGRATION_PROVENANCE.md) records the
-source hashes, licence and editorial adaptations for issue #11. The
+source hashes, license and editorial adaptations for issue #11. The
 [date-layer contract](DATE_LAYER_CONTRACT.md) and
 [VBE export contract](VBE_EXPORT.md) are imported. PR #28 merged the five
 production modules, focused regression harness, API manifest, specialist static
@@ -153,9 +153,9 @@ remains open unless separately implemented and evidenced.
 | [KPR#1](https://github.com/danielep71/KPR/issues/1) | Remove inherited implementation | Closed; historical setup only; keep destination baseline | #16 |
 | [KPR#2](https://github.com/danielep71/KPR/issues/2) | Repository identity and links | Closed; reconcile naming and qualified links; do not overwrite destination | #15, #16 |
 | [KPR#3](https://github.com/danielep71/KPR/issues/3) | Editor, ignore and export policy | Closed; compare source export rules, retain stricter destination | #12, #16 |
-| [KPR#4](https://github.com/danielep71/KPR/issues/4) | Labels | Closed; retain destination 20-label policy, not source catalogue | #16 |
+| [KPR#4](https://github.com/danielep71/KPR/issues/4) | Labels | Closed; retain destination 20-label policy, not source catalog | #16 |
 | [KPR#5](https://github.com/danielep71/KPR/issues/5) | Static checks | Closed; port specialist rules alongside generic CI | #13 |
-| [KPR#6](https://github.com/danielep71/KPR/issues/6) | GitHub controls | Closed; source settings are not inherited or evidence for this private repo | #16 |
+| [KPR#6](https://github.com/danielep71/KPR/issues/6) | GitHub controls | Closed; source settings are not inherited or evidence for this destination repository | #16 |
 | [KPR#7](https://github.com/danielep71/KPR/issues/7) | Visual identity | Closed; defer source image reuse; product branding must stay K-PRICING | #15 |
 | [KPR#8](https://github.com/danielep71/KPR/issues/8) | Repository baseline release | Closed; historical release only, no tag/version transfer | #16 |
 | [KPR#9](https://github.com/danielep71/KPR/issues/9) | Frozen date contract | Closed; preserve selected revision and amendments | #11 |
@@ -200,3 +200,11 @@ The migration backlog already exists in milestone v0.0.2: issues 11–18. Setup
 preparation ends with this inventory and executable sequence; it does not close
 those execution issues. See [developer setup](DEVELOPER_SETUP.md) and
 [setup verification](SETUP_VERIFICATION.md) for the destination baseline.
+
+## Test-module visibility decision
+
+For issue #14, preserve the source harness exception: `KPR_REGRESSION_TESTS`
+omits `Option Private Module` to keep its existing regression entry points
+callable. The starter's private test module is not the migrated convention.
+[House style](VBA_HOUSE_STYLE.md) owns the rule; the supported production API
+remains the 22 entries in [PUBLIC_API.txt](PUBLIC_API.txt).

@@ -10,7 +10,7 @@
 
 <div align="center">
 
-# 📅 KPR Date-Layer Behavioural Contract
+# 📅 KPR Date-Layer Behavioral Contract
 
 ### Normative v0.0.2 reference for the Gregorian date primitive layer
 
@@ -29,22 +29,22 @@
 ---
 
 > [!IMPORTANT]
-> **Normative status.** This is the v0.0.2 behavioural contract for
+> **Normative status.** This is the v0.0.2 behavioral contract for
 > implementation, registration, regression tests, demo material, and user
 > documentation.
 
-This document freezes observable behaviour. It and
+This document freezes observable behavior. It and
 [the migration plan](MIGRATION_PLAN.md) are complementary and
 non-overlapping in authority:
 
 - the plan governs scope, architecture, sequencing, and evidence;
-- this contract governs observable behaviour; and
-- where both state a behavioural rule, this contract governs.
+- this contract governs observable behavior; and
+- where both state a behavioral rule, this contract governs.
 
 > [!WARNING]
 > If descriptive material elsewhere conflicts with this document, this document
-> governs v0.0.2 behaviour. A contract change requires an explicit, reviewed
-> behavioural decision rather than an incidental implementation change.
+> governs v0.0.2 behavior. A contract change requires an explicit, reviewed
+> behavioral decision rather than an incidental implementation change.
 
 > [!NOTE]
 > The calculation work through issue [danielep71/KPR#17](https://github.com/danielep71/KPR/issues/17) implements this contract. Static checks
@@ -739,7 +739,7 @@ with its normative coverage in this document.
 | 3 | The `1900-03-01 .. 9999-12-31` gate and caller/date-system policy are unambiguous | Sections 1 and 4 |
 | 4 | The documented conditions produce `#VALUE!`, `#NUM!`, host-configuration `#N/A`, and verbatim propagated errors as specified | Sections 3, 5.2, 6, and 7 |
 | 5 | Host-generated and propagated `#N/A` are indistinguishable at the Excel-value level, and `HostDateSystem()` supplies caller context | Sections 4, 6, and 7 |
-| 6 | `HostDateSystem()` is volatile and its recalculation behaviour is specified | Section 4 |
+| 6 | `HostDateSystem()` is volatile and its recalculation behavior is specified | Section 4 |
 | 7 | Certified direct-VBA uses are distinguished from unsupported non-Range Excel host contexts | Section 4 |
 | 8 | Scalar expansion, optional-argument rules, orientation, 1-D arrays, blanks, the 100,000-element cap, and per-element error propagation are specified | Sections 3.3, 5.1, and 5.2 |
 | 9 | Scalar and dynamic-array compatibility claims are stated separately with no CSE claim | Section 9 |
