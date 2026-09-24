@@ -97,8 +97,12 @@ and focused 1900/1904 behaviour. Source final certification remains owned by
 
 ## Destination source import status
 
-The four core modules are imported byte-for-byte from the frozen source: their
-destination Git blob IDs remain the same as the source inventory.
+Three core modules—`KPR_Core_Err.bas`, `KPR_Core_Parse.bas` and
+`KPR_Core_Array.bas`—remain byte-for-byte imports of the frozen source and
+retain their source Git blob IDs. `KPR_Core_Dates.bas` was initially imported
+byte-for-byte but is now a documented destination-adapted core module because
+issue #32 corrects the inherited pillar range-classification defect described
+below.
 
 `KPR_DATES_DAYS.bas` has one documented format-only destination delta required
 by K-PRICING's committed-whitespace gate: seven trailing spaces on
@@ -119,12 +123,32 @@ result into the stable `CASE=/CASES=/ASSERTIONS=/FAILURES=/RESULT=` format
 required by the destination retained-evidence validator. It does not add test
 cases, duplicate suite dispatch, change expectations or touch production code.
 
-The destination harness blob after these adaptations is
-`a67bda4bd15d00ddf564efb5ce353f31d9882055`. The expected pure-suite count is
-555 assertions on 32-bit Office and 557 on 64-bit Office because the two
-LongLong checks compile only under `Win64`. These adaptations do not change
-the supported calculation API, observable date behavior or any production
-algorithm. The source repository remains unchanged.
+The destination harness blob after the PR #28 adaptations is
+`a67bda4bd15d00ddf564efb5ce353f31d9882055`. Issue #32 then adds focused
+pillar-range assertions for conversion overflow, aggregate overflow and grammar
+precedence including later grammar errors after an overflowing component,
+taking the retained-evidence totals to 566 assertions on 32-bit Office and 568
+on 64-bit Office; the two-count difference remains the
+LongLong cases compiled only under `Win64`.
+
+Issue #32 also corrects one inherited production defect in
+`KPR_Core_Dates.TryPillar_Parse`: a grammatically valid digits+unit component
+whose numeric quantity cannot be represented as `Double`, or whose Y/M or W/D
+aggregate overflows `Double`, is now classified as
+`PILLAR_AGGREGATE_RANGE` rather than falling through as
+`PILLAR_TOKEN_MALFORMED`. Aggregate values are computed into local temporaries
+before the ByRef outputs are assigned, preserving the parser's
+outputs-on-success-only contract on failure. This is a destination-only
+behavioral correction required by the already-migrated date contract; the
+frozen source repository remains unchanged.
+
+After the #32 correction, the destination blob IDs are
+`fedc43b3e38f706d528186cf09d3af12086f52f9` for
+`src/core/KPR_Core_Dates.bas` (source baseline blob
+`7e0929474e1ae1311df2081eb7a64fe126f1b688`) and
+`c44101222bbd1f5a7de58452ee53c5fb27e9ea57` for
+`tests/modules/KPR_REGRESSION_TESTS.bas` (source baseline blob
+`b339d4b932f390c143973fe5fcc106e79ffbcad1`).
 
 Repository-path adaptations remain `src/modules/KPR_Core_*` to
 `src/core/KPR_Core_*` and `test/` to `tests/`. The neutral starter modules

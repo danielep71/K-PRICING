@@ -672,6 +672,7 @@ Public Function TryPillar_Parse( _
 '       PILLAR_TYPE_REJECTED     non-text payload
 '       PILLAR_ALIAS_SIGNED      whole-token alias carrying a leading sign
 '       PILLAR_DUPLICATE_UNIT    a unit appearing more than once
+'       PILLAR_AGGREGATE_RANGE   valid numeric component/aggregate out of range
 '       PILLAR_TOKEN_MALFORMED   every other grammar violation
 '
 '   TotalDays (ByRef)
@@ -683,12 +684,13 @@ Public Function TryPillar_Parse( _
 '   Boolean
 '     TRUE  => the token matched the accepted grammar
 '     FALSE => blank, malformed, unknown unit, repeated unit, signed alias,
-'              or non-text payload
+'              non-text payload, or valid numeric component/aggregate out of range
 '
 ' BEHAVIOR
 '   - Trims and upper-cases, consumes an optional leading sign, then checks the
 '     whole-token aliases ON / O/N / TN / T/N.
-'   - Otherwise scans repeated [digits][unit] pairs to the end of the string.
+'   - Otherwise validates every repeated [digits][unit] pair to the end of the
+'     string before converting any numeric quantity.
 '   - Any character that is not a digit in a numeric position or a known unit
 '     in a unit position fails the parse.
 '   - Each unit may appear at most once, so "1M1M" fails rather than summing.
@@ -712,9 +714,10 @@ Public Function TryPillar_Parse( _
 '   - A repeated unit is a typo, not a sum. Accepting "1M1M" as two months
 '     would return a plausible number for input the caller did not intend;
 '     contract section 3.4 therefore rejects duplicate units.
-'   - Quantities are not bounded here. A token such as "999999999999M" parses
-'     and the magnitude is left for the shift layer to reject, which it does
-'     at its month-index gate.
+'   - Finite quantities are not bounded here. A token such as "999999999999M"
+'     parses and the magnitude is left for the shift layer to reject at its
+'     month-index gate. A digits-only component that cannot be represented as
+'     Double, or an aggregate that overflows Double, is PILLAR_AGGREGATE_RANGE.
 '   - CDbl is applied to a digits-only substring, so no locale decimal
 '     separator is involved. Replacing it with Val or CLng would change the
 '     overflow behaviour.
@@ -726,7 +729,7 @@ Public Function TryPillar_Parse( _
 '     identically in arithmetic; only a formatter would notice.
 '
 ' UPDATED
-'   2026-09-02
+'   2026-09-24
 '==============================================================================
 '
 
@@ -736,6 +739,7 @@ Public Function TryPillar_Parse( _
     Dim S               As String    'Upper-cased, trimmed pillar text
     Dim SBody           As String    'Pillar body after the optional leading sign
     Dim ChCode          As Long      'Character code at the current scan position
+    Dim UnitChar        As String    'Validated unit for the current numeric token
     Dim HasSign         As Boolean   'TRUE when a leading sign was consumed
 
     Dim ScanPos         As Long      'Current scan position in SBody
@@ -755,6 +759,8 @@ Public Function TryPillar_Parse( _
     Dim MonthsD         As Double    'M component
     Dim WeeksD          As Double    'W component
     Dim DaysD           As Double    'D component, or the resolved alias
+    Dim ParsedMonths    As Double    'Local month aggregate; assigned out only on success
+    Dim ParsedDays      As Double    'Local day aggregate; assigned out only on success
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -828,48 +834,71 @@ Public Function TryPillar_Parse( _
     'Only run the scanner when no alias matched
         If TokenCount = 0 Then
 
-            'Start at the first character of the body
+'------------------------------------------------------------------------------
+' PASS 1 - VALIDATE THE COMPLETE TOKEN GRAMMAR
+'------------------------------------------------------------------------------
+            'Grammar has absolute precedence over numerical range. Scan the
+            'entire token first so a later unknown/repeated/missing unit wins
+            'even when an earlier digits-only quantity would overflow Double.
                 ScanPos = 1
-            'Consume [digits][unit] pairs until the body is exhausted
                 Do While ScanPos <= BodyLen
-                    'Mark the start of the numeric token
-                        TokenStart = ScanPos
-                    'Advance through contiguous digits, comparing codes
-                        Do While ScanPos <= BodyLen
-                            ChCode = AscW(Mid$(SBody, ScanPos, 1))
-                            If (ChCode < 48) Or (ChCode > 57) Then Exit Do
-                            ScanPos = ScanPos + 1
-                        Loop
-                    'Reject a component with no digits
-                        If TokenStart = ScanPos Then GoTo Fail
-                    'Coerce the numeric token once
-                        QtyD = CDbl(Mid$(SBody, TokenStart, ScanPos - TokenStart))
-                    'Reject a quantity with no trailing unit
-                        If ScanPos > BodyLen Then GoTo Fail
-                    'Record the component by unit, rejecting any repeat
-                        Select Case Mid$(SBody, ScanPos, 1)
-                            Case "Y"
-                                If SeenY Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
-                                SeenY = True
-                                YearsD = QtyD
-                            Case "M"
-                                If SeenM Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
-                                SeenM = True
-                                MonthsD = QtyD
-                            Case "W"
-                                If SeenW Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
-                                SeenW = True
-                                WeeksD = QtyD
-                            Case "D"
-                                If SeenD Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
-                                SeenD = True
-                                DaysD = QtyD
-                            Case Else
-                                GoTo Fail
-                        End Select
-                    'Count the component and step past the unit
-                        TokenCount = TokenCount + 1
+                    TokenStart = ScanPos
+                    Do While ScanPos <= BodyLen
+                        ChCode = AscW(Mid$(SBody, ScanPos, 1))
+                        If (ChCode < 48) Or (ChCode > 57) Then Exit Do
                         ScanPos = ScanPos + 1
+                    Loop
+                    If TokenStart = ScanPos Then GoTo Fail
+                    If ScanPos > BodyLen Then GoTo Fail
+
+                    UnitChar = Mid$(SBody, ScanPos, 1)
+                    Select Case UnitChar
+                        Case "Y"
+                            If SeenY Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
+                            SeenY = True
+                        Case "M"
+                            If SeenM Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
+                            SeenM = True
+                        Case "W"
+                            If SeenW Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
+                            SeenW = True
+                        Case "D"
+                            If SeenD Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
+                            SeenD = True
+                        Case Else
+                            GoTo Fail
+                    End Select
+
+                    TokenCount = TokenCount + 1
+                    ScanPos = ScanPos + 1
+                Loop
+
+'------------------------------------------------------------------------------
+' PASS 2 - CONVERT VALIDATED QUANTITIES
+'------------------------------------------------------------------------------
+            'Only a token whose complete grammar is valid reaches conversion.
+            'A conversion failure therefore unambiguously means numerical range.
+                ScanPos = 1
+                Do While ScanPos <= BodyLen
+                    TokenStart = ScanPos
+                    Do While ScanPos <= BodyLen
+                        ChCode = AscW(Mid$(SBody, ScanPos, 1))
+                        If (ChCode < 48) Or (ChCode > 57) Then Exit Do
+                        ScanPos = ScanPos + 1
+                    Loop
+
+                    UnitChar = Mid$(SBody, ScanPos, 1)
+                    On Error GoTo RangeFail
+                    QtyD = CDbl(Mid$(SBody, TokenStart, ScanPos - TokenStart))
+                    On Error GoTo Fail
+
+                    Select Case UnitChar
+                        Case "Y": YearsD = QtyD
+                        Case "M": MonthsD = QtyD
+                        Case "W": WeeksD = QtyD
+                        Case "D": DaysD = QtyD
+                    End Select
+                    ScanPos = ScanPos + 1
                 Loop
 
         End If
@@ -882,14 +911,28 @@ Public Function TryPillar_Parse( _
 '------------------------------------------------------------------------------
 ' ASSIGN RESULTS
 '------------------------------------------------------------------------------
-    'Aggregate Y / M into a signed month delta
-        TotalMonths = SignMul * ((12# * YearsD) + MonthsD)
-    'Aggregate W / D into a signed day delta
-        TotalDays = SignMul * ((7# * WeeksD) + DaysD)
-    'Contract: TRUE only when both outputs were assigned
+    'Aggregate into locals first so a range failure never partially modifies
+    'the caller's ByRef outputs.
+        On Error GoTo RangeFail
+        ParsedMonths = SignMul * ((12# * YearsD) + MonthsD)
+        ParsedDays = SignMul * ((7# * WeeksD) + DaysD)
+        On Error GoTo Fail
+
+    'Contract: both outputs are assigned only after both aggregates succeed.
+        TotalMonths = ParsedMonths
+        TotalDays = ParsedDays
         Condition = KPR_COND_NONE
         TryPillar_Parse = True
         Exit Function
+
+'------------------------------------------------------------------------------
+' RANGE FAIL
+'------------------------------------------------------------------------------
+RangeFail:
+    'The token grammar is valid; the numeric component or aggregate is not
+    'representable in the parser's Double domain.
+        Condition = KPR_COND_PILLAR_AGGREGATE_RANGE
+        Resume Fail
 
 '------------------------------------------------------------------------------
 ' FAIL

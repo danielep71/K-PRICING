@@ -126,6 +126,9 @@ Use only the categories needed by a release.
 
 ### Fixed
 
+- Classify grammatically valid pillar quantities and aggregates that exceed the
+  parser's numeric domain as `PILLAR_AGGREGATE_RANGE` / `#NUM!`, while
+  preserving parser outputs on failure (#32).
 - Reconcile completed setup status, generated-project dependency guidance and
   closeout inputs; enforce retained verification-depth tests in CI and remove
   unused template dependency locks.
