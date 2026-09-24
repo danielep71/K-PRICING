@@ -170,8 +170,13 @@ Repository-path adaptations remain `src/modules/KPR_Core_*` to
 were removed, and a new minimal `KPR_DateExample` consumer was added as
 destination-only example code.
 
-**Destination runtime verification remains pending** in
-[K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
+**Destination runtime verification** for candidate
+`db98e506358ab74893ab28d52183fa2e216352b9` passed on one Windows 64-bit Excel
+host in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17); see
+[the retained evidence](../evidence/migration-2026-09-24/session.txt). The run
+confirmed the #32 destination correction (source `#VALUE!`, destination `#NUM!`)
+and equal source/destination observations otherwise. Other environments remain
+untested.
 The accepted neutral starter run is not evidence for the migrated date layer.
 
 ## Subsequent documentation reconciliation

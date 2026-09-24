@@ -1,0 +1,40 @@
+MIGRATION_OBSERVATIONS_BEGIN
+OBS	direct/days-in-month	LONG:29
+OBS	direct/add-days	DATE:2026-03-20
+OBS	direct/strict-date-error	ERROR:2015
+OBS	host/1900/diagnostic	DOUBLE:1900
+OBS	host/1900/value	DOUBLE:46082
+OBS	host/1900/propagated-na	ERROR:2042
+OBS	host/1904/diagnostic	DOUBLE:1904
+OBS	host/1904/value	ERROR:2042
+OBS	host/1904/propagated-na	ERROR:2042
+OBS	host/1900-again/diagnostic	DOUBLE:1900
+OBS	host/1900-again/value	DOUBLE:46082
+OBS	host/1900-again/propagated-na	ERROR:2042
+CLEANUP	host	PASS
+KPR host regression  checks: 9  failures: 0
+OBS	shape/row	OK:kind=1;rows=1;cols=3
+OBS	shape/column	OK:kind=1;rows=3;cols=1
+OBS	shape/rectangle	OK:kind=1;rows=3;cols=3
+OBS	shape/single	OK:kind=0;rows=1;cols=1
+OBS	shape/multi-area	ERROR:SHAPE_UNSUPPORTED
+OBS	shape/beyond-usedrange	OK:kind=1;rows=50;cols=1
+OBS	shape/blank-b2	EMPTY
+OBS	shape/error-c3	ERROR:2042
+OBS	shape/value-b3	DOUBLE:8
+OBS	shape/state-application	UNCHANGED
+OBS	shape/state-selection	UNCHANGED
+CLEANUP	shape	PASS
+KPR shape regression  checks: 12  failures: 0
+KPR array regression  dynamic-array API: SUPPORTED
+OBS	array/api	TEXT:SUPPORTED
+OBS	array/1900-spill	RANGE:3x1
+OBS	array/1900-row1	DOUBLE:46112
+OBS	array/1900-row2	ERROR:2015
+OBS	array/1900-row3	DOUBLE:46142
+OBS	array/1904-call	ERROR:2042
+OBS	array/1904-spill	NONE
+OBS	array/1904-neighbour-c2	EMPTY
+CLEANUP	array	PASS
+KPR array regression  checks: 7  failures: 0
+MIGRATION_OBSERVATIONS_END

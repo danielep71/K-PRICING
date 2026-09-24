@@ -23,7 +23,7 @@
 ---
 
 > [!IMPORTANT]
-> Complete the evidence fields for this change. Delete optional review blocks that do not apply. The KPR date layer is the current migrated runtime surface; exact-source destination Excel certification remains pending until issue #17 is completed.
+> Complete the evidence fields for this change. Delete optional review blocks that do not apply. The KPR date layer is the current migrated runtime surface; exact-source Excel parity passed on one Windows 64-bit host in issue #17; broader environments remain uncertified.
 
 ## 📌 Summary
 

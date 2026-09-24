@@ -1,0 +1,11 @@
+{
+  "candidate_sha": "db98e506358ab74893ab28d52183fa2e216352b9",
+  "execution": "manual",
+  "findings": [],
+  "outcomes": [
+    "PASS"
+  ],
+  "release_environment": "execution=manual; environment={\"excel_build\":\"16.0.20326.20072 (Microsoft 365 Version 2608)\",\"excel_version\":\"16.0\",\"locale\":\"it-IT (Italian (Italy) regional format)\",\"macro_policy\":\"Disable VBA macros with notification; existing settings unchanged\",\"office_bitness\":\"64-bit\",\"os\":\"Windows (64-bit) NT 10.00\",\"os_architecture\":\"64-bit\",\"references\":[\"Visual Basic For Applications\",\"Microsoft Excel 16.0 Object Library\",\"OLE Automation\",\"Microsoft Office 16.0 Object Library\"],\"runtime\":\"VBA7+\",\"trust_changes\":false,\"vba_project_access\":\"Enabled; manual import workflow\"}",
+  "scope_note": "Validates retained host assertions and log bindings; does not execute Excel or authenticate execution.",
+  "status": "pass"
+}

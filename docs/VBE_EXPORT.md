@@ -3,8 +3,8 @@
 > Source version labels (including v0.0.2 and v0.0.3), roadmap statements and
 > historical evidence refer to KPR. They do not set K-PRICING release versions
 > or claim destination certification. The frozen implementation is now migrated
-> into K-PRICING; exact-source Windows Excel compilation and parity verification
-> remain pending in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
+> into K-PRICING; exact-source Windows Excel compilation and parity passed on one
+> Windows 64-bit host in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
 > [Migration provenance](MIGRATION_PROVENANCE.md) records hashes, attribution
 > and the limited editorial adaptations.
 

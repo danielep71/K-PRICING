@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "source_sha": "f26450d1fa7b11261162e901dedba062f21c99a7",
+  "destination_sha": "db98e506358ab74893ab28d52183fa2e216352b9",
+  "observations": 31,
+  "known_differences": 1,
+  "bound_logs": [
+    "destination-compile",
+    "destination-host-record",
+    "destination-observations",
+    "source-exact-compile",
+    "source-observations"
+  ],
+  "scope_note": "Validates manifest identity, retained-file digests, observation parity and cleanup records; does not execute Excel or authenticate the human/runner that produced the files."
+}
