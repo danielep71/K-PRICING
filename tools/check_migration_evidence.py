@@ -370,7 +370,7 @@ def self_test() -> None:
                 "",
             ]
         )
-        synthetic_environment = {
+        synthetic_environment: dict[str, Any] = {
             "excel_version": "16.0",
             "excel_build": "synthetic",
             "office_bitness": "64-bit",
@@ -383,7 +383,7 @@ def self_test() -> None:
             "vba_project_access": "disabled; manual import",
             "trust_changes": False,
         }
-        host_record = {
+        host_record: dict[str, Any] = {
             "schema_version": 1,
             "repository": "danielep71/K-PRICING",
             "candidate_sha": "b" * 40,
@@ -472,11 +472,15 @@ def self_test() -> None:
         else:
             raise RuntimeError("degraded parity self-test unexpectedly passed")
 
+        # Restore the destination observation stream before testing host binding.
+        (bundle / "destination-observations.log").write_text(obs, encoding="utf-8")
+
         degraded = json.loads(json.dumps(manifest))
         host_entry = next(x for x in degraded["logs"] if x["id"] == "destination-host-record")
-        mismatched_host = dict(host_record)
-        mismatched_host["environment"] = dict(synthetic_environment)
-        mismatched_host["environment"]["excel_build"] = "different-build"
+        mismatched_environment: dict[str, Any] = dict(synthetic_environment)
+        mismatched_environment["excel_build"] = "different-build"
+        mismatched_host: dict[str, Any] = dict(host_record)
+        mismatched_host["environment"] = mismatched_environment
         host_text = json.dumps(mismatched_host) + "\n"
         (bundle / host_entry["path"]).write_text(host_text, encoding="utf-8")
         host_entry["sha256"] = hashlib.sha256(host_text.encode()).hexdigest()
