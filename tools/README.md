@@ -345,8 +345,10 @@ python3 tools/check_migration_evidence.py \
   --output test-results/migration-evidence.json
 ```
 
-The validator authenticates file bindings and parity records, not the human or
-host that produced them; `check_excel_evidence.py` remains authoritative for
+The validator authenticates file bindings and parity records, requires every
+stateful runner summary to report zero failures, and binds the destination to
+the checked-out candidate rather than a user-supplied SHA. It does not
+authenticate the human or host that produced them; `check_excel_evidence.py` remains authoritative for
 the destination host-record schema.
 
 ## Adopted template contract
