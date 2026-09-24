@@ -698,7 +698,18 @@ def self_test(root: Path) -> None:
     spill = copy.deepcopy(base)
     spill["sources"][facade] += "\r\nPublic Function KPR_Dates_AddDays_Spill(ByVal DateIn As Variant) As Variant\r\nEnd Function\r\n"
     scenarios.append(("_Spill twin", "kpr-public-surface", spill))
-    scenarios.append(("legacy plural pillar", "kpr-public-surface", mutate(base, facade, "KPR_Dates_DateFromPillar", "KPR_Dates_DatesFromPillar")))
+    scenarios.append(
+        (
+            "legacy plural pillar",
+            "kpr-public-surface",
+            mutate(
+                base,
+                facade,
+                "Public Function KPR_Dates_DateFromPillar(",
+                "Public Function KPR_Dates_DatesFromPillar(",
+            ),
+        )
+    )
     scenarios.append(
         (
             "narrow return type",
