@@ -92,18 +92,21 @@ Use one documented deployment model per supported installation path:
 Never mix components from different tags, commits, local exports or release
 assets.
 
-## 📂 Neutral starter import order
+## 📂 Migrated date-layer import order
 
-For the baseline starter:
+Import the migrated production dependency set in this order:
 
-1. `src/core/ProjectCore.bas`
-2. `src/modules/ProjectFacade.bas`
-3. `tests/modules/ProjectTests.bas` — development/regression only
-4. `examples/modules/ProjectExample.bas` — optional consumer example
+1. `src/core/KPR_Core_Err.bas`
+2. `src/core/KPR_Core_Parse.bas`
+3. `src/core/KPR_Core_Dates.bas`
+4. `src/core/KPR_Core_Array.bas`
+5. `src/modules/KPR_DATES_DAYS.bas`
+6. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
+7. `examples/modules/KPR_DateExample.bas` — optional consumer example
 
-A generated project may replace or extend this layout. The authoritative source
-and component-role rules are in
-[`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md).
+The four core modules are project-internal; `KPR_DATES_DAYS` owns the supported
+22-function calculation API. Source provenance and path adaptation are recorded
+in [`docs/MIGRATION_PROVENANCE.md`](docs/MIGRATION_PROVENANCE.md).
 
 > [!CAUTION]
 > A `.frm` and adjacent `.frx` are one logical UserForm component. Import the
@@ -131,16 +134,15 @@ reproducible installation.
 A successful import is not certification. Validate the exact installed source in
 a supported host.
 
-For the neutral baseline, run `ProjectTests.RunProjectTests`. A passing run ends
-with:
+For the migrated date layer, compile the complete project and run
+`KPR_Tests_Run`. The imported harness also exposes `KPR_Tests_RunSuite`,
+`KPR_Tests_RunAll`, `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, and
+`KPR_Tests_RunArray` for focused execution.
 
-```text
-RESULT=PASS; completeness=COMPLETE; cases=4; assertions=6; failures=0; cleanup=PASS
-```
-
-Run `ProjectExample.RunProjectExample` separately for the minimal consumer smoke.
-A generated project must replace these baseline expectations when it changes the
-starter contract.
+Run `KPR_DateExample.RunDateExample` separately for the minimal direct-VBA
+consumer smoke. Historical KPR results are source evidence only; destination
+counts, failures/skips, environment and parity must be recorded against the
+exact candidate under migration issue #17.
 
 Record at least:
 
