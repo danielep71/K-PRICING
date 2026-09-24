@@ -99,10 +99,10 @@
           "test": 1
         },
         "required_components": {
+          "src/core/KPR_Core_Array.bas": "internal",
+          "src/core/KPR_Core_Dates.bas": "internal",
           "src/core/KPR_Core_Err.bas": "internal",
           "src/core/KPR_Core_Parse.bas": "internal",
-          "src/core/KPR_Core_Dates.bas": "internal",
-          "src/core/KPR_Core_Array.bas": "internal",
           "src/modules/KPR_DATES_DAYS.bas": "public",
           "tests/modules/KPR_REGRESSION_TESTS.bas": "test"
         }
@@ -124,10 +124,10 @@
           "test": 1
         },
         "required_components": {
+          "src/core/KPR_Core_Array.bas": "internal",
+          "src/core/KPR_Core_Dates.bas": "internal",
           "src/core/KPR_Core_Err.bas": "internal",
           "src/core/KPR_Core_Parse.bas": "internal",
-          "src/core/KPR_Core_Dates.bas": "internal",
-          "src/core/KPR_Core_Array.bas": "internal",
           "src/modules/KPR_DATES_DAYS.bas": "public",
           "tests/modules/KPR_REGRESSION_TESTS.bas": "test"
         }
@@ -150,10 +150,10 @@
           "test": 1
         },
         "required_components": {
+          "src/core/KPR_Core_Array.bas": "internal",
+          "src/core/KPR_Core_Dates.bas": "internal",
           "src/core/KPR_Core_Err.bas": "internal",
           "src/core/KPR_Core_Parse.bas": "internal",
-          "src/core/KPR_Core_Dates.bas": "internal",
-          "src/core/KPR_Core_Array.bas": "internal",
           "src/modules/KPR_DATES_DAYS.bas": "public",
           "tests/modules/KPR_REGRESSION_TESTS.bas": "test"
         }
@@ -335,10 +335,10 @@
     ],
     "components": {
       "examples/modules/KPR_DateExample.bas": "example",
+      "src/core/KPR_Core_Array.bas": "internal",
+      "src/core/KPR_Core_Dates.bas": "internal",
       "src/core/KPR_Core_Err.bas": "internal",
       "src/core/KPR_Core_Parse.bas": "internal",
-      "src/core/KPR_Core_Dates.bas": "internal",
-      "src/core/KPR_Core_Array.bas": "internal",
       "src/modules/KPR_DATES_DAYS.bas": "public",
       "tests/modules/KPR_REGRESSION_TESTS.bas": "test"
     },
