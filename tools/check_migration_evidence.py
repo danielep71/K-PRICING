@@ -23,6 +23,19 @@ REQUIRED_LOG_IDS = {
     "destination-host-record",
 }
 REQUIRED_CLEANUP = {"host", "shape", "array"}
+MIGRATION_ENVIRONMENT_KEYS = {
+    "excel_version",
+    "excel_build",
+    "office_bitness",
+    "os",
+    "os_architecture",
+    "runtime",
+    "locale",
+    "references",
+    "macro_policy",
+    "vba_project_access",
+    "trust_changes",
+}
 REQUIRED_OBSERVATIONS = {
     "direct/days-in-month",
     "direct/add-days",
@@ -185,6 +198,39 @@ def require_compile_log(text: str, label: str, require_native_run: bool) -> None
         require(records.get("NATIVE_RUN") == "PASS", f"{label}: native run did not pass")
 
 
+def validate_bound_host_record(
+    text: str,
+    destination_sha: str,
+    environment: dict[str, Any],
+) -> None:
+    record = json.loads(text)
+    require(isinstance(record, dict), "destination host record must be a JSON object")
+    require(record.get("schema_version") == 1, "unsupported destination host record schema")
+    require(record.get("repository") == "danielep71/K-PRICING",
+            "destination host record repository differs from migration manifest")
+    require(record.get("candidate_sha") == destination_sha,
+            "destination host record SHA differs from checked-out candidate")
+    require(record.get("execution") in {"manual", "automated"},
+            "destination host record must contain an executed host result")
+
+    host_environment = record.get("environment")
+    require(isinstance(host_environment, dict), "destination host record environment is missing")
+    require(host_environment == environment,
+            "destination host record environment differs from migration parity environment")
+
+    stages = record.get("stages")
+    require(isinstance(stages, dict) and set(stages) == {"import", "compile", "regression", "cleanup"},
+            "destination host record stages are incomplete")
+    for name, stage in stages.items():
+        require(isinstance(stage, dict) and stage.get("status") == "PASS",
+                f"destination host record {name} stage did not pass")
+
+    harness = record.get("harness")
+    require(isinstance(harness, dict), "destination host record harness is missing")
+    require(harness.get("failures") == 0 and harness.get("completeness") == "COMPLETE",
+            "destination host record harness is not a complete zero-failure run")
+
+
 def validate_manifest(
     root: Path,
     manifest_path: Path,
@@ -211,16 +257,21 @@ def validate_manifest(
 
     environment = exact_keys(
         manifest["environment"],
-        {"excel_version", "excel_build", "office_bitness", "windows_build", "locale", "references", "macro_policy"},
+        MIGRATION_ENVIRONMENT_KEYS,
         "environment",
     )
     require(environment["office_bitness"] == "64-bit",
             "exact frozen-source parity requires the documented 64-bit Office baseline")
+    require(environment["trust_changes"] is False,
+            "migration evidence cannot claim trust-setting changes")
     require(all(isinstance(environment[key], str) and environment[key].strip()
-                for key in ("excel_version", "excel_build", "windows_build", "locale", "macro_policy")),
+                for key in MIGRATION_ENVIRONMENT_KEYS - {"references", "trust_changes"}),
             "environment text fields must be nonempty")
-    require(isinstance(environment["references"], list) and all(isinstance(x, str) and x for x in environment["references"]),
-            "environment references must be a nonempty string list")
+    references = environment["references"]
+    require(isinstance(references, list) and bool(references)
+            and all(isinstance(x, str) and bool(x) for x in references)
+            and len(references) == len(set(references)),
+            "environment references must be a nonempty unique string list")
 
     differences = manifest["known_differences"]
     require(isinstance(differences, list), "known_differences must be an array")
@@ -264,6 +315,11 @@ def validate_manifest(
 
     require_compile_log(text_by_id["source-exact-compile"], "source exact compile", True)
     require_compile_log(text_by_id["destination-compile"], "destination compile", False)
+    validate_bound_host_record(
+        text_by_id["destination-host-record"],
+        expected_destination_sha,
+        environment,
+    )
 
     source_obs, _, source_summaries = parse_observations(text_by_id["source-observations"], "source")
     destination_obs, _, destination_summaries = parse_observations(
@@ -314,12 +370,36 @@ def self_test() -> None:
                 "",
             ]
         )
+        synthetic_environment = {
+            "excel_version": "16.0",
+            "excel_build": "synthetic",
+            "office_bitness": "64-bit",
+            "os": "Windows synthetic",
+            "os_architecture": "x64",
+            "runtime": "VBA7+",
+            "locale": "en-US",
+            "references": ["VBA", "Excel"],
+            "macro_policy": "synthetic",
+            "vba_project_access": "disabled; manual import",
+            "trust_changes": False,
+        }
+        host_record = {
+            "schema_version": 1,
+            "repository": "danielep71/K-PRICING",
+            "candidate_sha": "b" * 40,
+            "execution": "manual",
+            "environment": synthetic_environment,
+            "stages": {
+                name: {"status": "PASS"} for name in ("import", "compile", "regression", "cleanup")
+            },
+            "harness": {"failures": 0, "completeness": "COMPLETE"},
+        }
         files = {
             "source-exact-compile": "IMPORT=PASS\nCOMPILE=PASS\nNATIVE_RUN=PASS\n",
             "destination-compile": "IMPORT=PASS\nCOMPILE=PASS\n",
             "source-observations": obs,
             "destination-observations": obs,
-            "destination-host-record": '{"synthetic":"host record"}\n',
+            "destination-host-record": json.dumps(host_record) + "\n",
         }
         log_entries: list[dict[str, str]] = []
         for ident, content in files.items():
@@ -333,15 +413,7 @@ def self_test() -> None:
             "schema_version": 1,
             "source": {"repository": "danielep71/KPR", "sha": FROZEN_SOURCE_SHA},
             "destination": {"repository": "danielep71/K-PRICING", "sha": "b" * 40},
-            "environment": {
-                "excel_version": "16.0",
-                "excel_build": "synthetic",
-                "office_bitness": "64-bit",
-                "windows_build": "synthetic",
-                "locale": "en-US",
-                "references": ["VBA", "Excel"],
-                "macro_policy": "synthetic",
-            },
+            "environment": synthetic_environment,
             "instrumentation": {
                 "path": "tests/modules/KPR_REGRESSION_TESTS.bas",
                 "sha256": hashlib.sha256(instrumentation).hexdigest(),
@@ -401,6 +473,28 @@ def self_test() -> None:
             raise RuntimeError("degraded parity self-test unexpectedly passed")
 
         degraded = json.loads(json.dumps(manifest))
+        host_entry = next(x for x in degraded["logs"] if x["id"] == "destination-host-record")
+        mismatched_host = dict(host_record)
+        mismatched_host["environment"] = dict(synthetic_environment)
+        mismatched_host["environment"]["excel_build"] = "different-build"
+        host_text = json.dumps(mismatched_host) + "\n"
+        (bundle / host_entry["path"]).write_text(host_text, encoding="utf-8")
+        host_entry["sha256"] = hashlib.sha256(host_text.encode()).hexdigest()
+        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
+        try:
+            validate_manifest(root, manifest_file, "b" * 40)
+        except ValueError as error:
+            require("host record environment differs" in str(error),
+                    "degraded host-environment case failed for wrong reason")
+        else:
+            raise RuntimeError("degraded host-environment self-test unexpectedly passed")
+
+        # Restore the bound host record for later degraded cases.
+        (bundle / "destination-host-record.log").write_text(
+            files["destination-host-record"], encoding="utf-8"
+        )
+
+        degraded = json.loads(json.dumps(manifest))
         dest = next(x for x in degraded["logs"] if x["id"] == "destination-observations")
         failed_runner = obs.replace(
             "KPR shape regression  checks: 12  failures: 0",
@@ -436,7 +530,7 @@ def self_test() -> None:
 
     print(
         "PASS migration-evidence self-test: positive, source identity, destination identity, "
-        "parity mismatch, runner failure, digest mismatch"
+        "parity mismatch, host environment, runner failure, digest mismatch"
     )
 
 
