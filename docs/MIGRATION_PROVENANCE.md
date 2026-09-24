@@ -121,9 +121,9 @@ cases, duplicate suite dispatch, change expectations or touch production code.
 
 The destination harness blob after the PR #28 adaptations is
 `a67bda4bd15d00ddf564efb5ce353f31d9882055`. Issue #32 then adds two focused
-pillar-range assertions for conversion overflow and aggregate overflow, taking
-the retained-evidence totals to 559 assertions on 32-bit Office and 561 on
-64-bit Office; the two-count difference remains the
+pillar-range assertions for conversion overflow, aggregate overflow and grammar
+precedence, taking the retained-evidence totals to 563 assertions on 32-bit
+Office and 565 on 64-bit Office; the two-count difference remains the
 LongLong cases compiled only under `Win64`.
 
 Issue #32 also corrects one inherited production defect in
@@ -138,10 +138,10 @@ behavioral correction required by the already-migrated date contract; the
 frozen source repository remains unchanged.
 
 After the #32 correction, the destination blob IDs are
-`af040517adfd6d54a6e1e85bd3760555f2df272d` for
+`259d6292e8acd5b87cbbb0eabbe826e3c51467d4` for
 `src/core/KPR_Core_Dates.bas` (source baseline blob
 `7e0929474e1ae1311df2081eb7a64fe126f1b688`) and
-`519886cb15a510740f779786fbf92f0439018a30` for
+`0ebe83b7bc380e62413f68a63f6a77c29bb507b2` for
 `tests/modules/KPR_REGRESSION_TESTS.bas` (source baseline blob
 `b339d4b932f390c143973fe5fcc106e79ffbcad1`).
 
