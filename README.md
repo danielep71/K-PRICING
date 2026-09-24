@@ -244,8 +244,8 @@ These are the current limitations. The
 [initialization record](.github/initialization.json) preserves the original
 2026-09-23 setup inputs and is provenance, not a live copy of this section.
 
-- Exact-source Excel compilation and parity passed on one Windows 64-bit host only (#17); 32-bit Office, other builds and other locales are untested, and migration acceptance is pending in #18.
-- Registration, generated fixtures, full demo/UI work, packaging and broader pricing capabilities remain outside v0.0.2.
+- Exact-source Excel compilation and parity passed on one Windows 64-bit host only (#17); 32-bit Office, other builds and other locales are untested. Migration acceptance is recorded in [MIGRATION_COMPLETION.md](docs/MIGRATION_COMPLETION.md).
+- Generated fixtures and registration are scheduled in milestone v0.0.3 (#38–#42); demo/UI work, packaging and broader pricing capabilities remain unscheduled.
 - No supported workbook/add-in or functional product release is available; the historical neutral-starter run certifies setup only.
 
 If no project-specific limitation is rendered, the general evidence boundaries
