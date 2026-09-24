@@ -318,10 +318,12 @@ destination parity bundle defined by
 [`docs/MIGRATION_REGRESSION.md`](../docs/MIGRATION_REGRESSION.md). It does not
 run Excel. Given a completed `migration.json` manifest, it:
 
-- binds the frozen KPR source SHA and exact K-PRICING destination SHA;
+- hard-binds the frozen KPR source SHA and derives the exact K-PRICING
+  destination SHA from a clean tracked checkout;
 - binds the exact candidate `KPR_REGRESSION_TESTS.bas` instrumentation bytes;
 - requires one recorded 64-bit Windows/Excel environment for exact parity;
-- hashes every required supplemental compile, observation and host-record file;
+- hashes every required supplemental compile, observation and host-record file
+  and requires canonical PASS import/compile/native-run records;
 - requires the baseline `OBS` IDs and `CLEANUP` records from both common
   observation hosts while allowing additional common probe IDs; and
 - rejects different source/destination observations or non-PASS
