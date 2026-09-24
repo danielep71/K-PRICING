@@ -144,9 +144,13 @@ all gates pass. Never replace generic governance with the older source checks.
 
 ## Source issue register
 
-States were read from the source on 2026-09-23; destination issue numbers below
-refer to K-PRICING. Closed source work is implementation history. Open work
-remains open unless separately implemented and evidenced.
+This is the preparation-time register: states were read from the source on
+2026-09-23 and destination issue numbers below refer to K-PRICING. The current
+source-to-destination disposition, carried-forward roadmap and handover policy
+are maintained in [MIGRATION_HANDOVER.md](MIGRATION_HANDOVER.md); where the two
+differ, the handover register is authoritative. Closed source work is
+implementation history. Open work remains open unless separately implemented
+and evidenced.
 
 | Source | Subject | State and decision | Destination owner/trace |
 | --- | --- | --- | --- |

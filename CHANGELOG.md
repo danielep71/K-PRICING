@@ -104,6 +104,9 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added the KPR migration handover register: source-to-destination issue
+  disposition, destination-only corrections, the carried-forward KPR#18-#29
+  roadmap and the rollback/reference policy for the frozen source.
 - Imported the frozen KPR date and VBE export contracts with verified source
   hashes, license attribution and explicit pending destination runtime evidence.
 - Accepted manual neutral-starter Excel evidence for candidate
