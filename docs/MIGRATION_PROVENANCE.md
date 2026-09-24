@@ -97,8 +97,12 @@ and focused 1900/1904 behaviour. Source final certification remains owned by
 
 ## Destination source import status
 
-The four core modules are imported byte-for-byte from the frozen source: their
-destination Git blob IDs remain the same as the source inventory.
+Three core modules—`KPR_Core_Err.bas`, `KPR_Core_Parse.bas` and
+`KPR_Core_Array.bas`—remain byte-for-byte imports of the frozen source and
+retain their source Git blob IDs. `KPR_Core_Dates.bas` was initially imported
+byte-for-byte but is now a documented destination-adapted core module because
+issue #32 corrects the inherited pillar range-classification defect described
+below.
 
 `KPR_DATES_DAYS.bas` has one documented format-only destination delta required
 by K-PRICING's committed-whitespace gate: seven trailing spaces on
@@ -120,7 +124,7 @@ required by the destination retained-evidence validator. It does not add test
 cases, duplicate suite dispatch, change expectations or touch production code.
 
 The destination harness blob after the PR #28 adaptations is
-`a67bda4bd15d00ddf564efb5ce353f31d9882055`. Issue #32 then adds two focused
+`a67bda4bd15d00ddf564efb5ce353f31d9882055`. Issue #32 then adds focused
 pillar-range assertions for conversion overflow, aggregate overflow and grammar
 precedence including later grammar errors after an overflowing component,
 taking the retained-evidence totals to 566 assertions on 32-bit Office and 568
