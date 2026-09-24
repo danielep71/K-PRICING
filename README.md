@@ -48,8 +48,9 @@
 The neutral starter passed a manual Windows 64-bit Excel run at commit
 `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2`; see
 [the setup completion record](docs/SETUP_COMPLETION.md). The frozen KPR date layer
-is now migrated; destination Excel parity remains pending in #17 and no
-installable product is claimed. See the
+is now migrated, and exact-source Excel parity passed on one Windows 64-bit
+host in #17 ([evidence](evidence/migration-2026-09-24/session.txt)); migration
+acceptance is #18 and no installable product is claimed. See the
 [initialization status](docs/INITIALIZATION_STATUS.md) for provenance and setup boundaries.
 
 The product and repository name is **K-PRICING**. The migration from
@@ -176,8 +177,9 @@ legitimate profile-specific alternatives are authoritative in
 The initial target is Microsoft 365 Excel desktop on Windows, with 32-bit and
 64-bit Office evaluated separately. The accepted v0.0.1 neutral-starter run is
 historical setup evidence only; it does not certify the migrated KPR date layer.
-The imported source uses the existing VBA/Excel host model, but destination
-compilation and source-versus-destination parity remain pending under issue #17.
+The migrated date layer compiled and matched the frozen source on one Windows
+64-bit Microsoft 365 Excel host (build 16.0.20326.20072, Italian regional format)
+in issue #17; 32-bit Office and other builds and locales remain untested.
 Mac, Excel for the web, older builds and a packaged deployment are not claimed
 as supported.
 
@@ -242,7 +244,7 @@ These are the current limitations. The
 [initialization record](.github/initialization.json) preserves the original
 2026-09-23 setup inputs and is provenance, not a live copy of this section.
 
-- The frozen KPR date-layer source is migrated, but exact-source destination Excel compilation and parity are still pending in #17.
+- Exact-source Excel compilation and parity passed on one Windows 64-bit host only (#17); 32-bit Office, other builds and other locales are untested, and migration acceptance is pending in #18.
 - Registration, generated fixtures, full demo/UI work, packaging and broader pricing capabilities remain outside v0.0.2.
 - No supported workbook/add-in or functional product release is available; the historical neutral-starter run certifies setup only.
 

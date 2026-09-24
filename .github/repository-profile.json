@@ -325,6 +325,7 @@
     "exclude_paths": [
       ".github/initialization.json",
       ".github/repository-profile.json",
+      "evidence/migration-2026-09-24/host.json",
       "evidence/setup-2026-09-23/host.json"
     ]
   },

@@ -23,7 +23,7 @@ source-to-destination disposition.
 | #14 | [Regression/parity protocol](MIGRATION_REGRESSION.md), migration instrumentation and evidence validator | PR #31, `118555ddf5c2cd8f944688f02fc9813713bf30c2` |
 | #16 | [Handover register](MIGRATION_HANDOVER.md) of source issue history and carried-forward roadmap | Issue closed; register merged in PR #34, `184e4b6976a51a3b29e17460ba06f7e919e7fbc6` |
 | #15 | Documentation, examples and destination status reconciliation | PR #35, `80e992df73c2a3209dc104045aeed14119f22534` |
-| #17 | Exact-source Windows Excel compilation and source/destination parity | **Pending**; no destination runtime claim until it passes |
+| #17 | Exact-source Windows Excel compilation and source/destination parity on candidate `db98e506358ab74893ab28d52183fa2e216352b9`, one Windows 64-bit Excel host | Evidence in [`evidence/migration-2026-09-24`](../evidence/migration-2026-09-24/session.txt); both validators PASS |
 | #18 | Migration acceptance and handover of the next delivery backlog | **Pending**; follows #15 and #17 |
 
 #29 and #32 were added to the milestone during execution; they are
@@ -44,7 +44,8 @@ Earlier issue-level logs cover scalar/shape and host behavior. These are
 historical, narrower results at their named revisions, not certification of the
 later selected source or the destination. Source final release issue 29 remains
 a source-repository obligation. The destination now contains the frozen migrated
-date candidate; exact-source destination runtime evidence remains pending.
+date candidate; exact-source destination runtime evidence for one Windows
+64-bit host is retained under #17.
 
 ## File inventory and intended disposition
 

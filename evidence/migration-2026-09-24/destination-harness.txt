@@ -1,0 +1,16 @@
+CASE=date-type
+CASE=date-text
+CASE=date-window
+CASE=integer
+CASE=control
+CASE=boundary
+CASE=mapper
+CASE=host
+CASE=pillar
+CASE=surface
+CASE=shape
+CASE=parity
+CASES=12
+ASSERTIONS=568
+FAILURES=0
+RESULT=PASS; completeness=COMPLETE; cases=12; assertions=568; failures=0; cleanup=PASS

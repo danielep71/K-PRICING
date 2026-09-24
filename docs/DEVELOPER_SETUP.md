@@ -3,8 +3,9 @@
 K-PRICING is an initialized **application** repository, version `0.0.0`.
 Initialization is complete and the frozen KPR date-layer candidate has been
 migrated into the canonical source layout. Do not initialize the repository again.
-Destination Excel compilation and parity certification remain pending under
-[issue #17](https://github.com/danielep71/K-PRICING/issues/17).
+Destination Excel compilation and source parity passed on one Windows 64-bit
+host under [issue #17](https://github.com/danielep71/K-PRICING/issues/17);
+other environments are not certified.
 
 ## Architecture and source ownership
 
@@ -82,8 +83,8 @@ artifacts retain the validator reports and actual quality-tool versions for
 The intended initial host is **Microsoft 365 Excel desktop on Windows**, with
 32-bit and 64-bit Office treated as separate targets. The accepted neutral-starter
 run in [the completion record](SETUP_COMPLETION.md) is setup history only; it does
-not certify the migrated KPR source. Destination compilation/parity on the exact
-candidate is still required by issue #17. Mac, Excel for the web and older desktop
+not certify the migrated KPR source. Destination compilation and parity passed on
+one Windows 64-bit host in issue #17; 32-bit Office is untested. Mac, Excel for the web and older desktop
 builds are not claimed as supported. The authoritative import order is in
 [`INSTALLATION.md`](../INSTALLATION.md).
 

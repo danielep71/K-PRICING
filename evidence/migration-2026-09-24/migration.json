@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "danielep71/KPR",
+    "sha": "f26450d1fa7b11261162e901dedba062f21c99a7"
+  },
+  "destination": {
+    "repository": "danielep71/K-PRICING",
+    "sha": "db98e506358ab74893ab28d52183fa2e216352b9"
+  },
+  "environment": {
+    "excel_version": "16.0",
+    "excel_build": "16.0.20326.20072 (Microsoft 365 Version 2608)",
+    "office_bitness": "64-bit",
+    "os": "Windows (64-bit) NT 10.00",
+    "os_architecture": "64-bit",
+    "runtime": "VBA7+",
+    "locale": "it-IT (Italian (Italy) regional format)",
+    "references": [
+      "Visual Basic For Applications",
+      "Microsoft Excel 16.0 Object Library",
+      "OLE Automation",
+      "Microsoft Office 16.0 Object Library"
+    ],
+    "macro_policy": "Disable VBA macros with notification; existing settings unchanged",
+    "vba_project_access": "Enabled; manual import workflow",
+    "trust_changes": false
+  },
+  "instrumentation": {
+    "path": "tests/modules/KPR_REGRESSION_TESTS.bas",
+    "sha256": "c2523778fa3dca6247278bf1a55843422633ecaffaab631bd063b4f9df13613a"
+  },
+  "logs": [
+    {
+      "id": "source-exact-compile",
+      "path": "source-exact-compile.txt",
+      "sha256": "42f2e59b689e0a150574d526f2784a745fb84ca3727b32bac41de569f37d2951"
+    },
+    {
+      "id": "destination-compile",
+      "path": "destination-compile.txt",
+      "sha256": "4be845836c441e8083a130a4b6e0a497ec44c2ca629467afdb86167e85d51e15"
+    },
+    {
+      "id": "source-observations",
+      "path": "source-observations.txt",
+      "sha256": "f5efab847fd6150da4a9588b92079297c57db3413ac996e3dab8e6492162ad09"
+    },
+    {
+      "id": "destination-observations",
+      "path": "destination-observations.txt",
+      "sha256": "f5efab847fd6150da4a9588b92079297c57db3413ac996e3dab8e6492162ad09"
+    },
+    {
+      "id": "destination-host-record",
+      "path": "host.json",
+      "sha256": "e1ec4a41aaa8195f9293821635f1a06296c9fbf231415af05905c1b3ae61088f"
+    }
+  ],
+  "known_differences": [
+    {
+      "issue": "https://github.com/danielep71/K-PRICING/issues/32",
+      "scope": "pillar numerical-range classification",
+      "source_behavior": "oversized valid quantity falls through as PILLAR_TOKEN_MALFORMED (#VALUE!); Error 2015 observed in host B",
+      "destination_behavior": "PILLAR_AGGREGATE_RANGE (#NUM!); Error 2036 observed in host C",
+      "disposition": "accepted destination correctness fix; verified separately from equal-observation parity"
+    }
+  ]
+}

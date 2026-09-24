@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "repository": "danielep71/K-PRICING",
+  "candidate_sha": "db98e506358ab74893ab28d52183fa2e216352b9",
+  "template_contract": {
+    "version": "1.2.0",
+    "source": "danielep71/EXCEL-VBA-PROJECT-TEMPLATE"
+  },
+  "execution": "manual",
+  "availability_reason": null,
+  "started_at": "2026-09-24T20:30:00+02:00",
+  "finished_at": "2026-09-24T21:15:00+02:00",
+  "runner": {
+    "class": "manual-interactive",
+    "identity": "Daniele Penza; interactive Windows workstation; session times approximate (see session.txt)",
+    "workflow": null
+  },
+  "environment": {
+    "excel_version": "16.0",
+    "excel_build": "16.0.20326.20072 (Microsoft 365 Version 2608)",
+    "office_bitness": "64-bit",
+    "os": "Windows (64-bit) NT 10.00",
+    "os_architecture": "64-bit",
+    "runtime": "VBA7+",
+    "locale": "it-IT (Italian (Italy) regional format)",
+    "references": [
+      "Visual Basic For Applications",
+      "Microsoft Excel 16.0 Object Library",
+      "OLE Automation",
+      "Microsoft Office 16.0 Object Library"
+    ],
+    "macro_policy": "Disable VBA macros with notification; existing settings unchanged",
+    "vba_project_access": "Enabled; manual import workflow",
+    "trust_changes": false
+  },
+  "sources": [
+    {
+      "path": "src/core/KPR_Core_Array.bas",
+      "sha256": "6b9468db0d7a9be9d41a331cc6d8be302e508136ec80f3d32d5c8515de4235b4"
+    },
+    {
+      "path": "src/core/KPR_Core_Dates.bas",
+      "sha256": "15fb6c4276992770c905620e6ee67321653dd46050a5196ec1c00169c905a3cd"
+    },
+    {
+      "path": "src/core/KPR_Core_Err.bas",
+      "sha256": "91b6c613da8939aab60da84dbd614434829ded62f4b0096cc1cff95a364ed5d3"
+    },
+    {
+      "path": "src/core/KPR_Core_Parse.bas",
+      "sha256": "8b5e252554fb9786b4ac2513c56e6bc614c6eaa19483222159df9c347ea7826f"
+    },
+    {
+      "path": "src/modules/KPR_DATES_DAYS.bas",
+      "sha256": "c2876738ce47b897320da77add53fcd4a6fe346660b341f56e2bd4c69b38b37a"
+    },
+    {
+      "path": "tests/modules/KPR_REGRESSION_TESTS.bas",
+      "sha256": "1606e0d0be430ed5af5c3bd9ac4e950fd7ba94c0b1107847e7ff2c5f8af5b02c"
+    }
+  ],
+  "stages": {
+    "import": {
+      "status": "PASS",
+      "detail": "Host C: candidate production and test modules imported into a fresh workbook.",
+      "log": {
+        "path": "destination-compile.txt",
+        "sha256": "4be845836c441e8083a130a4b6e0a497ec44c2ca629467afdb86167e85d51e15"
+      }
+    },
+    "compile": {
+      "status": "PASS",
+      "detail": "Host C: Debug > Compile VBAProject succeeded.",
+      "log": {
+        "path": "destination-compile.txt",
+        "sha256": "4be845836c441e8083a130a4b6e0a497ec44c2ca629467afdb86167e85d51e15"
+      }
+    },
+    "regression": {
+      "status": "PASS",
+      "detail": "KPR_Tests_RunEvidence: 12 cases, 568 assertions, 0 failures.",
+      "log": {
+        "path": "destination-harness.txt",
+        "sha256": "89eb5cdd2421a53a5b201d6c126d5636b39029d5acfc46a21f02d5848b237ea1"
+      }
+    },
+    "cleanup": {
+      "status": "PASS",
+      "detail": "Harness RESULT line reports cleanup=PASS.",
+      "log": {
+        "path": "destination-harness.txt",
+        "sha256": "89eb5cdd2421a53a5b201d6c126d5636b39029d5acfc46a21f02d5848b237ea1"
+      }
+    }
+  },
+  "harness": {
+    "entry_point": "KPR_Tests_RunEvidence",
+    "cases": 12,
+    "assertions": 568,
+    "failures": 0,
+    "completeness": "COMPLETE",
+    "expected_errors": []
+  }
+}
