@@ -322,8 +322,10 @@ run Excel. Given a completed `migration.json` manifest, it:
   destination SHA from a clean tracked checkout;
 - binds the exact candidate `KPR_REGRESSION_TESTS.bas` instrumentation bytes;
 - requires one recorded 64-bit Windows/Excel environment for exact parity;
-- hashes every required supplemental compile, observation and host-record file
-  and requires canonical PASS import/compile/native-run records;
+- hashes every required supplemental compile, observation and host-record file,
+  requires canonical PASS import/compile/native-run records, and cross-checks
+  the bound destination host record against the same candidate SHA and complete
+  parity environment;
 - requires the baseline `OBS` IDs and `CLEANUP` records from both common
   observation hosts while allowing additional common probe IDs; and
 - rejects different source/destination observations or non-PASS
