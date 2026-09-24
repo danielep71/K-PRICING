@@ -156,7 +156,33 @@ def checked_out_sha(root: Path) -> str:
     )
     sha = completed.stdout.strip()
     require(SHA40.fullmatch(sha) is not None, "checked-out candidate SHA is invalid")
+
+    status = subprocess.run(
+        ["git", "-C", str(root), "status", "--porcelain", "--untracked-files=no"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    require(not status.stdout.strip(), "checked-out candidate has modified tracked files")
     return sha
+
+
+def require_compile_log(text: str, label: str, require_native_run: bool) -> None:
+    records: dict[str, str] = {}
+    for raw in text.splitlines():
+        if "=" not in raw:
+            continue
+        key, value = raw.split("=", 1)
+        key = key.strip().upper()
+        value = value.strip().upper()
+        if key in {"IMPORT", "COMPILE", "NATIVE_RUN"}:
+            require(key not in records, f"{label}: duplicate {key} record")
+            records[key] = value
+
+    require(records.get("IMPORT") == "PASS", f"{label}: import did not pass")
+    require(records.get("COMPILE") == "PASS", f"{label}: compile did not pass")
+    if require_native_run:
+        require(records.get("NATIVE_RUN") == "PASS", f"{label}: native run did not pass")
 
 
 def validate_manifest(
@@ -236,6 +262,9 @@ def validate_manifest(
     base = manifest_path.parent
     text_by_id = {entry["id"]: read_bound(base, entry) for entry in logs}
 
+    require_compile_log(text_by_id["source-exact-compile"], "source exact compile", True)
+    require_compile_log(text_by_id["destination-compile"], "destination compile", False)
+
     source_obs, _, source_summaries = parse_observations(text_by_id["source-observations"], "source")
     destination_obs, _, destination_summaries = parse_observations(
         text_by_id["destination-observations"], "destination"
@@ -286,8 +315,8 @@ def self_test() -> None:
             ]
         )
         files = {
-            "source-exact-compile": "source compile PASS\n",
-            "destination-compile": "destination compile PASS\n",
+            "source-exact-compile": "IMPORT=PASS\nCOMPILE=PASS\nNATIVE_RUN=PASS\n",
+            "destination-compile": "IMPORT=PASS\nCOMPILE=PASS\n",
             "source-observations": obs,
             "destination-observations": obs,
             "destination-host-record": '{"synthetic":"host record"}\n',
@@ -334,6 +363,28 @@ def self_test() -> None:
         require(report["status"] == "pass", "positive self-test did not pass")
 
         degraded: dict[str, Any] = json.loads(manifest_file.read_text())
+        degraded["source"]["sha"] = "a" * 40
+        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
+        try:
+            validate_manifest(root, manifest_file, "b" * 40)
+        except ValueError as error:
+            require("frozen KPR baseline" in str(error),
+                    "degraded source-identity case failed for wrong reason")
+        else:
+            raise RuntimeError("degraded source-identity self-test unexpectedly passed")
+
+        degraded = json.loads(json.dumps(manifest))
+        degraded["destination"]["sha"] = "c" * 40
+        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
+        try:
+            validate_manifest(root, manifest_file, "b" * 40)
+        except ValueError as error:
+            require("checked-out candidate" in str(error),
+                    "degraded destination-identity case failed for wrong reason")
+        else:
+            raise RuntimeError("degraded destination-identity self-test unexpectedly passed")
+
+        degraded = json.loads(json.dumps(manifest))
         dest = next(x for x in degraded["logs"] if x["id"] == "destination-observations")
         changed = obs.replace(
             "OBS\tdirect/days-in-month\tTEXT:synthetic",
@@ -383,7 +434,10 @@ def self_test() -> None:
         else:
             raise RuntimeError("degraded digest self-test unexpectedly passed")
 
-    print("PASS migration-evidence self-test: positive, parity mismatch, runner failure, digest mismatch")
+    print(
+        "PASS migration-evidence self-test: positive, source identity, destination identity, "
+        "parity mismatch, runner failure, digest mismatch"
+    )
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
