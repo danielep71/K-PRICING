@@ -728,7 +728,7 @@ Public Function TryPillar_Parse( _
 '     identically in arithmetic; only a formatter would notice.
 '
 ' UPDATED
-'   2026-09-02
+'   2026-09-24
 '==============================================================================
 '
 
