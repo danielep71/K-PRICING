@@ -40,11 +40,11 @@ belongs to issue #16; the source plan is not copied as a competing authority.
 
 ## Contract preservation and adaptations
 
-The [date-layer contract](DATE_LAYER_CONTRACT.md) preserves the entire source
-behavioural text, including amendments, defaults, errors, caller rules, date
-window and array semantics. Changes are limited to a migration-scope notice,
+The [date-layer contract](DATE_LAYER_CONTRACT.md) preserves source behaviour, including amendments, defaults, errors, caller
+rules, date window and array semantics. Editorial adaptations include a migration-scope notice,
 fully qualified source issue references and the implementation-plan link
-redirected to the destination migration plan. All 22 declaration signatures
+redirected to the destination migration plan, plus the explicit registry
+clarification below. All 22 declaration signatures
 in its public-surface block match the source facade declarations after joining
 VBA line continuations and normalizing whitespace, including whitespace after
 an opening parenthesis; the KPR_ namespace is unchanged. Destination
@@ -59,6 +59,20 @@ The source's blanket static-enforcement claim is scoped to pending specialist
 checker migration in #13. References to MacroOptions and demo infrastructure
 remain requirements for future source-roadmap work, not claims of existing
 implementation. Existing destination export and release controls still apply.
+
+## Reviewed source-contract clarification
+
+PR review identified an inherited contradiction: section 3.2 explicitly gives
+range checking precedence over integrality, but the section 7 registry limited
+INTEGER_RANGE to integral values. The destination registry now includes all
+out-of-range numeric values, including fractions; INTEGER_FRACTION is explicitly
+limited to values inside the Long range in both the matrix and registry.
+This matches the frozen KPR_Core_Parse.TryParseInteger implementation, which
+checks the Long bounds before its Int comparison. For example, 2147483648.5
+therefore yields INTEGER_RANGE/#NUM!, as section 3.2 already requires. This is
+a documented source wording correction, not a changed algorithm or new runtime
+result. Source files remain untouched; downstream fixture review belongs to
+issues #13–#14 and source-history reconciliation to #16.
 
 ## Licence and attribution
 

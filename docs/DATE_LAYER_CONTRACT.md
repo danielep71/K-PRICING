@@ -198,7 +198,7 @@ of `DaysInYear`, `IsLeapYear`, `NthWeekdayOfMonth`, and `LastWeekdayOfMonth`.
 | Input | Condition ID | Result |
 | --- | --- | --- |
 | Native numeric value that is mathematically integral and inside the VBA `Long` range | — | Accept as `Long`. |
-| Fractional numeric value | `INTEGER_FRACTION` | `#VALUE!`; no truncation, banker's rounding, or other rounding is permitted. |
+| Fractional numeric value inside the VBA `Long` range | `INTEGER_FRACTION` | `#VALUE!`; no truncation, banker's rounding, or other rounding is permitted. |
 | Numeric value outside the VBA `Long` range | `INTEGER_RANGE` | `#NUM!`. |
 | Boolean, `Date`, text (including numeric-looking text), blank, `Empty`, `Null`, or unsupported object | `INTEGER_TYPE_REJECTED` | `#VALUE!`. |
 | Incoming native Excel error | `INPUT_ERROR_PROPAGATED` | Propagate verbatim at that output position. |
@@ -484,9 +484,9 @@ Registry rules:
 | `DATE_WINDOW` | Accepted date or serial outside 1900-03-01 through 9999-12-31, including serial 60 and below | `#NUM!` | Element |
 | `INPUT_BLANK_REQUIRED` | Blank cell or `Empty` at a required value position | `#VALUE!` | Element |
 | `INPUT_ERROR_PROPAGATED` | Incoming native Excel error at a value position, returned verbatim | Incoming error | Element |
-| `INTEGER_FRACTION` | Fractional numeric value at an integer position | `#VALUE!` | Element |
+| `INTEGER_FRACTION` | Fractional numeric value inside the VBA `Long` range at an integer position | `#VALUE!` | Element |
 | `INTEGER_TYPE_REJECTED` | Boolean, `Date`, text including numeric-looking text, `Null`, or object at an integer position | `#VALUE!` | Element |
-| `INTEGER_RANGE` | Integral value outside the VBA `Long` range | `#NUM!` | Element |
+| `INTEGER_RANGE` | Numeric value outside the VBA `Long` range, including fractional values | `#NUM!` | Element |
 | `DOMAIN_YEAR` | `YearIn` outside 1900 through 9999 | `#VALUE!` | Element |
 | `DOMAIN_MONTH` | `MonthIn` outside 1 through 12 | `#VALUE!` | Element |
 | `DOMAIN_WEEKDAY` | `WdIndex` outside 1 through 7 | `#VALUE!` | Element |
