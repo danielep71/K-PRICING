@@ -3,7 +3,7 @@
 [![Scope: VBA exports](https://img.shields.io/badge/scope-VBA%20exports-217346)](REPOSITORY_STRUCTURE.md)
 [![Change: presentation](https://img.shields.io/badge/change-presentation-0969da)](#review-and-validation)
 
-This document owns source presentation for the starter modules and new VBA
+This document owns source presentation for maintained VBA modules and new
 procedures. Component ownership remains in
 [Repository Structure](REPOSITORY_STRUCTURE.md); the supported public surface
 remains in [PUBLIC_API.txt](PUBLIC_API.txt).
@@ -29,10 +29,12 @@ section rules: 79 characters in total. Do not pad centered titles with trailing
 spaces. Source decorations use ASCII, even when Markdown documentation uses
 glyphs and badges.
 
-The facade remains externally visible. Core, tests and examples keep
-`Option Private Module`. Public members inside a project-private module allow
-in-project calls; they do not become the supported external API. Copying a
-reference module's visibility would change that contract.
+The facade remains externally visible. Core and example modules use
+`Option Private Module`. The historical neutral starter test module used it too. The
+migrated `KPR_REGRESSION_TESTS` deliberately omits it, preserving its callable
+regression entry points. This is test infrastructure, not an addition to the
+22-function supported API in [PUBLIC_API.txt](PUBLIC_API.txt). Preserve that
+exception when migrating tests in issue #14; do not change visibility as formatting.
 
 ## 📝 Procedure layout
 
@@ -128,8 +130,9 @@ This is an excerpt: the full export retains all declarations and the handler.
 
 ## 💾 Export compatibility
 
-Keep source CP1252-compatible and free of a byte-order mark. The starter uses
-ASCII, which is compatible with CP1252. Working-tree VBA exports use CRLF;
+All tracked VBA source must be ASCII only, without a byte-order mark, as
+required by [VBE_EXPORT.md](VBE_EXPORT.md). CP1252-only accented comments are
+not permitted. Working-tree VBA exports use CRLF;
 Git's index uses normalized LF under the existing `.gitattributes` rules.
 Do not enable a new encoding conversion or alter the export header as part of
 formatting. Import and export procedures remain in

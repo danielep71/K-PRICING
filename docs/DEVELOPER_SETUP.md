@@ -26,7 +26,7 @@ the full layout and export rules. Preserve existing MIT attribution in
 
 ## Clean checkout and tools
 
-Use Git with your existing private-repository access. A source ZIP omits governance
+Use Git to clone this public repository. A source ZIP omits governance
 files because of export rules and is not a complete developer checkout.
 
 ```bash
@@ -99,8 +99,7 @@ evidence capture. Linux CI does not compile or execute VBA.
 
 Create a focused branch and PR, update contracts and tests together, and preserve
 the distinction between source validation and host evidence. The maintainer
-manually verifies the exact CI revision and resolves review findings. GitHub
-rulesets are currently unavailable under the private plan, so this is a process
-control, not enforced branch protection. See
-[the dated setup verification](SETUP_VERIFICATION.md) for that limitation,
+manually verifies the exact CI revision and resolves review findings. Active GitHub
+rulesets enforce the documented branch/tag baseline. See
+[the dated setup verification](SETUP_VERIFICATION.md) for the live settings,
 security controls and the reviewed template-update process.

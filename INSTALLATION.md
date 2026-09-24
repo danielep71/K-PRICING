@@ -17,8 +17,8 @@
 
 ---
 
-This document is authoritative for **installation, import, upgrade, recovery and
-removal**. Source layout is owned by
+This document is authoritative for **installation, import, export, upgrade,
+recovery and removal**. Source layout is owned by
 [`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md), vulnerability
 handling by [`SECURITY.md`](SECURITY.md), and release publication/provenance by
 [`RELEASING.md`](RELEASING.md).
@@ -116,7 +116,12 @@ in [`docs/MIGRATION_PROVENANCE.md`](docs/MIGRATION_PROVENANCE.md).
 
 1. Back up the destination workbook/add-in and user data.
 2. Obtain one exact supported source version or verified release.
-3. Import every required component into the intended VBA project.
+3. Remove any same-named standard module, class module or UserForm from the
+   intended VBA project after preserving local changes, then use
+   **File → Import File** for each of those required components. Import does
+   not replace an existing component and can silently suffix its name.
+   Host-bound document modules under `src/workbook/` follow the separate
+   procedure below; never import them.
 4. Configure only documented references, callbacks and host integrations.
 5. Run **Debug → Compile VBAProject**.
 6. Save in the required macro-capable format.
@@ -126,6 +131,38 @@ in [`docs/MIGRATION_PROVENANCE.md`](docs/MIGRATION_PROVENANCE.md).
 Do not paste exported source into arbitrarily named modules when a governed VBE
 export is available. Component identity and form resources are part of a
 reproducible installation.
+
+### Workbook and worksheet document modules
+
+`ThisWorkbook` and worksheet modules are bound to host objects. **File → Import
+File** does not restore that binding; it creates an ordinary class module
+instead. For each component under `src/workbook/`:
+
+1. Identify the existing host object it belongs to (`ThisWorkbook` or the named
+   worksheet) and preserve any local code in that module.
+2. Replace the code in that existing module with the exported procedure text.
+   Omit the export header (`VERSION`, `BEGIN`…`END` and `Attribute` lines); the
+   host object already owns those properties.
+3. Do not rename, delete or re-create the host object to force a match.
+
+The migrated date layer has no document modules. Any future component that adds
+one must name its host object here and follow the
+[repository structure](docs/REPOSITORY_STRUCTURE.md) and
+[Excel evidence](docs/EXCEL_EVIDENCE.md) rules for document modules.
+
+## Export from Excel
+
+1. Select the owned component in the VBE Project Explorer and choose
+   **File → Export File**.
+2. Use the role directory defined by
+   [repository structure](docs/REPOSITORY_STRUCTURE.md), preserving the component
+   name and matching filename. Keep a UserForm's `.frm` and `.frx` together.
+3. Review the complete diff against the
+   [VBE format contract](docs/VBE_EXPORT.md), including ASCII source, line endings,
+   hidden attributes and identity, before committing.
+4. For release certification, import the exact candidate into a clean project,
+   export without edits and compare normalized source. Retain the candidate SHA
+   and comparison under [release evidence](docs/RELEASE_EVIDENCE.md).
 
 <a id="validation"></a>
 

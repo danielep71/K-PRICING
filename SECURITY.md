@@ -37,14 +37,16 @@ an approved trust mechanism; and source/artifacts come from an official channel.
 These are trust boundaries, not guarantees. VBA projects running in the same
 Excel process are not isolated security sandboxes.
 
-The current neutral VBA starter performs arithmetic through built-in VBA/Excel
-objects and reports test output. It contains no file/network/native-code access,
-credential handling, UI integration or third-party runtime dependency. Repository
-automation separately accesses GitHub and approved tool-download endpoints.
-Reassess this surface when migrating code or introducing packaging/UI.
+The migrated date layer parses and calculates dates, inspects the calling
+workbook's date system and returns scalar or array results. The regression
+harness creates disposable host fixtures and must restore the Excel state it
+owns. See [the date contract](docs/DATE_LAYER_CONTRACT.md) and
+[test guidance](tests/README.md). Repository automation separately accesses
+GitHub and approved tool-download endpoints. Reassess this surface when changing
+host integration or introducing packaging/UI.
 
-The repository is private. CodeQL is not enabled and Scorecard publication is
-skipped; neither is a successful scan claim. See the dated
+The repository is public. CodeQL analyzes tooling languages, not VBA; Scorecard
+publishes the default-branch posture. See the dated
 [setup verification](docs/SETUP_VERIFICATION.md) for observed security settings.
 
 <a id="supported-versions"></a>
@@ -71,10 +73,9 @@ Do **not** disclose a suspected vulnerability in a public issue, discussion,
 pull request, commit message, Wiki page, sample workbook, screenshot or release
 thread.
 
-Use **danielep71@gmail.com** with subject
-**Private security report — K-PRICING**. GitHub private vulnerability-reporting
-UI was not available in the observed repository settings on 2026-09-23.
-Recheck eligibility when the plan changes before advertising an additional route.
+Use [GitHub private vulnerability reporting](https://github.com/danielep71/K-PRICING/security/advisories/new).
+It was enabled and read back on 2026-09-24. Do not put vulnerability details in
+public issues or pull requests.
 
 Include only the information needed to assess the issue:
 

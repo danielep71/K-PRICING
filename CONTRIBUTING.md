@@ -49,8 +49,9 @@ and narrowly obvious fixes may go directly to a focused pull request.
 ## 🌿 Development workflow
 
 For prerequisites and commands, use [developer setup](docs/DEVELOPER_SETUP.md).
-Branch/tag rulesets are unavailable under the current private plan; manual PR
-and check review is not server-enforced protection. See
+Every issue and PR must have a milestone, exactly one priority (`P1`, `P2` or
+`P3`), and assignee `danielep71`. Active branch/tag rulesets supplement manual
+review; see
 [setup verification](docs/SETUP_VERIFICATION.md).
 
 1. Start from the current reviewed `main` development baseline and create one focused

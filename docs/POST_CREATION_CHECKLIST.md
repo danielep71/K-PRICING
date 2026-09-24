@@ -6,10 +6,11 @@
 [![Tags: immutable](https://img.shields.io/badge/tags-immutable-1D76DB)](#protect-releases)
 
 K-PRICING completed initialization on 2026-09-23. Its dated disposition for each
-area below is [SETUP_VERIFICATION.md](SETUP_VERIFICATION.md), including unavailable
-controls. Accepted starter Excel evidence is recorded in
+area below is [SETUP_VERIFICATION.md](SETUP_VERIFICATION.md), including historical
+limitations and the current settings read-back. Accepted starter Excel evidence
+is recorded in
 [SETUP_COMPLETION.md](SETUP_COMPLETION.md). The unchecked boxes here are the reusable
-provisioning requirements, not a claim that observed unavailable controls passed.
+provisioning requirements, not a second live-settings record.
 
 Use this checklist immediately after generating and initializing a repository.
 File generation does not inherit GitHub labels, rulesets, features, topics,
@@ -42,7 +43,7 @@ The versioned selection authority is `.github/repository-profile.json`:
 
 - `profile` selects exactly one profile overlay in generated mode;
 - `label_domains` lists zero or more kebab-case domain overlays; and
-- `.github/labels.json` supplies the core, profile, and domain catalogues.
+- `.github/labels.json` supplies the core, profile, and domain catalogs.
 
 ### Trusted reconciliation
 
@@ -61,7 +62,7 @@ unrecorded profile or domain at dispatch time.
 
 `Detect issue-label drift` is separate from reconciliation. Pull requests run
 only deterministic offline fixtures. Scheduled, manual and workflow-change live checks use only
-`contents: read` and `issues: read`, compare the live catalogue with the same
+`contents: read` and `issues: read`, compare the live catalog with the same
 versioned policy, and have no mutation path.
 
 The detector cross-checks every local create/update/delete difference against the

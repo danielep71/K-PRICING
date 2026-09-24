@@ -29,26 +29,15 @@
 ---
 
 Every tracked VBA file in this repository must use the Visual Basic Editor's
-native export format. Hand-written approximations are not accepted. Following
-this procedure keeps exported source, the repository static gate and Windows
+native export format. Hand-written approximations are not accepted. This format keeps exported source, the repository static gate and Windows
 VBE import/export aligned.
 
 > [!IMPORTANT]
-> This page defines a text format and a contributor procedure. It does **not**
+> This page defines the source exchange format. It does **not**
 > establish that tracked source imports, compiles or runs in Excel. That claim
 > belongs exclusively to the exact-source Windows certification recorded in
 > source issue [danielep71/KPR#29](https://github.com/danielep71/KPR/issues/29);
 > destination parity is tracked in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
-
-## 🧭 Workflow at a glance
-
-| Stage | Contributor action | Required outcome |
-|---:|---|---|
-| **① Export** | Export the component from the VBE into its owning repository directory. | File name and `Attribute VB_Name` remain identical. |
-| **② Review** | Inspect the complete Git diff before committing. | No accidental whitespace, line-ending or hidden-attribute drift. |
-| **③ Remove** | Remove any same-named component already loaded in the target VBA project. | The import cannot create a suffixed duplicate. |
-| **④ Import** | Import the tracked source into the clean target project. | The VBE retains the intended component identity. |
-| **⑤ Certify** | At the release gate only, round-trip the exact candidate source. | Evidence identifies the exact candidate SHA. |
 
 ## 🧾 Format contract
 
@@ -93,48 +82,13 @@ Encoding and line endings follow `.gitattributes` and `.editorconfig`:
 Typographic quotes, en dashes and accented characters in VBA comments are the
 usual causes of a file no longer round-tripping cleanly.
 
-## 📤 Export from Excel
+## Procedure and component ownership
 
-1. In the VBE, select the component in **Project Explorer**.
-2. Choose **File → Export File**.
-3. Save it into the directory that owns the component:
+[Installation](../INSTALLATION.md) owns import, export, replacement and recovery
+procedures. [Repository structure](REPOSITORY_STRUCTURE.md) owns all component
+placements, including classes, forms, workbook components and examples under
+`examples/modules/`. This format contract does not redefine those paths.
 
-   | Component role | Destination |
-   |---|---|
-   | Production facade | `src/modules/` |
-   | Production core | `src/core/` |
-   | Regression | `tests/modules/` |
-   | Examples | `examples/` (no KPR demo builder is imported) |
-
-4. Keep the file name identical to the component name. Do not rename the file
-   afterwards and do not hand-edit `Attribute VB_Name` to another value.
-5. Review the resulting diff before committing.
-
-> [!NOTE]
-> An export that differs only in line endings or whitespace usually means the
-> editor or a Git setting has overridden the repository policy.
-
-## 📥 Import into Excel
-
-1. If a component of the same name is already loaded, right-click it, choose
-   **Remove**, and decline the export prompt.
-2. Choose **File → Import File** and select the exported file.
-
-> [!CAUTION]
-> Import does not replace an existing same-named component. Excel retains both
-> and renames the newcomer: `KPR_DATES_DAYS` silently becomes
-> `KPR_DATES_DAYS1`, leaving two copies of the same procedures in the project.
-> **Always remove the existing component before importing.**
-
-## 🔁 Certification round trip
-
-A normalized export/import round trip consists of:
-
-1. importing the exact candidate source;
-2. exporting it again without modification; and
-3. comparing the normalized result with the candidate source.
-
-This is release evidence, not a routine contributor step. It is performed once
-against the recorded candidate SHA during Windows certification and remains out
-of scope for ordinary changes and the hosted static gate. The hosted gate
-validates text shape only.
+Exact-candidate round-trip evidence belongs to
+[release evidence](RELEASE_EVIDENCE.md). A static format check does not prove
+that Excel imported, compiled or executed a component.
