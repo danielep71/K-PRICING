@@ -1893,6 +1893,7 @@ Public Sub KPR_Tests_RunHost()
     Dim Source          As String       'Source workbook name, quoted for formulas
     Dim PriorCalc       As XlCalculation 'Caller's calculation mode, restored on exit
     Dim CalcChanged     As Boolean      'TRUE once PriorCalc has been captured
+    Dim CleanupStatus   As String       'Migration cleanup record
     Dim I               As Long         'Row cursor
 
 '------------------------------------------------------------------------------
@@ -1901,6 +1902,7 @@ Public Sub KPR_Tests_RunHost()
     'Fresh state for this run
         Set mFailures = New Collection
         mChecks = 0
+        CleanupStatus = "PASS"
 
     'Qualify UDF calls with this workbook, escaping any apostrophe in its name
         Source = "'" & Replace(ThisWorkbook.Name, "'", "''") & "'!"
@@ -1943,19 +1945,36 @@ Public Sub KPR_Tests_RunHost()
 ' CLEANUP
 '------------------------------------------------------------------------------
 Cleanup:
-    'A raise reaching here is itself a failure to report
+    'A raise reaching here is itself a failure to report and a non-PASS cleanup
+    'record; migration evidence must never infer cleanup from summary counts.
         If Err.Number <> 0 Then
+            CleanupStatus = "FAIL:runtime-" & CStr(Err.Number)
             Record "host/runner", "unexpected runtime error " & CStr(Err.Number) & ": " & Err.Description
             Err.Clear
         End If
 
     'Close exactly the scratch workbook, never anything else, then restore the
-    'caller's calculation mode. Order matters: closing under manual calculation
-    'means no recalculation can run against a workbook being torn down.
+    'caller's calculation mode. Capture cleanup failures rather than suppressing
+    'them from the migration evidence stream.
         On Error Resume Next
-        If Not Scratch Is Nothing Then Scratch.Close SaveChanges:=False
-        If CalcChanged Then Application.Calculation = PriorCalc
+        If Not Scratch Is Nothing Then
+            Scratch.Close SaveChanges:=False
+            If Err.Number <> 0 Then
+                If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:close-" & CStr(Err.Number)
+                Err.Clear
+            End If
+        End If
+        If CalcChanged Then
+            Application.Calculation = PriorCalc
+            If Err.Number <> 0 Then
+                If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-" & CStr(Err.Number)
+                Err.Clear
+            ElseIf Application.Calculation <> PriorCalc Then
+                If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-not-restored"
+            End If
+        End If
         On Error GoTo 0
+        MigrationPrintCleanup "host", CleanupStatus
 
 '------------------------------------------------------------------------------
 ' REPORT
@@ -2011,6 +2030,13 @@ Private Sub HostCase( _
     'Ordinary calculation only, requested explicitly under manual mode. A full
     'rebuild would mask a stale volatile cell.
         Application.Calculate
+
+'------------------------------------------------------------------------------
+' MIGRATION OBSERVATIONS
+'------------------------------------------------------------------------------
+        MigrationPrintValue "host/" & MigrationKey(Label) & "/diagnostic", Sheet.Range("A1").Value
+        MigrationPrintValue "host/" & MigrationKey(Label) & "/value", Sheet.Range("A2").Value
+        MigrationPrintValue "host/" & MigrationKey(Label) & "/propagated-na", Sheet.Range("A3").Value
 
 '------------------------------------------------------------------------------
 ' ASSERT
