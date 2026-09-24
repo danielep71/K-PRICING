@@ -129,7 +129,9 @@ and regeneration; there is no automatic pip-update configuration. Auto-merge
 remains disabled. Follow [dependency review](DEPENDENCY_UPDATES.md).
 
 The four stale private-target classifications were removed after the visibility
-read-back. Anonymous probes now determine their status. Restricted, transient or
+read-back. Three policy-clean targets now receive anonymous probes. The
+query-bearing README badge remains `ACCESS_RESTRICTED` by local URL policy and
+is not sent to the network. Restricted, transient or
 policy-blocked results remain non-green; public visibility alone is not proof
 that every external link passes. See [documentation checks](DOCUMENTATION_CHECKS.md).
 
