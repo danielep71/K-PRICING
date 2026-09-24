@@ -659,6 +659,7 @@ Private Sub Run_PillarCases()
     Dim Cond        As KPR_Condition    'Core condition
     Dim HugePillar  As String           'Valid grammar with quantity beyond Double range
     Dim AggregatePillar As String        'Finite component whose Y aggregate overflows Double
+    Dim HugeDigits   As String           'Oversized digits reused in grammar-precedence cases
 
 '------------------------------------------------------------------------------
 ' EXACT DAY PILLARS UNDER EVERY MODE
@@ -813,6 +814,18 @@ Private Sub Run_PillarCases()
         AssertPillarParse "range/year aggregate overflow", AggregatePillar, "PILLAR_AGGREGATE_RANGE"
         AssertErrorValue "range/facade year aggregate overflow", _
                          KPR_Dates_DateFromPillar(S, AggregatePillar), ERR_NUM
+
+'------------------------------------------------------------------------------
+' GRAMMAR PRECEDENCE OVER NUMERICAL RANGE
+'------------------------------------------------------------------------------
+    'Overflowing digits do not override syntax classification. Unit validity
+    'and duplicate detection are resolved before numeric conversion.
+        HugeDigits = String$(400, "9")
+        AssertPillarParse "grammar/oversized missing unit", HugeDigits, "PILLAR_TOKEN_MALFORMED"
+        AssertPillarParse "grammar/oversized unknown unit", HugeDigits & "X", "PILLAR_TOKEN_MALFORMED"
+        AssertPillarParse "grammar/oversized repeated unit", "1M" & HugeDigits & "M", "PILLAR_DUPLICATE_UNIT"
+        AssertErrorValue "grammar/facade oversized unknown unit", _
+                         KPR_Dates_DateFromPillar(S, HugeDigits & "X"), ERR_VALUE
 
     'The facade maps them, and an incoming error at the Pillar slot propagates
         AssertErrorValue "grammar/facade duplicate", KPR_Dates_DateFromPillar(S, "1M2M"), ERR_VALUE
