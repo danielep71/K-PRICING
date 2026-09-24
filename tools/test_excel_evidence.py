@@ -186,9 +186,10 @@ class HostEvidenceTests(unittest.TestCase):
             self.record = copy.deepcopy(original)
             self.record["harness"][field] = value
             self.invalid()
-        self.record = copy.deepcopy(original)
-        self.record["harness"]["expected_errors"][0]["status"] = "FAIL"
-        self.invalid()
+        if self.policy["expected_error_cases"]:
+            self.record = copy.deepcopy(original)
+            self.record["harness"]["expected_errors"][0]["status"] = "FAIL"
+            self.invalid()
 
     def test_raw_log_tamper_missing_and_traversal(self):
         (self.bundle / "host.log").write_text("changed")
