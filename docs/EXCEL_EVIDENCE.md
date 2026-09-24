@@ -153,9 +153,12 @@ preserve observed counts and mark completeness `INCOMPLETE`.
 For a passing regression, the raw log must contain exactly one ordered `CASE=`
 line per policy case, one `CASES=`, `ASSERTIONS=` and `FAILURES=` line matching
 the record, and one complete `RESULT=` line in the documented evidence format.
-The migrated KPR policy currently expects 12 suite-level `CASE=` records and
-557 assertions from `KPR_Tests_Run`. The harness itself exercises native Excel
-error behavior; `expected_errors` is empty because the evidence policy does not
+The migrated KPR policy currently expects 12 suite-level `CASE=` records from
+`KPR_Tests_Run`. Its two LongLong parser checks compile only on 64-bit Office,
+so the expected assertion count is **555 on 32-bit Office** and **557 on 64-bit
+Office**; the validator selects the required count from the recorded
+`environment.office_bitness`. The JSON example above illustrates a 64-bit run.
+The harness itself exercises native Excel error behavior; `expected_errors` is empty because the evidence policy does not
 treat those internal assertions as separately instrumented top-level cases.
 If the regression harness changes, update the policy and evidence documentation
 together and bind the observed counts to the exact candidate.
