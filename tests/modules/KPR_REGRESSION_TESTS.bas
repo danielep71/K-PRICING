@@ -657,6 +657,7 @@ Private Sub Run_PillarCases()
     Dim ModeName    As Variant          'Mode cursor
     Dim TokenOut    As String           'Core formatter output
     Dim Cond        As KPR_Condition    'Core condition
+    Dim HugePillar  As String           'Valid grammar with quantity beyond Double range
 
 '------------------------------------------------------------------------------
 ' EXACT DAY PILLARS UNDER EVERY MODE
@@ -795,6 +796,16 @@ Private Sub Run_PillarCases()
         AssertPillarParse "grammar/any order", "3d2w", "NONE"
         AssertPillarParse "grammar/alias", "on", "NONE"
 
+'------------------------------------------------------------------------------
+' VALID GRAMMAR OUTSIDE NUMERICAL DOMAIN
+'------------------------------------------------------------------------------
+    'A digits+unit token remains grammatically valid even when the numeric
+    'quantity cannot be represented as Double. It is a range error, not syntax.
+        HugePillar = String$(400, "9") & "M"
+        AssertPillarParse "range/oversized month quantity", HugePillar, "PILLAR_AGGREGATE_RANGE"
+        AssertErrorValue "range/facade oversized month quantity", _
+                         KPR_Dates_DateFromPillar(S, HugePillar), ERR_NUM
+
     'The facade maps them, and an incoming error at the Pillar slot propagates
         AssertErrorValue "grammar/facade duplicate", KPR_Dates_DateFromPillar(S, "1M2M"), ERR_VALUE
         AssertErrorValue "grammar/facade signed alias", KPR_Dates_DateFromPillar(S, "-ON"), ERR_VALUE
@@ -884,6 +895,8 @@ Private Sub AssertPillarParse( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const SENTINEL_MONTHS As Double = 12345#
+    Const SENTINEL_DAYS   As Double = 67890#
     Dim Months      As Double           'Parsed month delta
     Dim Days        As Double           'Parsed day delta
     Dim Cond        As KPR_Condition    'Reported condition
@@ -894,10 +907,19 @@ Private Sub AssertPillarParse( _
     'Count every assertion
         mChecks = mChecks + 1
 
+    'Use sentinels so every expected failure also verifies the parser's
+    'outputs-on-success-only contract.
+        Months = SENTINEL_MONTHS
+        Days = SENTINEL_DAYS
+
     'Parse and compare the identifier, whatever the Boolean says
         TryPillar_Parse PillarIn, Months, Days, Cond
         If ConditionName(Cond) <> ExpectCondition Then
             Record Label, "expected " & ExpectCondition & " got " & ConditionName(Cond)
+        ElseIf ExpectCondition <> "NONE" Then
+            If (Months <> SENTINEL_MONTHS) Or (Days <> SENTINEL_DAYS) Then
+                Record Label, "failure modified parser outputs"
+            End If
         End If
 
 End Sub
