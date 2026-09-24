@@ -13,6 +13,10 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from check_excel_evidence import evaluate as evaluate_excel_evidence
+from check_excel_evidence import load_policy as load_excel_policy
+from check_excel_evidence import source_inventory as excel_source_inventory
+
 SCHEMA_VERSION = 1
 FROZEN_SOURCE_SHA = "f26450d1fa7b11261162e901dedba062f21c99a7"
 REQUIRED_LOG_IDS = {
@@ -199,36 +203,26 @@ def require_compile_log(text: str, label: str, require_native_run: bool) -> None
 
 
 def validate_bound_host_record(
-    text: str,
+    root: Path,
+    host_path: Path,
     destination_sha: str,
     environment: dict[str, Any],
 ) -> None:
-    record = json.loads(text)
-    require(isinstance(record, dict), "destination host record must be a JSON object")
-    require(record.get("schema_version") == 1, "unsupported destination host record schema")
-    require(record.get("repository") == "danielep71/K-PRICING",
-            "destination host record repository differs from migration manifest")
-    require(record.get("candidate_sha") == destination_sha,
-            "destination host record SHA differs from checked-out candidate")
-    require(record.get("execution") in {"manual", "automated"},
-            "destination host record must contain an executed host result")
+    report = evaluate_excel_evidence(root, destination_sha, host_path)
+    require(
+        report["status"] == "pass",
+        "destination host record failed authoritative Excel evidence validation: "
+        + "; ".join(str(item) for item in report.get("findings", []))
+        + " outcomes="
+        + ",".join(str(item) for item in report.get("outcomes", [])),
+    )
 
+    record = json.loads(host_path.read_text(encoding="utf-8-sig"))
+    require(isinstance(record, dict), "destination host record must be a JSON object")
     host_environment = record.get("environment")
     require(isinstance(host_environment, dict), "destination host record environment is missing")
     require(host_environment == environment,
             "destination host record environment differs from migration parity environment")
-
-    stages = record.get("stages")
-    require(isinstance(stages, dict) and set(stages) == {"import", "compile", "regression", "cleanup"},
-            "destination host record stages are incomplete")
-    for name, stage in stages.items():
-        require(isinstance(stage, dict) and stage.get("status") == "PASS",
-                f"destination host record {name} stage did not pass")
-
-    harness = record.get("harness")
-    require(isinstance(harness, dict), "destination host record harness is missing")
-    require(harness.get("failures") == 0 and harness.get("completeness") == "COMPLETE",
-            "destination host record harness is not a complete zero-failure run")
 
 
 def validate_manifest(
@@ -315,8 +309,10 @@ def validate_manifest(
 
     require_compile_log(text_by_id["source-exact-compile"], "source exact compile", True)
     require_compile_log(text_by_id["destination-compile"], "destination compile", False)
+    host_entry = next(entry for entry in logs if entry["id"] == "destination-host-record")
     validate_bound_host_record(
-        text_by_id["destination-host-record"],
+        root,
+        safe_file(base, host_entry["path"]),
         expected_destination_sha,
         environment,
     )
@@ -344,75 +340,131 @@ def validate_manifest(
     }
 
 
-def self_test() -> None:
-    with tempfile.TemporaryDirectory(prefix="migration-evidence-") as tmp:
-        base = Path(tmp)
-        root = base / "candidate"
-        bundle = base / "bundle"
-        (root / "tests/modules").mkdir(parents=True)
-        bundle.mkdir()
-        instrumentation = b"synthetic migration observer\n"
-        (root / "tests/modules/KPR_REGRESSION_TESTS.bas").write_bytes(instrumentation)
+def self_test(root: Path) -> None:
+    root = root.resolve()
+    candidate_sha = checked_out_sha(root)
+    instrumentation_path = root / "tests/modules/KPR_REGRESSION_TESTS.bas"
+    require(instrumentation_path.is_file(), "candidate migration instrumentation is missing")
+    instrumentation = instrumentation_path.read_bytes()
 
-        payloads = {name: "TEXT:synthetic" for name in REQUIRED_OBSERVATIONS}
-        payloads["array/api"] = "TEXT:SUPPORTED"
-        payloads["shape/state-application"] = "UNCHANGED"
-        payloads["shape/state-selection"] = "UNCHANGED"
-        obs = "\n".join(
-            [f"OBS\t{name}\t{payloads[name]}" for name in sorted(REQUIRED_OBSERVATIONS)]
+    config = json.loads((root / ".github/repository-profile.json").read_text(encoding="utf-8"))
+    policy = load_excel_policy(root, candidate_sha)
+    sources = excel_source_inventory(root, candidate_sha, config)
+
+    payloads = {name: "TEXT:synthetic" for name in REQUIRED_OBSERVATIONS}
+    payloads["array/api"] = "TEXT:SUPPORTED"
+    payloads["shape/state-application"] = "UNCHANGED"
+    payloads["shape/state-selection"] = "UNCHANGED"
+    obs = "\n".join(
+        [f"OBS\t{name}\t{payloads[name]}" for name in sorted(REQUIRED_OBSERVATIONS)]
+        + [
+            "CLEANUP\thost\tPASS",
+            "KPR host regression  checks: 9  failures: 0",
+            "CLEANUP\tshape\tPASS",
+            "KPR shape regression  checks: 12  failures: 0",
+            "CLEANUP\tarray\tPASS",
+            "KPR array regression  checks: 7  failures: 0",
+            "",
+        ]
+    )
+    synthetic_environment: dict[str, Any] = {
+        "excel_version": "16.0",
+        "excel_build": "synthetic",
+        "office_bitness": "64-bit",
+        "os": "Windows synthetic",
+        "os_architecture": "x64",
+        "runtime": "VBA7+",
+        "locale": "en-US",
+        "references": ["VBA", "Excel"],
+        "macro_policy": "synthetic self-test",
+        "vba_project_access": "disabled; manual import",
+        "trust_changes": False,
+    }
+
+    with tempfile.TemporaryDirectory(prefix="migration-evidence-") as tmp:
+        bundle = Path(tmp)
+
+        def retained(name: str, content: str) -> dict[str, str]:
+            path = bundle / name
+            path.write_text(content, encoding="utf-8")
+            return {"path": name, "sha256": hashlib.sha256(content.encode()).hexdigest()}
+
+        assertion_count = policy["assertions_by_office_bitness"]["64-bit"]
+        case_count = len(policy["cases"])
+        regression_log = "\n".join(
+            [f"CASE={case}" for case in policy["cases"]]
             + [
-                "CLEANUP\thost\tPASS",
-                "KPR host regression  checks: 9  failures: 0",
-                "CLEANUP\tshape\tPASS",
-                "KPR shape regression  checks: 12  failures: 0",
-                "CLEANUP\tarray\tPASS",
-                "KPR array regression  checks: 7  failures: 0",
+                f"CASES={case_count}",
+                f"ASSERTIONS={assertion_count}",
+                "FAILURES=0",
+                (
+                    "RESULT=PASS; completeness=COMPLETE; "
+                    f"cases={case_count}; assertions={assertion_count}; failures=0; cleanup=PASS"
+                ),
                 "",
             ]
         )
-        synthetic_environment: dict[str, Any] = {
-            "excel_version": "16.0",
-            "excel_build": "synthetic",
-            "office_bitness": "64-bit",
-            "os": "Windows synthetic",
-            "os_architecture": "x64",
-            "runtime": "VBA7+",
-            "locale": "en-US",
-            "references": ["VBA", "Excel"],
-            "macro_policy": "synthetic",
-            "vba_project_access": "disabled; manual import",
-            "trust_changes": False,
+
+        host_stage_logs = {
+            "import": retained("host-import.log", "synthetic import PASS\n"),
+            "compile": retained("host-compile.log", "synthetic compile PASS\n"),
+            "regression": retained("host-regression.log", regression_log),
+            "cleanup": retained("host-cleanup.log", "synthetic cleanup PASS\n"),
         }
         host_record: dict[str, Any] = {
             "schema_version": 1,
-            "repository": "danielep71/K-PRICING",
-            "candidate_sha": "b" * 40,
+            "repository": config["repository"],
+            "candidate_sha": candidate_sha,
+            "template_contract": config["template_contract"],
             "execution": "manual",
-            "environment": synthetic_environment,
-            "stages": {
-                name: {"status": "PASS"} for name in ("import", "compile", "regression", "cleanup")
+            "availability_reason": None,
+            "started_at": "2026-09-24T10:00:00+00:00",
+            "finished_at": "2026-09-24T10:01:00+00:00",
+            "runner": {
+                "class": "manual-interactive",
+                "identity": "migration-evidence synthetic self-test",
+                "workflow": None,
             },
-            "harness": {"failures": 0, "completeness": "COMPLETE"},
+            "environment": synthetic_environment,
+            "sources": sources,
+            "stages": {
+                name: {
+                    "status": "PASS",
+                    "detail": "synthetic self-test",
+                    "log": host_stage_logs[name],
+                }
+                for name in ("import", "compile", "regression", "cleanup")
+            },
+            "harness": {
+                "entry_point": policy["entry_point"],
+                "cases": case_count,
+                "assertions": assertion_count,
+                "failures": 0,
+                "completeness": "COMPLETE",
+                "expected_errors": [
+                    {"case": case, "status": "PASS", "detail": "synthetic self-test"}
+                    for case in policy["expected_error_cases"]
+                ],
+            },
         }
-        files = {
+
+        migration_files = {
             "source-exact-compile": "IMPORT=PASS\nCOMPILE=PASS\nNATIVE_RUN=PASS\n",
             "destination-compile": "IMPORT=PASS\nCOMPILE=PASS\n",
             "source-observations": obs,
             "destination-observations": obs,
-            "destination-host-record": json.dumps(host_record) + "\n",
+            "destination-host-record": json.dumps(host_record, sort_keys=True) + "\n",
         }
         log_entries: list[dict[str, str]] = []
-        for ident, content in files.items():
-            log_path = f"{ident}.log"
-            (bundle / log_path).write_text(content, encoding="utf-8")
-            log_entries.append(
-                {"id": ident, "path": log_path, "sha256": hashlib.sha256(content.encode()).hexdigest()}
-            )
+        for ident, content in migration_files.items():
+            name = f"{ident}.log"
+            binding = retained(name, content)
+            log_entries.append({"id": ident, **binding})
 
         manifest: dict[str, Any] = {
             "schema_version": 1,
             "source": {"repository": "danielep71/KPR", "sha": FROZEN_SOURCE_SHA},
-            "destination": {"repository": "danielep71/K-PRICING", "sha": "b" * 40},
+            "destination": {"repository": "danielep71/K-PRICING", "sha": candidate_sha},
             "environment": synthetic_environment,
             "instrumentation": {
                 "path": "tests/modules/KPR_REGRESSION_TESTS.bas",
@@ -431,14 +483,14 @@ def self_test() -> None:
         }
         manifest_file = bundle / "migration.json"
         manifest_file.write_text(json.dumps(manifest), encoding="utf-8")
-        report = validate_manifest(root, manifest_file, "b" * 40)
+        report = validate_manifest(root, manifest_file, candidate_sha)
         require(report["status"] == "pass", "positive self-test did not pass")
 
-        degraded: dict[str, Any] = json.loads(manifest_file.read_text())
+        degraded: dict[str, Any] = json.loads(json.dumps(manifest))
         degraded["source"]["sha"] = "a" * 40
         manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
         try:
-            validate_manifest(root, manifest_file, "b" * 40)
+            validate_manifest(root, manifest_file, candidate_sha)
         except ValueError as error:
             require("frozen KPR baseline" in str(error),
                     "degraded source-identity case failed for wrong reason")
@@ -449,7 +501,7 @@ def self_test() -> None:
         degraded["destination"]["sha"] = "c" * 40
         manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
         try:
-            validate_manifest(root, manifest_file, "b" * 40)
+            validate_manifest(root, manifest_file, candidate_sha)
         except ValueError as error:
             require("checked-out candidate" in str(error),
                     "degraded destination-identity case failed for wrong reason")
@@ -462,41 +514,46 @@ def self_test() -> None:
             "OBS\tdirect/days-in-month\tTEXT:synthetic",
             "OBS\tdirect/days-in-month\tLONG:999",
         )
-        (bundle / dest["path"]).write_text(changed, encoding="utf-8")
+        retained(dest["path"], changed)
         dest["sha256"] = hashlib.sha256(changed.encode()).hexdigest()
         manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
         try:
-            validate_manifest(root, manifest_file, "b" * 40)
+            validate_manifest(root, manifest_file, candidate_sha)
         except ValueError as error:
             require("observations differ" in str(error), "degraded parity case failed for wrong reason")
         else:
             raise RuntimeError("degraded parity self-test unexpectedly passed")
-
-        # Restore the destination observation stream before testing host binding.
-        (bundle / "destination-observations.log").write_text(obs, encoding="utf-8")
+        retained("destination-observations.log", obs)
 
         degraded = json.loads(json.dumps(manifest))
+        bad_host = json.loads(json.dumps(host_record))
+        del bad_host["harness"]["assertions"]
         host_entry = next(x for x in degraded["logs"] if x["id"] == "destination-host-record")
-        mismatched_environment: dict[str, Any] = dict(synthetic_environment)
-        mismatched_environment["excel_build"] = "different-build"
-        mismatched_host: dict[str, Any] = dict(host_record)
-        mismatched_host["environment"] = mismatched_environment
-        host_text = json.dumps(mismatched_host) + "\n"
-        (bundle / host_entry["path"]).write_text(host_text, encoding="utf-8")
-        host_entry["sha256"] = hashlib.sha256(host_text.encode()).hexdigest()
+        bad_host_text = json.dumps(bad_host, sort_keys=True) + "\n"
+        retained(host_entry["path"], bad_host_text)
+        host_entry["sha256"] = hashlib.sha256(bad_host_text.encode()).hexdigest()
         manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
         try:
-            validate_manifest(root, manifest_file, "b" * 40)
+            validate_manifest(root, manifest_file, candidate_sha)
+        except ValueError as error:
+            require("authoritative Excel evidence validation" in str(error),
+                    "degraded host-schema case failed for wrong reason")
+        else:
+            raise RuntimeError("degraded host-schema self-test unexpectedly passed")
+        retained("destination-host-record.log", migration_files["destination-host-record"])
+
+        degraded = json.loads(json.dumps(manifest))
+        degraded_environment = dict(synthetic_environment)
+        degraded_environment["excel_build"] = "different-build"
+        degraded["environment"] = degraded_environment
+        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
+        try:
+            validate_manifest(root, manifest_file, candidate_sha)
         except ValueError as error:
             require("host record environment differs" in str(error),
                     "degraded host-environment case failed for wrong reason")
         else:
             raise RuntimeError("degraded host-environment self-test unexpectedly passed")
-
-        # Restore the bound host record for later degraded cases.
-        (bundle / "destination-host-record.log").write_text(
-            files["destination-host-record"], encoding="utf-8"
-        )
 
         degraded = json.loads(json.dumps(manifest))
         dest = next(x for x in degraded["logs"] if x["id"] == "destination-observations")
@@ -504,29 +561,24 @@ def self_test() -> None:
             "KPR shape regression  checks: 12  failures: 0",
             "KPR shape regression  checks: 12  failures: 1",
         )
-        (bundle / dest["path"]).write_text(failed_runner, encoding="utf-8")
+        retained(dest["path"], failed_runner)
         dest["sha256"] = hashlib.sha256(failed_runner.encode()).hexdigest()
         manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
         try:
-            validate_manifest(root, manifest_file, "b" * 40)
+            validate_manifest(root, manifest_file, candidate_sha)
         except ValueError as error:
             require("shape runner failures=1" in str(error),
                     "degraded runner-failure case failed for wrong reason")
         else:
             raise RuntimeError("degraded runner-failure self-test unexpectedly passed")
+        retained("destination-observations.log", obs)
 
-        # Restore the destination observation log for the digest-binding case.
-        (bundle / "destination-observations.log").write_text(obs, encoding="utf-8")
-
-        degraded = manifest.copy()
-        original_logs = manifest["logs"]
-        require(isinstance(original_logs, list), "self-test logs must be a list")
-        degraded["logs"] = [dict(x) for x in original_logs if isinstance(x, dict)]
+        degraded = json.loads(json.dumps(manifest))
         host = next(x for x in degraded["logs"] if x["id"] == "destination-host-record")
         host["sha256"] = "0" * 64
         manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
         try:
-            validate_manifest(root, manifest_file, "b" * 40)
+            validate_manifest(root, manifest_file, candidate_sha)
         except ValueError as error:
             require("digest mismatch" in str(error), "degraded digest case failed for wrong reason")
         else:
@@ -534,7 +586,7 @@ def self_test() -> None:
 
     print(
         "PASS migration-evidence self-test: positive, source identity, destination identity, "
-        "parity mismatch, host environment, runner failure, digest mismatch"
+        "parity mismatch, authoritative host schema, host environment, runner failure, digest mismatch"
     )
 
 
@@ -550,11 +602,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
     try:
+        root = args.root.resolve()
         if args.self_test:
-            self_test()
+            self_test(root)
             return 0
         require(args.manifest is not None, "--manifest is required unless --self-test is used")
-        root = args.root.resolve()
         report = validate_manifest(
             root,
             args.manifest.resolve(),
