@@ -658,6 +658,7 @@ Private Sub Run_PillarCases()
     Dim TokenOut    As String           'Core formatter output
     Dim Cond        As KPR_Condition    'Core condition
     Dim HugePillar  As String           'Valid grammar with quantity beyond Double range
+    Dim AggregatePillar As String        'Finite component whose Y aggregate overflows Double
 
 '------------------------------------------------------------------------------
 ' EXACT DAY PILLARS UNDER EVERY MODE
@@ -805,6 +806,13 @@ Private Sub Run_PillarCases()
         AssertPillarParse "range/oversized month quantity", HugePillar, "PILLAR_AGGREGATE_RANGE"
         AssertErrorValue "range/facade oversized month quantity", _
                          KPR_Dates_DateFromPillar(S, HugePillar), ERR_NUM
+
+    'The 308-digit year quantity remains finite as Double, but multiplying it
+    'by 12 to form the month aggregate exceeds the Double domain.
+        AggregatePillar = "2" & String$(307, "0") & "Y"
+        AssertPillarParse "range/year aggregate overflow", AggregatePillar, "PILLAR_AGGREGATE_RANGE"
+        AssertErrorValue "range/facade year aggregate overflow", _
+                         KPR_Dates_DateFromPillar(S, AggregatePillar), ERR_NUM
 
     'The facade maps them, and an incoming error at the Pillar slot propagates
         AssertErrorValue "grammar/facade duplicate", KPR_Dates_DateFromPillar(S, "1M2M"), ERR_VALUE
