@@ -109,8 +109,9 @@ def parse_observations(text: str, side: str) -> tuple[list[tuple[str, str]], dic
             require(fields[1] not in cleanup, f"{side}: duplicate cleanup record {fields[1]}")
             cleanup[fields[1]] = fields[2]
 
-    require(seen == REQUIRED_OBSERVATIONS,
-            f"{side}: observation ids differ from required v0.0.2 set")
+    missing = REQUIRED_OBSERVATIONS - seen
+    require(not missing,
+            f"{side}: missing required v0.0.2 observation ids: {sorted(missing)}")
     payloads = dict(observations)
     require(payloads["array/api"] == "TEXT:SUPPORTED",
             f"{side}: dynamic-array API is not supported")
