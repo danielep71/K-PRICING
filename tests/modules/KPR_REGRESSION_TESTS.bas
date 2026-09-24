@@ -311,6 +311,52 @@ Evidence_Error:
 
 End Sub
 
+Public Sub KPR_Tests_RunMigrationEvidence()
+'
+'==============================================================================
+'                       KPR_Tests_RunMigrationEvidence
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Emits deterministic source-versus-destination observations for migration
+'   issue #17. The same candidate regression module is used as instrumentation
+'   against frozen-source production modules and destination production modules.
+'
+' OUTPUT
+'   OBS<TAB>id<TAB>payload
+'   CLEANUP<TAB>runner<TAB>PASS|failure-detail
+'
+' NOTES
+'   - This adapter does not call the pure-suite dispatcher. Frozen-source and
+'     destination pure runs are retained separately because test counts and
+'     known correctness fixes differ legitimately between the two baselines.
+'   - No observation is part of the supported 22-function production API.
+'
+' UPDATED
+'   2026-09-24
+'==============================================================================
+'
+    On Error GoTo Migration_Error
+
+    Debug.Print "MIGRATION_OBSERVATIONS_BEGIN"
+    MigrationPrintValue "direct/days-in-month", KPR_Dates_DaysInMonth("2024-02-15")
+    MigrationPrintValue "direct/add-days", KPR_Dates_AddDays("2026-03-15", 5)
+    MigrationPrintValue "direct/strict-date-error", KPR_Dates_BeginOfMonth("03/15/2026")
+
+    KPR_Tests_RunHost
+    KPR_Tests_RunShape
+    KPR_Tests_RunArray
+
+    Debug.Print "MIGRATION_OBSERVATIONS_END"
+    Exit Sub
+
+Migration_Error:
+    MigrationPrintText "migration/runner", _
+                       "ERROR:" & CStr(Err.Number) & ":" & MigrationEscape(Err.Description)
+    Err.Clear
+    Debug.Print "MIGRATION_OBSERVATIONS_END"
+
+End Sub
+
 Private Sub ReportRun( _
     ByVal SuiteName As String)
 '
@@ -1656,6 +1702,107 @@ Private Function DescribeValue( _
 
 End Function
 
+Private Sub MigrationPrintText( _
+    ByVal ObservationId As String, _
+    ByVal Payload As String)
+'
+' Stable migration-only observation record. IDs and payloads must contain no
+' literal tab/newline after escaping.
+'
+    Debug.Print "OBS" & vbTab & ObservationId & vbTab & Payload
+
+End Sub
+
+Private Sub MigrationPrintValue( _
+    ByVal ObservationId As String, _
+    ByVal V As Variant)
+'
+' Stable scalar observation including native Excel error number and VBA type.
+'
+    MigrationPrintText ObservationId, MigrationValuePayload(V)
+
+End Sub
+
+Private Function MigrationValuePayload( _
+    ByVal V As Variant) _
+    As String
+'
+' Deterministic scalar rendering for source/destination observation parity.
+'
+    If VarType(V) = vbError Then
+        MigrationValuePayload = "ERROR:" & CStr(CLng(V))
+    ElseIf IsArray(V) Then
+        MigrationValuePayload = "ARRAY"
+    ElseIf IsEmpty(V) Then
+        MigrationValuePayload = "EMPTY"
+    ElseIf IsNull(V) Then
+        MigrationValuePayload = "NULL"
+    ElseIf VarType(V) = vbDate Then
+        MigrationValuePayload = "DATE:" & Format$(CDate(V), "yyyy-mm-dd")
+    ElseIf VarType(V) = vbBoolean Then
+        MigrationValuePayload = "BOOLEAN:" & UCase$(CStr(CBool(V)))
+    Else
+        MigrationValuePayload = UCase$(TypeName(V)) & ":" & MigrationEscape(CStr(V))
+    End If
+
+End Function
+
+Private Function MigrationEscape( _
+    ByVal S As String) _
+    As String
+'
+' Escapes the record delimiters and line terminators used by migration logs.
+'
+    S = Replace(S, "\", "\\")
+    S = Replace(S, vbTab, "\t")
+    S = Replace(S, vbCr, "\r")
+    S = Replace(S, vbLf, "\n")
+    MigrationEscape = S
+
+End Function
+
+Private Function MigrationKey( _
+    ByVal S As String) _
+    As String
+'
+' Converts human runner labels to stable observation-id fragments.
+'
+    MigrationKey = LCase$(Replace(Trim$(S), " ", "-"))
+
+End Function
+
+Private Function MigrationShapePayload( _
+    ByVal V As Variant) _
+    As String
+'
+' Serializes the core materialization result without changing regression counts.
+'
+    Dim Payload As Variant
+    Dim Kind As KPR_ArgShape
+    Dim Rows As Long
+    Dim Cols As Long
+    Dim Cond As KPR_Condition
+
+    If TryMaterialize(V, Payload, Kind, Rows, Cols, Cond) Then
+        MigrationShapePayload = "OK:kind=" & CStr(CLng(Kind)) & _
+                                ";rows=" & CStr(Rows) & _
+                                ";cols=" & CStr(Cols)
+    Else
+        MigrationShapePayload = "ERROR:" & ConditionName(Cond)
+    End If
+
+End Function
+
+Private Sub MigrationPrintCleanup( _
+    ByVal Runner As String, _
+    ByVal Status As String)
+'
+' Cleanup is a first-class parity observation, not inferred from test counts.
+'
+    Debug.Print "CLEANUP" & vbTab & Runner & vbTab & Status
+
+End Sub
+
 Private Sub AssertOutShape( _
     ByVal Label As String, _
     ByVal R As Variant, _
@@ -1746,6 +1893,7 @@ Public Sub KPR_Tests_RunHost()
     Dim Source          As String       'Source workbook name, quoted for formulas
     Dim PriorCalc       As XlCalculation 'Caller's calculation mode, restored on exit
     Dim CalcChanged     As Boolean      'TRUE once PriorCalc has been captured
+    Dim CleanupStatus   As String       'Migration cleanup record
     Dim I               As Long         'Row cursor
 
 '------------------------------------------------------------------------------
@@ -1754,6 +1902,7 @@ Public Sub KPR_Tests_RunHost()
     'Fresh state for this run
         Set mFailures = New Collection
         mChecks = 0
+        CleanupStatus = "PASS"
 
     'Qualify UDF calls with this workbook, escaping any apostrophe in its name
         Source = "'" & Replace(ThisWorkbook.Name, "'", "''") & "'!"
@@ -1796,19 +1945,36 @@ Public Sub KPR_Tests_RunHost()
 ' CLEANUP
 '------------------------------------------------------------------------------
 Cleanup:
-    'A raise reaching here is itself a failure to report
+    'A raise reaching here is itself a failure to report and a non-PASS cleanup
+    'record; migration evidence must never infer cleanup from summary counts.
         If Err.Number <> 0 Then
+            CleanupStatus = "FAIL:runtime-" & CStr(Err.Number)
             Record "host/runner", "unexpected runtime error " & CStr(Err.Number) & ": " & Err.Description
             Err.Clear
         End If
 
     'Close exactly the scratch workbook, never anything else, then restore the
-    'caller's calculation mode. Order matters: closing under manual calculation
-    'means no recalculation can run against a workbook being torn down.
+    'caller's calculation mode. Capture cleanup failures rather than suppressing
+    'them from the migration evidence stream.
         On Error Resume Next
-        If Not Scratch Is Nothing Then Scratch.Close SaveChanges:=False
-        If CalcChanged Then Application.Calculation = PriorCalc
+        If Not Scratch Is Nothing Then
+            Scratch.Close SaveChanges:=False
+            If Err.Number <> 0 Then
+                If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:close-" & CStr(Err.Number)
+                Err.Clear
+            End If
+        End If
+        If CalcChanged Then
+            Application.Calculation = PriorCalc
+            If Err.Number <> 0 Then
+                If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-" & CStr(Err.Number)
+                Err.Clear
+            ElseIf Application.Calculation <> PriorCalc Then
+                If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-not-restored"
+            End If
+        End If
         On Error GoTo 0
+        MigrationPrintCleanup "host", CleanupStatus
 
 '------------------------------------------------------------------------------
 ' REPORT
@@ -1864,6 +2030,13 @@ Private Sub HostCase( _
     'Ordinary calculation only, requested explicitly under manual mode. A full
     'rebuild would mask a stale volatile cell.
         Application.Calculate
+
+'------------------------------------------------------------------------------
+' MIGRATION OBSERVATIONS
+'------------------------------------------------------------------------------
+        MigrationPrintValue "host/" & MigrationKey(Label) & "/diagnostic", Sheet.Range("A1").Value
+        MigrationPrintValue "host/" & MigrationKey(Label) & "/value", Sheet.Range("A2").Value
+        MigrationPrintValue "host/" & MigrationKey(Label) & "/propagated-na", Sheet.Range("A3").Value
 
 '------------------------------------------------------------------------------
 ' ASSERT
@@ -1941,6 +2114,7 @@ Public Sub KPR_Tests_RunShape()
     Dim ScreenBefore    As Boolean      'Caller state snapshot
     Dim CalcBefore      As XlCalculation 'Caller state snapshot
     Dim SelBefore       As String       'Caller state snapshot
+    Dim CleanupStatus   As String       'Migration cleanup record
     Dim I               As Long         'Row cursor
 
 '------------------------------------------------------------------------------
@@ -1948,6 +2122,7 @@ Public Sub KPR_Tests_RunShape()
 '------------------------------------------------------------------------------
     Set mFailures = New Collection
     mChecks = 0
+    CleanupStatus = "PASS"
     On Error GoTo Cleanup
     PriorCalc = Application.Calculation
     CalcChanged = True
@@ -2014,17 +2189,59 @@ Public Sub KPR_Tests_RunShape()
         End If
 
 '------------------------------------------------------------------------------
+' MIGRATION OBSERVATIONS
+'------------------------------------------------------------------------------
+        MigrationPrintText "shape/row", MigrationShapePayload(Sheet.Range("A1:C1"))
+        MigrationPrintText "shape/column", MigrationShapePayload(Sheet.Range("A1:A3"))
+        MigrationPrintText "shape/rectangle", MigrationShapePayload(Sheet.Range("A1:C3"))
+        MigrationPrintText "shape/single", MigrationShapePayload(Sheet.Range("B1"))
+        MigrationPrintText "shape/multi-area", _
+                           MigrationShapePayload(Application.Union(Sheet.Range("A1"), Sheet.Range("C3")))
+        MigrationPrintText "shape/beyond-usedrange", MigrationShapePayload(Sheet.Range("A1:A50"))
+        MigrationPrintValue "shape/blank-b2", Sheet.Range("B2").Value
+        MigrationPrintValue "shape/error-c3", Sheet.Range("C3").Value
+        MigrationPrintValue "shape/value-b3", Sheet.Range("B3").Value
+        If Application.EnableEvents = EventsBefore And _
+           Application.ScreenUpdating = ScreenBefore And _
+           Application.Calculation = CalcBefore Then
+            MigrationPrintText "shape/state-application", "UNCHANGED"
+        Else
+            MigrationPrintText "shape/state-application", "CHANGED"
+        End If
+        If Selection.Address(External:=True) = SelBefore Then
+            MigrationPrintText "shape/state-selection", "UNCHANGED"
+        Else
+            MigrationPrintText "shape/state-selection", "CHANGED"
+        End If
+
+'------------------------------------------------------------------------------
 ' CLEANUP
 '------------------------------------------------------------------------------
 Cleanup:
     If Err.Number <> 0 Then
+        CleanupStatus = "FAIL:runtime-" & CStr(Err.Number)
         Record "shape/runner", "unexpected runtime error " & CStr(Err.Number) & ": " & Err.Description
         Err.Clear
     End If
     On Error Resume Next
-    If Not Scratch Is Nothing Then Scratch.Close SaveChanges:=False
-    If CalcChanged Then Application.Calculation = PriorCalc
+    If Not Scratch Is Nothing Then
+        Scratch.Close SaveChanges:=False
+        If Err.Number <> 0 Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:close-" & CStr(Err.Number)
+            Err.Clear
+        End If
+    End If
+    If CalcChanged Then
+        Application.Calculation = PriorCalc
+        If Err.Number <> 0 Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-" & CStr(Err.Number)
+            Err.Clear
+        ElseIf Application.Calculation <> PriorCalc Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-not-restored"
+        End If
+    End If
     On Error GoTo 0
+    MigrationPrintCleanup "shape", CleanupStatus
 
 '------------------------------------------------------------------------------
 ' REPORT
@@ -2089,6 +2306,7 @@ Public Sub KPR_Tests_RunArray()
     Dim Anchor          As Range        'Cell the formula is entered in
     Dim Spill           As Range        'The spilled range, late-bound
     Dim ApiState        As String       'SUPPORTED or NOT_AVAILABLE
+    Dim CleanupStatus   As String       'Migration cleanup record
     Dim I               As Long         'Row cursor
 
 '------------------------------------------------------------------------------
@@ -2096,6 +2314,7 @@ Public Sub KPR_Tests_RunArray()
 '------------------------------------------------------------------------------
     Set mFailures = New Collection
     mChecks = 0
+    CleanupStatus = "PASS"
     Source = "'" & Replace(ThisWorkbook.Name, "'", "''") & "'!"
     On Error GoTo Cleanup
     PriorCalc = Application.Calculation
@@ -2121,6 +2340,7 @@ Public Sub KPR_Tests_RunArray()
         Err.Clear
         On Error GoTo Cleanup
         Debug.Print "KPR array regression  dynamic-array API: " & ApiState
+        MigrationPrintText "array/api", "TEXT:" & ApiState
         If ApiState <> "SUPPORTED" Then
             Record "array/api", "Formula2 is not available on this host; the multi-cell claim cannot be tested here"
             GoTo Cleanup
@@ -2165,17 +2385,71 @@ Public Sub KPR_Tests_RunArray()
         If Not IsEmpty(Sheet.Range("C2").Value) Then Record "array/1904 neighbours untouched", "C2 holds a value after a refused call"
 
 '------------------------------------------------------------------------------
+' MIGRATION OBSERVATIONS
+'------------------------------------------------------------------------------
+        Scratch.Date1904 = False
+        CallByName Anchor, "Formula2", VbLet, "=" & Source & "KPR_Dates_EndOfMonth(A1:A3)"
+        Application.Calculate
+        Set Spill = Nothing
+        On Error Resume Next
+        Set Spill = CallByName(Anchor, "SpillingToRange", VbGet)
+        Err.Clear
+        On Error GoTo Cleanup
+        If Spill Is Nothing Then
+            MigrationPrintText "array/1900-spill", "NONE"
+        Else
+            MigrationPrintText "array/1900-spill", _
+                               "RANGE:" & CStr(Spill.Rows.Count) & "x" & CStr(Spill.Columns.Count)
+        End If
+        MigrationPrintValue "array/1900-row1", Sheet.Range("C1").Value
+        MigrationPrintValue "array/1900-row2", Sheet.Range("C2").Value
+        MigrationPrintValue "array/1900-row3", Sheet.Range("C3").Value
+
+        Scratch.Date1904 = True
+        CallByName Anchor, "Formula2", VbLet, "=" & Source & "KPR_Dates_EndOfMonth(A1:A3)"
+        Application.Calculate
+        Set Spill = Nothing
+        On Error Resume Next
+        Set Spill = CallByName(Anchor, "SpillingToRange", VbGet)
+        Err.Clear
+        On Error GoTo Cleanup
+        MigrationPrintValue "array/1904-call", Sheet.Range("C1").Value
+        If Spill Is Nothing Then
+            MigrationPrintText "array/1904-spill", "NONE"
+        Else
+            MigrationPrintText "array/1904-spill", _
+                               "RANGE:" & CStr(Spill.Rows.Count) & "x" & CStr(Spill.Columns.Count)
+        End If
+        MigrationPrintValue "array/1904-neighbour-c2", Sheet.Range("C2").Value
+
+'------------------------------------------------------------------------------
 ' CLEANUP
 '------------------------------------------------------------------------------
 Cleanup:
     If Err.Number <> 0 Then
+        CleanupStatus = "FAIL:runtime-" & CStr(Err.Number)
         Record "array/runner", "unexpected runtime error " & CStr(Err.Number) & ": " & Err.Description
         Err.Clear
     End If
     On Error Resume Next
-    If Not Scratch Is Nothing Then Scratch.Close SaveChanges:=False
-    If CalcChanged Then Application.Calculation = PriorCalc
+    If Not Scratch Is Nothing Then
+        Scratch.Close SaveChanges:=False
+        If Err.Number <> 0 Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:close-" & CStr(Err.Number)
+            Err.Clear
+        End If
+    End If
+    If CalcChanged Then
+        Application.Calculation = PriorCalc
+        If Err.Number <> 0 Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-" & CStr(Err.Number)
+            Err.Clear
+        ElseIf Application.Calculation <> PriorCalc Then
+            If CleanupStatus = "PASS" Then CleanupStatus = "FAIL:calculation-not-restored"
+        End If
+    End If
     On Error GoTo 0
+    MigrationPrintCleanup "array", CleanupStatus
 
 '------------------------------------------------------------------------------
 ' REPORT

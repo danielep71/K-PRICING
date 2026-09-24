@@ -84,6 +84,7 @@ REQUIRED_MEMBERS = {
         "KPR_Tests_RunSuite",
         "KPR_Tests_RunAll",
         "KPR_Tests_RunEvidence",
+        "KPR_Tests_RunMigrationEvidence",
         "KPR_Tests_RunHost",
         "KPR_Tests_RunShape",
         "KPR_Tests_RunArray",

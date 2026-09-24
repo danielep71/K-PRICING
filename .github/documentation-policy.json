@@ -57,31 +57,6 @@
       "www.contributor-covenant.org": "Code of conduct authority"
     },
     "exceptions": [],
-    "classifications": [
-      {
-        "id": "5aa72067a4e7a532c659fdde6498d65ae6cac3848462ee175d340d76cd60e73e",
-        "kind": "access-restricted",
-        "reason": "K-PRICING is private; authenticate to verify this exact target. Anonymous access is not public reachability evidence.",
-        "expires": "2027-09-23"
-      },
-      {
-        "id": "64717cebeffcdc02c56bcaac156bc4136cba91a1b115f37b6c2d8dafbe8d2377",
-        "kind": "access-restricted",
-        "reason": "K-PRICING is private; authenticate to verify this exact target. Anonymous access is not public reachability evidence.",
-        "expires": "2027-09-23"
-      },
-      {
-        "id": "c353bffbc24b6253241e4a33e11cecdb0a00a1eb2559f01365c7ba01ced0d4e4",
-        "kind": "access-restricted",
-        "reason": "K-PRICING is private; authenticate to verify this exact target. Anonymous access is not public reachability evidence.",
-        "expires": "2027-09-23"
-      },
-      {
-        "id": "e7017434bb3a0773f5c818fd385bd6d9f75d240ee7159b287382bbb1b905fe7e",
-        "kind": "access-restricted",
-        "reason": "K-PRICING is private; authenticate to verify this exact target. Anonymous access is not public reachability evidence.",
-        "expires": "2027-09-23"
-      }
-    ]
+    "classifications": []
   }
 }

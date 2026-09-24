@@ -9,12 +9,14 @@ boundary. Product identity remains K-PRICING; VBA names retain `KPR_`.
 
 The frozen source inventory and 22 source signatures were rechecked on
 2026-09-24. [Migration provenance](MIGRATION_PROVENANCE.md) records the
-source hashes, licence and editorial adaptations for issue #11. The
+source hashes, license and editorial adaptations for issue #11. The
 [date-layer contract](DATE_LAYER_CONTRACT.md) and
-[VBE export contract](VBE_EXPORT.md) are imported. The five production modules,
-focused regression harness, API manifest and specialist static rules are now
-migrated on the v0.0.2 integration branch; destination Excel parity remains
-pending.
+[VBE export contract](VBE_EXPORT.md) are imported. PR #28 merged the five
+production modules, focused regression harness, API manifest, specialist static
+rules and retained-evidence adapter as `70ba37ac9f8df4049b44cabd6bc013559b8f618f`.
+The [regression/parity protocol](MIGRATION_REGRESSION.md) owns issue #14's
+execution and comparison method; destination Excel parity remains pending in
+#17.
 
 ## Frozen source and evidence boundary
 
@@ -108,14 +110,14 @@ spill twins. No calendar/business-day extension is part of parity.
    profile component inventory, API manifest and evidence-policy changes in the
    same reviewed candidate. Delete obsolete starter artifacts only when their
    complete replacements are included; no knowingly broken intermediate main.
-3. **#13 and #14 — static/API and regression adaptation:** keep the generic
-   `tools/check_repo.py` and all retained CI. Adapt the source specialist
-   checker as a separate additive checker, preserving its implemented 24-rule/
-   37-negative-fixture baseline where applicable. Review changed path/identity
-   assumptions explicitly. Update `docs/PUBLIC_API.txt` for supported facade
-   and classified internal/test procedures. Preserve current regression cases;
-   adapt entry-point/evidence format coherently, without claiming the unbuilt
-   final source runner is already implemented.
+3. **#13 and #14 — static/API and regression adaptation:** #13 is complete in
+   PR #28: the generic `tools/check_repo.py` remains authoritative for generic
+   repository policy and `tools/check_kpr_contract.py` adds the migrated KPR
+   rules and negative fixtures. #14 is governed by
+   [MIGRATION_REGRESSION.md](MIGRATION_REGRESSION.md): preserve the existing
+   focused suites, distinguish native/common runners from the destination-only
+   evidence adapter, and define exact-source parity without claiming the
+   unfinished source #19-#22 regression architecture is already implemented.
 4. **#15 and #16 — documentation/history:** publish accurate developer/import
    guidance and reconcile every source issue/comment against the mapping below.
    Preserve qualified links, original evidence revisions, errors/corrections,
@@ -151,9 +153,9 @@ remains open unless separately implemented and evidenced.
 | [KPR#1](https://github.com/danielep71/KPR/issues/1) | Remove inherited implementation | Closed; historical setup only; keep destination baseline | #16 |
 | [KPR#2](https://github.com/danielep71/KPR/issues/2) | Repository identity and links | Closed; reconcile naming and qualified links; do not overwrite destination | #15, #16 |
 | [KPR#3](https://github.com/danielep71/KPR/issues/3) | Editor, ignore and export policy | Closed; compare source export rules, retain stricter destination | #12, #16 |
-| [KPR#4](https://github.com/danielep71/KPR/issues/4) | Labels | Closed; retain destination 20-label policy, not source catalogue | #16 |
+| [KPR#4](https://github.com/danielep71/KPR/issues/4) | Labels | Closed; retain destination 20-label policy, not source catalog | #16 |
 | [KPR#5](https://github.com/danielep71/KPR/issues/5) | Static checks | Closed; port specialist rules alongside generic CI | #13 |
-| [KPR#6](https://github.com/danielep71/KPR/issues/6) | GitHub controls | Closed; source settings are not inherited or evidence for this private repo | #16 |
+| [KPR#6](https://github.com/danielep71/KPR/issues/6) | GitHub controls | Closed; source settings are not inherited or evidence for this destination repository | #16 |
 | [KPR#7](https://github.com/danielep71/KPR/issues/7) | Visual identity | Closed; defer source image reuse; product branding must stay K-PRICING | #15 |
 | [KPR#8](https://github.com/danielep71/KPR/issues/8) | Repository baseline release | Closed; historical release only, no tag/version transfer | #16 |
 | [KPR#9](https://github.com/danielep71/KPR/issues/9) | Frozen date contract | Closed; preserve selected revision and amendments | #11 |
@@ -198,3 +200,11 @@ The migration backlog already exists in milestone v0.0.2: issues 11–18. Setup
 preparation ends with this inventory and executable sequence; it does not close
 those execution issues. See [developer setup](DEVELOPER_SETUP.md) and
 [setup verification](SETUP_VERIFICATION.md) for the destination baseline.
+
+## Test-module visibility decision
+
+For issue #14, preserve the source harness exception: `KPR_REGRESSION_TESTS`
+omits `Option Private Module` to keep its existing regression entry points
+callable. The starter's private test module is not the migrated convention.
+[House style](VBA_HOUSE_STYLE.md) owns the rule; the supported production API
+remains the 22 entries in [PUBLIC_API.txt](PUBLIC_API.txt).

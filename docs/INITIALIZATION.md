@@ -37,9 +37,9 @@ A token is two opening braces, one uppercase name matching
 `[A-Z][A-Z0-9_]*`, and two closing braces. Square brackets retain their normal
 Markdown, checklist, and changelog meanings; they are not template tokens.
 
-The machine-readable catalogue is
+The machine-readable catalog is
 [`.github/repository-profile.json`](../.github/repository-profile.json). Every
-catalogued token has exactly one category and a description explaining why it
+cataloged token has exactly one category and a description explaining why it
 exists.
 
 | Category | Behavior |
@@ -59,7 +59,7 @@ exists.
 | `REPOSITORY_PATH` | Required | GitHub `owner/name` used by clone commands, badges, and links |
 | `MAINTAINER_NAME` | Required | Person or organization responsible for maintained decisions |
 | `SUPPORT_CONTACT` | Required | Private-reporting email address or maintained HTTPS URL |
-| `COPYRIGHT_YEAR` | Required | Four-digit MIT-licence copyright year |
+| `COPYRIGHT_YEAR` | Required | Four-digit MIT-license copyright year |
 | `SOCIAL_PREVIEW_PATH` | Optional | Tracked repository-relative banner image |
 | `PROFILE_NAME` | Profile-specific | Human-readable selected profile |
 | `PROFILE_PURPOSE` | Profile-specific | Selected profile's ownership boundary |
@@ -68,7 +68,7 @@ exists.
 | `ADDITIONAL_TEST_COMMAND` | Repeatable | Additional project-specific validation command |
 | `KNOWN_LIMITATION` | Repeatable | Honest user-visible limitation rendered as a list item |
 
-Tokens are permitted only in documentation and licence text. They are
+Tokens are permitted only in documentation and license text. They are
 prohibited in VBA exports, identifiers, workflows, executable scripts, and
 structured configuration. The initializer rewrites the canonical issue
 chooser's template-repository security URL to the generated repository without
@@ -155,7 +155,7 @@ The script is authoritative, but the transformation remains transparent and can
 be reproduced manually:
 
 1. Start from a clean clone and save the pre-initialization commit SHA.
-2. Read the placeholder catalogue and profile values in
+2. Read the placeholder catalog and profile values in
    `.github/repository-profile.json`.
 3. Replace every required token consistently and copy the selected profile's
    derived values.
