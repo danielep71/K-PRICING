@@ -33,14 +33,24 @@ class HostEvidenceTests(unittest.TestCase):
         config["vba"] = {"components": {"src/Project.bas": "public"}}
         (self.root / release.PROFILE_PATH).write_text(json.dumps(config))
         self.policy = json.loads((ROOT / host.POLICY).read_text())
+        self.case_count = len(self.policy["cases"])
+        self.assertion_count = self.policy["assertions_by_office_bitness"]["64-bit"]
         (self.root / host.POLICY).write_text(json.dumps(self.policy))
         release._git(self.root, "add", "--all")
         release._git(self.root, "commit", "-m", "Synthetic host policy")
         self.sha = release._git_output(self.root, "rev-parse", "HEAD")
         self.log = "\n".join([
             "PROJECT TESTS", *("CASE=" + case for case in self.policy["cases"]),
-            "CASES=4", "ASSERTIONS=6", "FAILURES=0", "CLEANUP=PASS; detail=synthetic state restored",
-            "RESULT=PASS; completeness=COMPLETE; cases=4; assertions=6; failures=0; cleanup=PASS", "",
+            f"CASES={self.case_count}",
+            f"ASSERTIONS={self.assertion_count}",
+            "FAILURES=0",
+            "CLEANUP=PASS; detail=synthetic state restored",
+            (
+                "RESULT=PASS; completeness=COMPLETE; "
+                f"cases={self.case_count}; assertions={self.assertion_count}; "
+                "failures=0; cleanup=PASS"
+            ),
+            "",
         ])
         (self.bundle / "host.log").write_text(self.log)
         log_ref = {"path": "host.log", "sha256": hashlib.sha256(self.log.encode()).hexdigest()}
@@ -57,10 +67,21 @@ class HostEvidenceTests(unittest.TestCase):
             "sources": host.source_inventory(self.root, self.sha, config),
             "stages": {name: {"status": "PASS", "detail": "Synthetic assertion", "log": copy.deepcopy(log_ref)}
                        for name in host.STAGES},
-            "harness": {"entry_point": self.policy["entry_point"], "cases": 4, "assertions": 6,
-                        "failures": 0, "completeness": "COMPLETE", "expected_errors": [
-                            {"case": "ratio.zero-denominator", "status": "PASS",
-                             "detail": "Number/source/description assertions passed in complete synthetic suite"}]},
+            "harness": {
+                "entry_point": self.policy["entry_point"],
+                "cases": self.case_count,
+                "assertions": self.assertion_count,
+                "failures": 0,
+                "completeness": "COMPLETE",
+                "expected_errors": [
+                    {
+                        "case": case,
+                        "status": "PASS",
+                        "detail": "Synthetic expected-error assertions passed",
+                    }
+                    for case in self.policy["expected_error_cases"]
+                ],
+            },
         }
 
     def evaluate(self):
@@ -76,6 +97,25 @@ class HostEvidenceTests(unittest.TestCase):
         self.assertEqual(first["status"], "pass", first)
         self.assertEqual(first, self.evaluate())
         self.assertEqual(first["execution"], "manual")
+
+    def test_bitness_specific_assertion_counts(self):
+        self.record["environment"]["office_bitness"] = "32-bit"
+        expected = self.policy["assertions_by_office_bitness"]["32-bit"]
+        self.record["harness"]["assertions"] = expected
+        raw = self.log.replace(
+            f"ASSERTIONS={self.assertion_count}",
+            f"ASSERTIONS={expected}",
+        ).replace(
+            f"assertions={self.assertion_count}",
+            f"assertions={expected}",
+        )
+        (self.bundle / "host.log").write_text(raw)
+        digest = hashlib.sha256(raw.encode()).hexdigest()
+        for stage in self.record["stages"].values():
+            stage["log"]["sha256"] = digest
+        self.assertEqual(self.evaluate()["status"], "pass")
+        self.record["harness"]["assertions"] = self.assertion_count
+        self.invalid()
 
     def test_automated_identity(self):
         self.record["execution"] = "automated"
@@ -99,7 +139,7 @@ class HostEvidenceTests(unittest.TestCase):
         report = self.evaluate()
         self.assertEqual(report["status"], "fail")
         self.assertEqual(report["outcomes"], ["UNAVAILABLE"])
-        self.record["harness"] = {"cases": 4}
+        self.record["harness"] = {"cases": self.case_count}
         self.invalid()
 
     def test_compile_failure_distinct(self):
@@ -150,14 +190,25 @@ class HostEvidenceTests(unittest.TestCase):
 
     def test_counts_and_expected_errors(self):
         original = copy.deepcopy(self.record)
-        for field, value in (("cases", 3), ("assertions", True), ("failures", 1),
-                             ("completeness", "INCOMPLETE"), ("expected_errors", [])):
+        invalid_expected_errors = (
+            []
+            if self.policy["expected_error_cases"]
+            else [{"case": "not-in-policy", "status": "PASS", "detail": "Synthetic mismatch"}]
+        )
+        for field, value in (
+            ("cases", self.case_count + 1),
+            ("assertions", self.assertion_count + 1),
+            ("failures", 1),
+            ("completeness", "INCOMPLETE"),
+            ("expected_errors", invalid_expected_errors),
+        ):
             self.record = copy.deepcopy(original)
             self.record["harness"][field] = value
             self.invalid()
-        self.record = copy.deepcopy(original)
-        self.record["harness"]["expected_errors"][0]["status"] = "FAIL"
-        self.invalid()
+        if self.policy["expected_error_cases"]:
+            self.record = copy.deepcopy(original)
+            self.record["harness"]["expected_errors"][0]["status"] = "FAIL"
+            self.invalid()
 
     def test_raw_log_tamper_missing_and_traversal(self):
         (self.bundle / "host.log").write_text("changed")
@@ -168,8 +219,16 @@ class HostEvidenceTests(unittest.TestCase):
         self.invalid()
 
     def test_duplicate_or_incomplete_raw_summary(self):
-        for raw in (self.log + self.log, self.log.replace("ASSERTIONS=6", "ASSERTIONS=5"),
-                    self.log.replace("CASE=ratio.zero-denominator\n", "")):
+        first_case = self.policy["cases"][0]
+        for raw in (
+            self.log + self.log,
+            self.log.replace(
+                f"ASSERTIONS={self.assertion_count}",
+                f"ASSERTIONS={self.assertion_count + 1}",
+                1,
+            ),
+            self.log.replace(f"CASE={first_case}\n", "", 1),
+        ):
             (self.bundle / "host.log").write_text(raw)
             for stage in self.record["stages"].values():
                 stage["log"]["sha256"] = hashlib.sha256(raw.encode()).hexdigest()
@@ -180,6 +239,8 @@ class HostEvidenceTests(unittest.TestCase):
         evidence = release._fixture_evidence("library", self.sha, self.release_policy)
         for key in ("vba-compile", "regression"):
             evidence["checks"][key]["environment"] = host.environment_summary(self.record)
+        for field in ("entry_point", "cases", "assertions", "failures", "completeness"):
+            evidence["checks"]["regression"][field] = self.record["harness"][field]
         evidence["checks"]["excel-host-evidence"] = {
             "status": "PASS", "candidate_sha": self.sha, "detail": "Synthetic manual evidence",
             "sha256": hashlib.sha256(self.path.read_bytes()).hexdigest(), "execution": "manual"}

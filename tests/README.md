@@ -10,24 +10,19 @@ Use subdirectories only when they contain real material:
 | `tests/fixtures/` | Deterministic inputs, manifests, and reusable test workbooks |
 | `tests/expected/` | Reviewed expected outputs or golden files |
 
-## Neutral regression harness
+## Migrated KPR regression harness
 
-Import `modules/ProjectTests.bas` after `ProjectCore` and `ProjectFacade`, compile
-the VBA project, and run `ProjectTests.RunProjectTests`. The baseline executes
-four deterministic cases and six assertions covering exact equality, tolerance,
-the public expected-error contract, and repeatability. It reports environment,
-case/assertion/failure counts, completeness, and cleanup to the Immediate window.
+Import `modules/KPR_REGRESSION_TESTS.bas` after all five production modules and
+compile the VBA project. The imported harness retains these entry points:
+`KPR_Tests_Run`, `KPR_Tests_RunSuite`, `KPR_Tests_RunAll`,
+`KPR_Tests_RunHost`, `KPR_Tests_RunShape`, and `KPR_Tests_RunArray`. K-PRICING
+also adds `KPR_Tests_RunEvidence`, a destination-only adapter that delegates to
+`KPR_Tests_RunAll("all")` and emits the structured retained-evidence log format.
 
-Success ends with:
-
-```text
-RESULT=PASS; completeness=COMPLETE; cases=4; assertions=6; failures=0; cleanup=PASS
-```
-
-Any assertion, unexpected error, dirty start, incomplete execution, or cleanup
-failure is non-passing. The harness changes no Excel state; cleanup verifies its
-owned run flag and checks that calculation, display alerts, events and screen
-updating match their pre-run values.
+The source expectations and condition identifiers are preserved. Historical KPR
+run counts are not destination certification: exact-candidate execution,
+failures/skips, environment and source-versus-destination parity are recorded
+under migration issues #14 and #17.
 
 The optional [Windows/Excel evidence interface](../docs/EXCEL_EVIDENCE.md)
 records this harness output, source identity and host environment with explicit

@@ -47,18 +47,21 @@ redirected to the destination migration plan, plus the explicit registry
 clarification below. All 22 declaration signatures
 in its public-surface block match the source facade declarations after joining
 VBA line continuations and normalizing whitespace, including whitespace after
-an opening parenthesis; the KPR_ namespace is unchanged. Destination
-PUBLIC_API.txt remains the installed starter surface until the coordinated
-code/API replacement in issues #12–#14.
+an opening parenthesis; the KPR_ namespace is unchanged. The destination
+`PUBLIC_API.txt` now records exactly the same 22 supported facade functions;
+internal core and regression members remain project infrastructure rather than
+supported calculation API.
 
 The [VBE export contract](VBE_EXPORT.md) preserves format and round-trip
 requirements. Editorial changes add source/destination evidence boundaries,
 qualify the source certification issue, map source `test/` to `tests/` and
 `demo/` to `examples/`, and split production destinations into core and facade.
-The source's blanket static-enforcement claim is scoped to pending specialist
-checker migration in #13. References to MacroOptions and demo infrastructure
+KPR-specific static rules are retained additively in
+`tools/check_kpr_contract.py` and wired into Repository integrity; generic
+K-PRICING repository, VBE, API-manifest and release controls remain authoritative
+for their existing scopes. References to MacroOptions and demo infrastructure
 remain requirements for future source-roadmap work, not claims of existing
-implementation. Existing destination export and release controls still apply.
+implementation.
 
 ## Reviewed source-contract clarification
 
@@ -92,6 +95,43 @@ certification of the later frozen source. It describes one dynamic-array host
 and focused 1900/1904 behaviour. Source final certification remains owned by
 [KPR #29](https://github.com/danielep71/KPR/issues/29).
 
+## Destination source import status
+
+The four core modules are imported byte-for-byte from the frozen source: their
+destination Git blob IDs remain the same as the source inventory.
+
+`KPR_DATES_DAYS.bas` has one documented format-only destination delta required
+by K-PRICING's committed-whitespace gate: seven trailing spaces on
+section-banner comment lines were removed. Its source blob is
+`37e997107c4c030d69bfa9b16d8aae3d22c97fc7`; the normalized destination blob
+is `07656d21f01770e2d74d9de77d5f956949ff1301`. No executable statement,
+declaration, attribute, signature, default, error rule or algorithm changed.
+
+`KPR_REGRESSION_TESTS.bas` has two destination-only test-infrastructure
+adaptations identified during review. First, the two `CLngLng` regression
+cases are guarded by `#If Win64 Then` rather than the frozen source's
+`#If VBA7 Then`. On 32-bit Office with VBA7, `VBA7` is true while
+`CLngLng` is unavailable, so the source guard can prevent the regression
+project from compiling. Second, K-PRICING adds the public macro
+`KPR_Tests_RunEvidence`. It delegates the actual pure regression execution to
+`KPR_Tests_RunAll("all")` and translates only the returned count/failure
+result into the stable `CASE=/CASES=/ASSERTIONS=/FAILURES=/RESULT=` format
+required by the destination retained-evidence validator. It does not add test
+cases, duplicate suite dispatch, change expectations or touch production code.
+
+The destination harness blob after these adaptations is
+`a67bda4bd15d00ddf564efb5ce353f31d9882055`. The expected pure-suite count is
+555 assertions on 32-bit Office and 557 on 64-bit Office because the two
+LongLong checks compile only under `Win64`. These adaptations do not change
+the supported calculation API, observable date behavior or any production
+algorithm. The source repository remains unchanged.
+
+Repository-path adaptations remain `src/modules/KPR_Core_*` to
+`src/core/KPR_Core_*` and `test/` to `tests/`. The neutral starter modules
+were removed, and a new minimal `KPR_DateExample` consumer was added as
+destination-only example code.
+
 **Destination runtime verification remains pending** in
 [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
-The accepted neutral starter run is not evidence for the migrated date layer.
+The accepted neutral-starter run remains setup history and is not evidence for
+the migrated date layer.

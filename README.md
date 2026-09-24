@@ -80,16 +80,17 @@ assurance, and release certification.
 
 ### 1. Review the source contract
 
-The neutral starter contains:
+The migrated date layer contains:
 
-- [`ProjectCore`](src/core/ProjectCore.bas) — internal implementation;
-- [`ProjectFacade`](src/modules/ProjectFacade.bas) — supported public façade;
-- [`ProjectTests`](tests/modules/ProjectTests.bas) — regression harness; and
-- [`ProjectExample`](examples/modules/ProjectExample.bas) — minimal consumer example.
+- four internal [`KPR_Core_*`](src/core/) modules for errors, parsing, dates and arrays;
+- [`KPR_DATES_DAYS`](src/modules/KPR_DATES_DAYS.bas) — the supported 22-function worksheet façade;
+- [`KPR_REGRESSION_TESTS`](tests/modules/KPR_REGRESSION_TESTS.bas) — the imported focused regression harness; and
+- [`KPR_DateExample`](examples/modules/KPR_DateExample.bas) — a minimal direct-VBA consumer example.
 
-The starter proves the repository shape; it is not project-specific business
-logic. Rename or replace it only as one coherent change across source, tests,
-examples, repository policy and the [public API manifest](docs/PUBLIC_API.txt).
+The source is migrated from the frozen KPR candidate identified in
+[`docs/MIGRATION_PROVENANCE.md`](docs/MIGRATION_PROVENANCE.md). The exact
+supported calculation surface is recorded in
+[`docs/PUBLIC_API.txt`](docs/PUBLIC_API.txt).
 
 ### 2. Validate locally
 
@@ -98,16 +99,22 @@ python3 tools/check_repo.py --root . --self-test
 python3 tools/check_repo.py --root . \
   --output test-results/static-checks.json \
   --summary test-results/static-checks.md
+python3 tools/check_kpr_contract.py --root . --self-test
+python3 tools/check_kpr_contract.py --root . \
+  --output test-results/kpr-contract.json \
+  --summary test-results/kpr-contract.md
 python3 tools/check_release.py --root . --self-test \
   --summary test-results/release-self-test.md
 ```
 
 
-Then import the applicable VBA components into a supported Excel host, run
-**Debug → Compile VBAProject**, and execute the documented regression or smoke
-entry point. The neutral baseline is `ProjectTests.RunProjectTests`.
+Then import the applicable VBA components into a Windows Excel host, run
+**Debug → Compile VBAProject**, and execute the migrated regression entry points.
+The primary imported runner is `KPR_Tests_Run`; focused host, shape and
+dynamic-array runners are also retained. Destination compilation/parity evidence
+is collected separately under migration issue #17.
 
-### 3. Run the starter in Excel
+### 3. Run the migrated date layer in Excel
 
 Follow the [developer setup](docs/DEVELOPER_SETUP.md) and
 [Windows Excel runbook](docs/EXCEL_SETUP_RUNBOOK.md). Initialization is complete.
@@ -166,10 +173,12 @@ legitimate profile-specific alternatives are authoritative in
 ## 🖥️ Requirements
 
 The initial target is Microsoft 365 Excel desktop on Windows, with 32-bit and
-64-bit Office evaluated separately. The neutral starter uses built-in VBA/Excel
-references only. The neutral starter has been validated on the one Windows/64-bit host recorded
-in the setup completion record; broader support is not certified. Mac, Excel for the web,
-older builds and a packaged deployment are not claimed as supported.
+64-bit Office evaluated separately. The accepted v0.0.1 neutral-starter run is
+historical setup evidence only; it does not certify the migrated KPR date layer.
+The imported source uses the existing VBA/Excel host model, but destination
+compilation and source-versus-destination parity remain pending under issue #17.
+Mac, Excel for the web, older builds and a packaged deployment are not claimed
+as supported.
 
 Do not infer compatibility from source inspection or from one successful host.
 Installation, import, upgrade and removal procedures are authoritative in
@@ -228,13 +237,13 @@ document that owns your task:
 
 ## ⚠️ Known limitations
 
-These are the current limitations, updated after the accepted starter run.
-The [initialization record](.github/initialization.json) preserves the original
-2026-09-23 inputs, including the then-pending Excel certification; it is
-provenance, not a live copy of this section.
+These are the current limitations. The
+[initialization record](.github/initialization.json) preserves the original
+2026-09-23 setup inputs and is provenance, not a live copy of this section.
 
-- Repository initialization only: the neutral starter is not a pricing implementation; migration of existing pricing work is pending.
-- No supported workbook or add-in or functional release is available. Starter evidence does not certify pricing or application lifecycle.
+- The frozen KPR date-layer source is migrated, but exact-source destination Excel compilation and parity are still pending in #17.
+- Registration, generated fixtures, full demo/UI work, packaging and broader pricing capabilities remain outside v0.0.2.
+- No supported workbook/add-in or functional product release is available; the historical neutral-starter run certifies setup only.
 
 If no project-specific limitation is rendered, the general evidence boundaries
 above still apply: static inspection is not Excel execution, and one tested

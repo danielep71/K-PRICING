@@ -2,9 +2,9 @@
 > **Migration scope — 2026-09-24.** Imported from [danielep71/KPR at `f26450d`](https://github.com/danielep71/KPR/blob/f26450d1fa7b11261162e901dedba062f21c99a7/docs/DATE_LAYER_CONTRACT.md).
 > Source version labels (including v0.0.2 and v0.0.3), roadmap statements and
 > historical evidence refer to KPR. They do not set K-PRICING release versions
-> or claim destination implementation or certification. The destination still
-> contains the neutral starter; migration runtime verification is pending in
-> [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
+> or claim destination certification. The frozen implementation is now migrated
+> into K-PRICING; exact-source Windows Excel compilation and parity verification
+> remain pending in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
 > [Migration provenance](MIGRATION_PROVENANCE.md) records hashes, attribution
 > and the limited editorial adaptations.
 

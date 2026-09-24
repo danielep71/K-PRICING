@@ -15,16 +15,19 @@ Create only the subdirectories the project actually needs:
 
 A small project may keep production components directly in `src/` when further subdivision would add no clarity. If it does, document each component's role in `INSTALLATION.md`.
 
-## Neutral starter
+## Migrated KPR date layer
 
 | Import order | Path | Component | Role |
 | ---: | --- | --- | --- |
-| 1 | `core/ProjectCore.bas` | `ProjectCore` | Internal implementation guarded by `Option Private Module` |
-| 2 | `modules/ProjectFacade.bas` | `ProjectFacade` | Supported public façade recorded in `docs/PUBLIC_API.txt` |
+| 1 | `core/KPR_Core_Err.bas` | `KPR_Core_Err` | Internal native-error boundary |
+| 2 | `core/KPR_Core_Parse.bas` | `KPR_Core_Parse` | Internal strict scalar/control parsing |
+| 3 | `core/KPR_Core_Dates.bas` | `KPR_Core_Dates` | Internal Gregorian/date-domain core |
+| 4 | `core/KPR_Core_Array.bas` | `KPR_Core_Array` | Internal shape/materialization engine |
+| 5 | `modules/KPR_DATES_DAYS.bas` | `KPR_DATES_DAYS` | Supported 22-function worksheet façade |
 
-The starter implements one stateless ratio operation only to prove the
-façade/core, error, import, and test contracts. Replace it with real project
-behavior before release, or document why the sample remains supported.
+The five production modules are migrated from the frozen source revision recorded
+in `docs/MIGRATION_PROVENANCE.md`. The four cores remain `Option Private Module`;
+the façade alone defines the supported calculation API in `docs/PUBLIC_API.txt`.
 
 ## Rules
 
