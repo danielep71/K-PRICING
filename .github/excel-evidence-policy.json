@@ -2,13 +2,22 @@
   "schema_version": 1,
   "entry_point": "KPR_Tests_RunEvidence",
   "cases": [
-    "ratio.exact",
-    "ratio.tolerance",
-    "ratio.zero-denominator",
-    "ratio.repeatability"
+    "date-type",
+    "date-text",
+    "date-window",
+    "integer",
+    "control",
+    "boundary",
+    "mapper",
+    "host",
+    "pillar",
+    "surface",
+    "shape",
+    "parity"
   ],
-  "assertions": 6,
-  "expected_error_cases": [
-    "ratio.zero-denominator"
-  ]
+  "assertions_by_office_bitness": {
+    "32-bit": 555,
+    "64-bit": 557
+  },
+  "expected_error_cases": []
 }
