@@ -311,6 +311,52 @@ Evidence_Error:
 
 End Sub
 
+Public Sub KPR_Tests_RunMigrationEvidence()
+'
+'==============================================================================
+'                       KPR_Tests_RunMigrationEvidence
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Emits deterministic source-versus-destination observations for migration
+'   issue #17. The same candidate regression module is used as instrumentation
+'   against frozen-source production modules and destination production modules.
+'
+' OUTPUT
+'   OBS<TAB>id<TAB>payload
+'   CLEANUP<TAB>runner<TAB>PASS|failure-detail
+'
+' NOTES
+'   - This adapter does not call the pure-suite dispatcher. Frozen-source and
+'     destination pure runs are retained separately because test counts and
+'     known correctness fixes differ legitimately between the two baselines.
+'   - No observation is part of the supported 22-function production API.
+'
+' UPDATED
+'   2026-09-24
+'==============================================================================
+'
+    On Error GoTo Migration_Error
+
+    Debug.Print "MIGRATION_OBSERVATIONS_BEGIN"
+    MigrationPrintValue "direct/days-in-month", KPR_Dates_DaysInMonth("2024-02-15")
+    MigrationPrintValue "direct/add-days", KPR_Dates_AddDays("2026-03-15", 5)
+    MigrationPrintValue "direct/strict-date-error", KPR_Dates_BeginOfMonth("03/15/2026")
+
+    KPR_Tests_RunHost
+    KPR_Tests_RunShape
+    KPR_Tests_RunArray
+
+    Debug.Print "MIGRATION_OBSERVATIONS_END"
+    Exit Sub
+
+Migration_Error:
+    MigrationPrintText "migration/runner", _
+                       "ERROR:" & CStr(Err.Number) & ":" & MigrationEscape(Err.Description)
+    Err.Clear
+    Debug.Print "MIGRATION_OBSERVATIONS_END"
+
+End Sub
+
 Private Sub ReportRun( _
     ByVal SuiteName As String)
 '
