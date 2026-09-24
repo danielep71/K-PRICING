@@ -642,8 +642,8 @@ def build_report(options: Options) -> dict[str, Any]:
         "scope_note": (
             "Read-only closeout validation over one exact Git candidate and captured GitHub REST "
             "facts. Uploaded assets are distinct from GitHub-generated source archives. Wiki "
-            "publication bytes remain owned by check_wiki.py; browser and archive retrieval are "
-            "explicit observations rather than inferred repository facts."
+            "applicability is recorded separately; browser and archive retrieval are explicit "
+            "observations rather than inferred repository facts."
         ),
     }
 
