@@ -108,12 +108,9 @@ values, all digest markers, environment and timestamps with observed values:
     "trust_changes": false
   },
   "sources": [
-    {"path": "src/core/KPR_Core_Array.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
-    {"path": "src/core/KPR_Core_Dates.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
-    {"path": "src/core/KPR_Core_Err.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
-    {"path": "src/core/KPR_Core_Parse.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
-    {"path": "src/modules/KPR_DATES_DAYS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
-    {"path": "tests/modules/KPR_REGRESSION_TESTS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"}
+    {"path": "src/core/ProjectCore.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "src/modules/ProjectFacade.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "tests/modules/ProjectTests.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"}
   ],
   "stages": {
     "import": {"status": "PASS", "detail": "Imported exact inventory into fresh test project", "log": {"path": "session.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}},
@@ -122,12 +119,12 @@ values, all digest markers, environment and timestamps with observed values:
     "cleanup": {"status": "PASS", "detail": "Harness state verified and owned test workbook closed", "log": {"path": "session.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}}
   },
   "harness": {
-    "entry_point": "KPR_Tests_Run",
-    "cases": 12,
-    "assertions": 557,
+    "entry_point": "ProjectTests.RunProjectTests",
+    "cases": 4,
+    "assertions": 6,
     "failures": 0,
     "completeness": "COMPLETE",
-    "expected_errors": []
+    "expected_errors": [{"case": "ratio.zero-denominator", "status": "PASS", "detail": "Number, source and description assertions passed in the complete suite"}]
   }
 }
 ```
@@ -152,16 +149,12 @@ preserve observed counts and mark completeness `INCOMPLETE`.
 
 For a passing regression, the raw log must contain exactly one ordered `CASE=`
 line per policy case, one `CASES=`, `ASSERTIONS=` and `FAILURES=` line matching
-the record, and one complete `RESULT=` line in the documented evidence format.
-The migrated KPR policy currently expects 12 suite-level `CASE=` records from
-`KPR_Tests_Run`. Its two LongLong parser checks compile only on 64-bit Office,
-so the expected assertion count is **555 on 32-bit Office** and **557 on 64-bit
-Office**; the validator selects the required count from the recorded
-`environment.office_bitness`. The JSON example above illustrates a 64-bit run.
-The harness itself exercises native Excel error behavior; `expected_errors` is empty because the evidence policy does not
-treat those internal assertions as separately instrumented top-level cases.
-If the regression harness changes, update the policy and evidence documentation
-together and bind the observed counts to the exact candidate.
+the record, and one complete `RESULT=` line in the starter harness format.
+An adapter for a different harness must emit that documented format while
+retaining its native log as supporting evidence. The starter's complete
+four-case/six-assertion PASS proves its three expected-error assertions passed;
+the JSON result records that inference, not a separate instrumented observation.
+Never infer an expected-error PASS from a `CASE=` line alone or an incomplete run.
 
 ## 🧑‍💻 Manual Fallback
 
@@ -172,14 +165,12 @@ together and bind the observed counts to the exact candidate.
    Account → About Excel** version/build and bitness, Windows version/build and
    architecture, and the existing Trust Center settings. Do not change trust
    settings to make the test run. Record start time with timezone.
-3. In the VBA editor, import the exact candidate inventory in the documented
-   order: the four `KPR_Core_*` modules, `KPR_DATES_DAYS`, and
-   `KPR_REGRESSION_TESTS`. Review references, compile, and run
-   `KPR_Tests_Run`. Preserve the complete Immediate-window report as
-   `harness.log`. If it fails, retain the failure; do not replace it with the
-   last passing report.
-4. Record the compile basis, regression result and cleanup in `session.log`;
-   close the owned test workbook. Record finish time. Populate
+3. In the VBA editor, import the exact source and test modules. Review references,
+   compile, and run `ProjectTests.RunProjectTests`. Preserve the complete
+   Immediate-window report as `harness.log`. If it fails, retain the failure;
+   do not replace it with the last passing report.
+4. Record the compile basis, expected-error assertion result and cleanup in
+   `session.log`; close the owned test workbook. Record finish time. Populate
    the shared JSON with `execution: "manual"` and `workflow: null`.
 5. Validate the bundle and retain it with the release evidence. A manual PASS
    is eligible evidence but is never described as a hosted execution.
