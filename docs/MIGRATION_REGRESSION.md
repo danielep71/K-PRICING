@@ -190,10 +190,12 @@ source/destination observation equality, the required baseline observation IDs
     explicit PASS cleanup records for the host, shape and array runners, and the
     manifest's explicit register of
     known source/destination correctness differences. The bound
-    `destination-host-record` is parsed and must use the same candidate SHA
-    and **exactly the same environment object** as the migration manifest, in
-    addition to having PASS import/compile/regression/cleanup stages and a
-    complete zero-failure harness. Issue #32 must remain named as a known
+    `destination-host-record` is passed through the authoritative
+    `check_excel_evidence.py` validation logic, so its complete schema,
+    timestamps, runner identity, exact source inventory, retained stage logs,
+    entry point, cases/assertion counts and expected-error results must all
+    validate for the same checked-out candidate. Its environment must also be
+    **exactly the same environment object** as the migration manifest. Issue #32 must remain named as a known
     source defect/destination correction rather than being hidden inside an
     equality exception.
 
@@ -212,8 +214,9 @@ five bound artifacts:
   instrumentation harness;
 - `destination-observations`: the same adapter output from destination
   production modules and the same instrumentation harness;
-- `destination-host-record`: the JSON retained host record validated by
-  `check_excel_evidence.py`.
+- `destination-host-record`: the JSON retained host record; the migration
+  validator invokes the authoritative `check_excel_evidence.py` logic on this
+  exact bound file rather than reimplementing a weaker subset of its schema.
 
 The manifest identifies both repositories/SHAs, the candidate instrumentation
 path and SHA-256, the common Windows/Excel environment, the path plus SHA-256 of
