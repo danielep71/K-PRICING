@@ -107,15 +107,24 @@ section-banner comment lines were removed. Its source blob is
 is `07656d21f01770e2d74d9de77d5f956949ff1301`. No executable statement,
 declaration, attribute, signature, default, error rule or algorithm changed.
 
-`KPR_REGRESSION_TESTS.bas` has one test-only portability correction identified
-during destination review: the two `CLngLng` regression cases are guarded by
-`#If Win64 Then` rather than the frozen source's `#If VBA7 Then`. On 32-bit
-Office with VBA7, `VBA7` is true while `CLngLng` is unavailable, so the
-source guard can prevent the regression project from compiling. The destination
-blob after this correction is `e4df5f950c592b856e0784027c39e8b3dcff1d3f`.
-This changes only whether the LongLong-specific test cases are compiled on a
-64-bit host; it does not change production code, supported API behavior or any
-date algorithm. The source repository remains unchanged.
+`KPR_REGRESSION_TESTS.bas` has two destination-only test-infrastructure
+adaptations identified during review. First, the two `CLngLng` regression
+cases are guarded by `#If Win64 Then` rather than the frozen source's
+`#If VBA7 Then`. On 32-bit Office with VBA7, `VBA7` is true while
+`CLngLng` is unavailable, so the source guard can prevent the regression
+project from compiling. Second, K-PRICING adds the public macro
+`KPR_Tests_RunEvidence`. It delegates the actual pure regression execution to
+`KPR_Tests_RunAll("all")` and translates only the returned count/failure
+result into the stable `CASE=/CASES=/ASSERTIONS=/FAILURES=/RESULT=` format
+required by the destination retained-evidence validator. It does not add test
+cases, duplicate suite dispatch, change expectations or touch production code.
+
+The destination harness blob after these adaptations is
+`a67bda4bd15d00ddf564efb5ce353f31d9882055`. The expected pure-suite count is
+555 assertions on 32-bit Office and 557 on 64-bit Office because the two
+LongLong checks compile only under `Win64`. These adaptations do not change
+the supported calculation API, observable date behavior or any production
+algorithm. The source repository remains unchanged.
 
 Repository-path adaptations remain `src/modules/KPR_Core_*` to
 `src/core/KPR_Core_*` and `test/` to `tests/`. The neutral starter modules
