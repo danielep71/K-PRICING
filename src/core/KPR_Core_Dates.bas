@@ -689,7 +689,8 @@ Public Function TryPillar_Parse( _
 ' BEHAVIOR
 '   - Trims and upper-cases, consumes an optional leading sign, then checks the
 '     whole-token aliases ON / O/N / TN / T/N.
-'   - Otherwise scans repeated [digits][unit] pairs to the end of the string.
+'   - Otherwise validates every repeated [digits][unit] pair to the end of the
+'     string before converting any numeric quantity.
 '   - Any character that is not a digit in a numeric position or a known unit
 '     in a unit position fails the parse.
 '   - Each unit may appear at most once, so "1M1M" fails rather than summing.
@@ -833,57 +834,71 @@ Public Function TryPillar_Parse( _
     'Only run the scanner when no alias matched
         If TokenCount = 0 Then
 
-            'Start at the first character of the body
+'------------------------------------------------------------------------------
+' PASS 1 - VALIDATE THE COMPLETE TOKEN GRAMMAR
+'------------------------------------------------------------------------------
+            'Grammar has absolute precedence over numerical range. Scan the
+            'entire token first so a later unknown/repeated/missing unit wins
+            'even when an earlier digits-only quantity would overflow Double.
                 ScanPos = 1
-            'Consume [digits][unit] pairs until the body is exhausted
                 Do While ScanPos <= BodyLen
-                    'Mark the start of the numeric token
-                        TokenStart = ScanPos
-                    'Advance through contiguous digits, comparing codes
-                        Do While ScanPos <= BodyLen
-                            ChCode = AscW(Mid$(SBody, ScanPos, 1))
-                            If (ChCode < 48) Or (ChCode > 57) Then Exit Do
-                            ScanPos = ScanPos + 1
-                        Loop
-                    'Reject a component with no digits
-                        If TokenStart = ScanPos Then GoTo Fail
-                    'Grammar and duplicate-unit precedence are resolved before
-                    'numeric conversion. An oversized quantity with no unit,
-                    'an unknown unit or a repeated unit is still a grammar
-                    'error, never a numerical-range error.
-                        If ScanPos > BodyLen Then GoTo Fail
-                        UnitChar = Mid$(SBody, ScanPos, 1)
-                        Select Case UnitChar
-                            Case "Y"
-                                If SeenY Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
-                                SeenY = True
-                            Case "M"
-                                If SeenM Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
-                                SeenM = True
-                            Case "W"
-                                If SeenW Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
-                                SeenW = True
-                            Case "D"
-                                If SeenD Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
-                                SeenD = True
-                            Case Else
-                                GoTo Fail
-                        End Select
-                    'The component is now grammatically valid. Conversion
-                    'failure therefore belongs to PILLAR_AGGREGATE_RANGE.
-                        On Error GoTo RangeFail
-                        QtyD = CDbl(Mid$(SBody, TokenStart, ScanPos - TokenStart))
-                        On Error GoTo Fail
-                    'Store the validated component quantity.
-                        Select Case UnitChar
-                            Case "Y": YearsD = QtyD
-                            Case "M": MonthsD = QtyD
-                            Case "W": WeeksD = QtyD
-                            Case "D": DaysD = QtyD
-                        End Select
-                    'Count the component and step past the unit
-                        TokenCount = TokenCount + 1
+                    TokenStart = ScanPos
+                    Do While ScanPos <= BodyLen
+                        ChCode = AscW(Mid$(SBody, ScanPos, 1))
+                        If (ChCode < 48) Or (ChCode > 57) Then Exit Do
                         ScanPos = ScanPos + 1
+                    Loop
+                    If TokenStart = ScanPos Then GoTo Fail
+                    If ScanPos > BodyLen Then GoTo Fail
+
+                    UnitChar = Mid$(SBody, ScanPos, 1)
+                    Select Case UnitChar
+                        Case "Y"
+                            If SeenY Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
+                            SeenY = True
+                        Case "M"
+                            If SeenM Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
+                            SeenM = True
+                        Case "W"
+                            If SeenW Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
+                            SeenW = True
+                        Case "D"
+                            If SeenD Then Condition = KPR_COND_PILLAR_DUPLICATE_UNIT: GoTo Fail
+                            SeenD = True
+                        Case Else
+                            GoTo Fail
+                    End Select
+
+                    TokenCount = TokenCount + 1
+                    ScanPos = ScanPos + 1
+                Loop
+
+'------------------------------------------------------------------------------
+' PASS 2 - CONVERT VALIDATED QUANTITIES
+'------------------------------------------------------------------------------
+            'Only a token whose complete grammar is valid reaches conversion.
+            'A conversion failure therefore unambiguously means numerical range.
+                ScanPos = 1
+                Do While ScanPos <= BodyLen
+                    TokenStart = ScanPos
+                    Do While ScanPos <= BodyLen
+                        ChCode = AscW(Mid$(SBody, ScanPos, 1))
+                        If (ChCode < 48) Or (ChCode > 57) Then Exit Do
+                        ScanPos = ScanPos + 1
+                    Loop
+
+                    UnitChar = Mid$(SBody, ScanPos, 1)
+                    On Error GoTo RangeFail
+                    QtyD = CDbl(Mid$(SBody, TokenStart, ScanPos - TokenStart))
+                    On Error GoTo Fail
+
+                    Select Case UnitChar
+                        Case "Y": YearsD = QtyD
+                        Case "M": MonthsD = QtyD
+                        Case "W": WeeksD = QtyD
+                        Case "D": DaysD = QtyD
+                    End Select
+                    ScanPos = ScanPos + 1
                 Loop
 
         End If
