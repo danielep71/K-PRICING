@@ -354,6 +354,8 @@ the checked-out candidate rather than a user-supplied SHA. It does not
 authenticate the human or host that produced them. The destination host-record
 schema and its source/log/harness bindings are validated through the existing
 `check_excel_evidence.py` authority rather than duplicated here.
+`--output` must name a path outside the manifest's evidence directory; the
+validator refuses to write its report into the retained bundle.
 
 ## Adopted template contract
 

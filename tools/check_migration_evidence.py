@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
+import io
 import json
 import re
 import subprocess
@@ -162,6 +164,13 @@ def parse_observations(
         require(failures == 0, f"{side}: {runner} runner failures={failures}")
 
     return observations, cleanup, runner_summaries
+
+
+def require_report_outside_bundle(output: Path, manifest: Path) -> None:
+    bundle = manifest.resolve().parent
+    target = output.resolve()
+    require(target != bundle and not target.is_relative_to(bundle),
+            "--output must be outside the retained evidence bundle")
 
 
 def checked_out_sha(root: Path) -> str:
@@ -486,6 +495,17 @@ def self_test(root: Path) -> None:
         report = validate_manifest(root, manifest_file, candidate_sha)
         require(report["status"] == "pass", "positive self-test did not pass")
 
+        manifest_bytes = manifest_file.read_bytes()
+        for inside in (manifest_file, bundle / "migration-evidence.json"):
+            with contextlib.redirect_stderr(io.StringIO()):
+                status = main(["--root", str(root), "--manifest", str(manifest_file),
+                               "--output", str(inside)])
+            require(status == 1, "report path inside the evidence bundle was accepted")
+        require(manifest_file.read_bytes() == manifest_bytes,
+                "report path check overwrote the retained manifest")
+        require(not (bundle / "migration-evidence.json").exists(),
+                "report path check wrote into the retained evidence bundle")
+
         degraded: dict[str, Any] = json.loads(json.dumps(manifest))
         degraded["source"]["sha"] = "a" * 40
         manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
@@ -586,7 +606,8 @@ def self_test(root: Path) -> None:
 
     print(
         "PASS migration-evidence self-test: positive, source identity, destination identity, "
-        "parity mismatch, authoritative host schema, host environment, runner failure, digest mismatch"
+        "parity mismatch, authoritative host schema, host environment, runner failure, digest mismatch, "
+        "report inside bundle"
     )
 
 
@@ -607,6 +628,8 @@ def main(argv: list[str] | None = None) -> int:
             self_test(root)
             return 0
         require(args.manifest is not None, "--manifest is required unless --self-test is used")
+        if args.output is not None:
+            require_report_outside_bundle(args.output, args.manifest)
         report = validate_manifest(
             root,
             args.manifest.resolve(),
