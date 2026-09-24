@@ -46,7 +46,9 @@ adapter credentials outside logs and limit them to the isolated host operation.
 
 The policy declares the entry point, ordered case IDs, exact expected assertion
 count and expected-error case IDs. Change it with the harness, before freezing
-the candidate. An empty expected-error list is permitted only when the suite
+the candidate. The host record also retains the observed locale and the
+resolved VBA/Excel reference inventory; those fields are part of the environment
+identity and must not be reconstructed after the run. An empty expected-error list is permitted only when the suite
 has no expected-error cases; document that design in the project tests.
 
 The implementation order for an adapter is:
@@ -103,6 +105,8 @@ values, all digest markers, environment and timestamps with observed values:
     "os": "Windows 10; observed build",
     "os_architecture": "x64",
     "runtime": "VBA7+",
+    "locale": "en-US",
+    "references": ["VBA", "Excel"],
     "macro_policy": "Describe the existing approved macro policy",
     "vba_project_access": "Disabled; manual import",
     "trust_changes": false
@@ -143,6 +147,12 @@ The workflow SHA identifies the exact adapter workflow revision; the top-level
 candidate SHA identifies the VBA source being tested. Manual records must have
 no workflow object and cannot claim the automated runner class. The validator
 checks identities and bindings, not whether a service really executed that run.
+
+For v0.0.2 migration acceptance, this host record is only the destination side
+of the evidence. [MIGRATION_REGRESSION.md](MIGRATION_REGRESSION.md) defines the
+separate frozen-source comparison and the additional macro-only host, Range-shape
+and dynamic-array logs required by #17. Those migration logs do not weaken or
+replace this generic host-record validation.
 
 Every executed stage requires a nonempty detail and retained-log reference.
 `NOT_RUN` requires `log: null`. When regression did not run, `harness` is null;

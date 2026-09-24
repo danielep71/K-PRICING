@@ -103,10 +103,16 @@ def validate_environment(record: dict[str, Any]) -> None:
                 "workflow requires immutable SHA and positive run/attempt")
     environment = record["environment"]
     object_keys(environment, "excel_version excel_build office_bitness os os_architecture runtime "
-                "macro_policy vba_project_access trust_changes", "Excel environment")
+                "locale references macro_policy vba_project_access trust_changes", "Excel environment")
     require(environment["office_bitness"] in ("32-bit", "64-bit"), "invalid Office bitness")
     require(environment["trust_changes"] is False, "host job must not change trust configuration")
-    require(all(nonempty(value) for key, value in environment.items() if key != "trust_changes"),
+    references = environment["references"]
+    require(isinstance(references, list) and bool(references)
+            and all(nonempty(value) for value in references)
+            and len(references) == len(set(references)),
+            "Excel reference inventory must be a nonempty unique string list")
+    require(all(nonempty(value) for key, value in environment.items()
+                if key not in {"trust_changes", "references"}),
             "Excel environment fields must be nonempty")
     require(environment["os"].casefold().startswith("windows"), "this interface requires Windows Excel")
 

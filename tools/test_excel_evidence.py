@@ -62,7 +62,9 @@ class HostEvidenceTests(unittest.TestCase):
             "runner": {"class": "manual-interactive", "identity": "Synthetic operator/workstation", "workflow": None},
             "environment": {"excel_version": "16.0", "excel_build": "12345.67890",
                             "office_bitness": "64-bit", "os": "Windows 10", "os_architecture": "x64",
-                            "runtime": "VBA7+", "macro_policy": "approved signed macros",
+                            "runtime": "VBA7+", "locale": "en-US",
+                            "references": ["VBA", "Excel"],
+                            "macro_policy": "approved signed macros",
                             "vba_project_access": "disabled; manual import", "trust_changes": False},
             "sources": host.source_inventory(self.root, self.sha, config),
             "stages": {name: {"status": "PASS", "detail": "Synthetic assertion", "log": copy.deepcopy(log_ref)}
