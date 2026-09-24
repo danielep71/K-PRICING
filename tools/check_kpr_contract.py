@@ -683,7 +683,18 @@ def self_test(root: Path) -> None:
     array = "src/core/KPR_Core_Array.bas"
 
     scenarios: list[tuple[str, str, dict[str, Any]]] = []
-    scenarios.append(("missing API member", "kpr-public-surface", mutate(base, facade, "KPR_Dates_AddDays", "KPR_Dates_AddDays_Renamed")))
+    scenarios.append(
+        (
+            "missing API member",
+            "kpr-public-surface",
+            mutate(
+                base,
+                facade,
+                "Public Function KPR_Dates_AddDays(",
+                "Public Function KPR_Dates_AddDays_Renamed(",
+            ),
+        )
+    )
     spill = copy.deepcopy(base)
     spill["sources"][facade] += "\r\nPublic Function KPR_Dates_AddDays_Spill(ByVal DateIn As Variant) As Variant\r\nEnd Function\r\n"
     scenarios.append(("_Spill twin", "kpr-public-surface", spill))
