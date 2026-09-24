@@ -1702,6 +1702,107 @@ Private Function DescribeValue( _
 
 End Function
 
+Private Sub MigrationPrintText( _
+    ByVal ObservationId As String, _
+    ByVal Payload As String)
+'
+' Stable migration-only observation record. IDs and payloads must contain no
+' literal tab/newline after escaping.
+'
+    Debug.Print "OBS" & vbTab & ObservationId & vbTab & Payload
+
+End Sub
+
+Private Sub MigrationPrintValue( _
+    ByVal ObservationId As String, _
+    ByVal V As Variant)
+'
+' Stable scalar observation including native Excel error number and VBA type.
+'
+    MigrationPrintText ObservationId, MigrationValuePayload(V)
+
+End Sub
+
+Private Function MigrationValuePayload( _
+    ByVal V As Variant) _
+    As String
+'
+' Deterministic scalar rendering for source/destination observation parity.
+'
+    If VarType(V) = vbError Then
+        MigrationValuePayload = "ERROR:" & CStr(CLng(V))
+    ElseIf IsArray(V) Then
+        MigrationValuePayload = "ARRAY"
+    ElseIf IsEmpty(V) Then
+        MigrationValuePayload = "EMPTY"
+    ElseIf IsNull(V) Then
+        MigrationValuePayload = "NULL"
+    ElseIf VarType(V) = vbDate Then
+        MigrationValuePayload = "DATE:" & Format$(CDate(V), "yyyy-mm-dd")
+    ElseIf VarType(V) = vbBoolean Then
+        MigrationValuePayload = "BOOLEAN:" & UCase$(CStr(CBool(V)))
+    Else
+        MigrationValuePayload = UCase$(TypeName(V)) & ":" & MigrationEscape(CStr(V))
+    End If
+
+End Function
+
+Private Function MigrationEscape( _
+    ByVal S As String) _
+    As String
+'
+' Escapes the record delimiters and line terminators used by migration logs.
+'
+    S = Replace(S, "\", "\\")
+    S = Replace(S, vbTab, "\t")
+    S = Replace(S, vbCr, "\r")
+    S = Replace(S, vbLf, "\n")
+    MigrationEscape = S
+
+End Function
+
+Private Function MigrationKey( _
+    ByVal S As String) _
+    As String
+'
+' Converts human runner labels to stable observation-id fragments.
+'
+    MigrationKey = LCase$(Replace(Trim$(S), " ", "-"))
+
+End Function
+
+Private Function MigrationShapePayload( _
+    ByVal V As Variant) _
+    As String
+'
+' Serializes the core materialization result without changing regression counts.
+'
+    Dim Payload As Variant
+    Dim Kind As KPR_ArgShape
+    Dim Rows As Long
+    Dim Cols As Long
+    Dim Cond As KPR_Condition
+
+    If TryMaterialize(V, Payload, Kind, Rows, Cols, Cond) Then
+        MigrationShapePayload = "OK:kind=" & CStr(CLng(Kind)) & _
+                                ";rows=" & CStr(Rows) & _
+                                ";cols=" & CStr(Cols)
+    Else
+        MigrationShapePayload = "ERROR:" & ConditionName(Cond)
+    End If
+
+End Function
+
+Private Sub MigrationPrintCleanup( _
+    ByVal Runner As String, _
+    ByVal Status As String)
+'
+' Cleanup is a first-class parity observation, not inferred from test counts.
+'
+    Debug.Print "CLEANUP" & vbTab & Runner & vbTab & Status
+
+End Sub
+
 Private Sub AssertOutShape( _
     ByVal Label As String, _
     ByVal R As Variant, _
