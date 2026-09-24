@@ -147,9 +147,11 @@ Use only the categories needed by a release.
 
 ### Known limitations
 
-- Pricing-source migration, migrated-code Excel parity and release packaging remain
-  pending; the neutral starter Excel run is accepted, and the retained neutral VBA starter
-  is not a pricing implementation.
+- The frozen KPR date-layer source, regression harness and project-specific static
+  contract guard are migrated; exact-source destination Excel compilation/parity
+  and release packaging remain pending.
+- The accepted neutral-starter Excel run remains setup history only and does not
+  certify the migrated pricing/date implementation.
 - GitHub branch/tag rulesets are unavailable for this private repository on the
   current account plan; their enforcement is not claimed.
 
