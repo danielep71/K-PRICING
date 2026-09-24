@@ -97,12 +97,18 @@ and focused 1900/1904 behaviour. Source final certification remains owned by
 
 ## Destination source import status
 
-The four core modules, `KPR_DATES_DAYS` facade and
-`KPR_REGRESSION_TESTS` harness are imported from the frozen source with the
-source Git blob IDs preserved exactly; only repository paths changed
-(`src/modules/KPR_Core_*` to `src/core/KPR_Core_*` and `test/` to
-`tests/`). The neutral starter modules were removed, and a new minimal
-`KPR_DateExample` consumer was added as destination-only example code.
+The four core modules and `KPR_REGRESSION_TESTS` harness are imported
+byte-for-byte from the frozen source: their destination Git blob IDs remain the
+same as the source inventory. `KPR_DATES_DAYS.bas` has one documented
+format-only destination delta required by K-PRICING's committed-whitespace gate:
+seven trailing spaces on section-banner comment lines were removed. Its source
+blob is `37e997107c4c030d69bfa9b16d8aae3d22c97fc7`; the normalized destination
+blob is `07656d21f01770e2d74d9de77d5f956949ff1301`. No executable statement,
+declaration, attribute, signature, default, error rule or algorithm changed.
+Repository-path adaptations remain `src/modules/KPR_Core_*` to
+`src/core/KPR_Core_*` and `test/` to `tests/`. The neutral starter modules
+were removed, and a new minimal `KPR_DateExample` consumer was added as
+destination-only example code.
 
 **Destination runtime verification remains pending** in
 [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
