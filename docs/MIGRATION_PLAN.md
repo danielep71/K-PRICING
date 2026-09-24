@@ -1,8 +1,9 @@
 # KPR migration plan
 
 Prepared on 2026-09-23 for setup issue 9. Execution belongs to **v0.0.2 - Repo
-Migration**, issues 11–18. This plan imports no code and transfers no runtime
-certification. Product identity remains K-PRICING; VBA names retain `KPR_`.
+Migration**, issues 11–18. The plan itself transferred no runtime certification;
+execution now imports the frozen candidate while preserving that evidence
+boundary. Product identity remains K-PRICING; VBA names retain `KPR_`.
 
 ## Contract migration started
 
@@ -10,8 +11,10 @@ The frozen source inventory and 22 source signatures were rechecked on
 2026-09-24. [Migration provenance](MIGRATION_PROVENANCE.md) records the
 source hashes, licence and editorial adaptations for issue #11. The
 [date-layer contract](DATE_LAYER_CONTRACT.md) and
-[VBE export contract](VBE_EXPORT.md) are imported; code migration and
-destination Excel parity remain pending.
+[VBE export contract](VBE_EXPORT.md) are imported. The five production modules,
+focused regression harness, API manifest and specialist static rules are now
+migrated on the v0.0.2 integration branch; destination Excel parity remains
+pending.
 
 ## Frozen source and evidence boundary
 
@@ -26,8 +29,9 @@ records 557 checks with zero failures and seven focused array checks at
 `a750cd5a935529b807c43631e92cd9f1b15ee8b3`, on one dynamic-array Excel host.
 Earlier issue-level logs cover scalar/shape and host behavior. These are
 historical, narrower results at their named revisions, not certification of the
-later selected source or the destination. Source final release issue 29 is open.
-The destination still contains the neutral starter.
+later selected source or the destination. Source final release issue 29 remains
+a source-repository obligation. The destination now contains the frozen migrated
+date candidate; exact-source destination runtime evidence remains pending.
 
 ## File inventory and intended disposition
 
