@@ -23,7 +23,7 @@
 ---
 
 > [!IMPORTANT]
-> Complete the evidence fields for this change. Delete optional review blocks that do not apply. The current runtime is the neutral ratio starter; pricing migration is tracked in v0.0.2.
+> Complete the evidence fields for this change. Delete optional review blocks that do not apply. The KPR date layer is the current migrated runtime surface; exact-source destination Excel certification remains pending until issue #17 is completed.
 
 ## 📌 Summary
 
@@ -155,6 +155,8 @@ Evidence from another commit does not certify this candidate.
 Use `docs/DEVELOPER_SETUP.md` for the complete local setup and `.github/workflows/static-checks.yml` for the hosted command inventory.
 
 - `python3 tools/check_repo.py --root .`
+- `python3 tools/check_kpr_contract.py --root . --self-test`
+- `python3 tools/check_kpr_contract.py --root .`
 - `python3 tools/check_documentation.py --root .`
 - `python3 tools/test_documentation.py -v`
 - `git diff --check`
@@ -174,8 +176,9 @@ Use `docs/DEVELOPER_SETUP.md` for the complete local setup and `.github/workflow
 
 Relevant entry points:
 
-- `ProjectTests.RunProjectTests` — complete neutral-starter regression
-- `ProjectExample.RunProjectExample` — consumer smoke; expected `ProjectRatio(12, 4) = 3`
+- `KPR_Tests_Run` — primary migrated regression dispatcher
+- `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, `KPR_Tests_RunArray` — focused host/shape/dynamic-array runners
+- `KPR_DateExample.RunDateExample` — minimal direct-VBA consumer smoke
 
 | Evidence | Result |
 | --- | --- |
