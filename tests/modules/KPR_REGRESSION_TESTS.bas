@@ -824,8 +824,12 @@ Private Sub Run_PillarCases()
         AssertPillarParse "grammar/oversized missing unit", HugeDigits, "PILLAR_TOKEN_MALFORMED"
         AssertPillarParse "grammar/oversized unknown unit", HugeDigits & "X", "PILLAR_TOKEN_MALFORMED"
         AssertPillarParse "grammar/oversized repeated unit", "1M" & HugeDigits & "M", "PILLAR_DUPLICATE_UNIT"
+        AssertPillarParse "grammar/overflow first then duplicate", HugeDigits & "M1M", "PILLAR_DUPLICATE_UNIT"
+        AssertPillarParse "grammar/overflow first then unknown", HugeDigits & "M1X", "PILLAR_TOKEN_MALFORMED"
         AssertErrorValue "grammar/facade oversized unknown unit", _
                          KPR_Dates_DateFromPillar(S, HugeDigits & "X"), ERR_VALUE
+        AssertErrorValue "grammar/facade overflow first then unknown", _
+                         KPR_Dates_DateFromPillar(S, HugeDigits & "M1X"), ERR_VALUE
 
     'The facade maps them, and an incoming error at the Pillar slot propagates
         AssertErrorValue "grammar/facade duplicate", KPR_Dates_DateFromPillar(S, "1M2M"), ERR_VALUE
