@@ -119,12 +119,22 @@ result into the stable `CASE=/CASES=/ASSERTIONS=/FAILURES=/RESULT=` format
 required by the destination retained-evidence validator. It does not add test
 cases, duplicate suite dispatch, change expectations or touch production code.
 
-The destination harness blob after these adaptations is
-`a67bda4bd15d00ddf564efb5ce353f31d9882055`. The expected pure-suite count is
-555 assertions on 32-bit Office and 557 on 64-bit Office because the two
-LongLong checks compile only under `Win64`. These adaptations do not change
-the supported calculation API, observable date behavior or any production
-algorithm. The source repository remains unchanged.
+The destination harness blob after the PR #28 adaptations is
+`a67bda4bd15d00ddf564efb5ce353f31d9882055`. Issue #32 then adds two focused
+pillar-range assertions, taking the retained-evidence totals to 557 assertions
+on 32-bit Office and 559 on 64-bit Office; the two-count difference remains the
+LongLong cases compiled only under `Win64`.
+
+Issue #32 also corrects one inherited production defect in
+`KPR_Core_Dates.TryPillar_Parse`: a grammatically valid digits+unit component
+whose numeric quantity cannot be represented as `Double`, or whose Y/M or W/D
+aggregate overflows `Double`, is now classified as
+`PILLAR_AGGREGATE_RANGE` rather than falling through as
+`PILLAR_TOKEN_MALFORMED`. Aggregate values are computed into local temporaries
+before the ByRef outputs are assigned, preserving the parser's
+outputs-on-success-only contract on failure. This is a destination-only
+behavioral correction required by the already-migrated date contract; the
+frozen source repository remains unchanged.
 
 Repository-path adaptations remain `src/modules/KPR_Core_*` to
 `src/core/KPR_Core_*` and `test/` to `tests/`. The neutral starter modules
