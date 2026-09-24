@@ -32,6 +32,7 @@ adapter formats evidence but does not own test dispatch or expectations.
 | `KPR_Tests_RunSuite "suite"` | Direct VBA / Immediate window | Runs one named pure suite and prints the native report | Focused investigation |
 | `KPR_Tests_RunAll([suite])` | Direct VBA or programmatic call; optional suite name | Returns a 2-D summary/failure array; omitted/Empty means all suites | Common source/destination parity interface |
 | `KPR_Tests_RunEvidence` | Macro / direct VBA, no arguments | Destination-only adapter over `RunAll("all")`; emits ordered `CASE=`, counts and `RESULT=` lines | Retained K-PRICING host evidence |
+| `KPR_Tests_RunMigrationEvidence` | Macro / direct VBA, no arguments | Common migration instrumentation; emits deterministic direct/host/shape/array `OBS` records plus cleanup status | Imported unchanged into both source-production and destination observation hosts |
 | `KPR_Tests_RunHost` | Macro-only | Creates a scratch workbook; tests worksheet caller/date-system behavior and state restoration | Additional parity/certification log |
 | `KPR_Tests_RunShape` | Macro-only | Creates a scratch workbook; tests real Range shapes, errors, UsedRange independence and state restoration | Additional parity/certification log |
 | `KPR_Tests_RunArray` | Macro-only | Uses the late-bound dynamic-array API; tests spill behavior and 1904 call-level refusal | Additional parity/certification log |
