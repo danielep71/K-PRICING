@@ -3,7 +3,7 @@
 [![Release model: exact source](https://img.shields.io/badge/release-exact%20source-0969da)](#release-invariants)
 [![SemVer contract](https://img.shields.io/badge/versioning-SemVer-3f4551)](docs/RELEASE_SEMANTICS.md)
 [![Evidence contract](https://img.shields.io/badge/evidence-required-success)](docs/RELEASE_EVIDENCE.md)
-[![Security policy](https://img.shields.io/badge/security-private-d73a49)](SECURITY.md)
+[![Security policy](https://img.shields.io/badge/security-private%20reporting-d73a49)](SECURITY.md)
 
 This document is authoritative for the **maintainer release sequence**. Strict
 version/changelog semantics are owned by

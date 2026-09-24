@@ -5,7 +5,7 @@
 ### Financial analytics and instrument pricing for Excel/VBA
 
 [![Reporting](https://img.shields.io/badge/Reporting-Private-d97706?style=for-the-badge)](#reporting-a-vulnerability)
-[![Support](https://img.shields.io/badge/Support-Latest_release-217346?style=for-the-badge)](#supported-versions)
+[![Support](https://img.shields.io/badge/Support-Development_(no_release)-6e7781?style=for-the-badge)](#supported-versions)
 [![Scope](https://img.shields.io/badge/Scope-Source_%7C_Releases_%7C_Automation-0969da?style=for-the-badge)](#security-scope)
 [![Disclosure](https://img.shields.io/badge/Disclosure-Coordinated-6f42c1?style=for-the-badge)](#coordinated-disclosure)
 
