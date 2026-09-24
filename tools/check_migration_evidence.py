@@ -71,7 +71,7 @@ def exact_keys(value: Any, keys: set[str], label: str) -> dict[str, Any]:
 
 
 def safe_file(base: Path, relative: str) -> Path:
-    require(isinstance(relative, str) and relative and not Path(relative).is_absolute(), "unsafe evidence path")
+    require(isinstance(relative, str) and bool(relative) and not Path(relative).is_absolute(), "unsafe evidence path")
     path = base / relative
     require(".." not in Path(relative).parts, "evidence path traversal is forbidden")
     require(path.resolve().is_relative_to(base.resolve()), "evidence path escapes bundle")
@@ -82,7 +82,7 @@ def safe_file(base: Path, relative: str) -> Path:
 
 def read_bound(base: Path, entry: dict[str, Any]) -> str:
     exact_keys(entry, {"id", "path", "sha256"}, "log entry")
-    require(isinstance(entry["id"], str) and entry["id"], "log id must be nonempty")
+    require(isinstance(entry["id"], str) and bool(entry["id"]), "log id must be nonempty")
     require(isinstance(entry["sha256"], str) and SHA256.fullmatch(entry["sha256"]) is not None,
             f"invalid SHA-256 for log {entry['id']}")
     path = safe_file(base, entry["path"])
@@ -99,13 +99,13 @@ def parse_observations(text: str, side: str) -> tuple[list[tuple[str, str]], dic
     for raw in text.splitlines():
         if raw.startswith("OBS\t"):
             fields = raw.split("\t", 2)
-            require(len(fields) == 3 and fields[1] and fields[2], f"{side}: malformed OBS record")
+            require(len(fields) == 3 and bool(fields[1]) and bool(fields[2]), f"{side}: malformed OBS record")
             require(fields[1] not in seen, f"{side}: duplicate observation id {fields[1]}")
             seen.add(fields[1])
             observations.append((fields[1], fields[2]))
         elif raw.startswith("CLEANUP\t"):
             fields = raw.split("\t", 2)
-            require(len(fields) == 3 and fields[1] and fields[2], f"{side}: malformed CLEANUP record")
+            require(len(fields) == 3 and bool(fields[1]) and bool(fields[2]), f"{side}: malformed CLEANUP record")
             require(fields[1] not in cleanup, f"{side}: duplicate cleanup record {fields[1]}")
             cleanup[fields[1]] = fields[2]
 
@@ -247,15 +247,15 @@ def self_test() -> None:
             "destination-observations": obs,
             "destination-host-record": '{"synthetic":"host record"}\n',
         }
-        log_entries = []
+        log_entries: list[dict[str, str]] = []
         for ident, content in files.items():
-            path = f"{ident}.log"
-            (bundle / path).write_text(content, encoding="utf-8")
+            log_path = f"{ident}.log"
+            (bundle / log_path).write_text(content, encoding="utf-8")
             log_entries.append(
-                {"id": ident, "path": path, "sha256": hashlib.sha256(content.encode()).hexdigest()}
+                {"id": ident, "path": log_path, "sha256": hashlib.sha256(content.encode()).hexdigest()}
             )
 
-        manifest = {
+        manifest: dict[str, Any] = {
             "schema_version": 1,
             "source": {"repository": "danielep71/KPR", "sha": "a" * 40},
             "destination": {"repository": "danielep71/K-PRICING", "sha": "b" * 40},
@@ -283,12 +283,12 @@ def self_test() -> None:
                 }
             ],
         }
-        path = bundle / "migration.json"
-        path.write_text(json.dumps(manifest), encoding="utf-8")
-        report = validate_manifest(root, path, "a" * 40, "b" * 40)
+        manifest_file = bundle / "migration.json"
+        manifest_file.write_text(json.dumps(manifest), encoding="utf-8")
+        report = validate_manifest(root, manifest_file, "a" * 40, "b" * 40)
         require(report["status"] == "pass", "positive self-test did not pass")
 
-        degraded = json.loads(path.read_text())
+        degraded: dict[str, Any] = json.loads(manifest_file.read_text())
         dest = next(x for x in degraded["logs"] if x["id"] == "destination-observations")
         changed = obs.replace(
             "OBS\tdirect/days-in-month\tTEXT:synthetic",
@@ -296,21 +296,23 @@ def self_test() -> None:
         )
         (bundle / dest["path"]).write_text(changed, encoding="utf-8")
         dest["sha256"] = hashlib.sha256(changed.encode()).hexdigest()
-        path.write_text(json.dumps(degraded), encoding="utf-8")
+        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
         try:
-            validate_manifest(root, path, "a" * 40, "b" * 40)
+            validate_manifest(root, manifest_file, "a" * 40, "b" * 40)
         except ValueError as error:
             require("observations differ" in str(error), "degraded parity case failed for wrong reason")
         else:
             raise RuntimeError("degraded parity self-test unexpectedly passed")
 
         degraded = manifest.copy()
-        degraded["logs"] = [dict(x) for x in manifest["logs"]]
+        original_logs = manifest["logs"]
+        require(isinstance(original_logs, list), "self-test logs must be a list")
+        degraded["logs"] = [dict(x) for x in original_logs if isinstance(x, dict)]
         host = next(x for x in degraded["logs"] if x["id"] == "destination-host-record")
         host["sha256"] = "0" * 64
-        path.write_text(json.dumps(degraded), encoding="utf-8")
+        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
         try:
-            validate_manifest(root, path, "a" * 40, "b" * 40)
+            validate_manifest(root, manifest_file, "a" * 40, "b" * 40)
         except ValueError as error:
             require("digest mismatch" in str(error), "degraded digest case failed for wrong reason")
         else:
