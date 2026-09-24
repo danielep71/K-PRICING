@@ -22,7 +22,7 @@ source-to-destination disposition.
 | #29 | Public visibility, live controls and documentation authorities reconciled | PR #30, `47aa4c181306a4668383631888d2267589ea5906` |
 | #14 | [Regression/parity protocol](MIGRATION_REGRESSION.md), migration instrumentation and evidence validator | PR #31, `118555ddf5c2cd8f944688f02fc9813713bf30c2` |
 | #16 | [Handover register](MIGRATION_HANDOVER.md) of source issue history and carried-forward roadmap | Issue closed; register merged in PR #34, `184e4b6976a51a3b29e17460ba06f7e919e7fbc6` |
-| #15 | Documentation, examples and destination status reconciliation | This reconciliation |
+| #15 | Documentation, examples and destination status reconciliation | PR #35, `80e992df73c2a3209dc104045aeed14119f22534` |
 | #17 | Exact-source Windows Excel compilation and source/destination parity | **Pending**; no destination runtime claim until it passes |
 | #18 | Migration acceptance and handover of the next delivery backlog | **Pending**; follows #15 and #17 |
 

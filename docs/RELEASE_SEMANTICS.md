@@ -105,7 +105,9 @@ branch is **template-maintainer policy only**: initialized/generated repositorie
 receive no blocking history verdict unless they deliberately adopt an equivalent
 local rule.
 
-The committed authority is `.github/release-history-policy.json`. The gate reads
+In the canonical template, the committed authority is
+`.github/release-history-policy.json`; that file is template-only and is not
+present in K-PRICING. The gate reads
 that file from the exact candidate Git object rather than trusting a mutable
 working-copy override. Two conditions are blocking by default:
 

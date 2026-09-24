@@ -226,7 +226,7 @@ document that owns your task:
 | --- | --- |
 | Set up a developer checkout | [`docs/DEVELOPER_SETUP.md`](docs/DEVELOPER_SETUP.md) |
 | Verify repository setup | [`docs/SETUP_VERIFICATION.md`](docs/SETUP_VERIFICATION.md) |
-| Prepare source migration | [`docs/MIGRATION_PLAN.md`](docs/MIGRATION_PLAN.md) |
+| Review migration status | [`docs/MIGRATION_PLAN.md`](docs/MIGRATION_PLAN.md) |
 | Understand source/repository structure | [`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md) |
 | Install, upgrade or remove | [`INSTALLATION.md`](INSTALLATION.md) |
 | Contribute or review a change | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
