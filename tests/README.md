@@ -15,7 +15,9 @@ Use subdirectories only when they contain real material:
 Import `modules/KPR_REGRESSION_TESTS.bas` after all five production modules and
 compile the VBA project. The imported harness retains these entry points:
 `KPR_Tests_Run`, `KPR_Tests_RunSuite`, `KPR_Tests_RunAll`,
-`KPR_Tests_RunHost`, `KPR_Tests_RunShape`, and `KPR_Tests_RunArray`.
+`KPR_Tests_RunHost`, `KPR_Tests_RunShape`, and `KPR_Tests_RunArray`. K-PRICING
+also adds `KPR_Tests_RunEvidence`, a destination-only adapter that delegates to
+`KPR_Tests_RunAll("all")` and emits the structured retained-evidence log format.
 
 The source expectations and condition identifiers are preserved. Historical KPR
 run counts are not destination certification: exact-candidate execution,
