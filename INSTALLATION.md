@@ -42,7 +42,8 @@ release. The initial target and evidence status are:
 | References | Built-in VBA/Excel only; no additional external dependency for the migrated date layer |
 
 Use [developer setup](docs/DEVELOPER_SETUP.md) for a checkout and
-[the setup runbook](docs/EXCEL_SETUP_RUNBOOK.md) for the host procedure.
+[the Excel evidence interface](docs/EXCEL_EVIDENCE.md) for the host procedure
+(with [the migration regression protocol](docs/MIGRATION_REGRESSION.md) for parity runs).
 Compatibility claims apply only to environments actually validated.
 
 | Item | Source of truth |

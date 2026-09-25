@@ -122,7 +122,9 @@ record any new host run against its exact candidate.
 ### 3. Run the migrated date layer in Excel
 
 Follow the [developer setup](docs/DEVELOPER_SETUP.md) and
-[Windows Excel runbook](docs/EXCEL_SETUP_RUNBOOK.md). Initialization is complete.
+[Excel evidence interface](docs/EXCEL_EVIDENCE.md) (with the
+[migration regression protocol](docs/MIGRATION_REGRESSION.md) for parity runs).
+Initialization is complete.
 Current GitHub controls and limitations are recorded in
 [setup verification](docs/SETUP_VERIFICATION.md); the completed migration is
 recorded in [the migration completion record](docs/MIGRATION_COMPLETION.md), and
