@@ -46,7 +46,7 @@
       "detail": "Maintainer confirmed pinned candidate and fresh workbook; documented manual component import workflow.",
       "log": {
         "path": "session.txt",
-        "sha256": "e2dab545400b58cee274fb9125604acc5f7f2ccd0151a9e438b5e05879efddc1"
+        "sha256": "936dcc857787d785ef636b88994185046a832382014196ea8e3ffab730eb4551"
       }
     },
     "compile": {
@@ -54,7 +54,7 @@
       "detail": "Successful complete regression execution and explicit maintainer confirmation.",
       "log": {
         "path": "session.txt",
-        "sha256": "e2dab545400b58cee274fb9125604acc5f7f2ccd0151a9e438b5e05879efddc1"
+        "sha256": "936dcc857787d785ef636b88994185046a832382014196ea8e3ffab730eb4551"
       }
     },
     "regression": {
@@ -70,7 +70,7 @@
       "detail": "Harness reports unchanged Excel state; maintainer confirmed normal workbook closure.",
       "log": {
         "path": "session.txt",
-        "sha256": "e2dab545400b58cee274fb9125604acc5f7f2ccd0151a9e438b5e05879efddc1"
+        "sha256": "936dcc857787d785ef636b88994185046a832382014196ea8e3ffab730eb4551"
       }
     }
   },

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate retained KPR migration parity evidence without executing Excel."""
+"""Validate retained migration parity evidence without executing Excel."""
 
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ from check_excel_evidence import source_inventory as excel_source_inventory
 
 SCHEMA_VERSION = 1
 FROZEN_SOURCE_SHA = "f26450d1fa7b11261162e901dedba062f21c99a7"
+FROZEN_SOURCE_ID = "frozen-source"
 REQUIRED_LOG_IDS = {
     "source-exact-compile",
     "destination-compile",
@@ -249,12 +250,12 @@ def validate_manifest(
 
     source = exact_keys(manifest["source"], {"repository", "sha"}, "source")
     destination = exact_keys(manifest["destination"], {"repository", "sha"}, "destination")
-    require(source["repository"] == "danielep71/KPR", "unexpected source repository")
+    require(source["repository"] == FROZEN_SOURCE_ID, "unexpected source repository")
     require(destination["repository"] == "danielep71/K-PRICING", "unexpected destination repository")
     for label, record in (("source", source), ("destination", destination)):
         require(isinstance(record["sha"], str) and SHA40.fullmatch(record["sha"]) is not None,
                 f"invalid {label} SHA")
-    require(source["sha"] == FROZEN_SOURCE_SHA, "source SHA differs from frozen KPR baseline")
+    require(source["sha"] == FROZEN_SOURCE_SHA, "source SHA differs from the frozen source baseline")
     require(destination["sha"] == expected_destination_sha,
             "destination SHA differs from checked-out candidate")
 
@@ -472,7 +473,7 @@ def self_test(root: Path) -> None:
 
         manifest: dict[str, Any] = {
             "schema_version": 1,
-            "source": {"repository": "danielep71/KPR", "sha": FROZEN_SOURCE_SHA},
+            "source": {"repository": FROZEN_SOURCE_ID, "sha": FROZEN_SOURCE_SHA},
             "destination": {"repository": "danielep71/K-PRICING", "sha": candidate_sha},
             "environment": synthetic_environment,
             "instrumentation": {
@@ -512,7 +513,7 @@ def self_test(root: Path) -> None:
         try:
             validate_manifest(root, manifest_file, candidate_sha)
         except ValueError as error:
-            require("frozen KPR baseline" in str(error),
+            require("frozen source baseline" in str(error),
                     "degraded source-identity case failed for wrong reason")
         else:
             raise RuntimeError("degraded source-identity self-test unexpectedly passed")

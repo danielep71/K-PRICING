@@ -177,7 +177,7 @@ For the migrated date layer, compile the complete project and run
 `KPR_Tests_RunArray` for focused execution.
 
 Run `KPR_DateExample.RunDateExample` separately for the minimal direct-VBA
-consumer smoke. Historical KPR results are source evidence only; destination
+consumer smoke. Historical frozen-source results are source evidence only; destination
 counts, failures/skips, environment and parity must be recorded against the
 exact candidate under migration issue #17.
 

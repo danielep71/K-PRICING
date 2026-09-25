@@ -70,7 +70,7 @@ on 2026-09-24. The private-plan limitations above describe the historical setup
 checkpoint. Daniele Penza owns remaining functional-release prerequisites.
 
 This validates only the neutral starter on one Windows/64-bit Office host.
-32-bit Office, migrated KPR parity, pricing accuracy, application lifecycle and
+32-bit Office, migrated date-layer parity, pricing accuracy, application lifecycle and
 distributable packaging are not certified. Migration is prepared in
 [MIGRATION_PLAN.md](MIGRATION_PLAN.md) and milestone v0.0.2 issues 11–18.
 

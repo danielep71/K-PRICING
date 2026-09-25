@@ -11,4 +11,4 @@ Trust access to the VBA project object model checked. Excel 4.0 macros unchecked
 These are the supplied existing settings; no trust-setting change was requested or performed as part of this validation.
 Reported approximate session time: 2026-09-23 21:10 Europe/Rome, UTC+02:00.
 Timestamp precision: one reported session minute only. host.json uses that same approximate minute for both endpoints; it does not assert a measured zero duration or independently observed start/end times.
-Scope: neutral starter only, one Windows 64-bit Office host; no KPR parity, pricing accuracy, packaging or application-lifecycle certification.
+Scope: neutral starter only, one Windows 64-bit Office host; no date-layer parity, pricing accuracy, packaging or application-lifecycle certification.

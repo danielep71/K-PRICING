@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the migrated KPR date-layer contract inside K-PRICING.
+"""Validate the migrated date-layer contract inside K-PRICING.
 
 This is a project-specific additive gate. The generic K-PRICING repository,
 VBA-structure, conditional-compilation and public-API validators remain
@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 SCHEMA_VERSION = 1
-TOOL_NAME = "KPR migrated date-layer contract"
+TOOL_NAME = "Migrated date-layer contract"
 CONFIG_PATH = ".github/repository-profile.json"
 MANIFEST_PATH = "docs/PUBLIC_API.txt"
 CONTRACT_PATH = "docs/DATE_LAYER_CONTRACT.md"
@@ -278,14 +278,14 @@ def rule_components(data: dict[str, Any]) -> dict[str, Any]:
             continue
         private = bool(re.search(r"^\s*Option\s+Private\s+Module\b", text, re.I | re.M))
         if role == "internal" and path.endswith(".bas") and not private:
-            failures.append(finding(path, "Internal KPR core module must declare Option Private Module."))
+            failures.append(finding(path, "Internal date-layer core module must declare Option Private Module."))
         if role == "public" and path.endswith(".bas") and private:
-            failures.append(finding(path, "KPR worksheet facade must not declare Option Private Module."))
+            failures.append(finding(path, "Date-layer worksheet facade must not declare Option Private Module."))
     return result(
-        "kpr-components",
-        "Migrated KPR component roles",
+        "date-components",
+        "Migrated date-layer component roles",
         failures,
-        "All six migrated KPR components are registered with the intended roles and visibility",
+        "All six migrated date-layer components are registered with the intended roles and visibility",
     )
 
 
@@ -344,8 +344,8 @@ def rule_surface(data: dict[str, Any]) -> dict[str, Any]:
         if name.casefold() == "kpr_dates_datesfrompillar":
             failures.append(finding("src/modules/KPR_DATES_DAYS.bas", "Legacy plural KPR_Dates_DatesFromPillar is forbidden; use KPR_Dates_DateFromPillar.", line))
     return result(
-        "kpr-public-surface",
-        "Frozen KPR public surface",
+        "date-public-surface",
+        "Frozen date-layer public surface",
         failures,
         "Contract, manifest and facade agree on exactly 22 Variant-returning KPR_Dates_* functions",
     )
@@ -365,8 +365,8 @@ def rule_required_members(data: dict[str, Any]) -> dict[str, Any]:
         if missing:
             failures.append(finding(path, "Required public in-project member(s) missing: " + ", ".join(missing) + "."))
     return result(
-        "kpr-required-members",
-        "KPR in-project dependency surface",
+        "date-required-members",
+        "Date-layer in-project dependency surface",
         failures,
         "All pinned in-project members required by the migrated architecture are declared",
     )
@@ -394,10 +394,10 @@ def rule_dependencies(data: dict[str, Any]) -> dict[str, Any]:
             if hits:
                 failures.append(finding(path, f"Module may not depend on {other}; references {', '.join(hits)}."))
     return result(
-        "kpr-dependencies",
-        "KPR module dependency matrix",
+        "date-dependencies",
+        "Date-layer module dependency matrix",
         failures,
-        "All migrated KPR architecture modules respect the frozen dependency direction",
+        "All migrated date-layer architecture modules respect the frozen dependency direction",
     )
 
 
@@ -414,10 +414,10 @@ def rule_locale(data: dict[str, Any]) -> dict[str, Any]:
                 if re.search(rf"\b{name}\s*\(", code):
                     failures.append(finding(path, f"Locale-sensitive {name} is forbidden in production parsing.", number))
     return result(
-        "kpr-locale-parsing",
+        "date-locale-parsing",
         "Locale-independent date parsing",
         failures,
-        f"None of the {checked} production KPR components use forbidden locale-sensitive parsers",
+        f"None of the {checked} production date-layer components use forbidden locale-sensitive parsers",
     )
 
 
@@ -447,7 +447,7 @@ def rule_window(data: dict[str, Any]) -> dict[str, Any]:
         elif not re.search(pattern, statement, re.I):
             failures.append(finding(path, f"{name} no longer matches the frozen date-window value: {statement}"))
     return result(
-        "kpr-date-window",
+        "date-date-window",
         "Frozen supported date window",
         failures,
         "Date and parser bounds remain pinned to 1900-03-01 through 9999-12-31",
@@ -494,7 +494,7 @@ def rule_host_guard(data: dict[str, Any]) -> dict[str, Any]:
         if first_resolver is not None and first_resolver < guards[0]:
             failures.append(finding("src/modules/KPR_DATES_DAYS.bas", f"{name} resolves an argument before {HOST_GUARD}."))
     return result(
-        "kpr-host-guard",
+        "date-host-guard",
         "Caller date-system guard",
         failures,
         f"All {checked} public date functions apply the frozen host guard policy",
@@ -526,7 +526,7 @@ def rule_volatile(data: dict[str, Any]) -> dict[str, Any]:
     if hits_total != 1:
         failures.append(finding("src/modules/KPR_DATES_DAYS.bas", f"{VOLATILE_CALL} must occur exactly once in production; found {hits_total}."))
     return result(
-        "kpr-volatility",
+        "date-volatility",
         "Volatility scope",
         failures,
         f"{VOLATILE_CALL} occurs only at the start of {HOST_DIAGNOSTIC}",
@@ -552,7 +552,7 @@ def rule_host_authority(data: dict[str, Any]) -> dict[str, Any]:
     if sum(name.casefold() == HOST_CLASSIFIER.casefold() for name in readers) != 1:
         failures.append(finding("src/modules/KPR_DATES_DAYS.bas", f"{HOST_CLASSIFIER} must be the sole Application.Caller reader."))
     return result(
-        "kpr-host-authority",
+        "date-host-authority",
         "Caller workbook authority",
         failures,
         f"Application.Caller is owned by {HOST_CLASSIFIER} with no active-workbook fallback",
@@ -571,7 +571,7 @@ def rule_array_purity(data: dict[str, Any]) -> dict[str, Any]:
             for hit in pattern.finditer(code):
                 failures.append(finding(path, f"Array engine uses {hit.group(1)}; it owns shape only, not host state, dispatch or calendar logic.", number))
     return result(
-        "kpr-array-purity",
+        "date-array-purity",
         "Array-engine purity",
         failures,
         "KPR_Core_Array contains no forbidden Excel-state, dispatch, host or date tokens",
@@ -590,7 +590,7 @@ def rule_day_zero(data: dict[str, Any]) -> dict[str, Any]:
             if pattern.search(strip_strings(statement)):
                 failures.append(finding(path, "DateSerial(..., ..., 0) is forbidden at the upper supported boundary; use the bounded date core.", number))
     return result(
-        "kpr-day-zero",
+        "date-day-zero",
         "Boundary-safe date construction",
         failures,
         f"No day-zero DateSerial idiom appears in {checked} production components",
@@ -642,7 +642,7 @@ def report(root: Path, data: dict[str, Any] | None = None) -> dict[str, Any]:
 
 def markdown(rep: dict[str, Any]) -> str:
     lines = [
-        "# KPR migrated date-layer contract",
+        "# Migrated date-layer contract",
         "",
         f"**Status:** {str(rep['status']).upper()}",
         "",
@@ -683,7 +683,7 @@ def self_test(root: Path) -> None:
             item["id"] for item in baseline["rules"] if item["status"] == "fail"
         )
         raise RuntimeError(
-            f"Positive KPR contract fixture is not green: {failed_summary}"
+            f"Positive date-layer contract fixture is not green: {failed_summary}"
         )
 
     facade = "src/modules/KPR_DATES_DAYS.bas"
@@ -696,7 +696,7 @@ def self_test(root: Path) -> None:
     scenarios.append(
         (
             "missing API member",
-            "kpr-public-surface",
+            "date-public-surface",
             mutate(
                 base,
                 facade,
@@ -707,11 +707,11 @@ def self_test(root: Path) -> None:
     )
     spill = copy.deepcopy(base)
     spill["sources"][facade] += "\r\nPublic Function KPR_Dates_AddDays_Spill(ByVal DateIn As Variant) As Variant\r\nEnd Function\r\n"
-    scenarios.append(("_Spill twin", "kpr-public-surface", spill))
+    scenarios.append(("_Spill twin", "date-public-surface", spill))
     scenarios.append(
         (
             "legacy plural pillar",
-            "kpr-public-surface",
+            "date-public-surface",
             mutate(
                 base,
                 facade,
@@ -723,7 +723,7 @@ def self_test(root: Path) -> None:
     scenarios.append(
         (
             "narrow return type",
-            "kpr-public-surface",
+            "date-public-surface",
             mutate(
                 base,
                 facade,
@@ -734,20 +734,20 @@ def self_test(root: Path) -> None:
     )
     locale = copy.deepcopy(base)
     locale["sources"][parse] += "\r\nPublic Function ProbeLocale(ByVal S As String) As Boolean\r\n    ProbeLocale = IsDate(S)\r\nEnd Function\r\n"
-    scenarios.append(("locale parser", "kpr-locale-parsing", locale))
-    scenarios.append(("window drift", "kpr-date-window", mutate(base, parse, "As Double = 61#", "As Double = 60#")))
-    scenarios.append(("missing host guard", "kpr-host-guard", mutate(base, facade, "If Not PassHostGuard(FailErr) Then", "If False Then")))
+    scenarios.append(("locale parser", "date-locale-parsing", locale))
+    scenarios.append(("window drift", "date-date-window", mutate(base, parse, "As Double = 61#", "As Double = 60#")))
+    scenarios.append(("missing host guard", "date-host-guard", mutate(base, facade, "If Not PassHostGuard(FailErr) Then", "If False Then")))
     volatile = copy.deepcopy(base)
     volatile["sources"][facade] += "\r\nPrivate Sub ProbeVolatile()\r\n    Application.Volatile True\r\nEnd Sub\r\n"
-    scenarios.append(("stray volatility", "kpr-volatility", volatile))
-    scenarios.append(("active workbook fallback", "kpr-host-authority", mutate(base, facade, "Set CallerObject = Application.Caller", "Set CallerObject = ActiveWorkbook")))
+    scenarios.append(("stray volatility", "date-volatility", volatile))
+    scenarios.append(("active workbook fallback", "date-host-authority", mutate(base, facade, "Set CallerObject = Application.Caller", "Set CallerObject = ActiveWorkbook")))
     engine = copy.deepcopy(base)
     engine["sources"][array] += "\r\nPublic Function ProbeDate(ByVal V As Variant) As Variant\r\n    ProbeDate = Year(V)\r\nEnd Function\r\n"
-    scenarios.append(("array date math", "kpr-array-purity", engine))
+    scenarios.append(("array date math", "date-array-purity", engine))
     scenarios.append(
         (
             "missing private visibility",
-            "kpr-components",
+            "date-components",
             mutate(
                 base,
                 parse,
@@ -756,13 +756,13 @@ def self_test(root: Path) -> None:
             ),
         )
     )
-    scenarios.append(("missing required member", "kpr-required-members", mutate(base, dates, "Public Function DaysInMonth", "Public Function DaysInMonth_Missing")))
+    scenarios.append(("missing required member", "date-required-members", mutate(base, dates, "Public Function DaysInMonth", "Public Function DaysInMonth_Missing")))
     dependency = copy.deepcopy(base)
     dependency["sources"][err] += "\r\nPublic Function ProbeDependency() As Boolean\r\n    ProbeDependency = TryParseDateScalar(0, 0, 0)\r\nEnd Function\r\n"
-    scenarios.append(("forbidden reverse dependency", "kpr-dependencies", dependency))
+    scenarios.append(("forbidden reverse dependency", "date-dependencies", dependency))
     boundary = copy.deepcopy(base)
     boundary["sources"][dates] += "\r\nPublic Function ProbeBoundary(ByVal Y As Long, ByVal M As Long) As Date\r\n    ProbeBoundary = DateSerial(Y, M + 1, 0)\r\nEnd Function\r\n"
-    scenarios.append(("day-zero DateSerial", "kpr-day-zero", boundary))
+    scenarios.append(("day-zero DateSerial", "date-day-zero", boundary))
 
     for name, expected, case in scenarios:
         rep = report(root, case)
@@ -781,7 +781,7 @@ def self_test(root: Path) -> None:
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    parser.add_argument("--output", type=Path, default=Path("test-results/kpr-contract.json"))
+    parser.add_argument("--output", type=Path, default=Path("test-results/date-layer-contract.json"))
     parser.add_argument("--summary", type=Path)
     parser.add_argument("--self-test", action="store_true")
     return parser.parse_args(argv)

@@ -138,18 +138,20 @@ class ProjectIdentityTests(unittest.TestCase):
             (self.root / path).write_bytes((ROOT / path).read_bytes())
         self.config = json.loads((self.root / initializer.CONFIG_PATH).read_text())
         self.sample = self.root / "README.md"
-        self.sample.write_text("K-PRICING retains KPR_Dates_AddDays from danielep71/KPR.\n")
+        self.sample.write_text("K-PRICING retains the KPR_Dates_AddDays namespace.\n")
         subprocess.run(["git", "init", "-q", str(self.root)], check=True)
         subprocess.run(["git", "-C", str(self.root), "add", "--all"], check=True)
 
     def scan(self):
         return repo_checks.check_identity(repo_checks.Repository(self.root), self.config)
 
-    def test_kpr_namespace_and_provenance_are_allowed(self):
+    def test_kpr_namespace_is_allowed(self):
         self.assertEqual(self.scan()["status"], "pass")
 
     def test_old_product_branding_is_rejected(self):
-        for text in ("# KPR\n", "# 📈 KPR\n", "KPR is the product name.\n"):
+        for text in ("# KPR\n", "# 📈 KPR\n", "KPR is the product name.\n",
+                     "Migrated from the frozen KPR source.\n",
+                     "See https://github.com/danielep71/KPR/issues/9.\n"):
             with self.subTest(text=text):
                 self.sample.write_text(text)
                 self.assertEqual(self.scan()["status"], "fail")

@@ -23,7 +23,7 @@
 ---
 
 > [!IMPORTANT]
-> Complete the evidence fields for this change. Delete optional review blocks that do not apply. The KPR date layer is the current migrated runtime surface; exact-source Excel parity passed on one Windows 64-bit host in issue #17; broader environments remain uncertified.
+> Complete the evidence fields for this change. Delete optional review blocks that do not apply. The migrated date layer is the current migrated runtime surface; exact-source Excel parity passed on one Windows 64-bit host in issue #17; broader environments remain uncertified.
 
 ## 📌 Summary
 
@@ -155,8 +155,8 @@ Evidence from another commit does not certify this candidate.
 Use `docs/DEVELOPER_SETUP.md` for the complete local setup and `.github/workflows/static-checks.yml` for the hosted command inventory.
 
 - `python3 tools/check_repo.py --root .`
-- `python3 tools/check_kpr_contract.py --root . --self-test`
-- `python3 tools/check_kpr_contract.py --root .`
+- `python3 tools/check_date_layer_contract.py --root . --self-test`
+- `python3 tools/check_date_layer_contract.py --root .`
 - `python3 tools/check_documentation.py --root .`
 - `python3 tools/test_documentation.py -v`
 - `git diff --check`

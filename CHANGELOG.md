@@ -108,7 +108,7 @@ Use only the categories needed by a release.
   the accepted candidate, inventory, evidence, limitations and the v0.0.3 next
   delivery scope (#38–#42); no release, tag or version change.
 - Retained the #17 exact-source Excel parity evidence for candidate
-  `db98e506358ab74893ab28d52183fa2e216352b9`: the frozen KPR source compiled
+  `db98e506358ab74893ab28d52183fa2e216352b9`: the frozen source compiled
   and passed its own 557 checks, the destination passed 568 assertions, and
   source and destination observations matched exactly on one Windows 64-bit
   Excel host; the #32 correction is registered as a known source difference.
@@ -116,10 +116,10 @@ Use only the categories needed by a release.
   ISO inputs, month-end clipping, pillars, dynamic-array spills and the 1904
   date-system boundary; its results are contract expectations, since the #17
   parity run did not execute those exact formulas.
-- Added the KPR migration handover register: source-to-destination issue
-  disposition, destination-only corrections, the carried-forward KPR#18-#29
-  roadmap and the rollback/reference policy for the frozen source.
-- Imported the frozen KPR date and VBE export contracts with verified source
+- Added the migration handover register: source-to-destination work
+  disposition, destination-only corrections, the carried-forward roadmap and
+  the reference policy for the frozen source.
+- Imported the frozen date and VBE export contracts with verified source
   hashes, license attribution and explicit pending destination runtime evidence.
 - Accepted manual neutral-starter Excel evidence for candidate
   `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2` on one Windows/64-bit Office host; no pricing
@@ -134,7 +134,7 @@ Use only the categories needed by a release.
 - Updated the migration plan to record completed migration issues with their
   merge commits, the source implementation-plan disposition and the pending
   #17/#18 gates; the production source guide now states which modules are
-  byte-identical to the frozen KPR source and which carry destination deltas.
+  byte-identical to the frozen source and which carry destination deltas.
 - Reset the development version to `0.0.0` and removed template-maintenance
   history, assets and tools through the deterministic initializer.
 
@@ -167,13 +167,12 @@ Use only the categories needed by a release.
   read-back; retain honest anonymous reachability results.
 - Reconcile visibility records, documentation authorities, ASCII source rules
   and the migrated regression harness visibility exception.
-- Allow the retained `KPR_` VBA namespace and KPR source-provenance references
-  through the project identity policy, while preserving unrelated donor and
+- Allow the retained `KPR_` VBA namespace through the project identity policy, while preserving unrelated donor and
   template restrictions ([#2](https://github.com/danielep71/K-PRICING/issues/2)).
 
 ### Known limitations
 
-- The frozen KPR date-layer source, regression harness and project-specific static
+- The frozen date-layer source, regression harness and project-specific static
   contract guard are migrated. Exact-source Excel compilation and parity passed
   on one Windows 64-bit host only (#17); 32-bit Office, other builds and locales
   are untested, and release packaging remains pending.

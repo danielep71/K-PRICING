@@ -286,10 +286,10 @@ public-surface extraction and signature binding; the broader `vba-public-api`
 rule remains a compatibility check. Both are required in hosted CI, so the
 compatibility view cannot hide an unsupported or unrecorded public declaration.
 
-## KPR migrated date-layer contract
+## Migrated date-layer contract
 
-`check_kpr_contract.py` is the project-specific additive guard for the migrated
-KPR date implementation. It does not replace the generic repository or complete
+`check_date_layer_contract.py` is the project-specific additive guard for the migrated
+date implementation. It does not replace the generic repository or complete
 public-API validators. It pins the six migrated component roles and the frozen
 date-layer architecture: exact 22-function facade surface, Variant return types,
 core dependency direction, strict locale-independent parsing, date-window
@@ -300,25 +300,25 @@ date construction.
 Run the focused positive/degraded fixtures and the candidate check with:
 
 ```bash
-python3 tools/check_kpr_contract.py --root . --self-test
-python3 tools/check_kpr_contract.py \
+python3 tools/check_date_layer_contract.py --root . --self-test
+python3 tools/check_date_layer_contract.py \
   --root . \
-  --output test-results/kpr-contract.json \
-  --summary test-results/kpr-contract.md
+  --output test-results/date-layer-contract.json \
+  --summary test-results/date-layer-contract.md
 ```
 
 The hosted Repository integrity workflow retains both reports and treats either
 specialist-check failure as terminal. Excel compilation and source/destination
 runtime parity remain separate evidence owned by migration issue #17.
 
-## KPR migration evidence binding
+## Migration evidence binding
 
 `check_migration_evidence.py` validates the retained v0.0.2 source-versus-
 destination parity bundle defined by
 [`docs/MIGRATION_REGRESSION.md`](../docs/MIGRATION_REGRESSION.md). It does not
 run Excel. Given a completed `migration.json` manifest, it:
 
-- hard-binds the frozen KPR source SHA and derives the exact K-PRICING
+- hard-binds the frozen source SHA and derives the exact K-PRICING
   destination SHA from a clean tracked checkout;
 - binds the exact candidate `KPR_REGRESSION_TESTS.bas` instrumentation bytes;
 - requires one recorded 64-bit Windows/Excel environment for exact parity;

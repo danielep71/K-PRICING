@@ -748,16 +748,12 @@ def check_identity(
                     )
                 )
         if config["repository"] == "danielep71/K-PRICING" and path.endswith(".md"):
-            # Source-history prose and the retained VBA namespace are legitimate.
-            # Product headings and explicit product-name declarations are not.
-            stale_brand = re.search(
-                r"(?im)^#{1,6}\s+(?:[^\w\n]+\s*)?KPR\s*$"
-                r"|\bKPR\s+is\s+(?:the\s+)?(?:product|project|repository)\s+name\b",
-                text,
-            )
+            # The retained KPR_ VBA namespace is legitimate. The predecessor
+            # name itself, and links to its repository, are not documentation.
+            stale_brand = re.search(r"\bKPR\b(?!_)|github\.com/danielep71/KPR\b", text, re.IGNORECASE)
             if stale_brand:
                 failures.append(finding(
-                    path, "Product branding must use K-PRICING; KPR is a source-history name.",
+                    path, "Documentation must use K-PRICING; only the KPR_ VBA namespace may remain.",
                     line_number(text, stale_brand.start()),
                 ))
     return rule_result(

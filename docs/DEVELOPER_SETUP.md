@@ -1,7 +1,7 @@
 # K-PRICING developer setup
 
 K-PRICING is an initialized **application** repository, version `0.0.0`.
-Initialization is complete and the frozen KPR date-layer candidate has been
+Initialization is complete and the frozen date-layer candidate has been
 migrated into the canonical source layout. Do not initialize the repository again.
 Destination Excel compilation and source parity passed on one Windows 64-bit
 host under [issue #17](https://github.com/danielep71/K-PRICING/issues/17);
@@ -58,8 +58,8 @@ the pinned actionlint binary itself.
 ```bash
 python3 tools/check_repo.py --root . --self-test
 python3 tools/check_repo.py --root .
-python3 tools/check_kpr_contract.py --root . --self-test
-python3 tools/check_kpr_contract.py --root .
+python3 tools/check_date_layer_contract.py --root . --self-test
+python3 tools/check_date_layer_contract.py --root .
 python3 tools/test_documentation.py -v
 python3 tools/test_verification_depth.py -v
 python3 tools/check_documentation.py --root .
@@ -83,7 +83,7 @@ artifacts retain the validator reports and actual quality-tool versions for
 The intended initial host is **Microsoft 365 Excel desktop on Windows**, with
 32-bit and 64-bit Office treated as separate targets. The accepted neutral-starter
 run in [the completion record](SETUP_COMPLETION.md) is setup history only; it does
-not certify the migrated KPR source. Destination compilation and parity passed on
+not certify the migrated source. Destination compilation and parity passed on
 one Windows 64-bit host in issue #17; 32-bit Office is untested. Mac, Excel for the web and older desktop
 builds are not claimed as supported. The authoritative import order is in
 [`INSTALLATION.md`](../INSTALLATION.md).

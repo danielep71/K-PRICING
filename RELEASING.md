@@ -145,7 +145,7 @@ For the migrated date layer, the primary human-facing regression entry point is
 `KPR_Tests_RunEvidence`, which delegates to the same all-suite dispatcher and
 only adapts its result into the evidence log format. Release evidence must bind
 the exact candidate to the actual suite/case results, failures/skips and tested
-Excel environment; historical KPR runs are not destination certification.
+Excel environment; historical frozen-source runs are not destination certification.
 
 Source inspection is not Excel execution. If code changes, recertify.
 

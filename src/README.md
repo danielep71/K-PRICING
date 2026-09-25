@@ -15,7 +15,7 @@ Create only the subdirectories the project actually needs:
 
 A small project may keep production components directly in `src/` when further subdivision would add no clarity. If it does, document each component's role in `INSTALLATION.md`.
 
-## Migrated KPR date layer
+## Migrated date layer
 
 | Import order | Path | Component | Role |
 | ---: | --- | --- | --- |

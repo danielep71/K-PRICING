@@ -1,4 +1,4 @@
-# KPR migration plan
+# Date-layer migration plan
 
 Prepared on 2026-09-23 for setup issue 9. Execution belongs to **v0.0.2 - Repo
 Migration**, issues 11–18, plus destination issues #29 and #32 added during
@@ -21,7 +21,7 @@ source-to-destination disposition.
 | #32 | Destination correction: oversized valid pillar quantities classify as `PILLAR_AGGREGATE_RANGE` | PR #33, `a8ffa458186c51ec28ee778d27a86d45ed9fad49` |
 | #29 | Public visibility, live controls and documentation authorities reconciled | PR #30, `47aa4c181306a4668383631888d2267589ea5906` |
 | #14 | [Regression/parity protocol](MIGRATION_REGRESSION.md), migration instrumentation and evidence validator | PR #31, `118555ddf5c2cd8f944688f02fc9813713bf30c2` |
-| #16 | [Handover register](MIGRATION_HANDOVER.md) of source issue history and carried-forward roadmap | Issue closed; register merged in PR #34, `184e4b6976a51a3b29e17460ba06f7e919e7fbc6` |
+| #16 | [Handover register](MIGRATION_HANDOVER.md) of source work history and carried-forward roadmap | Issue closed; register merged in PR #34, `184e4b6976a51a3b29e17460ba06f7e919e7fbc6` |
 | #15 | Documentation, examples and destination status reconciliation | PR #35, `80e992df73c2a3209dc104045aeed14119f22534` |
 | #17 | Exact-source Windows Excel compilation and source/destination parity on candidate `db98e506358ab74893ab28d52183fa2e216352b9`, one Windows 64-bit Excel host | Evidence in [`evidence/migration-2026-09-24`](../evidence/migration-2026-09-24/session.txt); both validators PASS; PR #37, `b0794e2dab1bab9ff0cc948cf1d5734863c6bece` |
 | #18 | Migration acceptance and handover of the next delivery backlog | [Completion record](MIGRATION_COMPLETION.md); next scope in milestone v0.0.3 (#38–#42) |
@@ -31,19 +31,17 @@ destination work, not source history.
 
 ## Frozen source and evidence boundary
 
-Source repository: [danielep71/KPR](https://github.com/danielep71/KPR).
-Selected commit: `f26450d1fa7b11261162e901dedba062f21c99a7`.
+Frozen source commit: `f26450d1fa7b11261162e901dedba062f21c99a7`.
 Source tree: `013653658c9c9fb1e61e5958d2d4277ab8c44191`.
 Always read/import this immutable revision; newer source requires a reviewed
 baseline change and a new comparison.
 
-Calculation implementation through source issue 17 is present. Source issue 17
-records 557 checks with zero failures and seven focused array checks at
+The calculation implementation is complete at the frozen revision. The source
+record reports 557 checks with zero failures and seven focused array checks at
 `a750cd5a935529b807c43631e92cd9f1b15ee8b3`, on one dynamic-array Excel host.
 Earlier issue-level logs cover scalar/shape and host behavior. These are
 historical, narrower results at their named revisions, not certification of the
-later selected source or the destination. Source final release issue 29 remains
-a source-repository obligation. The destination now contains the frozen migrated
+later selected source or the destination. The destination now contains the frozen migrated
 date candidate; exact-source destination runtime evidence for one Windows
 64-bit host is retained under #17.
 
@@ -63,7 +61,7 @@ Record new SHA-256 Git-byte digests when preparing host evidence.
 | `src/modules/KPR_Core_Parse.bas` | `ec08bbb0056cfe6e27ed1115f3d6431e08a37b98` | src/core/KPR_Core_Parse.bas |
 | `src/modules/KPR_DATES_DAYS.bas` | `37e997107c4c030d69bfa9b16d8aae3d22c97fc7` | src/modules/KPR_DATES_DAYS.bas |
 | `test/modules/KPR_REGRESSION_TESTS.bas` | `b339d4b932f390c143973fe5fcc106e79ffbcad1` | tests/modules/KPR_REGRESSION_TESTS.bas |
-| `tools/check_repo.py` | `80a5d078d9bb8f7114132e3985b6997f80a95517` | tools/check_kpr_contract.py (adapt; keep generic checker) |
+| `tools/check_repo.py` | `80a5d078d9bb8f7114132e3985b6997f80a95517` | tools/check_date_layer_contract.py (adapt; keep generic checker) |
 
 All remaining source files are governance, presentation or metadata:
 `.editorconfig`, `.gitattributes`, `.github/ISSUE_TEMPLATE/bug_report.md`, `.github/ISSUE_TEMPLATE/config.yml`, `.github/ISSUE_TEMPLATE/feature_request.md`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/labels.json`, `.github/scripts/labels-sync.mjs`, `.github/workflows/labels-sync.yml`, `.github/workflows/static-checks.yml`, `.gitignore`, `CHANGELOG.md`, `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `INSTALLATION.md`, `LICENSE`, `README.md`, `RELEASING.md`, `SECURITY.md`, `VERSION`, `assets/social-preview.png`.
@@ -114,7 +112,7 @@ spill twins. No calendar/business-day extension is part of parity.
 ## Coherent replacement and acceptance gates
 
 1. **#11 — provenance/contracts:** import and review the frozen date and VBE
-   export contracts, qualify source issue links, preserve amendments and
+   export contracts, preserve amendments and
    attribution, and record source hashes. Destination migration milestone
    naming must not silently redefine source functional-release scope.
 2. **#12 — implementation:** import the five production modules without
@@ -124,17 +122,18 @@ spill twins. No calendar/business-day extension is part of parity.
    complete replacements are included; no knowingly broken intermediate main.
 3. **#13 and #14 — static/API and regression adaptation:** #13 is complete in
    PR #28: the generic `tools/check_repo.py` remains authoritative for generic
-   repository policy and `tools/check_kpr_contract.py` adds the migrated KPR
-   rules and negative fixtures. #14 is governed by
+   repository policy and `tools/check_date_layer_contract.py` adds the migrated
+   date-layer rules and negative fixtures. #14 is governed by
    [MIGRATION_REGRESSION.md](MIGRATION_REGRESSION.md): preserve the existing
    focused suites, distinguish native/common runners from the destination-only
    evidence adapter, and define exact-source parity without claiming the
-   unfinished source #19-#22 regression architecture is already implemented.
+   unfinished independent-fixture, runner, matrix and cross-oracle regression
+   architecture is already implemented.
 4. **#15 and #16 — documentation/history:** publish accurate developer/import
-   guidance and reconcile every source issue/comment against the mapping below.
-   Preserve qualified links, original evidence revisions, errors/corrections,
+   guidance and reconcile every source work item against the register below.
+   Preserve original evidence revisions, errors/corrections,
    decisions and unresolved conditions. Record the actual destination PR and
-   SHA for each migrated item, rather than treating a closed source issue as
+   SHA for each migrated item, rather than treating a completed source item as
    an automatically closed destination task.
 5. **#17 — fresh Excel parity:** freeze the destination SHA after review and
    green retained/specialist CI. Import into a fresh Windows Excel host,
@@ -146,78 +145,74 @@ spill twins. No calendar/business-day extension is part of parity.
    coverage from successful results.
 6. **#18 — acceptance:** reconcile implementation, contracts, API, evidence,
    docs and issue register at the reviewed candidate. Record limitations and
-   deferred product work. Keep KPR accessible; do not archive or delete it,
-   publish a package or rename APIs as a side effect of migration.
+   deferred product work. Do not publish a package or rename APIs as a side
+   effect of migration.
 
 If moving a module requires a format/export correction, record it separately
 from behavior changes and verify the diff. If starter replacement spans review
 PRs, prepare dependent branches and integrate the coherent set together after
 all gates pass. Never replace generic governance with the older source checks.
 
-## Source issue register
+## Source work register
 
-This is the preparation-time register: states were read from the source on
-2026-09-23 and destination issue numbers below refer to K-PRICING. The current
-source-to-destination disposition, carried-forward roadmap and handover policy
-are maintained in [MIGRATION_HANDOVER.md](MIGRATION_HANDOVER.md); where the two
-differ, the handover register is authoritative. Closed source work is
-implementation history. Open work remains open unless separately implemented
-and evidenced.
+This is the preparation-time register of the frozen source's work items, read on
+2026-09-23; destination issue numbers refer to K-PRICING. The current
+disposition, carried-forward roadmap and handover policy are maintained in
+[MIGRATION_HANDOVER.md](MIGRATION_HANDOVER.md); where the two differ, the
+handover register is authoritative. Completed source work is implementation
+history. Open work remains open unless separately implemented and evidenced.
 
-| Source | Subject | State and decision | Destination owner/trace |
-| --- | --- | --- | --- |
-| [KPR#1](https://github.com/danielep71/KPR/issues/1) | Remove inherited implementation | Closed; historical setup only; keep destination baseline | #16 |
-| [KPR#2](https://github.com/danielep71/KPR/issues/2) | Repository identity and links | Closed; reconcile naming and qualified links; do not overwrite destination | #15, #16 |
-| [KPR#3](https://github.com/danielep71/KPR/issues/3) | Editor, ignore and export policy | Closed; compare source export rules, retain stricter destination | #12, #16 |
-| [KPR#4](https://github.com/danielep71/KPR/issues/4) | Labels | Closed; retain destination 20-label policy, not source catalog | #16 |
-| [KPR#5](https://github.com/danielep71/KPR/issues/5) | Static checks | Closed; port specialist rules alongside generic CI | #13 |
-| [KPR#6](https://github.com/danielep71/KPR/issues/6) | GitHub controls | Closed; source settings are not inherited or evidence for this destination repository | #16 |
-| [KPR#7](https://github.com/danielep71/KPR/issues/7) | Visual identity | Closed; defer source image reuse; product branding must stay K-PRICING | #15 |
-| [KPR#8](https://github.com/danielep71/KPR/issues/8) | Repository baseline release | Closed; historical release only, no tag/version transfer | #16 |
-| [KPR#9](https://github.com/danielep71/KPR/issues/9) | Frozen date contract | Closed; preserve selected revision and amendments | #11 |
-| [KPR#10](https://github.com/danielep71/KPR/issues/10) | VBE export contract | Closed; preserve guidance; source round trip remains uncertified | #11, #17 |
-| [KPR#11](https://github.com/danielep71/KPR/issues/11) | Layered architecture | Closed; preserve module identities with mapped paths | #12 |
-| [KPR#12](https://github.com/danielep71/KPR/issues/12) | Strict parsing | Closed; migrate implemented behavior unchanged | #12, #14 |
-| [KPR#13](https://github.com/danielep71/KPR/issues/13) | Host and date system | Closed; retain contract; historical focused host evidence only | #12, #17 |
-| [KPR#14](https://github.com/danielep71/KPR/issues/14) | Pillar grammar and modes | Closed; preserve supported grammar/errors | #12, #14 |
-| [KPR#15](https://github.com/danielep71/KPR/issues/15) | 22 public functions | Closed; preserve exact signatures and supported surface | #12, #13 |
-| [KPR#16](https://github.com/danielep71/KPR/issues/16) | Array shape engine | Closed; preserve shapes, caps and failure rules | #12, #14 |
-| [KPR#17](https://github.com/danielep71/KPR/issues/17) | Array facade integration | Closed; preserve implementation; repeat exact-candidate parity | #12, #17 |
-| [KPR#18](https://github.com/danielep71/KPR/issues/18) | Function registration | Open; defer new MacroOptions category/argument registration | Source #18; track in #16 |
-| [KPR#19](https://github.com/danielep71/KPR/issues/19) | Independent generated fixtures | Open; defer generator/TSV/generated-module implementation | Source #19; track in #16 |
-| [KPR#20](https://github.com/danielep71/KPR/issues/20) | Full runner and evidence | Open; preserve current harness first; final runner interface still future | Source #20; #14, #16 |
-| [KPR#21](https://github.com/danielep71/KPR/issues/21) | Complete regression matrix | Open; preserve implemented tests; broader coverage remains future | Source #21; #14, #16 |
-| [KPR#22](https://github.com/danielep71/KPR/issues/22) | Native Excel cross-oracle | Open; defer independent overlap checks, not a current certification | Source #22; track in #16 |
-| [KPR#23](https://github.com/danielep71/KPR/issues/23) | Deterministic demo builder | Open; no workbook builder to import | Source #23; track in #16 |
-| [KPR#24](https://github.com/danielep71/KPR/issues/24) | Ribbon integration | Open; no XML/callback/package implementation to import | Source #24; track in #16 |
-| [KPR#25](https://github.com/danielep71/KPR/issues/25) | CommandBars lifecycle | Open; no install/remove implementation to import | Source #25; track in #16 |
-| [KPR#26](https://github.com/danielep71/KPR/issues/26) | API/classification manifest | Open; migration records implemented subset; future UI/register surface deferred | #13, #16; source #26 |
-| [KPR#27](https://github.com/danielep71/KPR/issues/27) | Final static/live issue register | Open; port existing checks; future full inventory/live monitor deferred | #13, #16; source #27 |
-| [KPR#28](https://github.com/danielep71/KPR/issues/28) | Final documentation/version/candidate | Open; rewrite destination docs, do not claim source release completion | #15, #16; source #28 |
-| [KPR#29](https://github.com/danielep71/KPR/issues/29) | Exact-source certification/release | Open; historical runs do not satisfy final source or destination release | #17, #18; source #29 |
+| Source work item | State and decision | Destination owner/trace |
+| --- | --- | --- |
+| Remove inherited implementation | Complete; historical setup only; keep destination baseline | #16 |
+| Repository identity and links | Complete; reconcile naming; do not overwrite destination | #15, #16 |
+| Editor, ignore and export policy | Complete; compare source export rules, retain stricter destination | #12, #16 |
+| Labels | Complete; retain destination 20-label policy, not source catalog | #16 |
+| Static checks | Complete; port specialist rules alongside generic CI | #13 |
+| GitHub controls | Complete; source settings are not inherited or evidence for this destination repository | #16 |
+| Visual identity | Complete; defer source image reuse; product branding must stay K-PRICING | #15 |
+| Repository baseline release | Complete; historical release only, no tag/version transfer | #16 |
+| Frozen date contract | Complete; preserve selected revision and amendments | #11 |
+| VBE export contract | Complete; preserve guidance; source round trip remains uncertified | #11, #17 |
+| Layered architecture | Complete; preserve module identities with mapped paths | #12 |
+| Strict parsing | Complete; migrate implemented behavior unchanged | #12, #14 |
+| Host and date system | Complete; retain contract; historical focused host evidence only | #12, #17 |
+| Pillar grammar and modes | Complete; preserve supported grammar/errors | #12, #14 |
+| 22 public functions | Complete; preserve exact signatures and supported surface | #12, #13 |
+| Array shape engine | Complete; preserve shapes, caps and failure rules | #12, #14 |
+| Array facade integration | Complete; preserve implementation; repeat exact-candidate parity | #12, #17 |
+| Function registration | Open; defer new MacroOptions category/argument registration | #16; now #42 |
+| Independent generated fixtures | Open; defer generator/TSV/generated-module implementation | #16; now #38 |
+| Full runner and evidence | Open; preserve current harness first; final runner interface still future | #14, #16; now #39 |
+| Complete regression matrix | Open; preserve implemented tests; broader coverage remains future | #14, #16; now #40 |
+| Native Excel cross-oracle | Open; defer independent overlap checks, not a current certification | #16; now #41 |
+| Deterministic demo builder | Open; no workbook builder to import | #16 |
+| Ribbon integration | Open; no XML/callback/package implementation to import | #16 |
+| CommandBars lifecycle | Open; no install/remove implementation to import | #16 |
+| API/classification manifest | Open; migration records implemented subset; future UI/register surface deferred | #13, #16 |
+| Final static/live issue register | Open; port existing checks; future full inventory/live monitor deferred | #13, #16 |
+| Final documentation/version/candidate | Open; rewrite destination docs; do not claim release completion | #15, #16 |
+| Exact-source certification/release | Open; historical runs do not satisfy a final release | #17, #18 |
 
-Issue 16 owns detailed reconciliation and successor traceability, not feature
-implementation. Before creating any successor feature issue, assign an explicit
+Issue 16 owned detailed reconciliation and successor traceability, not feature
+implementation. A successor feature issue is created only with an explicit
 future milestone; no unassigned backlog items are created by this inventory.
-Daniele Penza owns selecting that follow-on functional scope. Existing source
-issues remain the trace for deferred work until then.
+Daniele Penza owns selecting follow-on functional scope.
 
-Preserve source comments as evidence, including corrections. In particular,
-source issue 11 records an interim non-atomic case/name change and its correction;
-do not rewrite that history as continuously green. Source issue 10's export
+Preserve the source's recorded corrections as history. In particular, the
+layered-architecture work records an interim non-atomic case/name change and its
+correction; do not rewrite that history as continuously green. The VBE export
 contract is implemented documentation, not proof of an actual VBE source round
-trip. Issues 13 and 17 contain focused host results with narrower scope than
-the open full certification work. Source issue 28 explicitly retains unverified
-final-state conditions.
+trip. The host/date-system and array-façade records contain focused host
+results with narrower scope than full certification. The final documentation
+work item explicitly retains unverified final-state conditions.
 
 ## Source implementation plan disposition
 
-The source `docs/IMPLEMENTATION_PLAN.md` at the frozen revision is KPR's own
-roadmap and live milestone register. It is not copied into K-PRICING: its issue
-numbers, milestone names and states belong to danielep71/KPR. Its completed
-work is mapped to destination issues, and its unfinished work
-(danielep71/KPR#18 through danielep71/KPR#29, with their dependency chain) is
-carried forward without completion claims, in the
+The source `docs/IMPLEMENTATION_PLAN.md` at the frozen revision is the source's
+own roadmap and milestone register. It is not copied into K-PRICING. Its
+completed work is mapped to destination issues, and its unfinished work, with
+its dependency chain, is carried forward without completion claims in the
 [handover register](MIGRATION_HANDOVER.md). K-PRICING's own roadmap is its
 milestones and issues; future phases get destination issues with an explicit
 milestone only when they are scheduled.

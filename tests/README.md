@@ -10,7 +10,7 @@ Use subdirectories only when they contain real material:
 | `tests/fixtures/` | Deterministic inputs, manifests, and reusable test workbooks |
 | `tests/expected/` | Reviewed expected outputs or golden files |
 
-## Migrated KPR regression harness
+## Migrated regression harness
 
 Import `modules/KPR_REGRESSION_TESTS.bas` after all five production modules and
 compile the VBA project. The imported harness retains these entry points:
@@ -19,7 +19,7 @@ compile the VBA project. The imported harness retains these entry points:
 also adds `KPR_Tests_RunEvidence`, a destination-only adapter that delegates to
 `KPR_Tests_RunAll("all")` and emits the structured retained-evidence log format.
 
-The source expectations and condition identifiers are preserved. Historical KPR
+The source expectations and condition identifiers are preserved. Historical frozen-source
 run counts are not destination certification. The authoritative
 [regression/parity protocol](../docs/MIGRATION_REGRESSION.md) documents the
 entry-point roles, existing coverage and gaps, exact source-versus-destination
