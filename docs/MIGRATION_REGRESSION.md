@@ -4,7 +4,9 @@ Issue [#14](https://github.com/danielep71/K-PRICING/issues/14) defines how the
 migrated date-layer regression harness is executed and how source-versus-
 destination parity is judged. Actual Windows Excel execution is retained under
 [#17](https://github.com/danielep71/K-PRICING/issues/17); this document defines
-the method and evidence boundary and does not claim that a run has occurred.
+the method and evidence boundary. #17 has since executed it on one Windows 64-bit
+host; the evidence is retained in `evidence/migration-2026-09-24` (see
+[MIGRATION_COMPLETION.md](MIGRATION_COMPLETION.md)).
 
 ## Baselines and evidence boundary
 
@@ -234,7 +236,7 @@ unbound files placed beside a valid host record.
 K-PRICING's shared host record remains governed by
 [EXCEL_EVIDENCE.md](EXCEL_EVIDENCE.md). The migration manifest is an additional
 v0.0.2 parity binding; it does not expand the generic release-evidence schema or
-turn unfinished #38–#41 work into completed scope.
+turn unfinished #39–#41 work into completed scope.
 
 ## Handover to later work
 

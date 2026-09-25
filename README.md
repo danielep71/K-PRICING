@@ -9,7 +9,7 @@
 <br>
 
 [![Excel VBA](https://img.shields.io/badge/Excel_VBA-source--first-217346?style=for-the-badge&logo=microsoft-excel&logoColor=white)](#requirements)
-[![Profile](https://img.shields.io/badge/Profile-see_contract-6f42c1?style=for-the-badge)](#supported-profiles)
+[![Profile](https://img.shields.io/badge/Profile-application-6f42c1?style=for-the-badge)](#application-profile)
 [![Version](https://img.shields.io/badge/Version-VERSION_file-0969da?style=for-the-badge)](VERSION)
 [![License](https://img.shields.io/badge/License-MIT-2ea44f?style=for-the-badge)](LICENSE)
 
@@ -23,7 +23,7 @@
 
 [Quick start](#quick-start)
 &nbsp;·&nbsp;
-[Profiles](#supported-profiles)
+[Profile](#application-profile)
 &nbsp;·&nbsp;
 [Structure](#repository-shape)
 &nbsp;·&nbsp;
@@ -50,7 +50,8 @@ The neutral starter passed a manual Windows 64-bit Excel run at commit
 [the setup completion record](docs/SETUP_COMPLETION.md). The frozen KPR date layer
 is now migrated, and exact-source Excel parity passed on one Windows 64-bit
 host in #17 ([evidence](evidence/migration-2026-09-24/session.txt)); migration
-acceptance is #18 and no installable product is claimed. See the
+was accepted in #18 ([completion record](docs/MIGRATION_COMPLETION.md)) and no
+installable product is claimed. See the
 [initialization status](docs/INITIALIZATION_STATUS.md) for provenance and setup boundaries.
 
 The product and repository name is **K-PRICING**; **KPR** is its short form,
@@ -85,7 +86,8 @@ The migrated date layer contains:
 
 - four internal [`KPR_Core_*`](src/core/) modules for errors, parsing, dates and arrays;
 - [`KPR_DATES_DAYS`](src/modules/KPR_DATES_DAYS.bas) — the supported 22-function worksheet façade;
-- [`KPR_REGRESSION_TESTS`](tests/modules/KPR_REGRESSION_TESTS.bas) — the imported focused regression harness; and
+- [`KPR_REGRESSION_TESTS`](tests/modules/KPR_REGRESSION_TESTS.bas) — the imported focused regression harness;
+- [`KPR_Test_Fixtures_Generated`](tests/modules/KPR_Test_Fixtures_Generated.bas) — independently generated fixtures (see [`tests/fixtures/`](tests/fixtures/README.md)); and
 - [`KPR_DateExample`](examples/modules/KPR_DateExample.bas) — a minimal direct-VBA consumer example.
 
 The source is migrated from the frozen KPR candidate identified in
@@ -113,8 +115,9 @@ python3 tools/check_release.py --root . --self-test \
 Then import the applicable VBA components into a Windows Excel host, run
 **Debug → Compile VBAProject**, and execute the migrated regression entry points.
 The primary imported runner is `KPR_Tests_Run`; focused host, shape and
-dynamic-array runners are also retained. Destination compilation/parity evidence
-is collected separately under migration issue #17.
+dynamic-array runners are also retained. Compilation and parity for the migrated
+candidate were recorded in #17 ([evidence](evidence/migration-2026-09-24/session.txt));
+record any new host run against its exact candidate.
 
 ### 3. Run the migrated date layer in Excel
 
@@ -122,36 +125,31 @@ Follow the [developer setup](docs/DEVELOPER_SETUP.md) and
 [Windows Excel runbook](docs/EXCEL_SETUP_RUNBOOK.md). Initialization is complete.
 Current GitHub controls and limitations are recorded in
 [setup verification](docs/SETUP_VERIFICATION.md); the completed migration is
-recorded in [the migration plan](docs/MIGRATION_PLAN.md), and future work is
-sequenced in [the roadmap](docs/ROADMAP.md).
+recorded in [the migration completion record](docs/MIGRATION_COMPLETION.md), and
+future work is sequenced in [the roadmap](docs/ROADMAP.md).
 
-<a id="supported-profiles"></a>
+<a id="application-profile"></a>
 
-## 🧭 Supported profiles
+## 🧭 Application profile
 
-The application profile is already selected. The inherited profile taxonomy
-below explains the choice. Specialist controls may be added, but a profile never
-weakens source integrity, security, action pinning or release provenance.
+K-PRICING is an **application**: an end-to-end Excel workbook or add-in
+solution that will own its deployment and lifecycle. The profile is fixed in
+[`.github/repository-profile.json`](.github/repository-profile.json). Profile
+rules add to the repository baseline and never weaken source integrity,
+security, action pinning or release provenance.
 
-| Profile | Use when | Additional evidence |
-| --- | --- | --- |
-| `library` | Reusable callable VBA with no owned end-user shell | Public API, caller contract and focused regression |
-| `ui-component` | An embeddable bounded interactive surface | UI state, cleanup, recovery, DPI/accessibility and lifecycle evidence |
-| `application` | An end-to-end workbook or add-in solution | Startup, shutdown, upgrade, recovery, packaging and smoke evidence |
-
-### Selected profile contract
-
-This repository is an **application**: an end-to-end workbook or add-in solution that owns deployment and lifecycle.
-Its source contract covers modules, classes and the applicable workbook, form, Ribbon or host-lifecycle exports.
-At minimum, retain startup, shutdown, upgrade, recovery, packaging and end-to-end smoke evidence.
-
-
+Today the source is the migrated date layer and its test infrastructure. There
+are no class, form, workbook-document, Ribbon or packaging components yet.
 
 ### Application commitments
 
-Document startup, shutdown, configuration, data boundaries, deployment,
-upgrade and rollback. A distributable package requires provenance and
-post-package smoke evidence.
+As application components are added, document startup, shutdown,
+configuration, data boundaries, deployment, upgrade and rollback. A functional
+release must provide the startup, shutdown, upgrade, recovery, packaging and
+end-to-end smoke evidence required by the release policy, and a distributable
+workbook or add-in also needs provenance and post-package smoke evidence; see
+[`RELEASING.md`](RELEASING.md) and
+[`docs/RELEASE_EVIDENCE.md`](docs/RELEASE_EVIDENCE.md).
 
 <a id="repository-shape"></a>
 
@@ -230,7 +228,7 @@ document that owns your task:
 | Set up a developer checkout | [`docs/DEVELOPER_SETUP.md`](docs/DEVELOPER_SETUP.md) |
 | Verify repository setup | [`docs/SETUP_VERIFICATION.md`](docs/SETUP_VERIFICATION.md) |
 | Review planned milestones and sequencing | [`docs/ROADMAP.md`](docs/ROADMAP.md) |
-| Review the completed migration | [`docs/MIGRATION_PLAN.md`](docs/MIGRATION_PLAN.md) |
+| Review the completed migration | [`docs/MIGRATION_COMPLETION.md`](docs/MIGRATION_COMPLETION.md) |
 | Understand source/repository structure | [`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md) |
 | Install, upgrade or remove | [`INSTALLATION.md`](INSTALLATION.md) |
 | Contribute or review a change | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
@@ -247,12 +245,11 @@ These are the current limitations. The
 2026-09-23 setup inputs and is provenance, not a live copy of this section.
 
 - Exact-source Excel compilation and parity passed on one Windows 64-bit host only (#17); 32-bit Office, other builds and other locales are untested. Migration acceptance is recorded in [MIGRATION_COMPLETION.md](docs/MIGRATION_COMPLETION.md).
-- Test hardening and registration are scheduled in milestone v0.0.3 (#38–#42), and the demo, UI, candidate assembly and first functional release in v0.0.4 (#46–#52); calendars and business-day arithmetic are planned for v0.0.5 and v0.0.6. See the [roadmap](docs/ROADMAP.md). Broader pricing capabilities remain unscheduled.
+- Test hardening and registration continue in milestone v0.0.3: the independent fixture generator (#38) is merged, and the runner and evidence schema, regression suites, cross-oracle checks and MacroOptions registration (#39–#42) remain open. The demo, UI, candidate assembly and first functional release are scheduled in v0.0.4 (#46–#52), and calendars and business-day arithmetic are planned for v0.0.5 and v0.0.6. See the [roadmap](docs/ROADMAP.md). Broader pricing capabilities remain unscheduled.
 - No supported workbook/add-in or functional product release is available; the historical neutral-starter run certifies setup only.
 
-If no project-specific limitation is rendered, the general evidence boundaries
-above still apply: static inspection is not Excel execution, and one tested
-environment does not certify another.
+The general evidence boundaries still apply: static inspection is not Excel
+execution, and one tested environment does not certify another.
 
 ## 🔐 Security and conduct
 

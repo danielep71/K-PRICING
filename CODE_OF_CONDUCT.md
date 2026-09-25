@@ -28,7 +28,7 @@ the absence of the other.
 ## 🤝 Our pledge
 
 Everyone who participates through code, issues, pull requests, reviews,
-documentation, examples, releases, discussions, project email or the Wiki is
+documentation, examples, releases, discussions or project email is
 expected to help create a harassment-free, inclusive and healthy environment.
 
 We welcome participants regardless of personal characteristics unrelated to the
@@ -111,7 +111,7 @@ both.
 
 This Code of Conduct applies to project-controlled and project-related spaces,
 including source, issues, pull requests, reviews, documentation, examples,
-releases, discussions, the Wiki, project email and public spaces where someone
+releases, discussions, project email and public spaces where someone
 represents the project/community.
 
 It applies to maintainers, contributors, reviewers, users and visitors alike.

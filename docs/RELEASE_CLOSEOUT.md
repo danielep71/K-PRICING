@@ -16,7 +16,7 @@ candidates and has no Wiki browser-review input or removed Wiki checker call.
 After the annotated tag, tag-triggered static checks, GitHub Release and release
 milestone are complete, run **Release closeout** manually. Supply:
 
-- `tag`: the published tag, for example `v1.2.1`;
+- `tag`: the published tag, for example `v0.0.4`;
 - `candidate_sha`: the exact 40-character SHA that was certified before tagging;
 - `milestone_number`: the GitHub milestone number used for that release;
 - `expect_prerelease`: normally `false`; set it only for an intentionally prerelease publication;
@@ -76,10 +76,10 @@ The workflow retains, for 90 days:
 
 `release-closeout.json` records the SHA-256 of `snapshot.json`, the candidate/tag/profile identity, deterministic and observation status, tag/CI/Release/asset/comparison/milestone/Wiki state, and categorized findings. Retaining the snapshot makes the conclusion replayable without relying on a maintainer workstation.
 
-The 90-day Actions reports are diagnostic retention. Canonical certification
-assets remain attached unchanged to the GitHub Release for the lifetime of that
-release, as required by [RELEASE_EVIDENCE.md](RELEASE_EVIDENCE.md); an expiring
-Actions artifact does not replace that durable record.
+The 90-day Actions reports are diagnostic retention. (In upstream template mode
+only, certification assets additionally remain attached unchanged to the GitHub
+Release, as required by [RELEASE_EVIDENCE.md](RELEASE_EVIDENCE.md); K-PRICING
+records certification as not applicable.)
 
 ## Offline fixture contract
 

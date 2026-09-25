@@ -116,8 +116,9 @@ inputs. No publishing token is supplied to source validation.
 `Repository integrity` runs the retained verification-depth Python suite as an
 enforced step and retains its output. It also runs documentation tests, release/provenance/Excel
 record fixtures, release semantics, initializer fixtures, committed-whitespace,
-VBA jump/conditional/public-API checks, local Action checks, template-contract
-checks and the 21-rule repository gate. Step-level collection does not mask
+VBA jump/conditional/public-API checks, KPR contract checks, the fixture-generator
+self-test and freshness check, migration-evidence fixtures, local Action checks,
+template-contract checks and the 21-rule repository gate. Step-level collection does not mask
 failures: final enforcement fails on unsuccessful required outcomes. The source
 workflow is the authority for exact commands and pins; use
 [developer setup](DEVELOPER_SETUP.md) to reproduce them. Retained tests import
@@ -164,6 +165,7 @@ changes under Unreleased; no tag or release publication is authorized by the
 milestone name. All setup issues #2–#10 and the milestone are closed. The
 final setup correction merged at `715eda63365ba4a94e619976acc4721411c875f0`
 in PR #23; issue #10 closed on 2026-09-23 at 20:22:54 UTC. The later Python
-fixture fix in PR #24 does not change the accepted runtime source. Migration
-follows [MIGRATION_PLAN.md](MIGRATION_PLAN.md).
-No migrated numerical result, supported package or functional release is claimed.
+fixture fix in PR #24 does not change the accepted runtime source. Migration was
+completed in v0.0.2 ([MIGRATION_COMPLETION.md](MIGRATION_COMPLETION.md)). This
+setup checkpoint claims no migrated numerical result, supported package or
+functional release.

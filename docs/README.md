@@ -2,7 +2,7 @@
 
 [![Status: maintained](https://img.shields.io/badge/status-maintained-217346)](../README.md)
 [![Authority: one contract](https://img.shields.io/badge/authority-one%20contract%20%2F%20one%20owner-success)](#authority-map)
-[![Profiles: 3](https://img.shields.io/badge/profiles-3-6f42c1)](INITIALIZATION.md)
+[![Profile: application](https://img.shields.io/badge/profile-application-6f42c1)](../README.md#application-profile)
 [![Evidence: exact SHA](https://img.shields.io/badge/evidence-exact%20SHA-1D76DB)](RELEASE_EVIDENCE.md)
 
 `docs/` contains durable contracts that are too specialized for the root README.
@@ -18,8 +18,8 @@ may summarize it, but must link here rather than restating a competing rule.
 
 | Contract | Authoritative location | Other documents may contain |
 | --- | --- | --- |
-| Project purpose, supported profiles, quick start and navigation | [`../README.md`](../README.md) | Short orientation only |
-| Template initialization, token categories, profile rendering and manual fallback | [`INITIALIZATION.md`](INITIALIZATION.md) | A minimal initializer command |
+| Project purpose, application profile, quick start and navigation | [`../README.md`](../README.md) | Short orientation only |
+| Template initialization contract (completed here; reference for repeat-run verification) | [`INITIALIZATION.md`](INITIALIZATION.md) | A minimal initializer command |
 | Repository/source layout and VBA component ownership | [`REPOSITORY_STRUCTURE.md`](REPOSITORY_STRUCTURE.md) | A small directory summary |
 | VBA banners, procedure contracts, indentation and formatting review | [`VBA_HOUSE_STYLE.md`](VBA_HOUSE_STYLE.md) | A link to the source presentation rules |
 | Installation, import, export, upgrade, recovery and removal | [`../INSTALLATION.md`](../INSTALLATION.md) | Links and release prerequisites |
@@ -56,10 +56,10 @@ may summarize it, but must link here rather than restating a competing rule.
 
 The project-specific authorities are [developer setup](DEVELOPER_SETUP.md),
 [dated setup verification](SETUP_VERIFICATION.md),
-[the neutral Excel runbook](EXCEL_SETUP_RUNBOOK.md), and
+[Excel evidence](EXCEL_EVIDENCE.md) for new host runs, and
 [the delivery roadmap](ROADMAP.md) for current milestones and sequencing.
-[The staged migration plan](MIGRATION_PLAN.md) is the historical v0.0.2
-execution record.
+[The neutral-starter Excel runbook](EXCEL_SETUP_RUNBOOK.md) and
+[the staged migration plan](MIGRATION_PLAN.md) are historical records.
 
 ## 🧭 First-use path
 
@@ -69,8 +69,8 @@ A new maintainer should normally need only this sequence:
 2. Follow [`DEVELOPER_SETUP.md`](DEVELOPER_SETUP.md); this repository is already initialized.
 3. Import/compile/test using [`INSTALLATION.md`](../INSTALLATION.md).
 4. Read the dated [`SETUP_VERIFICATION.md`](SETUP_VERIFICATION.md) and the
-   [`EXCEL_SETUP_RUNBOOK.md`](EXCEL_SETUP_RUNBOOK.md) and
-   accepted [`SETUP_COMPLETION.md`](SETUP_COMPLETION.md).
+   accepted [`SETUP_COMPLETION.md`](SETUP_COMPLETION.md); use
+   [`EXCEL_EVIDENCE.md`](EXCEL_EVIDENCE.md) for new host runs.
    Use [`ROADMAP.md`](ROADMAP.md) for current milestone status and sequencing.
 5. For changes, use [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 6. For publication, use [`RELEASING.md`](../RELEASING.md) together with the
@@ -88,10 +88,10 @@ secondary document:
 - link to the authority for exact rules or schemas;
 - do not copy checklists, evidence schemas, support matrices or release rules;
 - preserve historical evidence as historical evidence; and
-- keep local links valid after every profile-specific initializer removal.
+- keep local links valid after every file removal or rename.
 
-A Wiki may provide navigation or explanatory material, but versioned behavior
-and governance remain in the repository.
+The repository wiki is disabled; versioned behavior and governance remain in
+the repository.
 
 ---
 

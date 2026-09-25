@@ -6,7 +6,8 @@
 This document owns the callable workflow interface, adoption and compatibility
 policy. [TEMPLATE_CONTRACT.md](TEMPLATE_CONTRACT.md) owns the versioned required
 control set. Adoption is optional for contract `1.2.0`: keeping the copied
-workflow is supported and does not weaken conformance.
+workflow is supported and does not weaken conformance. K-PRICING currently runs
+its own copied `static-checks.yml` and has not adopted the upstream pin.
 
 ## 🎯 What is reusable
 
@@ -35,7 +36,7 @@ A version comment describes the pin; it never substitutes for the full SHA.
 | `1.0.0` | `466c48d9f4a5f984ae58561d1441089ef09975d1` | Published by commit SHA on 2026-09-08 after all three hosted consumer fixtures passed |
 
 This is commit-based publication of the workflow interface, **not** publication
-of the v1.2.0 product release, and no product tag was created or moved. The
+of the upstream template's v1.2.0 release, and no product tag was created or moved. The
 verified development snapshot was promoted unchanged; its historical fixture
 comments say `v1.0.0-dev`. Use the exact SHA above, not the current branch head.
 Completion evidence is maintained in upstream issue #23. Fixture test refs are
@@ -75,7 +76,7 @@ restrictions in [Reuse workflows](https://docs.github.com/en/actions/how-tos/reu
 
 ## 🚀 Adoption, step by step
 
-1. Initialize a supported profile and pass the existing local gates first.
+1. Confirm the initialized profile (`application` here) passes the existing local gates.
 2. Select the published immutable provider commit above, with green hosted
    evidence in issue #23 of the repository recorded by `template_contract.source`.
    Never use `main`, a release branch or a moving

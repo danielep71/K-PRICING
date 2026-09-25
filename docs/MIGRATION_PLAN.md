@@ -184,7 +184,7 @@ separately implemented and evidenced.
 | Array shape engine | Complete; preserve shapes, caps and failure rules | #12, #14 |
 | Array facade integration | Complete; preserve implementation; repeat exact-candidate parity | #12, #17 |
 | Function registration | Open; defer new MacroOptions category/argument registration | #16; now #42 |
-| Independent generated fixtures | Open; defer generator/TSV/generated-module implementation | #16; now #38 |
+| Independent generated fixtures | Open at migration; defer generator/TSV/generated-module implementation | #16; delivered after migration by #38 (PR #54) |
 | Full runner and evidence | Open; preserve current harness first; final runner interface still future | #14, #16; now #39 |
 | Complete regression matrix | Open; preserve implemented tests; broader coverage remains future | #14, #16; now #40 |
 | Native Excel cross-oracle | Open; defer independent overlap checks, not a current certification | #16; now #41 |

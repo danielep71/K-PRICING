@@ -4,8 +4,9 @@ This page records the historical initialization on 2026-09-23, when the
 repository was private. It is the authority for initialization provenance, not
 live settings. [Setup verification](SETUP_VERIFICATION.md) owns the current
 visibility and controls; [setup completion](SETUP_COMPLETION.md) records the
-accepted starter run and closed v0.0.1 checkpoint. Migration is tracked in
-[MIGRATION_PLAN.md](MIGRATION_PLAN.md).
+accepted starter run and closed v0.0.1 checkpoint. Migration was completed in
+v0.0.2 ([MIGRATION_COMPLETION.md](MIGRATION_COMPLETION.md)); current sequencing
+is in [ROADMAP.md](ROADMAP.md).
 
 ## Source provenance
 
@@ -20,9 +21,10 @@ accepted starter run and closed v0.0.1 checkpoint. Migration is tracked in
 
 The deterministic initializer was reviewed in dry-run mode before application.
 At initialization, the generic facade, core, tests and example were unchanged.
-Migration replaces them together with their API and regression contracts.
+The v0.0.2 migration replaced them with the KPR date layer and its API and
+regression contracts.
 
-## Project identity and future migration
+## Project identity and migration
 
 **K-PRICING** is the product and repository name; **KPR** is its short form and
 **`KPR_`** its VBA module/function namespace. The identity policy permits the
@@ -39,7 +41,8 @@ initializer with those same inputs returns a no-op and preserves the evolved
 identity policy; different inputs are rejected. Future template updates must
 preserve this project-specific policy and pass its regression tests. The
 initialization checkpoint did not migrate source, tests, examples or API
-policy; their current status belongs to the migration plan.
+policy; their current status belongs to [ROADMAP.md](ROADMAP.md), and the
+migration record is [MIGRATION_COMPLETION.md](MIGRATION_COMPLETION.md).
 
 ## Validation boundary
 
@@ -70,8 +73,9 @@ reconciliation and read-back evidence belong to the
 settings and accepted starter result. [SETUP_COMPLETION.md](SETUP_COMPLETION.md)
 records the final setup baseline and closure of issues #3, #6 and #10.
 Use [DEVELOPER_SETUP.md](DEVELOPER_SETUP.md) for ongoing development and
-[EXCEL_SETUP_RUNBOOK.md](EXCEL_SETUP_RUNBOOK.md) for evidence capture on a new
-candidate, together with the active validation issue's scope and commands.
-The migration inventory and issue mapping are in [MIGRATION_PLAN.md](MIGRATION_PLAN.md).
+[EXCEL_EVIDENCE.md](EXCEL_EVIDENCE.md) for evidence capture on a new candidate,
+together with the active validation issue's scope and commands.
+The completed migration's inventory and issue mapping are in
+[MIGRATION_PLAN.md](MIGRATION_PLAN.md).
 v0.0.1 is a completed milestone-only checkpoint; VERSION remains 0.0.0 and no
 release tag was created.

@@ -36,10 +36,10 @@ release. The initial target and evidence status are:
 
 | Target | Status |
 | --- | --- |
-| Microsoft 365 Excel desktop on Windows, 64-bit Office | Starter validated on Version 2608, Build 16.0.20326.20072; see setup completion record |
+| Microsoft 365 Excel desktop on Windows, 64-bit Office | Migrated date layer compiled and matched the frozen source on one host (Version 2608, Build 16.0.20326.20072, Italian regional format) in #17; other builds and locales untested |
 | Microsoft 365 Excel desktop on Windows, 32-bit Office | Intended; untested separately |
 | Mac, Excel for the web, older desktop builds | No support claim |
-| References | Built-in VBA/Excel only; no additional external dependency for the starter |
+| References | Built-in VBA/Excel only; no additional external dependency for the migrated date layer |
 
 Use [developer setup](docs/DEVELOPER_SETUP.md) for a checkout and
 [the setup runbook](docs/EXCEL_SETUP_RUNBOOK.md) for the host procedure.
@@ -53,12 +53,12 @@ Compatibility claims apply only to environments actually validated.
 | Security handling | [`SECURITY.md`](SECURITY.md) |
 | Published release evidence | [`docs/RELEASE_EVIDENCE.md`](docs/RELEASE_EVIDENCE.md) |
 
-This repository is currently rendered for the **application** profile.
+K-PRICING uses the **application** profile (see the [README](README.md#application-profile)).
 
 ### Complete repository checkout
 
-Use a **Git clone** when you intend to initialize, validate, contribute to, or
-release the project. The repository's `.gitattributes` deliberately marks
+Use a **Git clone** when you intend to validate, contribute to, or release the
+project. The repository's `.gitattributes` deliberately marks
 repository-plumbing paths such as `.github/`, `.gitignore`, `.editorconfig`, and
 `.gitattributes` as `export-ignore`; GitHub source archives are generated with
 `git archive`, so **Code → Download ZIP is not a complete maintainer checkout**.
@@ -176,12 +176,16 @@ a supported host.
 For the migrated date layer, compile the complete project and run
 `KPR_Tests_Run`. The imported harness also exposes `KPR_Tests_RunSuite`,
 `KPR_Tests_RunAll`, `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, and
-`KPR_Tests_RunArray` for focused execution.
+`KPR_Tests_RunArray` for focused execution. `KPR_Tests_RunEvidence` emits the
+machine-readable host-evidence log, and `KPR_Tests_RunMigrationEvidence` is
+retained for the historical #17 parity run.
 
 Run `KPR_DateExample.RunDateExample` separately for the minimal direct-VBA
-consumer smoke. Historical KPR results are source evidence only; destination
-counts, failures/skips, environment and parity must be recorded against the
-exact candidate under migration issue #17.
+consumer smoke. Historical KPR results are source evidence only. Destination
+parity for the migrated candidate is recorded in
+[`evidence/migration-2026-09-24`](evidence/migration-2026-09-24/session.txt) (#17);
+record counts, failures/skips, environment and cleanup for any new run against
+its exact candidate and owning issue.
 
 Record at least:
 
@@ -261,7 +265,7 @@ private vulnerability reporting and safe use.
 
 ## 📚 Related authorities
 
-- [`README.md`](README.md) — overview, profiles and first-use navigation
+- [`README.md`](README.md) — overview, application profile and first-use navigation
 - [`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md) — source/layout contract
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — change/review workflow
 - [`RELEASING.md`](RELEASING.md) — maintainer release sequence

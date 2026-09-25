@@ -14,7 +14,8 @@ PR #24 subsequently fixed a Python fixture's locale-dependent text read at
 [main CI passing](https://github.com/danielep71/K-PRICING/actions/runs/35918139650).
 These documentation/tooling changes do not change the runtime-tested candidate
 below. This is a milestone checkpoint, not a published release: VERSION remains
-0.0.0 and no release tag was created. v0.0.2 owns migration execution.
+0.0.0 and no release tag was created. Migration was subsequently executed and
+accepted in v0.0.2 ([MIGRATION_COMPLETION.md](MIGRATION_COMPLETION.md)).
 
 ## Accepted candidate and host
 
@@ -71,10 +72,11 @@ checkpoint. Daniele Penza owns remaining functional-release prerequisites.
 
 This validates only the neutral starter on one Windows/64-bit Office host.
 32-bit Office, migrated KPR parity, pricing accuracy, application lifecycle and
-distributable packaging are not certified. Migration is prepared in
-[MIGRATION_PLAN.md](MIGRATION_PLAN.md) and milestone v0.0.2 issues 11–18.
+distributable packaging are not certified by this run. Migration was later
+completed in milestone v0.0.2 (issues 11–18;
+[MIGRATION_COMPLETION.md](MIGRATION_COMPLETION.md)).
 
 The exact `evidence/setup-2026-09-23/host.json` path is excluded from the branding
 scan because its validated schema must retain the adopted template repository
 identity. This is a provenance-record exception, not a directory-wide exclusion;
-the identity regression test binds the complete three-path allowlist.
+the identity regression test binds the complete four-path allowlist.

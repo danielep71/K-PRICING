@@ -9,8 +9,9 @@ Verified on 2026-09-24 against the immutable source, before importing VBA.
 - Selected commit: `f26450d1fa7b11261162e901dedba062f21c99a7`; unchanged from the preparation plan.
 - Tree: `013653658c9c9fb1e61e5958d2d4277ab8c44191`.
 - Destination base: `77983a398620805bd19469a3d6b18a29d52372cb`.
-- This step imports only the date-layer and VBE export contracts. Production
-  modules, regression harness and specialist checker remain planned imports.
+- This step (#11) imported only the date-layer and VBE export contracts. The
+  production modules, regression harness and specialist checker were imported
+  later by #12 and #13 (PR #28); see "Destination source import status" below.
 - Source date-contract v0.0.2 is independent of the destination migration
   milestone v0.0.2 and destination VERSION 0.0.0. No release is created.
 

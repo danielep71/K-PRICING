@@ -7,7 +7,7 @@
 This document owns dependency discovery, update evidence, approval and rollback.
 [REUSABLE_WORKFLOWS.md](REUSABLE_WORKFLOWS.md) owns the reusable interface;
 [TEMPLATE_CONTRACT.md](TEMPLATE_CONTRACT.md) owns contract compatibility.
-The policy applies to template maintenance and initialized repositories alike.
+The policy applies to this repository's dependency surfaces.
 
 ## 🎯 Monitoring scope and ownership
 

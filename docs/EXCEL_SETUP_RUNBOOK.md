@@ -1,6 +1,12 @@
-# Neutral starter: Windows Excel setup run
+# Neutral starter: Windows Excel setup run (historical)
 
-This reusable procedure produced the accepted run for closed
+> [!NOTE]
+> Historical record only. The neutral-starter components below were replaced by
+> the migrated date layer in v0.0.2 and no longer exist. For new host runs use
+> [Excel evidence](EXCEL_EVIDENCE.md) and, for parity work,
+> [the migration regression protocol](MIGRATION_REGRESSION.md).
+
+This procedure produced the accepted run for closed
 [setup issue 8](https://github.com/danielep71/K-PRICING/issues/8); see
 [the retained completion record](SETUP_COMPLETION.md).
 It validates only the neutral starter. Pricing behavior, migrated date-layer
@@ -29,16 +35,16 @@ parity, application lifecycle and a distributable package remain outside this ru
 The component inventory, entry points and expected four-case/six-assertion
 summary below describe the neutral starter only. For migration parity, use the
 active issue’s approved import inventory, harness commands, expected case and
-assertion counts, comparison baseline and acceptance criteria. Issue #17 must
-define those before execution; do not reuse issue #8’s candidate or treat the
+assertion counts, comparison baseline and acceptance criteria. Issue #17 defined
+those for the v0.0.2 parity run; do not reuse issue #8’s candidate or treat the
 starter example as pricing parity. Reuse the host, cleanup and evidence-capture
 steps with that candidate-specific scope.
 
 ## Import and compile
 
 Create a blank workbook and save it locally as `K-PRICING-setup.xlsm`. Open the
-VBE with **Alt+F11** and select this workbook's project. Use **File > Import File**
-in this order:
+VBE with **Alt+F11** and select this workbook's project. At the issue #8
+candidate (`c8f0b6e`), **File > Import File** used this order:
 
 1. `src/core/ProjectCore.bas`
 2. `src/modules/ProjectFacade.bas`
@@ -116,5 +122,5 @@ Retain unsuccessful records too. Validate the assembled record using
 `tools/check_excel_evidence.py` and its documented command before linking it as
 accepted evidence. Never invent missing observations or infer a second bitness
 from the tested host. For future candidates, accept evidence only after this validation. The original
-issue 8 run is already accepted; current setup closeout is tracked in
-[issue 10](https://github.com/danielep71/K-PRICING/issues/10).
+issue 8 run is accepted, and setup closeout completed in
+[issue 10](https://github.com/danielep71/K-PRICING/issues/10) on 2026-09-23.

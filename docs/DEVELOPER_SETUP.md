@@ -13,7 +13,7 @@ other environments are not certified.
 | --- | --- | --- |
 | `src/core/` | `KPR_Core_Err.bas`, `KPR_Core_Parse.bas`, `KPR_Core_Dates.bas`, `KPR_Core_Array.bas` | Internal error, parsing, calendar and array/shape implementation |
 | `src/modules/` | `KPR_DATES_DAYS.bas` | Supported 22-function `KPR_Dates_*` worksheet façade |
-| `tests/modules/` | `KPR_REGRESSION_TESTS.bas` | Migrated pure and stateful regression harness |
+| `tests/modules/` | `KPR_REGRESSION_TESTS.bas`, `KPR_Test_Fixtures_Generated.bas` | Migrated pure and stateful regression harness; generated fixture data from `tools/gen_fixtures.py` (never edit by hand) |
 | `examples/modules/` | `KPR_DateExample.bas` | Minimal direct-VBA consumer using the supported façade |
 | Future workbook/add-in/UI | Not implemented | Registration, startup/shutdown, configuration, packaging and recovery, separated from calculations |
 
@@ -95,8 +95,9 @@ host/shape regressions create controlled scratch workbooks, while dynamic-array
 members are reached late-bound by the imported harness. Use a fresh macro-enabled
 workbook and the existing organizational macro policy; manual import does not
 require enabling programmatic VBA-project access. Follow
-[the Excel runbook](EXCEL_SETUP_RUNBOOK.md) for exact-source validation and
-evidence capture. Linux CI does not compile or execute VBA.
+[the Excel evidence interface](EXCEL_EVIDENCE.md) for exact-source validation
+and evidence capture, and [the migration regression protocol](MIGRATION_REGRESSION.md)
+for parity runs. The [neutral-starter runbook](EXCEL_SETUP_RUNBOOK.md) is historical. Linux CI does not compile or execute VBA.
 
 ## Change and review
 

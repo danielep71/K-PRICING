@@ -260,7 +260,7 @@ New trust boundary:
 - [ ] `CHANGELOG.md` records material change under `[Unreleased]`.
 - [ ] `SECURITY.md` reflects supported versions or trust boundaries.
 - [ ] `RELEASING.md` reflects certification, package, provenance, or recovery changes.
-- [ ] Source headers, API references, demos, Wiki pages, and counts remain synchronized.
+- [ ] Source headers, API references, demos, and counts remain synchronized.
 - [ ] Version markers remain unchanged unless this is the deliberate release-stamp change.
 - [ ] No documentation change is required — reason recorded below.
 
