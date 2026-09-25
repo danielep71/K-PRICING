@@ -84,16 +84,24 @@ identifiers; a project may rename them later as an explicit source change.
 
 ## 🧭 Repeat-run verification
 
-The initializer runs from a clean repository root and is dry-run by default:
+The initializer runs from a clean repository root and is dry-run by default.
+In K-PRICING, a repeat run with exactly the inputs recorded in
+`.github/initialization.json` must report `"status": "no-op"`; different inputs
+are rejected. This dry run replays the recorded inputs without retyping them:
 
 ```bash
-python3 tools/initialize_repository.py --profile application \
-  --set NAME=value --add NAME=value
+python3 - <<'PY'
+import json, subprocess, sys
+record = json.load(open(".github/initialization.json", encoding="utf-8"))
+command = [sys.executable, "tools/initialize_repository.py", "--profile", record["profile"]]
+for name, value in record["values"].items():
+    flag, items = ("--add", value) if isinstance(value, list) else ("--set", [value])
+    command += [part for item in items for part in (flag, f"{name}={item}")]
+sys.exit(subprocess.run(command).returncode)
+PY
 ```
 
-In K-PRICING, a repeat run with exactly the inputs recorded in
-`.github/initialization.json` must report a no-op; different inputs are
-rejected. The `library` and `ui-component` entries that remain in
+The `library` and `ui-component` entries that remain in
 `.github/repository-profile.json` exist only for the tooling and its fixtures.
 
 Review every planned create, update, and delete operation and its before/after
