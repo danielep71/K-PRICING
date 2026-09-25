@@ -105,13 +105,15 @@ The migrated harness is a focused implementation candidate, not the unfinished
 full KPR regression architecture.
 
 - Independent generated fixtures (#38) are produced by `tools/gen_fixtures.py`
-  in `tests/fixtures/`; executing them through a runner is #39. The migrated
+  in `tests/fixtures/`, and the durable runner (#39) replays them. The migrated
   harness's own expected values are reviewed test expectations, but they are
   not a complete external oracle.
-- The broader final runner/evidence and complete error/state matrix planned in
-  #39 and #40 are not represented as completed work. The
-  destination `KPR_Tests_RunEvidence` adapter is intentionally narrower: it
-  formats the already-landed pure suites for K-PRICING evidence.
+- The durable runner and its structured evidence record (#39) are documented
+  in [KPR_TEST_EVIDENCE.md](KPR_TEST_EVIDENCE.md) and are not yet executed on a
+  Windows Excel host. The complete error/state matrix planned in #40 is not
+  represented as completed work. The destination `KPR_Tests_RunEvidence`
+  adapter is intentionally narrower: it formats the migrated pure suites for
+  K-PRICING host evidence.
 - Excel cross-oracles planned in #41 are not implemented.
 - Platform support, Excel build compatibility and dynamic-array availability are
   claims only for environments actually executed in #17.
@@ -245,9 +247,10 @@ Issue #17 executed this protocol on one Windows 64-bit host
 Issue #16 mapped the unfinished fixture, runner-expansion and cross-oracle work
 to the destination backlog, and issue #15 limited the documentation to the
 behavior and environments that #17 verified. Of that backlog, the independent
-fixture generator is complete (#38); the runner and evidence schema (#39), the
-regression matrix (#40) and the cross-oracle checks (#41) remain future work in
-the [roadmap](ROADMAP.md).
+fixture generator is complete (#38), and the durable runner and evidence schema
+(#39) are implemented and await their first Windows Excel run. The regression
+matrix (#40) and the cross-oracle checks (#41) remain future work in the
+[roadmap](ROADMAP.md).
 
 **Acceptance principle:** parity means the same observable behavior on the same
 environment and inputs, with independent contract expectations still governing

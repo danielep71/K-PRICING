@@ -341,6 +341,29 @@ or registry condition has no fixture. Hosted Repository integrity runs
 `--self-test` and `--check`. The schema, encoding and contract interpretation
 notes are in [`tests/fixtures/README.md`](../tests/fixtures/README.md).
 
+## Structured test evidence
+
+`check_test_evidence.py` validates the `kpr-test-evidence.json` record written
+by the durable VBA runner (`KPR_Test_RunAll`, `KPR_Test_RunSuite`, issue #39).
+It checks the record against
+[`docs/kpr-test-evidence.schema.json`](../docs/kpr-test-evidence.schema.json)
+with a standard-library subset validator, reads the suite registry from
+`tests/modules/KPR_REGRESSION_TESTS.bas`, binds the fixture SHA-256 and case
+count to the canonical TSV, and checks counts, statuses, the result and every
+certification outcome for consistency.
+
+```bash
+python3 tools/check_test_evidence.py --root . --self-test
+python3 tools/check_test_evidence.py --root . --evidence ../kpr-evidence/run-1/kpr-test-evidence.json --candidate-sha FULL_CANDIDATE_SHA
+```
+
+`--compare` checks that two records differ only in their declared
+nondeterministic fields, and `--certification` requires a complete #52
+certification record. `--self-test` exercises synthetic records and confirms
+that every schema property is written by the VBA runner. Hosted Repository
+integrity runs `--self-test`. The record contract is
+[`docs/KPR_TEST_EVIDENCE.md`](../docs/KPR_TEST_EVIDENCE.md).
+
 ## KPR migration evidence binding
 
 `check_migration_evidence.py` validates the retained v0.0.2 source-versus-

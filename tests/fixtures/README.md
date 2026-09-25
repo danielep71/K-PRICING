@@ -91,6 +91,11 @@ recorded here for a separate contract wording review:
 
 The fixtures use in-memory values only. Real Range behavior (multi-area
 Ranges, `UsedRange` independence and worksheet caller state) belongs to the
-stateful runners in `KPR_REGRESSION_TESTS`. The durable runner that executes
-these fixtures and records evidence is issue #39. Calendar, weekend-mask,
+stateful runners in `KPR_REGRESSION_TESTS`. The durable runner (#39) executes
+these fixtures: its `fixtures` suite replays the direct cases with strict
+result types, and its `worksheet-fixtures` suite replays the 1900 and 1904
+worksheet-caller cases as Range formulas, comparing worksheet numbers by value
+([KPR_TEST_EVIDENCE.md](../../docs/KPR_TEST_EVIDENCE.md)). The facade returns
+Excel values only, so replay asserts the expected value and error code; the
+condition ID and level are provenance for review. Calendar, weekend-mask,
 holiday and business-day fixtures are outside v0.0.4.
