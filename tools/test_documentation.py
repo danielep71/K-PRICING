@@ -157,10 +157,19 @@ class ProjectIdentityTests(unittest.TestCase):
     def test_retired_predecessor_repository_references_are_rejected(self):
         for text in ("See https://github.com/danielep71/KPR.\n",
                      "Carried from danielep71/KPR#19.\n", "Tracked in KPR#19.\n",
-                     "Recorded in KPR #17.\n"):
+                     "Recorded in KPR #17.\n", "See KPR issue #19.\n",
+                     "See KPR  #19.\n", "See KPR **#19**.\n",
+                     "See KPR issues #19-#22.\n"):
             with self.subTest(text=text):
                 self.sample.write_text(text)
                 self.assertEqual(self.scan()["status"], "fail")
+
+    def test_kpr_short_form_near_destination_issues_is_allowed(self):
+        for text in ("KPR regression suites (#40).\n", "The KPR date layer; see #38.\n",
+                     "`KPR_Tests_Run` (#17).\n"):
+            with self.subTest(text=text):
+                self.sample.write_text(text)
+                self.assertEqual(self.scan()["status"], "pass")
 
     def test_unrelated_donor_and_template_identities_remain_rejected(self):
         policy = self.config["identity"]

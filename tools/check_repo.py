@@ -762,7 +762,12 @@ def check_identity(
                 ))
             # The KPR short form and KPR_ namespace are legitimate; references to
             # the retired predecessor repository and its issues are not.
-            retired = re.search(r"danielep71/KPR\b(?!-)|\bKPR ?#\d", text, re.IGNORECASE)
+            retired = re.search(
+                r"danielep71/KPR\b(?!-)"
+                r"|\bKPR(?:[\s*_`~\[\]()]|\bissues?\b|\bno\.)*#\s*\d",
+                text,
+                re.IGNORECASE,
+            )
             if retired:
                 failures.append(finding(
                     path, "Documentation must not reference the retired predecessor repository or its issues.",

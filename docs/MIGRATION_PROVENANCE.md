@@ -41,8 +41,9 @@ belongs to issue #16; the source plan is not copied as a competing authority.
 ## Contract preservation and adaptations
 
 The [date-layer contract](DATE_LAYER_CONTRACT.md) preserves source behavior, including amendments, defaults, errors, caller
-rules, date window and array semantics. Editorial adaptations include a migration-scope notice,
-fully qualified source issue references and the implementation-plan link
+rules, date window and array semantics. Editorial adaptations include a migration-scope notice
+that identifies the frozen source commit, source issue references restated as
+plain descriptions or destination issues, the implementation-plan link
 redirected to the destination migration plan, plus the explicit registry
 clarification below. All 22 declaration signatures
 in its public-surface block match the source facade declarations after joining
@@ -83,7 +84,8 @@ issues #13–#14 and source-history reconciliation to #16.
 Source is MIT, copyright (c) 2026 Daniele Penza. Source LICENSE blob
 `51f4dbcee64abe24d6f607a9a7a8f491e11b5c57` is byte-identical to the destination
 [LICENSE](../LICENSE); its copyright, permission and warranty text are retained.
-Original contract URLs are preserved in each imported document's notice.
+Each imported document's notice identifies its frozen source commit; the
+source blob IDs above identify the original documents.
 
 ## Historical runtime evidence
 
