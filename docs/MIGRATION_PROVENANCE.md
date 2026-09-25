@@ -5,7 +5,7 @@ Verified on 2026-09-24 against the immutable source, before importing VBA.
 
 ## Source and destination boundary
 
-- Source: [danielep71/KPR](https://github.com/danielep71/KPR).
+- Source: the frozen date-layer source revision below.
 - Selected commit: `f26450d1fa7b11261162e901dedba062f21c99a7`; unchanged from the preparation plan.
 - Tree: `013653658c9c9fb1e61e5958d2d4277ab8c44191`.
 - Destination base: `77983a398620805bd19469a3d6b18a29d52372cb`.
@@ -41,8 +41,9 @@ belongs to issue #16; the source plan is not copied as a competing authority.
 ## Contract preservation and adaptations
 
 The [date-layer contract](DATE_LAYER_CONTRACT.md) preserves source behavior, including amendments, defaults, errors, caller
-rules, date window and array semantics. Editorial adaptations include a migration-scope notice,
-fully qualified source issue references and the implementation-plan link
+rules, date window and array semantics. Editorial adaptations include a migration-scope notice
+that identifies the frozen source commit, source issue references restated as
+plain descriptions or destination issues, the implementation-plan link
 redirected to the destination migration plan, plus the explicit registry
 clarification below. All 22 declaration signatures
 in its public-surface block match the source facade declarations after joining
@@ -83,18 +84,17 @@ issues #13–#14 and source-history reconciliation to #16.
 Source is MIT, copyright (c) 2026 Daniele Penza. Source LICENSE blob
 `51f4dbcee64abe24d6f607a9a7a8f491e11b5c57` is byte-identical to the destination
 [LICENSE](../LICENSE); its copyright, permission and warranty text are retained.
-Original contract URLs are preserved in each imported document's notice.
+Each imported document's notice identifies its frozen source commit; the
+source blob IDs above identify the original documents.
 
 ## Historical runtime evidence
 
-[KPR #17's recorded result](https://github.com/danielep71/KPR/issues/17#issuecomment-5514012069)
-reports `KPR_Tests_Run`: 557 checks, zero failures, and
+The source's recorded result reports `KPR_Tests_Run`: 557 checks, zero failures, and
 `KPR_Tests_RunArray`: seven checks, zero failures with dynamic-array API
 SUPPORTED, at `a750cd5a935529b807c43631e92cd9f1b15ee8b3`.
 This verifies what the source record reports; it is not a new execution or
 certification of the later frozen source. It describes one dynamic-array host
-and focused 1900/1904 behavior. Source final certification remains owned by
-[KPR #29](https://github.com/danielep71/KPR/issues/29).
+and focused 1900/1904 behavior.
 
 ## Destination source import status
 

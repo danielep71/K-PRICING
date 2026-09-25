@@ -1,7 +1,7 @@
 > [!IMPORTANT]
-> **Migration scope — 2026-09-24.** Imported from [danielep71/KPR at `f26450d`](https://github.com/danielep71/KPR/blob/f26450d1fa7b11261162e901dedba062f21c99a7/docs/VBE_EXPORT.md).
+> **Migration scope — 2026-09-24.** Imported from frozen source commit `f26450d`.
 > Source version labels (including v0.0.2 and v0.0.3), roadmap statements and
-> historical evidence refer to KPR. They do not set K-PRICING release versions
+> historical evidence refer to the frozen source. They do not set K-PRICING release versions
 > or claim destination certification. The frozen implementation is now migrated
 > into K-PRICING; exact-source Windows Excel compilation and parity passed on one
 > Windows 64-bit host in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
@@ -35,8 +35,7 @@ VBE import/export aligned.
 > [!IMPORTANT]
 > This page defines the source exchange format. It does **not**
 > establish that tracked source imports, compiles or runs in Excel. That claim
-> belongs exclusively to the exact-source Windows certification recorded in
-> source issue [danielep71/KPR#29](https://github.com/danielep71/KPR/issues/29);
+> belongs exclusively to exact-source Windows certification;
 > destination parity is tracked in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
 
 ## 🧾 Format contract

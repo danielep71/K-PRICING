@@ -9,7 +9,7 @@ product is claimed. Issue #18 owns this acceptance.
 
 | Item | Value |
 | --- | --- |
-| Frozen source | danielep71/KPR `f26450d1fa7b11261162e901dedba062f21c99a7` |
+| Frozen source | `f26450d1fa7b11261162e901dedba062f21c99a7` |
 | Runtime-tested destination candidate | `db98e506358ab74893ab28d52183fa2e216352b9` |
 | Main at acceptance review | `b0794e2dab1bab9ff0cc948cf1d5734863c6bece` (PR #37) |
 
@@ -77,20 +77,14 @@ one P1/P2/P3 priority label and assignee `danielep71`. The successor issues
 The maintainer selected independent test hardening first, then registration,
 in milestone **v0.0.3 - Test Hardening and Registration**:
 
-| Issue | Scope | Source |
-| --- | --- | --- |
-| #38 | Independent fixture generator and generated VBA fixture module | danielep71/KPR#19 |
-| #39 | Durable regression runner and structured evidence schema | danielep71/KPR#20 |
-| #40 | Complete contract/shape/parity/error/state regression matrix | danielep71/KPR#21 |
-| #41 | Native Excel cross-oracle checks | danielep71/KPR#22 |
-| #42 | MacroOptions registration and register/unregister lifecycle | danielep71/KPR#18 |
+| Issue | Scope |
+| --- | --- |
+| #38 | Independent fixture generator and generated VBA fixture module |
+| #39 | Durable regression runner and structured evidence schema |
+| #40 | Complete contract/shape/parity/error/state regression matrix |
+| #41 | Native Excel cross-oracle checks |
+| #42 | MacroOptions registration and register/unregister lifecycle |
 
-danielep71/KPR#23–#29 (demo, Ribbon, CommandBars, final inventory, candidate
-assembly and certification) remain unscheduled in the
+The demo builder, Ribbon, CommandBars, member classification, inventory
+controls, candidate assembly and certification remain unscheduled in the
 [handover register](MIGRATION_HANDOVER.md).
-
-## Source repository
-
-danielep71/KPR remains the historical reference and recovery source. Its issues
-are not closed or rewritten by this migration, and archiving, redirecting or
-changing its visibility is a separate maintainer decision.

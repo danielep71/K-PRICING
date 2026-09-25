@@ -24,12 +24,10 @@ Migration replaces them together with their API and regression contracts.
 
 ## Project identity and future migration
 
-**K-PRICING** is the product and repository name. **`KPR_`** remains the VBA
-module/function namespace for the planned migration from
-[`danielep71/KPR`](https://github.com/danielep71/KPR). This preserves existing
-caller names without treating the source repository as unrelated donor branding.
-The identity policy permits these references while retaining all other donor
-and template identity restrictions and the existing scan scope.
+**K-PRICING** is the product and repository name; **KPR** is its short form and
+**`KPR_`** its VBA module/function namespace. The identity policy permits the
+short form and namespace while retaining all other donor and template identity
+restrictions and the existing scan scope.
 The checker rejects standalone old-product headings and explicit old product-name
 declarations; documentation tests also bind the README title to the recorded
 project name. Historical references remain legitimate, not blanket scan exclusions.

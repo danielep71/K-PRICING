@@ -138,14 +138,14 @@ class ProjectIdentityTests(unittest.TestCase):
             (self.root / path).write_bytes((ROOT / path).read_bytes())
         self.config = json.loads((self.root / initializer.CONFIG_PATH).read_text())
         self.sample = self.root / "README.md"
-        self.sample.write_text("K-PRICING retains KPR_Dates_AddDays from danielep71/KPR.\n")
+        self.sample.write_text("K-PRICING (KPR) retains KPR_Dates_AddDays in the KPR date layer.\n")
         subprocess.run(["git", "init", "-q", str(self.root)], check=True)
         subprocess.run(["git", "-C", str(self.root), "add", "--all"], check=True)
 
     def scan(self):
         return repo_checks.check_identity(repo_checks.Repository(self.root), self.config)
 
-    def test_kpr_namespace_and_provenance_are_allowed(self):
+    def test_kpr_short_form_and_namespace_are_allowed(self):
         self.assertEqual(self.scan()["status"], "pass")
 
     def test_old_product_branding_is_rejected(self):
@@ -153,6 +153,23 @@ class ProjectIdentityTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.sample.write_text(text)
                 self.assertEqual(self.scan()["status"], "fail")
+
+    def test_retired_predecessor_repository_references_are_rejected(self):
+        for text in ("See https://github.com/danielep71/KPR.\n",
+                     "Carried from danielep71/KPR#19.\n", "Tracked in KPR#19.\n",
+                     "Recorded in KPR #17.\n", "See KPR issue #19.\n",
+                     "See KPR  #19.\n", "See KPR **#19**.\n",
+                     "See KPR issues #19-#22.\n"):
+            with self.subTest(text=text):
+                self.sample.write_text(text)
+                self.assertEqual(self.scan()["status"], "fail")
+
+    def test_kpr_short_form_near_destination_issues_is_allowed(self):
+        for text in ("KPR regression suites (#40).\n", "The KPR date layer; see #38.\n",
+                     "`KPR_Tests_Run` (#17).\n"):
+            with self.subTest(text=text):
+                self.sample.write_text(text)
+                self.assertEqual(self.scan()["status"], "pass")
 
     def test_unrelated_donor_and_template_identities_remain_rejected(self):
         policy = self.config["identity"]

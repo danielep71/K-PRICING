@@ -8,14 +8,14 @@ the method and evidence boundary and does not claim that a run has occurred.
 
 ## Baselines and evidence boundary
 
-The frozen source baseline is
-[danielep71/KPR@`f26450d1fa7b11261162e901dedba062f21c99a7`](https://github.com/danielep71/KPR/tree/f26450d1fa7b11261162e901dedba062f21c99a7).
+The frozen source baseline is commit
+`f26450d1fa7b11261162e901dedba062f21c99a7`.
 The destination candidate is the exact K-PRICING commit selected by #17.
 [Migration provenance](MIGRATION_PROVENANCE.md) owns the source/destination
 inventory, hashes and justified source deltas.
 
-Historical KPR results are context, not destination evidence. KPR issue #17
-records a 557-check pure run and a seven-check dynamic-array run at
+Historical KPR results are context, not destination evidence. The
+source record reports a 557-check pure run and a seven-check dynamic-array run at
 `a750cd5a935529b807c43631e92cd9f1b15ee8b3`; those results neither execute
 the later frozen source nor certify K-PRICING.
 
@@ -102,14 +102,14 @@ behavior including 1904 call-level `#N/A`.
 The migrated harness is a focused implementation candidate, not the unfinished
 full KPR regression architecture.
 
-- Independent generated fixtures from danielep71/KPR#19 are not implemented.
+- Independent generated fixtures (#38) are not implemented.
   Existing expected values are reviewed test expectations, but they are not a
   complete external oracle.
 - The broader final runner/evidence and complete error/state matrix planned in
-  danielep71/KPR#20 and #21 are not represented as completed work. The
+  #39 and #40 are not represented as completed work. The
   destination `KPR_Tests_RunEvidence` adapter is intentionally narrower: it
   formats the already-landed pure suites for K-PRICING evidence.
-- Excel cross-oracles planned in danielep71/KPR#22 are not implemented.
+- Excel cross-oracles planned in #41 are not implemented.
 - Platform support, Excel build compatibility and dynamic-array availability are
   claims only for environments actually executed in #17.
 - No CSE/legacy multi-cell compatibility claim is made.
@@ -152,7 +152,7 @@ component names intentionally collide and Excel would rename duplicates.
 5. **Source observation host B:** import the frozen KPR production modules, but
    use the exact K-PRICING candidate's `KPR_REGRESSION_TESTS.bas` as the
    measurement harness. Record that harness's SHA-256. This is an instrumentation
-   host, not a claim that the destination harness belonged to KPR.
+   host, not a claim that the destination harness belonged to the frozen source.
 6. **Destination observation host C:** import the exact K-PRICING candidate
    production modules and the same candidate regression module used in host B.
    Compile it and retain the compile result.
@@ -233,7 +233,7 @@ unbound files placed beside a valid host record.
 K-PRICING's shared host record remains governed by
 [EXCEL_EVIDENCE.md](EXCEL_EVIDENCE.md). The migration manifest is an additional
 v0.0.2 parity binding; it does not expand the generic release-evidence schema or
-turn unfinished KPR #19-#22 work into completed scope.
+turn unfinished #38–#41 work into completed scope.
 
 ## Handover to later work
 

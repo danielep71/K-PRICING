@@ -1,7 +1,7 @@
 > [!IMPORTANT]
-> **Migration scope — 2026-09-24.** Imported from [danielep71/KPR at `f26450d`](https://github.com/danielep71/KPR/blob/f26450d1fa7b11261162e901dedba062f21c99a7/docs/DATE_LAYER_CONTRACT.md).
+> **Migration scope — 2026-09-24.** Imported from frozen source commit `f26450d`.
 > Source version labels (including v0.0.2 and v0.0.3), roadmap statements and
-> historical evidence refer to KPR. They do not set K-PRICING release versions
+> historical evidence refer to the frozen source. They do not set K-PRICING release versions
 > or claim destination certification. The frozen implementation is now migrated
 > into K-PRICING; exact-source Windows Excel compilation and parity passed on one
 > Windows 64-bit host in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
@@ -47,13 +47,13 @@ non-overlapping in authority:
 > behavioral decision rather than an incidental implementation change.
 
 > [!NOTE]
-> The calculation work through issue [danielep71/KPR#17](https://github.com/danielep71/KPR/issues/17) implements this contract. Static checks
-> and the focused Excel results recorded on the closed implementation issues
-> support those issue-level conclusions. That evidence is deliberately narrower
+> The migrated calculation implementation implements this contract. Static checks
+> and the focused Excel results recorded during its implementation
+> support those conclusions. That evidence is deliberately narrower
 > than release certification: it does not make the current `main` branch a
 > supported release or certify the final candidate's complete import,
 > compilation, regression, UI, demo, and source round trip. Those exact-source
-> claims remain owned by issue [danielep71/KPR#29](https://github.com/danielep71/KPR/issues/29).
+> claims require separate certification evidence.
 
 ## 🎯 1. Scope and terminology
 
@@ -328,7 +328,7 @@ only from an identifiable worksheet caller:
    classifying `Application.Caller` itself is not `HOST_UNRESOLVED`; it
    follows the same path as any other non-`Range` caller, meaning no
    worksheet host could be identified and the documented 1900 serial
-   contract applies. That raising case is recorded in [danielep71/KPR#29](https://github.com/danielep71/KPR/issues/29)'s probe matrix.
+   contract applies. That raising case belongs in the certification probe matrix.
 5. If no worksheet host can be identified, apply the documented 1900 serial
    contract. Never consult `ActiveWorkbook`, `ThisWorkbook`, or another
    unrelated workbook as a fallback.
@@ -471,8 +471,8 @@ Registry rules:
 - An identifier is never renamed, renumbered, or reused. A retired identifier
   stays retired and its meaning is not reassigned to a different condition.
 - A new documented condition requires a new identifier in this registry.
-- Fixtures ([danielep71/KPR#19](https://github.com/danielep71/KPR/issues/19)), the evidence schema ([danielep71/KPR#20](https://github.com/danielep71/KPR/issues/20)), and certification records ([danielep71/KPR#29](https://github.com/danielep71/KPR/issues/29))
-  cite these identifiers.
+- Fixtures (#38), the evidence schema (#39), and certification records cite
+  these identifiers.
 
 | Condition ID | Condition | Excel error | Level |
 | --- | --- | --- | --- |
@@ -727,9 +727,9 @@ The following are explicitly outside v0.0.2:
 - duplicate `_Spill` functions or `KPR_Dates_Spill.bas`; and
 - generated `.xlsm`, `.xlam`, `.xlsx`, or other Office binaries in git.
 
-## ✅ 11. Issue [danielep71/KPR#9](https://github.com/danielep71/KPR/issues/9) acceptance traceability
+## ✅ 11. Contract acceptance traceability
 
-Issue [danielep71/KPR#9](https://github.com/danielep71/KPR/issues/9) states twelve acceptance criteria. Each is listed below in issue order
+The contract has twelve acceptance criteria. Each is listed below in order
 with its normative coverage in this document.
 
 | # | Acceptance criterion | Normative coverage |

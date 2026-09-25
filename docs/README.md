@@ -42,7 +42,7 @@ may summarize it, but must link here rather than restating a competing rule.
 | VBA exchange format and character set | [`VBE_EXPORT.md`](VBE_EXPORT.md) | Link to format; procedures remain in Installation |
 | Frozen migration source and attribution | [`MIGRATION_PROVENANCE.md`](MIGRATION_PROVENANCE.md) | Source reference and migration status |
 | Migrated regression coverage, evidence boundary and source/destination parity procedure | [`MIGRATION_REGRESSION.md`](MIGRATION_REGRESSION.md) | Links to execution/parity requirements only |
-| KPR source-to-destination issue disposition, carried-forward roadmap and handover policy | [`MIGRATION_HANDOVER.md`](MIGRATION_HANDOVER.md) | Links to source issues and their disposition only |
+| Source-to-destination work disposition, carried-forward roadmap and handover policy | [`MIGRATION_HANDOVER.md`](MIGRATION_HANDOVER.md) | Disposition only; acceptance criteria live in destination issues |
 | v0.0.2 migration acceptance, limitations and next delivery scope | [`MIGRATION_COMPLETION.md`](MIGRATION_COMPLETION.md) | Link to the acceptance record |
 | Public VBA surface | [`PUBLIC_API.txt`](PUBLIC_API.txt) | Human-readable API summary only |
 | Live repository provisioning and verification after generation | [`POST_CREATION_CHECKLIST.md`](POST_CREATION_CHECKLIST.md) | One reminder that settings are not inherited |

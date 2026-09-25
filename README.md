@@ -53,9 +53,8 @@ host in #17 ([evidence](evidence/migration-2026-09-24/session.txt)); migration
 acceptance is #18 and no installable product is claimed. See the
 [initialization status](docs/INITIALIZATION_STATUS.md) for provenance and setup boundaries.
 
-The product and repository name is **K-PRICING**. The migration from
-[`KPR`](https://github.com/danielep71/KPR) retains the **`KPR_`** VBA namespace
-to preserve existing module and function names.
+The product and repository name is **K-PRICING**; **KPR** is its short form,
+used for the **`KPR_`** VBA module and function namespace.
 
 K-PRICING is a source-first Excel/VBA project. Exported VBA, tests,
 versioned policy and documentation are the reviewable source of truth; Office

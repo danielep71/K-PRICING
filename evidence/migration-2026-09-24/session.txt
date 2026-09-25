@@ -1,7 +1,7 @@
 Manual evidence transcribed from Daniele Penza's supplied Immediate-window output and confirmations.
 Issue: K-PRICING #17 (v0.0.2 exact-source Windows Excel parity).
 Destination candidate: db98e506358ab74893ab28d52183fa2e216352b9 (checked out by the maintainer; git reported HEAD at db98e50).
-Frozen source: danielep71/KPR f26450d1fa7b11261162e901dedba062f21c99a7.
+Frozen source: f26450d1fa7b11261162e901dedba062f21c99a7.
 Session: 2026-09-24, approximately 20:30 to 21:15 Europe/Rome (UTC+02:00); endpoints are approximate, not measured.
 Environment (maintainer-confirmed unchanged from the 2026-09-23 setup record, plus locale supplied today):
   Excel for Microsoft 365 Version 2608, Build 16.0.20326.20072, 64-bit; Windows (64-bit) NT 10.00; VBA7+.
@@ -21,3 +21,4 @@ Instrumentation identity: the maintainer's Get-FileHash of tests/modules/KPR_REG
 Transcription: outputs were pasted as text; tab field separators of OBS/CLEANUP records were restored from the fixed record format.
 An earlier host-A attempt ran the old neutral starter workbook by mistake and was discarded; it is not evidence.
 Scope: migrated date layer on one Windows 64-bit Office host. No 32-bit, other-build, packaging or application-lifecycle certification.
+Amended 2026-09-25: the frozen source is identified by its commit SHA only; no observation, digest or result changed.

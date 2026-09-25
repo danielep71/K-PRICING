@@ -116,9 +116,9 @@ Use only the categories needed by a release.
   ISO inputs, month-end clipping, pillars, dynamic-array spills and the 1904
   date-system boundary; its results are contract expectations, since the #17
   parity run did not execute those exact formulas.
-- Added the KPR migration handover register: source-to-destination issue
-  disposition, destination-only corrections, the carried-forward KPR#18-#29
-  roadmap and the rollback/reference policy for the frozen source.
+- Added the KPR migration handover register: source-to-destination work
+  disposition, destination-only corrections, the carried-forward roadmap and
+  the reference policy for the frozen source.
 - Imported the frozen KPR date and VBE export contracts with verified source
   hashes, license attribution and explicit pending destination runtime evidence.
 - Accepted manual neutral-starter Excel evidence for candidate
@@ -167,8 +167,7 @@ Use only the categories needed by a release.
   read-back; retain honest anonymous reachability results.
 - Reconcile visibility records, documentation authorities, ASCII source rules
   and the migrated regression harness visibility exception.
-- Allow the retained `KPR_` VBA namespace and KPR source-provenance references
-  through the project identity policy, while preserving unrelated donor and
+- Allow the retained `KPR_` VBA namespace through the project identity policy, while preserving unrelated donor and
   template restrictions ([#2](https://github.com/danielep71/K-PRICING/issues/2)).
 
 ### Known limitations
