@@ -31,7 +31,7 @@ K-PRICING is the active implementation destination after migration acceptance.
 | Pillar grammar | Pillar grammar and `NEAREST/FLOOR/CEILING` policy | Migrated by #12. K-PRICING #32 corrects an inherited oversized-valid-pillar range-classification defect and records it as an explicit destination divergence. |
 | Public surface | Complete element-correct 22-function date surface | Migrated by #12; exact names/signatures/ownership are enforced by destination public-API and KPR contract gates. |
 | Array engine | Array shape/broadcasting services | Migrated by #12; dependency, purity and capacity structure are guarded by #13. |
-| Array façade | Array-capable public surface plus focused source regression evidence | Implementation migrated by #12. The historical 557-check pure run and seven-check dynamic-array run are retained as source evidence only, not destination certification. K-PRICING #14 defines destination parity evidence and #17 owns actual Windows execution. |
+| Array façade | Array-capable public surface plus focused source regression evidence | Implementation migrated by #12. The historical 557-check pure run and seven-check dynamic-array run are retained as source evidence only, not destination certification. K-PRICING #14 defined destination parity evidence and #17 performed the Windows execution. |
 
 ## Destination-only corrections
 

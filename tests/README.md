@@ -25,7 +25,7 @@ The source expectations and condition identifiers are preserved. Historical KPR
 run counts are not destination certification. The authoritative
 [regression/parity protocol](../docs/MIGRATION_REGRESSION.md) documents the
 entry-point roles, existing coverage and gaps, exact source-versus-destination
-comparison and the additional host/shape/array logs required by #17.
+comparison and the additional host/shape/array logs that the #17 run retained.
 
 ## Independent generated fixtures
 
