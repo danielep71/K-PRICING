@@ -7,7 +7,8 @@ K-PRICING issue #16 and the v0.0.2 repository-migration milestone.
 The migration baseline is the frozen KPR source commit
 `f26450d1fa7b11261162e901dedba062f21c99a7`. K-PRICING is the only maintained
 home of this work; this register records what was carried in, not a second
-backlog.
+backlog. Current milestones and sequencing are owned by the
+[roadmap](ROADMAP.md).
 
 ## Scope boundary
 
