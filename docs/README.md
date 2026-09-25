@@ -57,7 +57,9 @@ may summarize it, but must link here rather than restating a competing rule.
 The project-specific authorities are [developer setup](DEVELOPER_SETUP.md),
 [dated setup verification](SETUP_VERIFICATION.md),
 [the neutral Excel runbook](EXCEL_SETUP_RUNBOOK.md), and
-[the staged migration plan](MIGRATION_PLAN.md).
+[the delivery roadmap](ROADMAP.md) for current milestones and sequencing.
+[The staged migration plan](MIGRATION_PLAN.md) is the historical v0.0.2
+execution record.
 
 ## 🧭 First-use path
 
@@ -69,7 +71,7 @@ A new maintainer should normally need only this sequence:
 4. Read the dated [`SETUP_VERIFICATION.md`](SETUP_VERIFICATION.md) and the
    [`EXCEL_SETUP_RUNBOOK.md`](EXCEL_SETUP_RUNBOOK.md) and
    accepted [`SETUP_COMPLETION.md`](SETUP_COMPLETION.md).
-   Use [`MIGRATION_PLAN.md`](MIGRATION_PLAN.md) for the current migration milestone status.
+   Use [`ROADMAP.md`](ROADMAP.md) for current milestone status and sequencing.
 5. For changes, use [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 6. For publication, use [`RELEASING.md`](../RELEASING.md) together with the
    release-semantics and release-evidence contracts.

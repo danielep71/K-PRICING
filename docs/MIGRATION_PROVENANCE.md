@@ -44,7 +44,7 @@ The [date-layer contract](DATE_LAYER_CONTRACT.md) preserves source behavior, inc
 rules, date window and array semantics. Editorial adaptations include a migration-scope notice
 that identifies the frozen source commit, source issue references restated as
 plain descriptions or destination issues, the implementation-plan link
-redirected to the destination migration plan, the explicit registry
+redirected to the destination roadmap and migration plan, the explicit registry
 clarification and the destination version-label adaptation below. All 22 declaration signatures
 in its public-surface block match the source facade declarations after joining
 VBA line continuations and normalizing whitespace, including whitespace after

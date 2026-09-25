@@ -186,13 +186,13 @@ history. Open work remains open unless separately implemented and evidenced.
 | Full runner and evidence | Open; preserve current harness first; final runner interface still future | #14, #16; now #39 |
 | Complete regression matrix | Open; preserve implemented tests; broader coverage remains future | #14, #16; now #40 |
 | Native Excel cross-oracle | Open; defer independent overlap checks, not a current certification | #16; now #41 |
-| Deterministic demo builder | Open; no workbook builder to import | #16 |
-| Ribbon integration | Open; no XML/callback/package implementation to import | #16 |
-| CommandBars lifecycle | Open; no install/remove implementation to import | #16 |
-| API/classification manifest | Open; migration records implemented subset; future UI/register surface deferred | #13, #16 |
-| Final static/live issue register | Open; port existing checks; future full inventory/live monitor deferred | #13, #16 |
-| Final documentation/version/candidate | Open; rewrite destination docs; do not claim release completion | #15, #16 |
-| Exact-source certification/release | Open; historical runs do not satisfy a final release | #17, #18 |
+| Deterministic demo builder | Open; no workbook builder to import | #16; now #46 |
+| Ribbon integration | Open; no XML/callback/package implementation to import | #16; now #47 |
+| CommandBars lifecycle | Open; no install/remove implementation to import | #16; now #48 |
+| API/classification manifest | Open; migration records implemented subset; future UI/register surface deferred | #13, #16; now #49 |
+| Final static/live issue register | Open; port existing checks; future full inventory/live monitor deferred | #13, #16; now #50 |
+| Final documentation/version/candidate | Open; rewrite destination docs; do not claim release completion | #15, #16; now #51 |
+| Exact-source certification/release | Open; historical runs do not satisfy a final release | #17, #18; now #52 |
 
 Issue 16 owned detailed reconciliation and successor traceability, not feature
 implementation. A successor feature issue is created only with an explicit

@@ -120,8 +120,9 @@ is collected separately under migration issue #17.
 Follow the [developer setup](docs/DEVELOPER_SETUP.md) and
 [Windows Excel runbook](docs/EXCEL_SETUP_RUNBOOK.md). Initialization is complete.
 Current GitHub controls and limitations are recorded in
-[setup verification](docs/SETUP_VERIFICATION.md); migration is sequenced in
-[the migration plan](docs/MIGRATION_PLAN.md).
+[setup verification](docs/SETUP_VERIFICATION.md); the completed migration is
+recorded in [the migration plan](docs/MIGRATION_PLAN.md), and future work is
+sequenced in [the roadmap](docs/ROADMAP.md).
 
 <a id="supported-profiles"></a>
 
@@ -227,7 +228,8 @@ document that owns your task:
 | --- | --- |
 | Set up a developer checkout | [`docs/DEVELOPER_SETUP.md`](docs/DEVELOPER_SETUP.md) |
 | Verify repository setup | [`docs/SETUP_VERIFICATION.md`](docs/SETUP_VERIFICATION.md) |
-| Review migration status | [`docs/MIGRATION_PLAN.md`](docs/MIGRATION_PLAN.md) |
+| Review planned milestones and sequencing | [`docs/ROADMAP.md`](docs/ROADMAP.md) |
+| Review the completed migration | [`docs/MIGRATION_PLAN.md`](docs/MIGRATION_PLAN.md) |
 | Understand source/repository structure | [`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md) |
 | Install, upgrade or remove | [`INSTALLATION.md`](INSTALLATION.md) |
 | Contribute or review a change | [`CONTRIBUTING.md`](CONTRIBUTING.md) |

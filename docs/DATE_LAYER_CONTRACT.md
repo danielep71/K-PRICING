@@ -36,12 +36,13 @@
 > documentation.
 
 This document freezes observable behavior. It and
-[the migration plan](MIGRATION_PLAN.md) are complementary and
-non-overlapping in authority:
+[the roadmap](ROADMAP.md) are complementary and non-overlapping in authority:
 
-- the plan governs scope, architecture, sequencing, and evidence;
+- the roadmap governs scope, milestones, and sequencing;
+- the [migration records](MIGRATION_PLAN.md) govern the historical migration
+  architecture and evidence;
 - this contract governs observable behavior; and
-- where both state a behavioral rule, this contract governs.
+- where another document states a behavioral rule, this contract governs.
 
 > [!WARNING]
 > If descriptive material elsewhere conflicts with this document, this document

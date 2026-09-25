@@ -13,8 +13,11 @@ K-PRICING. Neither is a current plan.
 
 ## Status and authority
 
-- A milestone listed here is planned, not delivered. Delivery is recorded only
-  by its closed issues, retained evidence and, for a release, a published tag.
+- The closed milestones v0.0.1 and v0.0.2 are delivered and listed for context;
+  their records are the setup and migration completion documents.
+- Every open or future milestone listed here is planned, not delivered. Its
+  delivery is recorded only by its closed issues, retained evidence and, for a
+  release, a published tag.
 - The [date-layer contract](DATE_LAYER_CONTRACT.md) is normative for behavior;
   this roadmap only schedules work against it.
 - Changing a milestone boundary, dependency or scope transition requires a
