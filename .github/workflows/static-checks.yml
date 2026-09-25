@@ -264,19 +264,19 @@ jobs:
           --output test-results/vba-public-api.json
           --summary test-results/vba-public-api.md
 
-      - name: Exercise migrated date-layer contract fixtures
-        id: date-layer-contract-self-test
+      - name: Exercise migrated KPR contract fixtures
+        id: kpr-contract-self-test
         continue-on-error: true
-        run: python3 tools/check_date_layer_contract.py --root . --self-test
+        run: python3 tools/check_kpr_contract.py --root . --self-test
 
-      - name: Validate migrated date-layer contract
-        id: date-layer-contract
+      - name: Validate migrated KPR contract
+        id: kpr-contract
         continue-on-error: true
         run: >-
-          python3 tools/check_date_layer_contract.py
+          python3 tools/check_kpr_contract.py
           --root .
-          --output test-results/date-layer-contract.json
-          --summary test-results/date-layer-contract.md
+          --output test-results/kpr-contract.json
+          --summary test-results/kpr-contract.md
 
       - name: Exercise migration-evidence validator fixtures
         id: migration-evidence-self-test
@@ -340,7 +340,7 @@ jobs:
               test-results/vba-jumps.md \
               test-results/vba-conditionals.md \
               test-results/vba-public-api.md \
-              test-results/date-layer-contract.md \
+              test-results/kpr-contract.md \
               test-results/local-actions.md \
               test-results/workflow-validation.md \
               test-results/release-self-test.md \
@@ -377,8 +377,8 @@ jobs:
             test-results/vba-conditionals.md
             test-results/vba-public-api.json
             test-results/vba-public-api.md
-            test-results/date-layer-contract.json
-            test-results/date-layer-contract.md
+            test-results/kpr-contract.json
+            test-results/kpr-contract.md
             test-results/local-actions.json
             test-results/local-actions.md
             test-results/template-contract.json
@@ -416,8 +416,8 @@ jobs:
           VBA_CONDITIONALS_OUTCOME: ${{ steps.vba-conditionals.outcome }}
           VBA_API_SELF_TEST_OUTCOME: ${{ steps.vba-api-self-test.outcome }}
           VBA_API_OUTCOME: ${{ steps.vba-api.outcome }}
-          DATE_LAYER_CONTRACT_SELF_TEST_OUTCOME: ${{ steps.date-layer-contract-self-test.outcome }}
-          DATE_LAYER_CONTRACT_OUTCOME: ${{ steps.date-layer-contract.outcome }}
+          KPR_CONTRACT_SELF_TEST_OUTCOME: ${{ steps.kpr-contract-self-test.outcome }}
+          KPR_CONTRACT_OUTCOME: ${{ steps.kpr-contract.outcome }}
           MIGRATION_EVIDENCE_SELF_TEST_OUTCOME: ${{ steps.migration-evidence-self-test.outcome }}
           LOCAL_ACTION_SELF_TEST_OUTCOME: ${{ steps.local-action-self-test.outcome }}
           LOCAL_ACTIONS_OUTCOME: ${{ steps.local-actions.outcome }}
@@ -450,8 +450,8 @@ jobs:
             "VBA conditional-compilation:$VBA_CONDITIONALS_OUTCOME" \
             "VBA public API self-test:$VBA_API_SELF_TEST_OUTCOME" \
             "VBA public API:$VBA_API_OUTCOME" \
-            "Date-layer contract self-test:$DATE_LAYER_CONTRACT_SELF_TEST_OUTCOME" \
-            "Date-layer contract:$DATE_LAYER_CONTRACT_OUTCOME" \
+            "KPR contract self-test:$KPR_CONTRACT_SELF_TEST_OUTCOME" \
+            "KPR contract:$KPR_CONTRACT_OUTCOME" \
             "Migration-evidence validator self-test:$MIGRATION_EVIDENCE_SELF_TEST_OUTCOME" \
             "Repository-local Action self-test:$LOCAL_ACTION_SELF_TEST_OUTCOME" \
             "Repository-local Actions:$LOCAL_ACTIONS_OUTCOME" \

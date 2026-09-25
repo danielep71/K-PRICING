@@ -1,17 +1,17 @@
-# Migration handover register
+# KPR migration handover register
 
 This register preserves the engineering decisions, evidence boundary and unfinished
 roadmap carried into K-PRICING with the frozen date-layer source. It supports
 K-PRICING issue #16 and the v0.0.2 repository-migration milestone.
 
-The migration baseline is the frozen source commit
+The migration baseline is the frozen KPR source commit
 `f26450d1fa7b11261162e901dedba062f21c99a7`. K-PRICING is the only maintained
 home of this work; this register records what was carried in, not a second
 backlog.
 
 ## Scope boundary
 
-v0.0.2 migrates the implemented date-layer candidate. It does not expand the
+v0.0.2 migrates the implemented KPR date-layer candidate. It does not expand the
 milestone into registration, independently generated fixtures, the full future
 regression architecture, cross-oracles, the deterministic demo builder, Ribbon,
 CommandBars, package injection or a functional product release.
@@ -23,12 +23,12 @@ K-PRICING is the active implementation destination after migration acceptance.
 | Source capability | Source result | K-PRICING disposition |
 | --- | --- | --- |
 | Behavioral contract | Frozen 22-name date-layer behavioral contract: strict ISO parsing, supported date window, host/date-system policy, array semantics, 100,000-element cap, native-error taxonomy and pillar modes | Contract and source provenance frozen by K-PRICING #11. The migrated implementation/API/static controls are owned by #12/#13. Destination wording corrections remain explicit rather than rewriting source history. |
-| VBE export identity | Deterministic VBE export identity and component-name rules | VBE contract migrated by #11; generic VBE/API/static controls and project-specific date-layer checks retained by #13. Windows import and compile evidence for one 64-bit host is retained under K-PRICING #17; no VBE export round trip was performed. |
+| VBE export identity | Deterministic VBE export identity and component-name rules | VBE contract migrated by #11; generic VBE/API/static controls and project-specific KPR checks retained by #13. Windows import and compile evidence for one 64-bit host is retained under K-PRICING #17; no VBE export round trip was performed. |
 | Layered architecture | Five-module production architecture | Four cores plus `KPR_DATES_DAYS` imported by K-PRICING #12. The regression harness is migrated separately as test infrastructure. Destination paths are recorded in migration provenance. |
 | Strict parsing | Strict scalar date/integer/control parsing and native-error propagation | Migrated by #12; parsing/window/error invariants are enforced by #13. |
 | Host and date system | Worksheet/VBA date-system guard and volatile `HostDateSystem` | Migrated by #12; host-guard, volatility and no-workbook-fallback rules are enforced by #13. Destination 1900/1904 worksheet-caller behavior was observed on one Windows 64-bit host in K-PRICING #17. |
 | Pillar grammar | Pillar grammar and `NEAREST/FLOOR/CEILING` policy | Migrated by #12. K-PRICING #32 corrects an inherited oversized-valid-pillar range-classification defect and records it as an explicit destination divergence. |
-| Public surface | Complete element-correct 22-function date surface | Migrated by #12; exact names/signatures/ownership are enforced by destination public-API and date-layer contract gates. |
+| Public surface | Complete element-correct 22-function date surface | Migrated by #12; exact names/signatures/ownership are enforced by destination public-API and KPR contract gates. |
 | Array engine | Array shape/broadcasting services | Migrated by #12; dependency, purity and capacity structure are guarded by #13. |
 | Array façade | Array-capable public surface plus focused source regression evidence | Implementation migrated by #12. The historical 557-check pure run and seven-check dynamic-array run are retained as source evidence only, not destination certification. K-PRICING #14 defines destination parity evidence and #17 owns actual Windows execution. |
 
@@ -71,7 +71,7 @@ The exact file hashes and destination blob identities are maintained in
 | Ribbon | Ribbon callbacks, RibbonX and safe package injection | Not implemented. |
 | CommandBars | Idempotent classic CommandBars lifecycle | Not implemented. |
 | Member classification | Final supported/infrastructure public-member classification | Partially satisfied for the migrated 22-function calculation API by `docs/PUBLIC_API.txt` and destination static checks. Future registration/UI/demo infrastructure remains absent, so the item is not complete. |
-| Inventory controls | Final architecture inventory checks and live milestone-register drift monitoring | Partially overlapped by K-PRICING repository and date-layer static gates. Final fixture/oracle/UI inventory and live register workflow remain future work. |
+| Inventory controls | Final architecture inventory checks and live milestone-register drift monitoring | Partially overlapped by K-PRICING repository/KPR static gates. Final fixture/oracle/UI inventory and live register workflow remain future work. |
 | Candidate assembly | Functional candidate documentation, VERSION/CHANGELOG assembly | Not a v0.0.2 functional-release commitment. K-PRICING v0.0.2 is a repository-migration milestone. |
 | Certification | Full roadmap Windows certification and publication | Not completed by migration. K-PRICING #17 certifies only the implemented migrated candidate/parity boundary; future registration/UI/demo/oracle/package certification remains separate. |
 
@@ -107,7 +107,7 @@ register.
 
 Evidence is classified by where and when it was produced.
 
-- Historical frozen-source regression results remain **source evidence** and do
+- Historical KPR regression results remain **source evidence** and do
   not certify K-PRICING.
 - Hosted K-PRICING static checks prove only their documented static properties.
 - Migration regression/parity evidence follows K-PRICING #14 and

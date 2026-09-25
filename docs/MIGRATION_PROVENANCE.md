@@ -1,4 +1,4 @@
-# Migration provenance
+# KPR migration provenance
 
 Issue [K-PRICING #11](https://github.com/danielep71/K-PRICING/issues/11).
 Verified on 2026-09-24 against the immutable source, before importing VBA.
@@ -32,7 +32,7 @@ of the editorially adapted destination contracts or future imported modules.
 | `src/modules/KPR_Core_Parse.bas` | `ec08bbb0056cfe6e27ed1115f3d6431e08a37b98` | `8b5e252554fb9786b4ac2513c56e6bc614c6eaa19483222159df9c347ea7826f` | src/core/KPR_Core_Parse.bas |
 | `src/modules/KPR_DATES_DAYS.bas` | `37e997107c4c030d69bfa9b16d8aae3d22c97fc7` | `eb1d4ba1144c1f56fc06ac035cd408fddff5635f49428fe1fc16444d634c3985` | src/modules/KPR_DATES_DAYS.bas |
 | `test/modules/KPR_REGRESSION_TESTS.bas` | `b339d4b932f390c143973fe5fcc106e79ffbcad1` | `5ab84d316390eb2b3c61eb805add87938ba9001c5d327b279a3906934f7939de` | tests/modules/KPR_REGRESSION_TESTS.bas |
-| `tools/check_repo.py` | `80a5d078d9bb8f7114132e3985b6997f80a95517` | `5379ed7e044705e2fa611116b6a65636de039cf051056f56ce596f0bbf098e17` | tools/check_date_layer_contract.py (adapt; keep generic checker) |
+| `tools/check_repo.py` | `80a5d078d9bb8f7114132e3985b6997f80a95517` | `5379ed7e044705e2fa611116b6a65636de039cf051056f56ce596f0bbf098e17` | tools/check_kpr_contract.py (adapt; keep generic checker) |
 
 The [migration plan](MIGRATION_PLAN.md) owns the rest of the source-file
 inventory and disposition. Detailed source implementation-plan reconciliation
@@ -57,8 +57,8 @@ requirements and source/destination evidence boundaries.
 [Installation](../INSTALLATION.md) owns export/import procedures and
 [repository structure](REPOSITORY_STRUCTURE.md) owns destination placement.
 Round-trip evidence belongs to [release evidence](RELEASE_EVIDENCE.md).
-Date-layer static rules are retained additively in
-`tools/check_date_layer_contract.py` and wired into Repository integrity; generic
+KPR-specific static rules are retained additively in
+`tools/check_kpr_contract.py` and wired into Repository integrity; generic
 K-PRICING repository, VBE, API-manifest and release controls remain authoritative
 for their existing scopes. References to MacroOptions and demo infrastructure
 remain requirements for future source-roadmap work, not claims of existing

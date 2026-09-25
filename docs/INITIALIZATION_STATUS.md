@@ -24,9 +24,9 @@ Migration replaces them together with their API and regression contracts.
 
 ## Project identity and future migration
 
-**K-PRICING** is the product and repository name. **`KPR_`** is the VBA
-module/function namespace of the migrated date layer. The identity policy
-permits that namespace while retaining all other donor and template identity
+**K-PRICING** is the product and repository name; **KPR** is its short form and
+**`KPR_`** its VBA module/function namespace. The identity policy permits the
+short form and namespace while retaining all other donor and template identity
 restrictions and the existing scan scope.
 The checker rejects standalone old-product headings and explicit old product-name
 declarations; documentation tests also bind the README title to the recorded

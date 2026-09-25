@@ -9,8 +9,8 @@ Environment (maintainer-confirmed unchanged from the 2026-09-23 setup record, pl
   References: Visual Basic For Applications; Microsoft Excel 16.0 Object Library; OLE Automation; Microsoft Office 16.0 Object Library.
   Macro setting: Disable VBA macros with notification; Trust access to the VBA project object model enabled; no trust setting changed.
 Hosts (separate fresh macro-enabled workbooks, same session and machine):
-  A exact source: frozen production modules + frozen KPR_REGRESSION_TESTS; compiled; KPR_Tests_Run reported 557 checks, 0 failures.
-  B source observation: frozen production modules + candidate tests/modules/KPR_REGRESSION_TESTS.bas;
+  A exact source: frozen KPR production modules + frozen KPR_REGRESSION_TESTS; compiled; KPR_Tests_Run reported 557 checks, 0 failures.
+  B source observation: frozen KPR production modules + candidate tests/modules/KPR_REGRESSION_TESTS.bas;
     KPR_Tests_RunMigrationEvidence output retained; identity probe
     KPR_Dates_DateFromPillar("2024-01-31", String(400,"9") & "M") returned Error 2015 (#VALUE!), the frozen-source #32 behavior.
   C destination: candidate production modules (src/core, src/modules) + the same candidate test module; compiled;

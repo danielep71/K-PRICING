@@ -47,14 +47,14 @@
 **Status: public application development repository, version `0.0.0`.**
 The neutral starter passed a manual Windows 64-bit Excel run at commit
 `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2`; see
-[the setup completion record](docs/SETUP_COMPLETION.md). The frozen date layer
+[the setup completion record](docs/SETUP_COMPLETION.md). The frozen KPR date layer
 is now migrated, and exact-source Excel parity passed on one Windows 64-bit
 host in #17 ([evidence](evidence/migration-2026-09-24/session.txt)); migration
 acceptance is #18 and no installable product is claimed. See the
 [initialization status](docs/INITIALIZATION_STATUS.md) for provenance and setup boundaries.
 
-The product and repository name is **K-PRICING**. The **`KPR_`** VBA namespace
-is the project's module and function prefix.
+The product and repository name is **K-PRICING**; **KPR** is its short form,
+used for the **`KPR_`** VBA module and function namespace.
 
 K-PRICING is a source-first Excel/VBA project. Exported VBA, tests,
 versioned policy and documentation are the reviewable source of truth; Office
@@ -88,7 +88,7 @@ The migrated date layer contains:
 - [`KPR_REGRESSION_TESTS`](tests/modules/KPR_REGRESSION_TESTS.bas) — the imported focused regression harness; and
 - [`KPR_DateExample`](examples/modules/KPR_DateExample.bas) — a minimal direct-VBA consumer example.
 
-The source is migrated from the frozen candidate identified in
+The source is migrated from the frozen KPR candidate identified in
 [`docs/MIGRATION_PROVENANCE.md`](docs/MIGRATION_PROVENANCE.md). The exact
 supported calculation surface is recorded in
 [`docs/PUBLIC_API.txt`](docs/PUBLIC_API.txt).
@@ -100,10 +100,10 @@ python3 tools/check_repo.py --root . --self-test
 python3 tools/check_repo.py --root . \
   --output test-results/static-checks.json \
   --summary test-results/static-checks.md
-python3 tools/check_date_layer_contract.py --root . --self-test
-python3 tools/check_date_layer_contract.py --root . \
-  --output test-results/date-layer-contract.json \
-  --summary test-results/date-layer-contract.md
+python3 tools/check_kpr_contract.py --root . --self-test
+python3 tools/check_kpr_contract.py --root . \
+  --output test-results/kpr-contract.json \
+  --summary test-results/kpr-contract.md
 python3 tools/check_release.py --root . --self-test \
   --summary test-results/release-self-test.md
 ```
@@ -175,7 +175,7 @@ legitimate profile-specific alternatives are authoritative in
 
 The initial target is Microsoft 365 Excel desktop on Windows, with 32-bit and
 64-bit Office evaluated separately. The accepted v0.0.1 neutral-starter run is
-historical setup evidence only; it does not certify the migrated date layer.
+historical setup evidence only; it does not certify the migrated KPR date layer.
 The migrated date layer compiled and matched the frozen source on one Windows
 64-bit Microsoft 365 Excel host (build 16.0.20326.20072, Italian regional format)
 in issue #17; 32-bit Office and other builds and locales remain untested.

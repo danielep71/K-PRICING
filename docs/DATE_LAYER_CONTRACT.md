@@ -10,7 +10,7 @@
 
 <div align="center">
 
-# 📅 Date-Layer Behavioral Contract
+# 📅 KPR Date-Layer Behavioral Contract
 
 ### Normative v0.0.2 reference for the Gregorian date primitive layer
 

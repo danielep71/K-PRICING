@@ -1,4 +1,4 @@
-# Date-layer migration plan
+# KPR migration plan
 
 Prepared on 2026-09-23 for setup issue 9. Execution belongs to **v0.0.2 - Repo
 Migration**, issues 11–18, plus destination issues #29 and #32 added during
@@ -61,7 +61,7 @@ Record new SHA-256 Git-byte digests when preparing host evidence.
 | `src/modules/KPR_Core_Parse.bas` | `ec08bbb0056cfe6e27ed1115f3d6431e08a37b98` | src/core/KPR_Core_Parse.bas |
 | `src/modules/KPR_DATES_DAYS.bas` | `37e997107c4c030d69bfa9b16d8aae3d22c97fc7` | src/modules/KPR_DATES_DAYS.bas |
 | `test/modules/KPR_REGRESSION_TESTS.bas` | `b339d4b932f390c143973fe5fcc106e79ffbcad1` | tests/modules/KPR_REGRESSION_TESTS.bas |
-| `tools/check_repo.py` | `80a5d078d9bb8f7114132e3985b6997f80a95517` | tools/check_date_layer_contract.py (adapt; keep generic checker) |
+| `tools/check_repo.py` | `80a5d078d9bb8f7114132e3985b6997f80a95517` | tools/check_kpr_contract.py (adapt; keep generic checker) |
 
 All remaining source files are governance, presentation or metadata:
 `.editorconfig`, `.gitattributes`, `.github/ISSUE_TEMPLATE/bug_report.md`, `.github/ISSUE_TEMPLATE/config.yml`, `.github/ISSUE_TEMPLATE/feature_request.md`, `.github/PULL_REQUEST_TEMPLATE.md`, `.github/labels.json`, `.github/scripts/labels-sync.mjs`, `.github/workflows/labels-sync.yml`, `.github/workflows/static-checks.yml`, `.gitignore`, `CHANGELOG.md`, `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `INSTALLATION.md`, `LICENSE`, `README.md`, `RELEASING.md`, `SECURITY.md`, `VERSION`, `assets/social-preview.png`.
@@ -122,8 +122,8 @@ spill twins. No calendar/business-day extension is part of parity.
    complete replacements are included; no knowingly broken intermediate main.
 3. **#13 and #14 — static/API and regression adaptation:** #13 is complete in
    PR #28: the generic `tools/check_repo.py` remains authoritative for generic
-   repository policy and `tools/check_date_layer_contract.py` adds the migrated
-   date-layer rules and negative fixtures. #14 is governed by
+   repository policy and `tools/check_kpr_contract.py` adds the migrated KPR
+   rules and negative fixtures. #14 is governed by
    [MIGRATION_REGRESSION.md](MIGRATION_REGRESSION.md): preserve the existing
    focused suites, distinguish native/common runners from the destination-only
    evidence adapter, and define exact-source parity without claiming the

@@ -122,7 +122,7 @@ values, all digest markers, environment and timestamps with observed values:
   "stages": {
     "import": {"status": "PASS", "detail": "Imported exact inventory into fresh test project", "log": {"path": "session.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}},
     "compile": {"status": "PASS", "detail": "Record observed compile outcome and basis", "log": {"path": "session.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}},
-    "regression": {"status": "PASS", "detail": "Complete evidence adapter run", "log": {"path": "harness.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}},
+    "regression": {"status": "PASS", "detail": "Complete KPR evidence adapter run", "log": {"path": "harness.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}},
     "cleanup": {"status": "PASS", "detail": "Adapter completed without owned host-state changes", "log": {"path": "session.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}}
   },
   "harness": {
@@ -170,7 +170,7 @@ LongLong parser assertions are compiled only on `Win64`, the policy expects
 **566 assertions on 32-bit Office** and **568 on 64-bit Office**. The validator
 selects the required count from `environment.office_bitness`; the JSON example
 above illustrates a 64-bit run. `expected_errors` is empty because native Excel
-error behavior is asserted inside the regression suites rather than exposed as separate
+error behavior is asserted inside the KPR suites rather than exposed as separate
 top-level evidence cases.
 
 ## 🧑‍💻 Manual Fallback

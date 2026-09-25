@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate retained migration parity evidence without executing Excel."""
+"""Validate retained KPR migration parity evidence without executing Excel."""
 
 from __future__ import annotations
 
@@ -255,7 +255,7 @@ def validate_manifest(
     for label, record in (("source", source), ("destination", destination)):
         require(isinstance(record["sha"], str) and SHA40.fullmatch(record["sha"]) is not None,
                 f"invalid {label} SHA")
-    require(source["sha"] == FROZEN_SOURCE_SHA, "source SHA differs from the frozen source baseline")
+    require(source["sha"] == FROZEN_SOURCE_SHA, "source SHA differs from frozen KPR baseline")
     require(destination["sha"] == expected_destination_sha,
             "destination SHA differs from checked-out candidate")
 
@@ -513,7 +513,7 @@ def self_test(root: Path) -> None:
         try:
             validate_manifest(root, manifest_file, candidate_sha)
         except ValueError as error:
-            require("frozen source baseline" in str(error),
+            require("frozen KPR baseline" in str(error),
                     "degraded source-identity case failed for wrong reason")
         else:
             raise RuntimeError("degraded source-identity self-test unexpectedly passed")
