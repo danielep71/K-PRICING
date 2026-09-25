@@ -87,7 +87,8 @@ authority for current milestones and sequencing.
 The carried-forward dependency structure maps onto destination issues as
 follows. The [roadmap](ROADMAP.md) owns any later change to it.
 
-- registration foundation: registration (#42);
+- registration foundation: registration (#42), after all of test hardening
+  (#38–#41);
 - independent test hardening: independent fixtures (#38) → durable runner
   (#39) → regression matrix (#40), with cross-oracle (#41) dependent on the
   durable runner (#39);

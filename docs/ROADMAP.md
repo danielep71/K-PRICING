@@ -45,7 +45,7 @@ acceptance (#18).
   └─> #39 runner and evidence schema
         ├─> #40 regression suites
         └─> #41 Excel cross-oracle checks
-#38, #39, #40 ─> #42 MacroOptions registration
+#38, #39, #40, #41 ─> #42 MacroOptions registration
 ```
 
 Boundary: test and evidence infrastructure plus registration. No change to the
