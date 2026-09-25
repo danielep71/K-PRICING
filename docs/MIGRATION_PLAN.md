@@ -21,10 +21,10 @@ source-to-destination disposition.
 | #32 | Destination correction: oversized valid pillar quantities classify as `PILLAR_AGGREGATE_RANGE` | PR #33, `a8ffa458186c51ec28ee778d27a86d45ed9fad49` |
 | #29 | Public visibility, live controls and documentation authorities reconciled | PR #30, `47aa4c181306a4668383631888d2267589ea5906` |
 | #14 | [Regression/parity protocol](MIGRATION_REGRESSION.md), migration instrumentation and evidence validator | PR #31, `118555ddf5c2cd8f944688f02fc9813713bf30c2` |
-| #16 | [Handover register](MIGRATION_HANDOVER.md) of source work history and carried-forward roadmap | Issue closed; register merged in PR #34, `184e4b6976a51a3b29e17460ba06f7e919e7fbc6` |
+| #16 | [Handover register](MIGRATION_HANDOVER.md) of source work history and the roadmap carried forward at migration | Issue closed; register merged in PR #34, `184e4b6976a51a3b29e17460ba06f7e919e7fbc6` |
 | #15 | Documentation, examples and destination status reconciliation | PR #35, `80e992df73c2a3209dc104045aeed14119f22534` |
 | #17 | Exact-source Windows Excel compilation and source/destination parity on candidate `db98e506358ab74893ab28d52183fa2e216352b9`, one Windows 64-bit Excel host | Evidence in [`evidence/migration-2026-09-24`](../evidence/migration-2026-09-24/session.txt); both validators PASS; PR #37, `b0794e2dab1bab9ff0cc948cf1d5734863c6bece` |
-| #18 | Migration acceptance and handover of the next delivery backlog | [Completion record](MIGRATION_COMPLETION.md); next scope in milestone v0.0.3 (#38–#42) |
+| #18 | Migration acceptance and handover of the next delivery backlog | [Completion record](MIGRATION_COMPLETION.md); next scope in milestone v0.0.3 (#38–#42); current plan in the [roadmap](ROADMAP.md) |
 
 #29 and #32 were added to the milestone during execution; they are
 destination work, not source history.
@@ -156,11 +156,13 @@ all gates pass. Never replace generic governance with the older source checks.
 ## Source work register
 
 This is the preparation-time register of the frozen source's work items, read on
-2026-09-23; destination issue numbers refer to K-PRICING. The current
-disposition, carried-forward roadmap and handover policy are maintained in
-[MIGRATION_HANDOVER.md](MIGRATION_HANDOVER.md); where the two differ, the
-handover register is authoritative. Completed source work is implementation
-history. Open work remains open unless separately implemented and evidenced.
+2026-09-23; destination issue numbers refer to K-PRICING. The historical
+disposition and handover policy are recorded in
+[MIGRATION_HANDOVER.md](MIGRATION_HANDOVER.md); where the two differ on
+disposition, the handover register is authoritative. Current sequencing and
+milestones are owned by the [roadmap](ROADMAP.md), not by either record.
+Completed source work is implementation history. Open work remains open unless
+separately implemented and evidenced.
 
 | Source work item | State and decision | Destination owner/trace |
 | --- | --- | --- |
@@ -186,13 +188,13 @@ history. Open work remains open unless separately implemented and evidenced.
 | Full runner and evidence | Open; preserve current harness first; final runner interface still future | #14, #16; now #39 |
 | Complete regression matrix | Open; preserve implemented tests; broader coverage remains future | #14, #16; now #40 |
 | Native Excel cross-oracle | Open; defer independent overlap checks, not a current certification | #16; now #41 |
-| Deterministic demo builder | Open; no workbook builder to import | #16 |
-| Ribbon integration | Open; no XML/callback/package implementation to import | #16 |
-| CommandBars lifecycle | Open; no install/remove implementation to import | #16 |
-| API/classification manifest | Open; migration records implemented subset; future UI/register surface deferred | #13, #16 |
-| Final static/live issue register | Open; port existing checks; future full inventory/live monitor deferred | #13, #16 |
-| Final documentation/version/candidate | Open; rewrite destination docs; do not claim release completion | #15, #16 |
-| Exact-source certification/release | Open; historical runs do not satisfy a final release | #17, #18 |
+| Deterministic demo builder | Open; no workbook builder to import | #16; now #46 |
+| Ribbon integration | Open; no XML/callback/package implementation to import | #16; now #47 |
+| CommandBars lifecycle | Open; no install/remove implementation to import | #16; now #48 |
+| API/classification manifest | Open; migration records implemented subset; future UI/register surface deferred | #13, #16; now #49 |
+| Final static/live issue register | Open; port existing checks; future full inventory/live monitor deferred | #13, #16; now #50 |
+| Final documentation/version/candidate | Open; rewrite destination docs; do not claim release completion | #15, #16; now #51 |
+| Exact-source certification/release | Open; historical runs do not satisfy a final release | #17, #18; now #52 |
 
 Issue 16 owned detailed reconciliation and successor traceability, not feature
 implementation. A successor feature issue is created only with an explicit
@@ -213,9 +215,8 @@ The source `docs/IMPLEMENTATION_PLAN.md` at the frozen revision is the source's
 own roadmap and milestone register. It is not copied into K-PRICING. Its
 completed work is mapped to destination issues, and its unfinished work, with
 its dependency chain, is carried forward without completion claims in the
-[handover register](MIGRATION_HANDOVER.md). K-PRICING's own roadmap is its
-milestones and issues; future phases get destination issues with an explicit
-milestone only when they are scheduled.
+[handover register](MIGRATION_HANDOVER.md). K-PRICING's current plan is the
+[roadmap](ROADMAP.md), implemented through its milestones and issues.
 
 ## Exit from preparation
 

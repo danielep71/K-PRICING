@@ -120,8 +120,9 @@ is collected separately under migration issue #17.
 Follow the [developer setup](docs/DEVELOPER_SETUP.md) and
 [Windows Excel runbook](docs/EXCEL_SETUP_RUNBOOK.md). Initialization is complete.
 Current GitHub controls and limitations are recorded in
-[setup verification](docs/SETUP_VERIFICATION.md); migration is sequenced in
-[the migration plan](docs/MIGRATION_PLAN.md).
+[setup verification](docs/SETUP_VERIFICATION.md); the completed migration is
+recorded in [the migration plan](docs/MIGRATION_PLAN.md), and future work is
+sequenced in [the roadmap](docs/ROADMAP.md).
 
 <a id="supported-profiles"></a>
 
@@ -227,7 +228,8 @@ document that owns your task:
 | --- | --- |
 | Set up a developer checkout | [`docs/DEVELOPER_SETUP.md`](docs/DEVELOPER_SETUP.md) |
 | Verify repository setup | [`docs/SETUP_VERIFICATION.md`](docs/SETUP_VERIFICATION.md) |
-| Review migration status | [`docs/MIGRATION_PLAN.md`](docs/MIGRATION_PLAN.md) |
+| Review planned milestones and sequencing | [`docs/ROADMAP.md`](docs/ROADMAP.md) |
+| Review the completed migration | [`docs/MIGRATION_PLAN.md`](docs/MIGRATION_PLAN.md) |
 | Understand source/repository structure | [`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md) |
 | Install, upgrade or remove | [`INSTALLATION.md`](INSTALLATION.md) |
 | Contribute or review a change | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
@@ -244,7 +246,7 @@ These are the current limitations. The
 2026-09-23 setup inputs and is provenance, not a live copy of this section.
 
 - Exact-source Excel compilation and parity passed on one Windows 64-bit host only (#17); 32-bit Office, other builds and other locales are untested. Migration acceptance is recorded in [MIGRATION_COMPLETION.md](docs/MIGRATION_COMPLETION.md).
-- Generated fixtures and registration are scheduled in milestone v0.0.3 (#38–#42); demo/UI work, packaging and broader pricing capabilities remain unscheduled.
+- Test hardening and registration are scheduled in milestone v0.0.3 (#38–#42), and the demo, UI, candidate assembly and first functional release in v0.0.4 (#46–#52); calendars and business-day arithmetic are planned for v0.0.5 and v0.0.6. See the [roadmap](docs/ROADMAP.md). Broader pricing capabilities remain unscheduled.
 - No supported workbook/add-in or functional product release is available; the historical neutral-starter run certifies setup only.
 
 If no project-specific limitation is rendered, the general evidence boundaries

@@ -1,8 +1,10 @@
 > [!IMPORTANT]
 > **Migration scope — 2026-09-24.** Imported from frozen source commit `f26450d`.
-> Source version labels (including v0.0.2 and v0.0.3), roadmap statements and
-> historical evidence refer to the frozen source. They do not set K-PRICING release versions
-> or claim destination certification. The frozen implementation is now migrated
+> The frozen source labelled this contract v0.0.2 and reserved calendars for
+> v0.0.3. K-PRICING adapts those labels to its own milestone sequence: this
+> contract targets v0.0.4 and `KPR_Cal_*` is reserved for v0.0.5 (see the
+> [roadmap](ROADMAP.md)). Historical evidence refers to the frozen source and
+> does not claim destination certification. The frozen implementation is now migrated
 > into K-PRICING; exact-source Windows Excel compilation and parity passed on one
 > Windows 64-bit host in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
 > [Migration provenance](MIGRATION_PROVENANCE.md) records hashes, attribution
@@ -12,13 +14,13 @@
 
 # 📅 KPR Date-Layer Behavioral Contract
 
-### Normative v0.0.2 reference for the Gregorian date primitive layer
+### Normative v0.0.4 reference for the Gregorian date primitive layer
 
 **Strict inputs · Deterministic dates · Native Excel errors · Shape-preserving arrays**
 
 <br>
 
-![Milestone](https://img.shields.io/badge/Milestone-v0.0.2-217346?style=for-the-badge)
+![Milestone](https://img.shields.io/badge/Milestone-v0.0.4-217346?style=for-the-badge)
 ![Authority](https://img.shields.io/badge/Authority-Normative-6f42c1?style=for-the-badge)
 ![Surface](https://img.shields.io/badge/Public_Surface-22_Functions-0969da?style=for-the-badge)
 ![Date Window](https://img.shields.io/badge/Date_Window-1900--03--01_to_9999--12--31-d97706?style=for-the-badge)
@@ -29,21 +31,22 @@
 ---
 
 > [!IMPORTANT]
-> **Normative status.** This is the v0.0.2 behavioral contract for
+> **Normative status.** This is the v0.0.4 behavioral contract for
 > implementation, registration, regression tests, demo material, and user
 > documentation.
 
 This document freezes observable behavior. It and
-[the migration plan](MIGRATION_PLAN.md) are complementary and
-non-overlapping in authority:
+[the roadmap](ROADMAP.md) are complementary and non-overlapping in authority:
 
-- the plan governs scope, architecture, sequencing, and evidence;
+- the roadmap governs scope, milestones, and sequencing;
+- the [migration records](MIGRATION_PLAN.md) govern the historical migration
+  architecture and evidence;
 - this contract governs observable behavior; and
-- where both state a behavioral rule, this contract governs.
+- where another document states a behavioral rule, this contract governs.
 
 > [!WARNING]
 > If descriptive material elsewhere conflicts with this document, this document
-> governs v0.0.2 behavior. A contract change requires an explicit, reviewed
+> governs v0.0.4 behavior. A contract change requires an explicit, reviewed
 > behavioral decision rather than an incidental implementation change.
 
 > [!NOTE]
@@ -57,7 +60,7 @@ non-overlapping in authority:
 
 ## 🎯 1. Scope and terminology
 
-The v0.0.2 date layer contains pure proleptic-Gregorian date primitives,
+The v0.0.4 date layer contains pure proleptic-Gregorian date primitives,
 strict date and control parsing, date arithmetic, weekday locators, and pillar
 conversion. Its supported date window is inclusive:
 
@@ -142,7 +145,7 @@ The plural pre-release name `KPR_Dates_DatesFromPillar` is replaced by singular
 | 21 | `KPR_Dates_DateFromPillar` | `Date` | Array-capable |
 | 22 | `KPR_Dates_HostDateSystem` | `Long`, 1900 or 1904 | Scalar-only; no value argument |
 
-Exactly these 22 names are supported public API in v0.0.2.
+Exactly these 22 names are supported public API in v0.0.4.
 
 ## 🧾 3. Date, integer, control, and token inputs
 
@@ -343,7 +346,7 @@ A non-Range `Application.Caller` is not proof of direct VBA. Macro-attached
 shapes may provide a String caller, and data validation, chart series, defined
 names, and related Excel evaluation contexts may provide Error or other caller
 forms. Those contexts are probed during Windows certification and are outside
-the v0.0.2 compatibility claim.
+the v0.0.4 compatibility claim.
 
 ### 🔎 `KPR_Dates_HostDateSystem()`
 
@@ -696,7 +699,7 @@ Scalar calls and multi-cell calls have separate compatibility claims:
   during exact-source Windows certification;
 - multi-cell calls may be tested, supported, and claimed only on dynamic-array
   Excel; and
-- v0.0.2 makes no Ctrl+Shift+Enter or other legacy multi-cell compatibility
+- v0.0.4 makes no Ctrl+Shift+Enter or other legacy multi-cell compatibility
   claim.
 
 The implementation performs no Excel-version detection and does not create or
@@ -705,7 +708,7 @@ Excel's responsibility.
 
 ## 🔒 10. Supported API boundary and future namespaces
 
-The 22 names in section 2 are the complete supported v0.0.2 calculation API.
+The 22 names in section 2 are the complete supported v0.0.4 calculation API.
 VBA may require other procedures to be technically `Public` for cross-module
 calls, `Application.Run`, MacroOptions, RibbonX, CommandBars, tests, or demo
 generation. Technical visibility does not make those procedures supported API.
@@ -715,10 +718,10 @@ narrowest practical visibility. Registration, UI callbacks, test runners, and
 demo builders are explicitly unsupported infrastructure and contain no date
 algorithms.
 
-`KPR_Cal_*` is reserved for v0.0.3. v0.0.2 creates no calendar placeholder and
+`KPR_Cal_*` is reserved for v0.0.5. v0.0.4 creates no calendar placeholder and
 adds no calendar option to a pure `KPR_Dates_*` function.
 
-The following are explicitly outside v0.0.2:
+The following are explicitly outside v0.0.4:
 
 - calendars and calendar composition;
 - weekend masks and holiday sets;
