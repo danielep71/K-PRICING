@@ -104,6 +104,10 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added `docs/ROADMAP.md`, the authoritative forward roadmap: v0.0.3 test
+  hardening and registration (#38–#42), v0.0.4 date primitives and the first
+  functional release (#46–#52), and planned v0.0.5 business calendars and
+  v0.0.6 business-day arithmetic, with dependencies and scope transitions.
 - Recorded v0.0.2 migration acceptance in `docs/MIGRATION_COMPLETION.md`, with
   the accepted candidate, inventory, evidence, limitations and the v0.0.3 next
   delivery scope (#38–#42); no release, tag or version change.
@@ -131,6 +135,13 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- Adapted the date-layer contract's version labels to the K-PRICING milestones:
+  the contract targets v0.0.4 and `KPR_Cal_*` is reserved for v0.0.5. Behavior,
+  signatures, defaults and errors are unchanged; provenance records the
+  adaptation.
+- The migration handover register, completion record and README now map the
+  former unscheduled demo/UI, classification, controls, assembly and
+  certification items to #46–#52 and defer current planning to the roadmap.
 - Updated the migration plan to record completed migration issues with their
   merge commits, the source implementation-plan disposition and the pending
   #17/#18 gates; the production source guide now states which modules are

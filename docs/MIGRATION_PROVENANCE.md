@@ -44,8 +44,8 @@ The [date-layer contract](DATE_LAYER_CONTRACT.md) preserves source behavior, inc
 rules, date window and array semantics. Editorial adaptations include a migration-scope notice
 that identifies the frozen source commit, source issue references restated as
 plain descriptions or destination issues, the implementation-plan link
-redirected to the destination migration plan, plus the explicit registry
-clarification below. All 22 declaration signatures
+redirected to the destination migration plan, the explicit registry
+clarification and the destination version-label adaptation below. All 22 declaration signatures
 in its public-surface block match the source facade declarations after joining
 VBA line continuations and normalizing whitespace, including whitespace after
 an opening parenthesis; the KPR_ namespace is unchanged. The destination
@@ -78,6 +78,18 @@ therefore yields INTEGER_RANGE/#NUM!, as section 3.2 already requires. This is
 a documented source wording correction, not a changed algorithm or new runtime
 result. Source files remain untouched; downstream fixture review belongs to
 issues #13–#14 and source-history reconciliation to #16.
+
+## Destination version-label adaptation
+
+K-PRICING changes the imported date-layer contract's roadmap and version labels
+to its destination milestone sequence: the date-primitives contract targets
+v0.0.4 and `KPR_Cal_*` is reserved for v0.0.5. The frozen source labelled the
+contract v0.0.2 and reserved calendars for v0.0.3; the contract's migration
+notice records that mapping, and the [roadmap](ROADMAP.md) owns the destination
+milestones. This is an editorial roadmap adaptation only: the 22-function
+behavioral contract, signatures, defaults, errors and algorithms are unchanged.
+The frozen source document remains identified by its original blob and hash
+above.
 
 ## License and attribution
 

@@ -86,5 +86,6 @@ in milestone **v0.0.3 - Test Hardening and Registration**:
 | #42 | MacroOptions registration and register/unregister lifecycle |
 
 The demo builder, Ribbon, CommandBars, member classification, inventory
-controls, candidate assembly and certification remain unscheduled in the
-[handover register](MIGRATION_HANDOVER.md).
+controls, candidate assembly and certification were unscheduled at acceptance.
+They were later scheduled in milestone **v0.0.4 — Date Primitives** as #46–#52.
+The [roadmap](ROADMAP.md) owns the current plan.

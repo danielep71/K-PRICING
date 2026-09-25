@@ -60,6 +60,9 @@ The exact file hashes and destination blob identities are maintained in
 
 ## Roadmap carried forward without completion claims
 
+This section is historical: it records what migration carried forward and where
+each item was scheduled. Current planning lives in the [roadmap](ROADMAP.md).
+
 | Roadmap item | Remaining scope | Destination disposition |
 | --- | --- | --- |
 | Registration | MacroOptions manifest and registration/cleanup lifecycle | Not implemented by migration. Scheduled in v0.0.3 as #42. |
@@ -67,41 +70,42 @@ The exact file hashes and destination blob identities are maintained in
 | Durable runner | Final durable regression interface and broad structured evidence schema | Partially overlapped by migration-specific K-PRICING evidence work; not complete. Scheduled in v0.0.3 as #39. |
 | Regression matrix | Complete contract/shape/parity/error/state regression matrix | Focused migrated suites exist, but the complete matrix remains future work. Scheduled in v0.0.3 as #40. |
 | Cross-oracle | Native Excel cross-oracle module | Not implemented. Scheduled in v0.0.3 as #41. |
-| Demo builder | Deterministic date-demo builder | Not implemented. The destination carries only a minimal direct-VBA consumer example. |
-| Ribbon | Ribbon callbacks, RibbonX and safe package injection | Not implemented. |
-| CommandBars | Idempotent classic CommandBars lifecycle | Not implemented. |
-| Member classification | Final supported/infrastructure public-member classification | Partially satisfied for the migrated 22-function calculation API by `docs/PUBLIC_API.txt` and destination static checks. Future registration/UI/demo infrastructure remains absent, so the item is not complete. |
-| Inventory controls | Final architecture inventory checks and live milestone-register drift monitoring | Partially overlapped by K-PRICING repository/KPR static gates. Final fixture/oracle/UI inventory and live register workflow remain future work. |
-| Candidate assembly | Functional candidate documentation, VERSION/CHANGELOG assembly | Not a v0.0.2 functional-release commitment. K-PRICING v0.0.2 is a repository-migration milestone. |
-| Certification | Full roadmap Windows certification and publication | Not completed by migration. K-PRICING #17 certifies only the implemented migrated candidate/parity boundary; future registration/UI/demo/oracle/package certification remains separate. |
+| Demo builder | Deterministic date-demo builder | Not implemented. The destination carries only a minimal direct-VBA consumer example. Scheduled in v0.0.4 as #46. |
+| Ribbon | Ribbon callbacks, RibbonX and safe package injection | Not implemented. Scheduled in v0.0.4 as #47. |
+| CommandBars | Idempotent classic CommandBars lifecycle | Not implemented. Scheduled in v0.0.4 as #48. |
+| Member classification | Final supported/infrastructure public-member classification | Partially satisfied for the migrated 22-function calculation API by `docs/PUBLIC_API.txt` and destination static checks. Future registration/UI/demo infrastructure remains absent, so the item is not complete. Scheduled in v0.0.4 as #49. |
+| Inventory controls | Final architecture inventory checks and live milestone-register drift monitoring | Partially overlapped by K-PRICING repository/KPR static gates. Final fixture/oracle/UI inventory and live register workflow remain future work. Scheduled in v0.0.4 as #50. |
+| Candidate assembly | Functional candidate documentation, VERSION/CHANGELOG assembly | Not a v0.0.2 functional-release commitment. K-PRICING v0.0.2 is a repository-migration milestone. Scheduled in v0.0.4 as #51. |
+| Certification | Full roadmap Windows certification and publication | Not completed by migration. K-PRICING #17 certifies only the implemented migrated candidate/parity boundary; future registration/UI/demo/oracle/package certification remains separate. Scheduled in v0.0.4 as #52. |
 
-Detailed acceptance criteria for scheduled items are recorded in their
-destination issues. An unscheduled item receives a destination issue, with its
-criteria, when it is activated.
+Every carried-forward item is now scheduled. Detailed acceptance criteria are
+recorded in the destination issues, and the [roadmap](ROADMAP.md) is the
+authority for current milestones and sequencing.
 
 ## Preserved dependency chain
 
-Future delivery retains this dependency structure unless a reviewed destination
-plan explicitly changes it:
+The carried-forward dependency structure maps onto destination issues as
+follows. The [roadmap](ROADMAP.md) owns any later change to it.
 
 - registration foundation: registration (#42);
 - independent test hardening: independent fixtures (#38) → durable runner
   (#39) → regression matrix (#40), with cross-oracle (#41) dependent on the
   durable runner (#39);
-- demo/UI delivery: the demo builder depends on registration (#42); Ribbon and
-  CommandBars depend on registration (#42), the durable runner (#39) and the
-  demo builder;
-- member classification depends on Ribbon and CommandBars;
-- inventory controls depend on the regression matrix (#40), cross-oracle (#41)
-  and member classification;
-- candidate assembly depends on inventory controls;
-- certification depends on candidate assembly.
+- demo/UI delivery: the demo builder (#46) depends on registration (#42);
+  Ribbon (#47) and CommandBars (#48) depend on registration (#42), the durable
+  runner (#39) and the demo builder (#46);
+- member classification (#49) depends on Ribbon (#47) and CommandBars (#48);
+- inventory controls (#50) depend on the regression matrix (#40), cross-oracle
+  (#41) and member classification (#49);
+- candidate assembly (#51) depends on inventory controls (#50);
+- certification (#52) depends on candidate assembly (#51).
 
 At v0.0.2 acceptance (#18) the maintainer scheduled independent test hardening
 (#38–#41) followed by registration (#42) in milestone v0.0.3. The remaining
-items are unscheduled. When an item is activated, create a destination issue
-with an explicit milestone. Do not invent release commitments to clear this
-register.
+items were later scheduled in milestone v0.0.4 — Date Primitives as #46–#52,
+ending in the first functional release. Calendars (v0.0.5) and business-day
+arithmetic (v0.0.6) are new destination scope recorded only in the
+[roadmap](ROADMAP.md).
 
 ## Evidence disposition
 
