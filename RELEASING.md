@@ -12,9 +12,9 @@ profile evidence and asset-manifest schemas are owned by
 [`docs/RELEASE_EVIDENCE.md`](docs/RELEASE_EVIDENCE.md).
 
 > [!IMPORTANT]
-> Generated-project releases must be fully initialized. The canonical template's
-> own release is the documented exception: it preserves registered template
-> tokens and uses the `template` release-evidence profile.
+> K-PRICING is an initialized generated repository. Its releases use the
+> `application` release-evidence profile; the release tooling's `template`
+> profile applies only to the upstream template and never to this repository.
 
 ## 🧭 Release identity
 
@@ -40,13 +40,8 @@ A release is valid only when:
 4. VBA compile and applicable regression/specialist checks pass on that candidate;
 5. every distributed artifact is derived from and tested against that candidate;
 6. external evidence and optional asset hashes bind to the candidate;
-7. the annotated lower-case `v*` tag targets the certified commit; for the
-   canonical template, that tag also carries a verified SSH signature from the
-   signer trust policy committed in the candidate;
-8. the canonical template's durable certification ZIP is signed in the dedicated
-   certification namespace and verified against the same committed/current
-   GitHub SSH signing trust before publication; and
-9. post-publication retrieval/installation checks pass.
+7. the annotated lower-case `v*` tag targets the certified commit; and
+8. post-publication retrieval/installation checks pass.
 
 If source changes after certification, the affected evidence is stale and must be
 rerun. Never compensate by manually editing an already-tested artifact.
@@ -110,9 +105,8 @@ From a clean environment:
 - confirm the security and license links; and
 - remove stale compatibility or evidence claims.
 
-For a generated-project release, verify no unresolved template state remains.
-For the canonical template's own release, preserve registered template state and
-use the `template` evidence profile.
+Verify that no unresolved template state (`{{...}}` tokens or template markers)
+remains.
 
 ## 4. Run repository and release gates
 
@@ -151,8 +145,8 @@ Source inspection is not Excel execution. If code changes, recertify.
 
 ## 6. Build and test release artifacts
 
-Source-only libraries do not need an artificial binary asset. When the project
-ships a workbook/add-in/package:
+The application profile requires packaging and end-to-end smoke evidence for a
+functional release. When the release ships a workbook/add-in/package:
 
 1. build from a clean location using only candidate-controlled inputs;
 2. preserve required binary companions such as `.frx` files;
@@ -220,9 +214,8 @@ merges conform retroactively. Apply this convention to future merges.
 ## 9. Create and verify the release tag
 
 Tag only the certified commit and run the release-integrity checker before and
-after creating the local tag. The default generated-project contract remains an
-annotated tag; generated repositories do not inherit the canonical SSH-signing
-requirement unless they explicitly adopt an equivalent local policy.
+after creating the local tag. K-PRICING uses an annotated tag;
+its release policy does not require a signed tag.
 
 ### Initialized generated project
 
@@ -264,12 +257,11 @@ Add `--asset-manifest ../release-assets.sha256` to both applicable release-gate
 invocations when the release distributes binary assets. For contract 1.2.0 add
 the build record and any required provenance-record signature using
 [the provenance procedure](docs/RELEASE_PROVENANCE.md). The provenance-record
-signature is an independent assertion signature; it never substitutes for the
-canonical template's Git-tag signature.
+signature is an independent assertion signature.
 
 Do not push the tag if either release check fails. An incorrect local tag that
-has **not** been pushed may be deleted and recreated after the candidate and
-signing setup are corrected, followed by a complete post-tag verification. Once
+has **not** been pushed may be deleted and recreated after the candidate is
+corrected, followed by a complete post-tag verification. Once
 a tag has been pushed or published, never move, delete, recreate, or replace it
 to hide an error; publish a corrected patch release instead.
 
@@ -297,16 +289,6 @@ release evidence. Do not generate authoritative notes from raw commit subjects:
 an approved ancestry-preserving exception can legitimately make Git history
 contain subjects that are unsuitable or duplicated as user-facing release text.
 
-Before creating the canonical template's GitHub Release, build and verify the
-durable certification set using
-[the release-evidence procedure](docs/RELEASE_EVIDENCE.md), sign the exact
-certification ZIP with the externally held canonical SSH signing key in the
-`excel-vba-release-certification` namespace, and verify that detached signature
-against the candidate's committed/current GitHub signing trust. Upload the
-resulting ZIP, `.zip.sig`, manifest, and SHA-256 file unchanged. This detached
-signature authenticates the durable certification ZIP; it is separate from the
-SSH-signed Git tag and from any optional provenance-record signature.
-
 Upload the already-tested, already-hashed and, where required, already-signed
 artifacts. Do not rebuild or re-sign between certification/tagging and
 publication.
@@ -327,8 +309,8 @@ Do not announce broad availability until these checks pass.
 
 Before publication, repair the candidate and rerun every affected gate. An
 unpushed incorrect tag may be deleted and recreated only after correcting the
-candidate/signing setup and repeating post-tag verification. After a public
-release, never silently replace assets, move the tag, or recreate its signature:
+candidate and repeating post-tag verification. After a public
+release, never silently replace assets or move the tag:
 document the problem and publish a corrected patch release. Vulnerability
 handling follows [`SECURITY.md`](SECURITY.md).
 

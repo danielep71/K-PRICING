@@ -3,7 +3,7 @@
 Repository migration **v0.0.2** accepts the frozen KPR date-layer candidate into
 K-PRICING. This is a milestone record, not a published release: `VERSION`
 remains `0.0.0`, no tag or package is created, and no production-ready pricing
-product is claimed. Issue #18 owns this acceptance.
+product is claimed. Issue #18 owned this acceptance.
 
 ## Accepted candidate
 

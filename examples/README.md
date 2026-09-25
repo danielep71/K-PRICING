@@ -21,8 +21,8 @@ an ISO date and writes the result to the Immediate window. Direct VBA follows
 the frozen no-worksheet-host 1900 serial contract; worksheet callers remain
 subject to the caller workbook's date-system rules.
 
-The example is intentionally minimal. The planned full demo remains outside
-v0.0.2 and is carried forward through the migration backlog.
+The example is intentionally minimal. The deterministic demo builder is planned
+in v0.0.4 as #46; see the [roadmap](../docs/ROADMAP.md).
 
 ## Minimal worksheet example
 
@@ -77,5 +77,3 @@ returns `#N/A` rather than a date shifted by 1,462 days, and
 Use `demo/` instead only when an interactive demo is itself a distinct project deliverable, an established public path must remain stable, or packaging automation requires that profile. Document the reason in the root README and do not maintain both `examples/` and `demo/` for the same purpose.
 
 Do not commit opaque generated workbooks here unless the repository's release policy explicitly treats them as reviewed source artifacts. Published binaries normally belong to GitHub Releases.
-
-Delete this README only if real examples and equivalent instructions make the directory's role equally explicit.

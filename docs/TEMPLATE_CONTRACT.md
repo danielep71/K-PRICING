@@ -10,6 +10,9 @@ versioned identity of the set of controls a generated repository adopts.
 It is not the version of your project. A project's own product version lives in
 [`../VERSION`](../VERSION) and its history in [`../CHANGELOG.md`](../CHANGELOG.md).
 
+K-PRICING adopted contract `1.2.0` at initialization. The version history below
+is upstream migration guidance, not a list of K-PRICING changes.
+
 ---
 
 ## 1. 🧭 What the contract version identifies
@@ -35,6 +38,8 @@ It is recorded in `.github/repository-profile.json`:
 `version` is the adopted contract. `source` is the template repository that
 published it, and it is preserved verbatim through initialization — a generated
 project's own `repository` field changes, `template_contract.source` does not.
+In K-PRICING the recorded source is the upstream template identity preserved in
+`.github/repository-profile.json` and `.github/initialization.json`.
 
 <a id="semver-policy"></a>
 
@@ -72,8 +77,8 @@ The contract version and a project's `VERSION` are deliberately unrelated:
   updating the template.
 
 The template's own release history and the contract history therefore diverge
-over time. They currently share numbers only because every release so far has
-changed the required control set.
+over time. In the upstream template they have so far shared numbers only because
+every template release changed the required control set.
 
 <a id="version-history"></a>
 

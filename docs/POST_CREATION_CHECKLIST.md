@@ -20,10 +20,10 @@ Record the generated repository, selected profile, exact source SHA, operator,
 and completion date before applying settings. Evidence must come from API or UI
 read-back after each change, not from the setup command or intended values.
 
-The optional `.github/provisioning-policy.json` records the initialized
-description, topics, feature/merge defaults, required checks and reviewed
-exceptions for template-maintenance provisioning tooling. Review and commit it
-before generating a live setup plan. A plan alone changes no GitHub settings.
+The optional `.github/provisioning-policy.json` records the intended
+description, topics, feature/merge defaults and required checks as a reference.
+The template-maintenance provisioner that consumed it was removed at
+initialization, so apply settings manually and read them back.
 
 <a id="confirm-initialized-source"></a>
 
@@ -75,11 +75,6 @@ values in deterministic JSON and Markdown evidence retained for 30 days.
 - [ ] A live no-drift check reports zero differences.
 - [ ] The workflow permissions are read-only; it has no `issues: write` grant.
 - [ ] Routine label mutation remains in the trusted `Sync issue labels` workflow.
-  Initial provisioning may also use the template-maintenance provisioner with
-  an explicitly approved exact-state plan and trusted credentials. It adds
-  missing labels, requires recorded exceptions for replacements and never
-  deletes extra labels. If extra labels are retained, add them to a selected
-  overlay or review `prune: false` before routine synchronization runs.
 
 <a id="repository-identity"></a>
 
@@ -154,16 +149,15 @@ new releases. `RELEASING.md` and the pre-tag release gate therefore own creation
 authorization; the ruleset makes every matching tag immutable after creation.
 Do not create the first stable tag until the release gate, selected-profile
 pilot or equivalent deployment proof, and exact-SHA Excel evidence are
-complete. The canonical template itself additionally requires all three
-generated-profile pilots. Follow the
+complete. Follow the
 [`RELEASE_EVIDENCE.md`](RELEASE_EVIDENCE.md) contract for the final candidate.
 
 ## 7. 🧩 Profile-Specific Controls
 
+K-PRICING uses the `application` profile, which adds this review:
+
 | Profile | Required additional review |
 | --- | --- |
-| `library` | Public API, caller contract, compatibility, and focused regression evidence; no UI or workbook assets unless actually used |
-| `ui-component` | UI lifecycle, state restoration, recovery, DPI/accessibility, callbacks, and any form/Ribbon resources actually used |
 | `application` | Startup, shutdown, upgrade, recovery, packaging, workbook/add-in lifecycle, and end-to-end smoke evidence |
 
 Profile differences add controls; they never remove the common façade, core,

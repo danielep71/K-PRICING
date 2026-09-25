@@ -92,7 +92,7 @@ a moved/recreated tag, or unavailable current trust fails publication.
 Pre-tag candidate validation remains possible and network-independent: the tag
 signature check begins only once `refs/tags/<release-tag>` exists. The
 post-tag `check_release.py --require-tag-ref` invocation is therefore the
-publication boundary. Existing published v1.2.0 history remains immutable and
+publication boundary. The upstream template's published v1.2.0 history remains immutable and
 is not retrofitted.
 
 ### Durable certification-bundle signature

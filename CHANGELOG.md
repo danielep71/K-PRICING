@@ -130,7 +130,11 @@ Use only the categories needed by a release.
   disposition, destination-only corrections, the carried-forward roadmap and
   the reference policy for the frozen source.
 - Imported the frozen KPR date and VBE export contracts with verified source
-  hashes, license attribution and explicit pending destination runtime evidence.
+  hashes and license attribution (#11).
+- Imported the frozen KPR date layer (four internal cores and the 22-function
+  `KPR_DATES_DAYS` façade), the migrated regression harness, a direct-VBA
+  example, the public API manifest and KPR contract static checks (#12, #13);
+  defined the migration regression/parity protocol and evidence validator (#14).
 - Accepted manual neutral-starter Excel evidence for candidate
   `c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2` on one Windows/64-bit Office host; no pricing
   or application-release certification.
@@ -148,9 +152,15 @@ Use only the categories needed by a release.
 - The migration handover register, completion record and README now map the
   former unscheduled demo/UI, classification, controls, assembly and
   certification items to #46–#52 and defer current planning to the roadmap.
+- Refreshed stale Markdown across the repository: the README states the fixed
+  application profile instead of the inherited profile taxonomy; removed
+  neutral-starter examples and template-only procedures from current guidance;
+  marked the neutral-starter runbook and initialization procedure as historical
+  or reference material; recorded #17, #18 and #38 as complete; and added the
+  generated fixture module to the Excel evidence import inventory.
 - Updated the migration plan to record completed migration issues with their
-  merge commits, the source implementation-plan disposition and the pending
-  #17/#18 gates; the production source guide now states which modules are
+  merge commits, the source implementation-plan disposition and the #17/#18
+  outcomes; the production source guide now states which modules are
   byte-identical to the frozen KPR source and which carry destination deltas.
 - Reset the development version to `0.0.0` and removed template-maintenance
   history, assets and tools through the deterministic initializer.
@@ -179,7 +189,7 @@ Use only the categories needed by a release.
   tools. Their inapplicable consumer-generation, portfolio, Wiki and checker
   maintenance cases are removed; operational validator coverage remains.
 - Replace stale pull-request setup fields with K-PRICING identity, current source
-  authorities, validation commands, and neutral-starter entry points.
+  authorities, validation commands and entry points.
 - Remove obsolete private-link classifications after the public-visibility
   read-back; retain honest anonymous reachability results.
 - Reconcile visibility records, documentation authorities, ASCII source rules

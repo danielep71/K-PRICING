@@ -1,8 +1,7 @@
 > [!IMPORTANT]
 > **Migration scope — 2026-09-24.** Imported from frozen source commit `f26450d`.
-> Source version labels (including v0.0.2 and v0.0.3), roadmap statements and
-> historical evidence refer to the frozen source. They do not set K-PRICING release versions
-> or claim destination certification. The frozen implementation is now migrated
+> Historical evidence refers to the frozen source and does not set K-PRICING
+> release versions or claim destination certification. The frozen implementation is now migrated
 > into K-PRICING; exact-source Windows Excel compilation and parity passed on one
 > Windows 64-bit host in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
 > [Migration provenance](MIGRATION_PROVENANCE.md) records hashes, attribution
@@ -36,7 +35,7 @@ VBE import/export aligned.
 > This page defines the source exchange format. It does **not**
 > establish that tracked source imports, compiles or runs in Excel. That claim
 > belongs exclusively to exact-source Windows certification;
-> destination parity is tracked in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
+> destination parity was verified on one Windows 64-bit host in [K-PRICING #17](https://github.com/danielep71/K-PRICING/issues/17).
 
 ## 🧾 Format contract
 

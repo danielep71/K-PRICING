@@ -30,11 +30,11 @@ spaces. Source decorations use ASCII, even when Markdown documentation uses
 glyphs and badges.
 
 The facade remains externally visible. Core and example modules use
-`Option Private Module`. The historical neutral starter test module used it too. The
-migrated `KPR_REGRESSION_TESTS` deliberately omits it, preserving its callable
-regression entry points. This is test infrastructure, not an addition to the
-22-function supported API in [PUBLIC_API.txt](PUBLIC_API.txt). Preserve that
-exception when migrating tests in issue #14; do not change visibility as formatting.
+`Option Private Module`, as does the generated `KPR_Test_Fixtures_Generated`
+module. The migrated `KPR_REGRESSION_TESTS` deliberately omits it, preserving
+its callable regression entry points. This is test infrastructure, not an
+addition to the 22-function supported API in [PUBLIC_API.txt](PUBLIC_API.txt).
+Preserve that exception; do not change visibility as formatting.
 
 ## 📝 Procedure layout
 
@@ -53,7 +53,7 @@ to explain its contract:
 | `USAGE` | Entry-point instructions or a useful calling example |
 | `UPDATED` | Date this procedure's code or documentation was last revised |
 
-Document every starter procedure, including assertion, reporting, reset and
+Document every procedure, including assertion, reporting, reset and
 cleanup helpers. Keep short helpers' contracts concise; omit empty sections.
 Comments should explain intent and invariants rather than narrate assignments.
 Each local variable, module-state variable and constant has an inline comment
@@ -72,7 +72,7 @@ executed at that label.
 
 Keep module dates at least as recent as the procedures changed in that module;
 do not refresh untouched procedure dates merely to make all dates identical.
-Preserve accurate authorship when adapting the starter.
+Preserve accurate authorship when adapting existing or migrated code.
 
 Separate local declarations under `DECLARE`. Divide the executable body into
 meaningful phases such as `GUARD ENTRY`, `RUN SUITE`, `CLEANUP AND REPORT` and
@@ -100,14 +100,14 @@ meaningful phases such as `GUARD ENTRY`, `RUN SUITE`, `CLEANUP AND REPORT` and
 For example, the facade signature is formatted as:
 
 ```vb
-Public Function ProjectRatio( _
-    ByVal numerator As Double, _
-    ByVal denominator As Double) _
-    As Double
+Public Function KPR_Dates_DayOfWeek( _
+    ByVal DateIn As Variant, _
+    Optional ByVal Opt_WeekBaseMonday As Variant = True) _
+    As Variant
 ```
 
-Its procedure banner follows that signature; it does not precede it. The full
-`src/modules/ProjectFacade.bas` export is the working example.
+Its procedure banner follows that signature; it does not precede it.
+`src/modules/KPR_DATES_DAYS.bas` contains the full export.
 
 Inside that procedure, annotations accompany the declarations and body:
 
@@ -115,15 +115,14 @@ Inside that procedure, annotations accompany the declarations and body:
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    'Keep every error field needed to preserve the core failure contract.
-    Dim savedNumber        As Long      'Original error number for later re-raise
+    Dim P1              As Variant   'Materialized payload of DateIn
+    Dim WkMonday        As Boolean   'Resolved Opt_WeekBaseMonday
 
 '------------------------------------------------------------------------------
-' CALL CORE
+' INITIALIZE
 '------------------------------------------------------------------------------
-    'Delegate the arithmetic to the core; this boundary owns only the
-    'caller-facing error source.
-        On Error GoTo HandleError
+    'Containment only: a raise reaching the handler is a defect, never an outcome
+        On Error GoTo Err_Handler
 ```
 
 This is an excerpt: the full export retains all declarations and the handler.
@@ -153,8 +152,7 @@ test cases, assertion counts, cleanup and machine-readable output must remain
 unchanged. A discovered semantic defect belongs in a separate change.
 
 Run the canonical repository gate, public API, jump and conditional-compilation
-checks, plus the initializer self-test for the recorded generated profile.
-Canonical template maintainers additionally exercise all three profile fixtures. Verify CRLF
+checks, plus the initializer self-test for the recorded generated profile. Verify CRLF
 working-tree exports and clean whitespace. These checks confirm source
 contracts; they do not execute Excel or prove VBE importability by themselves.
 

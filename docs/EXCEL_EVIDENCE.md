@@ -60,7 +60,8 @@ The implementation order for an adapter is:
    modules and forms with their resources into a fresh test workbook. Populate
    workbook/worksheet document modules in their corresponding host objects;
    do not import them as ordinary classes. Record reference resolution and any
-   host-specific setup. The neutral starter imports core, facade and tests.
+   host-specific setup. K-PRICING imports the four `KPR_Core_*` modules,
+   `KPR_DATES_DAYS` and both test modules (see [INSTALLATION.md](../INSTALLATION.md)).
 3. Compile with an adapter capable of observing the actual compile outcome.
    Do not equate a successful import or a button click with compilation. A
    complete successful harness run also demonstrates that its executed VBA
@@ -78,7 +79,7 @@ The implementation order for an adapter is:
    `UNAVAILABLE` into PASS.
 
 The adapter must implement these operations for its host and certify its own
-failure controls before use. This template supplies the interface and validator,
+failure controls before use. This repository supplies the interface and validator,
 not a generic COM controller or a claimed automated compile implementation.
 
 ## 🧾 Shared Record Schema
@@ -117,7 +118,8 @@ values, all digest markers, environment and timestamps with observed values:
     {"path": "src/core/KPR_Core_Err.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
     {"path": "src/core/KPR_Core_Parse.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
     {"path": "src/modules/KPR_DATES_DAYS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
-    {"path": "tests/modules/KPR_REGRESSION_TESTS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"}
+    {"path": "tests/modules/KPR_REGRESSION_TESTS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "tests/modules/KPR_Test_Fixtures_Generated.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"}
   ],
   "stages": {
     "import": {"status": "PASS", "detail": "Imported exact inventory into fresh test project", "log": {"path": "session.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}},
@@ -148,10 +150,12 @@ candidate SHA identifies the VBA source being tested. Manual records must have
 no workflow object and cannot claim the automated runner class. The validator
 checks identities and bindings, not whether a service really executed that run.
 
-For v0.0.2 migration acceptance, this host record is only the destination side
-of the evidence. [MIGRATION_REGRESSION.md](MIGRATION_REGRESSION.md) defines the
-separate frozen-source comparison and the additional macro-only host, Range-shape
-and dynamic-array logs required by #17. Those migration logs do not weaken or
+For the completed v0.0.2 migration acceptance (#17,
+[`evidence/migration-2026-09-24`](../evidence/migration-2026-09-24/session.txt)),
+this host record was only the destination side of the evidence.
+[MIGRATION_REGRESSION.md](MIGRATION_REGRESSION.md) defines the separate
+frozen-source comparison and the additional macro-only host, Range-shape and
+dynamic-array logs that run required. Those migration logs do not weaken or
 replace this generic host-record validation.
 
 Every executed stage requires a nonempty detail and retained-log reference.
@@ -183,8 +187,8 @@ top-level evidence cases.
    architecture, and the existing Trust Center settings. Do not change trust
    settings to make the test run. Record start time with timezone.
 3. In the VBA editor, import the exact candidate inventory in the documented
-   order: the four `KPR_Core_*` modules, `KPR_DATES_DAYS`, and
-   `KPR_REGRESSION_TESTS`. Review references, compile, and run
+   order: the four `KPR_Core_*` modules, `KPR_DATES_DAYS`,
+   `KPR_Test_Fixtures_Generated` and `KPR_REGRESSION_TESTS`. Review references, compile, and run
    `KPR_Tests_RunEvidence`. Preserve its complete Immediate-window output as
    `harness.log`. The adapter delegates to the native all-suite dispatcher and
    emits the structured evidence records required by the validator. If it fails,

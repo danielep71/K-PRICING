@@ -82,11 +82,10 @@ canonical maintainer tooling removed from this generated repository. The canonic
 
 ## Canonical repository-quality gate
 
-`check_repo.py` is the dependency-free baseline gate for all three supported
-repository profiles. Its versioned policy lives in
-`.github/repository-profile.json`; generated repositories set `mode` to
-`generated`, select `application`, `library`, or `ui-component`, and update the
-declared paths and VBA component roles instead of editing checker logic.
+`check_repo.py` is the dependency-free baseline gate. Its versioned policy lives
+in `.github/repository-profile.json`, where K-PRICING records `mode: generated`
+and `profile: application`. Update the declared paths and VBA component roles
+there instead of editing checker logic.
 
 Run the portable commands locally:
 
@@ -308,8 +307,10 @@ python3 tools/check_kpr_contract.py \
 ```
 
 The hosted Repository integrity workflow retains both reports and treats either
-specialist-check failure as terminal. Excel compilation and source/destination
-runtime parity remain separate evidence owned by migration issue #17.
+specialist-check failure as terminal. Excel compilation and runtime behavior
+remain separate Excel evidence; the v0.0.2 source/destination parity run (#17)
+passed and is recorded in `docs/MIGRATION_COMPLETION.md` (evidence under
+`evidence/migration-2026-09-24`).
 
 The same checker keeps the generated fixture module independent: it may not
 reference any production module, and only the regression harness may depend on
@@ -368,7 +369,8 @@ Run the deterministic positive/degraded fixtures with:
 python3 tools/check_migration_evidence.py --self-test
 ```
 
-Validate a real retained bundle only after #17 has executed Excel:
+Validate a real retained bundle, such as the v0.0.2 bundle under
+`evidence/migration-2026-09-24`:
 
 ```bash
 python3 tools/check_migration_evidence.py \
@@ -503,5 +505,3 @@ python3 tools/initialize_repository.py --root . --self-test
 - Do not place production VBA, regression modules, examples, or GitHub workflow definitions here.
 
 Workflow orchestration belongs under `.github/workflows/`; `tools/` contains the reusable logic those workflows call.
-
-Delete this README only if real tools and equivalent maintainer documentation make the directory's role equally explicit.

@@ -1,7 +1,7 @@
 # 🚀 Repository Initialization
 
 [![Mode: dry-run first](https://img.shields.io/badge/mode-dry--run%20first-217346)](#-safety-model)
-[![Profiles: 3](https://img.shields.io/badge/profiles-3-6f42c1)](#-initialize-one-profile)
+[![Profile: application](https://img.shields.io/badge/profile-application-6f42c1)](#-repeat-run-verification)
 [![Writes: staged](https://img.shields.io/badge/writes-staged-217346)](#-deterministic-transformations)
 [![Verification: self-tested](https://img.shields.io/badge/verification-self--tested-1D76DB)](#-verification)
 
@@ -9,6 +9,13 @@ This document is the authoritative contract for turning a clean repository
 created from this template into one initialized project. Initialization changes
 versioned files only. It does not configure GitHub labels, metadata, secrets,
 rulesets, environments, or other live settings.
+
+> [!NOTE]
+> K-PRICING is already initialized (profile `application`, generated mode). Its
+> inputs are recorded in `.github/initialization.json` and its provenance in
+> [INITIALIZATION_STATUS.md](INITIALIZATION_STATUS.md). The sections below
+> describe the retained initializer for reference and repeat-run verification;
+> do not re-run it with new inputs.
 
 ## 🛡️ Safety Model
 
@@ -75,28 +82,27 @@ chooser's template-repository security URL to the generated repository without
 placing a token in YAML. VBA components therefore use fixed, compile-safe
 identifiers; a project may rename them later as an explicit source change.
 
-## 🧭 Initialize One Profile
+## 🧭 Repeat-run verification
 
-Run this command from a clean repository root. Dry-run is the default:
+The initializer runs from a clean repository root and is dry-run by default.
+In K-PRICING, a repeat run with exactly the inputs recorded in
+`.github/initialization.json` must report `"status": "no-op"`; different inputs
+are rejected. This dry run replays the recorded inputs without retyping them:
 
 ```bash
-python3 tools/initialize_repository.py --profile library \
-  --set PROJECT_NAME="Example Project" \
-  --set PROJECT_TAGLINE="A concise project identity" \
-  --set PROJECT_DESCRIPTION="One sentence describing the supported problem and audience." \
-  --set REPOSITORY_PATH="owner/repository" \
-  --set MAINTAINER_NAME="Example Maintainer" \
-  --set SUPPORT_CONTACT="security@example.com" \
-  --set COPYRIGHT_YEAR="2026"
+python3 - <<'PY'
+import json, subprocess, sys
+record = json.load(open(".github/initialization.json", encoding="utf-8"))
+command = [sys.executable, "tools/initialize_repository.py", "--profile", record["profile"]]
+for name, value in record["values"].items():
+    flag, items = ("--add", value) if isinstance(value, list) else ("--set", [value])
+    command += [part for item in items for part in (flag, f"{name}={item}")]
+sys.exit(subprocess.run(command).returncode)
+PY
 ```
 
-Use exactly one profile:
-
-| Profile | `--profile` value | Boundary |
-| --- | --- | --- |
-| Library | `library` | Reusable callable VBA without an owned end-user shell |
-| UI component | `ui-component` | Embeddable component with a bounded interactive surface |
-| Application | `application` | End-to-end workbook or add-in owning deployment and lifecycle |
+The `library` and `ui-component` entries that remain in
+`.github/repository-profile.json` exist only for the tooling and its fixtures.
 
 Review every planned create, update, and delete operation and its before/after
 SHA-256 digest. Repeat the identical command with `--apply` only when that plan
@@ -151,8 +157,9 @@ and examples remain optional unless the selected contract explicitly adds them.
 
 ## 🧰 Manual Fallback
 
-The script is authoritative, but the transformation remains transparent and can
-be reproduced manually:
+Historical reference only; this procedure does not apply to the initialized
+K-PRICING repository. The script is authoritative, but the transformation
+remains transparent and can be reproduced manually:
 
 1. Start from a clean clone and save the pre-initialization commit SHA.
 2. Read the placeholder catalog and profile values in
@@ -199,10 +206,10 @@ repository, the self-test validates the recorded selected profile, identity,
 cleanup, repository quality and repeat-run safety; it does not regenerate all
 three profiles or require removed checker-development tools.
 
-After initialization, configure the live repository settings that a GitHub
-template cannot inherit. Follow
-[`POST_CREATION_CHECKLIST.md`](POST_CREATION_CHECKLIST.md) and preserve read-back
-evidence of the applied state.
+Live repository settings that a GitHub template cannot inherit were provisioned
+after initialization; the current read-back is in
+[`SETUP_VERIFICATION.md`](SETUP_VERIFICATION.md). Use
+[`POST_CREATION_CHECKLIST.md`](POST_CREATION_CHECKLIST.md) when re-verifying them.
 
 ---
 

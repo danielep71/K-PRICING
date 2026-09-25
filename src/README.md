@@ -12,6 +12,7 @@ Create only the subdirectories the project actually needs:
 | `src/core/` | Internal standard modules: parsing, calculation, validation, and other implementation details | Supported public entry points |
 | `src/classes/` | Production class modules, including state managers, event sinks, and UI hooks | Test doubles used only by the harness |
 | `src/forms/` | Production UserForms; each `.frm` stays beside its required `.frx` | Screenshots and distributable workbooks |
+| `src/workbook/` | Host-bound workbook and worksheet document modules (`ThisWorkbook`, sheet modules) | Standard modules and classes |
 
 A small project may keep production components directly in `src/` when further subdivision would add no clarity. If it does, document each component's role in `INSTALLATION.md`.
 
@@ -49,5 +50,3 @@ destination blob IDs and the justification for each delta.
 - Keep a UserForm's `.frm` and `.frx` together and import only the `.frm` through the VBE.
 - Do not place tests, examples, release binaries, generated evidence, or local workbooks here.
 - Document the exact production manifest and import order in `INSTALLATION.md`.
-
-Delete this README only if real source files and equivalent project documentation make the directory's purpose equally explicit.

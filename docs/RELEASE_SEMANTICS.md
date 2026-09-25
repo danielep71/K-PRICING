@@ -46,7 +46,7 @@ installation date, or a timestamp inferred from Git history.
 
 Tagging and publication may occur later than the cut/freeze date. That delay does
 not make the changelog heading stale and must not cause a published historical
-section to be rewritten. The canonical v1.2.0 record is therefore valid with a
+section to be rewritten. For example, the upstream template's v1.2.0 record is valid with a
 `2026-09-10` changelog cut/freeze date and tag/publication on `2026-09-12`.
 
 If a candidate is abandoned and the release section is materially reopened, a
@@ -138,8 +138,9 @@ reported separately from a superseded-base entry so the gate distinguishes
 range staleness from base-scope staleness and prevents a standing or wildcard
 exception from silently weakening future releases.
 
-The same policy file retains historical records for the v1.2.0 stabilization
-merges in PRs #68, #71, and #74. Those records are descriptive only: they keep
+In the upstream template, that policy file retains historical records for the
+template's own v1.2.0 stabilization merges (template PRs #68, #71 and #74; the
+numbers do not refer to K-PRICING pull requests). Those records are descriptive only: they keep
 published ancestry visible without exempting any later candidate range or
 requiring a rewrite of the immutable v1.2.0 history.
 

@@ -46,7 +46,7 @@ Additional required checks are profile-specific:
 | `library` | Public API and caller-contract evidence |
 | `ui-component` | UI state, cleanup, recovery, DPI/accessibility, and lifecycle evidence |
 | `application` | Startup, shutdown, upgrade, recovery, packaging, and end-to-end smoke evidence |
-| `template` | All three generated-profile pilots, live branch/tag governance evidence, the separately verified canonical Git-tag trust policy once the release tag exists, and the durable certification bundle described below |
+| `template` | Upstream template releases only: all three generated-profile pilots, live branch/tag governance evidence, the canonical Git-tag trust policy and the durable certification bundle described below. Not used by K-PRICING. |
 
 All checks use `status: "PASS"`, a non-empty `detail`, and the same
 `candidate_sha`. Project-specific checks may be added with lower-case,
@@ -62,26 +62,27 @@ The top-level object contains exactly these fields:
 ```json
 {
   "schema_version": 1,
-  "version": "1.0.0",
-  "tag": "v1.0.0",
+  "version": "0.0.4",
+  "tag": "v0.0.4",
   "candidate_sha": "0123456789abcdef0123456789abcdef01234567",
-  "profile": "template",
+  "profile": "application",
   "distribution": "source-only",
   "checks": {},
   "assets": []
 }
 ```
 
-The complete `checks` object depends on the selected profile. A regression
+The complete `checks` object depends on the selected profile; for K-PRICING's
+`application` profile it holds the evidence listed in the table above. A regression
 record has this mandatory shape in addition to `status`, `candidate_sha`, and
 `detail`:
 
 ```json
 {
-  "entry_point": "ProjectTests.RunProjectTests",
+  "entry_point": "KPR_Tests_RunEvidence",
   "environment": "host=Microsoft Excel; version=16.0; os=Windows (64-bit) NT 10.00; office=64-bit; runtime=VBA7+",
-  "cases": 4,
-  "assertions": 6,
+  "cases": 12,
+  "assertions": 568,
   "failures": 0,
   "completeness": "COMPLETE",
   "cleanup": "PASS"
@@ -143,6 +144,10 @@ the exported source; compile, regression, package-test, and build-process
 evidence carry that separate claim.
 
 ## 🗄️ Durable canonical-template certification
+
+This section applies to the upstream template only. K-PRICING (generated
+`application` profile) does not build or publish certification bundles, and its
+`Release closeout` workflow records this step as not applicable.
 
 `tools/release_certification.py` builds one deterministic, candidate-bound
 certification package outside the candidate tree. The bundle must account for
@@ -339,10 +344,10 @@ signature authenticates assertions in that external record. They use dedicated
 signature namespaces/purposes and none can silently satisfy another. Any
 non-zero required verification blocks publication.
 
-After the GitHub Release is published with the certification assets, run the
-`Release closeout` workflow for that exact tag, candidate SHA, and milestone.
-For the canonical template, successful durable-certification retrieval is part
-of the terminal closeout verdict.
+After the GitHub Release is published, run the `Release closeout` workflow for
+that exact tag, candidate SHA, and milestone. K-PRICING records canonical
+certification as not applicable (see [RELEASE_CLOSEOUT.md](RELEASE_CLOSEOUT.md));
+only upstream template releases also verify durable certification retrieval.
 
 ## 🚫 What the Gates Reject
 

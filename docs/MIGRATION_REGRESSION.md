@@ -4,7 +4,9 @@ Issue [#14](https://github.com/danielep71/K-PRICING/issues/14) defines how the
 migrated date-layer regression harness is executed and how source-versus-
 destination parity is judged. Actual Windows Excel execution is retained under
 [#17](https://github.com/danielep71/K-PRICING/issues/17); this document defines
-the method and evidence boundary and does not claim that a run has occurred.
+the method and evidence boundary. #17 has since executed it on one Windows 64-bit
+host; the evidence is retained in `evidence/migration-2026-09-24` (see
+[MIGRATION_COMPLETION.md](MIGRATION_COMPLETION.md)).
 
 ## Baselines and evidence boundary
 
@@ -234,13 +236,18 @@ unbound files placed beside a valid host record.
 K-PRICING's shared host record remains governed by
 [EXCEL_EVIDENCE.md](EXCEL_EVIDENCE.md). The migration manifest is an additional
 v0.0.2 parity binding; it does not expand the generic release-evidence schema or
-turn unfinished #38–#41 work into completed scope.
+turn unfinished #39–#41 work into completed scope.
 
 ## Handover to later work
 
-Issue #17 executes this protocol. Issue #16 maps the unfinished KPR fixture,
-runner-expansion and cross-oracle work to future destination backlog. Issue #15
-may describe only the behavior and environments that #17 actually verifies.
+Issue #17 executed this protocol on one Windows 64-bit host
+([`evidence/migration-2026-09-24`](../evidence/migration-2026-09-24/session.txt)).
+Issue #16 mapped the unfinished fixture, runner-expansion and cross-oracle work
+to the destination backlog, and issue #15 limited the documentation to the
+behavior and environments that #17 verified. Of that backlog, the independent
+fixture generator is complete (#38); the runner and evidence schema (#39), the
+regression matrix (#40) and the cross-oracle checks (#41) remain future work in
+the [roadmap](ROADMAP.md).
 
 **Acceptance principle:** parity means the same observable behavior on the same
 environment and inputs, with independent contract expectations still governing

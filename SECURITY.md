@@ -61,7 +61,7 @@ publishes the default-branch posture. See the dated
 | Older tagged releases | ❌ Normally unsupported; upgrade first |
 | Modified copies / unofficial mirrors | ❌ Unsupported unless reproduced in official supported source |
 
-If no functional release exists yet, the project is pre-release and has no
+No functional release exists yet: the project is pre-release and has no
 production-supported security version. Reports must identify an exact release
 tag or full commit SHA; relative descriptions such as “latest” are insufficient.
 
@@ -70,7 +70,7 @@ tag or full commit SHA; relative descriptions such as “latest” are insuffici
 ## 📣 Reporting a vulnerability
 
 Do **not** disclose a suspected vulnerability in a public issue, discussion,
-pull request, commit message, Wiki page, sample workbook, screenshot or release
+pull request, commit message, sample workbook, screenshot or release
 thread.
 
 Use [GitHub private vulnerability reporting](https://github.com/danielep71/K-PRICING/security/advisories/new).
@@ -147,11 +147,16 @@ it creates concrete security impact.
 
 ### Project-specific risk surfaces
 
-Before release, replace or extend this list with verified project facts:
+Current project facts, to be reassessed when packaging, UI or host integration is added:
 
-- **Runtime surface** — workbook/application/native/file/network/UI risks.
-- **Artifact surface** — executable workbooks, add-ins or other distributed assets.
-- **Automation surface** — runners, credentials, release jobs and third-party dependencies.
+- **Runtime surface** — worksheet and VBA date functions in `KPR_DATES_DAYS` that
+  parse and calculate dates and read the calling workbook's date system. They
+  perform no file, network, native-API or UI access. The regression harness's
+  stateful runners create and close their own scratch workbooks.
+- **Artifact surface** — none yet. No workbook, add-in or release asset is distributed.
+- **Automation surface** — GitHub Actions (static checks, CodeQL, Scorecard, label
+  sync and drift, external links, release closeout) with pinned actions and
+  checksum-verified tool downloads.
 
 ### Out of scope
 
