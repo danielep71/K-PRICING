@@ -28,7 +28,7 @@ test infrastructure, not supported production API, and are absent from
 | Input | Contract |
 | --- | --- |
 | `SourceSha` | Full 40-character lowercase commit SHA of the imported source; anything else is refused before a suite runs |
-| `OutputFolder` | Folder outside tracked source; created when missing. The runner writes `kpr-test-evidence.json` there and overwrites an earlier file of that name, so use a fresh folder per run |
+| `OutputFolder` | Folder outside tracked source; it and any missing parent folders are created. A drive root or UNC share must already exist. The runner writes `kpr-test-evidence.json` there and overwrites an earlier file of that name, so use a fresh folder per run |
 | `SuiteName` | One name from the registry below, compared case-insensitively; an unknown name runs nothing and writes nothing |
 
 The return value is `True` only when every selected case passed, the caller's
@@ -171,7 +171,8 @@ against the schema, then:
 - `result` and the `regression` outcome follow from the suites, failures and
   state restoration;
 - every certification outcome follows the detail and reason rules;
-- with `--compare`, both records are identical outside the declared
+- with `--compare`, the second record passes the same schema and semantic
+  checks, and both records are identical outside the declared
   nondeterministic fields;
 - with `--certification`, the record is a `KPR_Test_RunAll` record and every
   outcome is `PASS`. `macro_options`, `ribbonx`, `commandbars`,

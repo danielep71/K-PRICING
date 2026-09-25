@@ -383,8 +383,10 @@ def validate(
         errors.extend(certification_errors(record))
     if compare is not None:
         other = schema_errors(schema, compare, schema, "$")
+        if not other:
+            other = semantic_errors(compare, registry, fixture_sha, fixture_cases, candidate_sha)
         if other:
-            errors.extend(f"comparison record {item}" for item in other)
+            errors.extend(f"comparison record: {item}" for item in other)
         elif deterministic_view(record) != deterministic_view(compare):
             errors.append("records differ outside the declared nondeterministic fields")
     return errors
@@ -590,9 +592,13 @@ def self_test(root: Path) -> int:
         ("compile marked not applicable",
          lambda r: _set("certification/vba_compile", _outcome("NOT_APPLICABLE", None, "n/a"))(
              _certified(r)), {"certification": True}, "vba_compile"),
+        ("invalid comparison record", lambda r: r,
+         {"compare": _set("timing/finished_local", "2026-09-24T10:00:00")(copy.deepcopy(base))},
+         "comparison record: timing.finished_local precedes"),
         ("nondeterminism outside declared fields", lambda r: r,
-         {"compare": _set("failures", [{"suite": "runner", "case": "x", "detail": "y"}])(
-             copy.deepcopy(base))}, "differ outside"),
+         {"compare": _set("totals/assertions", base["totals"]["assertions"] + 1)(
+             _set("suites/0/assertions", base["suites"][0]["assertions"] + 1)(copy.deepcopy(base)))},
+         "differ outside"),
     ]
     for label, mutate, options, expected in negatives:
         errors = validate(root, mutate(copy.deepcopy(base)), **options)

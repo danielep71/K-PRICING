@@ -715,7 +715,8 @@ Public Function KPR_Test_RunAll( _
 '     Full 40-character lowercase Git commit SHA of the imported source.
 '   OutputFolder
 '     Folder outside tracked source that receives kpr-test-evidence.json. It
-'     is created when missing; an existing evidence file is overwritten.
+'     and any missing parents are created; an existing evidence file is
+'     overwritten.
 '
 ' RETURNS
 '   Boolean
@@ -1174,15 +1175,14 @@ Private Function TryPrepareEvidencePath( _
     ByRef Why As String) _
     As Boolean
 '
-' Resolves the evidence file path, creating the folder when missing, and
-' proves the file can be written before any suite runs.
+' Resolves the evidence file path, creating the folder and any missing parent
+' folders, and proves the file can be written before any suite runs.
 '
 
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
     Dim Separator       As String       'Host path separator
-    Dim Attributes      As Long         'Folder attributes
     Dim FileNo          As Integer      'Probe file handle
 
 '------------------------------------------------------------------------------
@@ -1201,26 +1201,12 @@ Private Function TryPrepareEvidencePath( _
 '------------------------------------------------------------------------------
 ' FOLDER
 '------------------------------------------------------------------------------
-    On Error Resume Next
-    Attributes = GetAttr(OutputFolder)
-    If Err.Number <> 0 Then
-        Err.Clear
-        MkDir OutputFolder
-        If Err.Number <> 0 Then
-            Why = "cannot create output folder " & OutputFolder & " (error " & CStr(Err.Number) & ")"
-            Err.Clear
-            Exit Function
-        End If
-        Attributes = GetAttr(OutputFolder)
-    End If
-    If (Attributes And vbDirectory) = 0 Then
-        Why = OutputFolder & " is not a folder"
-        Exit Function
-    End If
+    If Not TryCreateFolderTree(OutputFolder, Why) Then Exit Function
 
 '------------------------------------------------------------------------------
 ' WRITE PROBE
 '------------------------------------------------------------------------------
+    On Error Resume Next
     EvidencePath = OutputFolder & Separator & EVIDENCE_FILE
     FileNo = FreeFile
     Open EvidencePath For Output As #FileNo
@@ -1232,6 +1218,67 @@ Private Function TryPrepareEvidencePath( _
     Close #FileNo
     On Error GoTo 0
     TryPrepareEvidencePath = True
+
+End Function
+
+Private Function TryCreateFolderTree( _
+    ByVal Folder As String, _
+    ByRef Why As String) _
+    As Boolean
+'
+' Creates Folder and every missing parent, one level at a time, because MkDir
+' creates only a single level. A drive root and a UNC \\server\share root
+' must already exist.
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Separator       As String       'Host path separator
+    Dim Cursor          As Long         'Separator ending the current prefix
+    Dim NextSep         As Long         'Next separator after Cursor
+    Dim Part            As String       'Folder prefix being ensured
+    Dim Attributes      As Long         'Attributes of Part
+
+'------------------------------------------------------------------------------
+' SKIP A UNC ROOT
+'------------------------------------------------------------------------------
+    Separator = Application.PathSeparator
+    Cursor = 1
+    If Left$(Folder, 2) = Separator & Separator Then
+        Cursor = InStr(3, Folder, Separator)
+        If Cursor > 0 Then Cursor = InStr(Cursor + 1, Folder, Separator)
+        If Cursor = 0 Then Cursor = Len(Folder)
+    End If
+
+'------------------------------------------------------------------------------
+' ENSURE EACH LEVEL
+'------------------------------------------------------------------------------
+    On Error Resume Next
+    Do
+        NextSep = InStr(Cursor + 1, Folder, Separator)
+        If NextSep = 0 Then Part = Folder Else Part = Left$(Folder, NextSep - 1)
+        If Len(Part) > 0 And Right$(Part, 1) <> ":" Then
+            Err.Clear
+            Attributes = GetAttr(Part)
+            If Err.Number <> 0 Then
+                Err.Clear
+                MkDir Part
+                If Err.Number <> 0 Then
+                    Why = "cannot create folder " & Part & " (error " & CStr(Err.Number) & ")"
+                    Err.Clear
+                    Exit Function
+                End If
+            ElseIf (Attributes And vbDirectory) = 0 Then
+                Why = Part & " is not a folder"
+                Exit Function
+            End If
+        End If
+        If NextSep = 0 Then Exit Do
+        Cursor = NextSep
+    Loop
+    On Error GoTo 0
+    TryCreateFolderTree = True
 
 End Function
 
