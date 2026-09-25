@@ -40,8 +40,17 @@ ALLOWED_DEPENDENCIES = {
         {"kpr_core_err", "kpr_core_parse", "kpr_core_dates", "kpr_core_array"}
     ),
     "kpr_regression_tests": frozenset(
-        {"kpr_core_err", "kpr_core_parse", "kpr_core_dates", "kpr_core_array", "kpr_dates_days"}
+        {
+            "kpr_core_err",
+            "kpr_core_parse",
+            "kpr_core_dates",
+            "kpr_core_array",
+            "kpr_dates_days",
+            "kpr_test_fixtures_generated",
+        }
     ),
+    # Generated expectations must stay independent of every production module.
+    "kpr_test_fixtures_generated": frozenset(),
 }
 REQUIRED_MEMBERS = {
     "kpr_core_err": frozenset({"ErrValue", "ErrNum", "ErrNA", "ErrForCondition"}),
@@ -79,6 +88,9 @@ REQUIRED_MEMBERS = {
         }
     ),
     "kpr_dates_days": frozenset({"KPR_Dates_HostDateSystem"}),
+    "kpr_test_fixtures_generated": frozenset(
+        {"KPR_Fixtures_Count", "KPR_Fixtures_Case", "KPR_Fixtures_SourceHash"}
+    ),
     "kpr_regression_tests": frozenset({
         "KPR_Tests_Run",
         "KPR_Tests_RunSuite",

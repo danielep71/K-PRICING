@@ -104,6 +104,7 @@ python3 tools/check_kpr_contract.py --root . --self-test
 python3 tools/check_kpr_contract.py --root . \
   --output test-results/kpr-contract.json \
   --summary test-results/kpr-contract.md
+python3 tools/gen_fixtures.py --root . --check
 python3 tools/check_release.py --root . --self-test \
   --summary test-results/release-self-test.md
 ```

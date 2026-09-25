@@ -104,6 +104,12 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added the independent date-layer fixture generator (#38): `tools/gen_fixtures.py`
+  computes 981 expected results from the contract with Python standard-library
+  date arithmetic, writes the canonical `tests/fixtures/date_layer_fixtures.tsv`
+  and derives the generated VBA module `KPR_Test_Fixtures_Generated` from it.
+  Hosted CI runs its self-test and a drift check; the fixtures are not yet
+  executed in Excel (#39).
 - Added `docs/ROADMAP.md`, the authoritative forward roadmap: v0.0.3 test
   hardening and registration (#38–#42), v0.0.4 date primitives and the first
   functional release (#46–#52), and planned v0.0.5 business calendars and
