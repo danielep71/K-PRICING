@@ -311,6 +311,35 @@ The hosted Repository integrity workflow retains both reports and treats either
 specialist-check failure as terminal. Excel compilation and source/destination
 runtime parity remain separate evidence owned by migration issue #17.
 
+The same checker keeps the generated fixture module independent: it may not
+reference any production module, and only the regression harness may depend on
+it.
+
+## Independent date-layer fixtures
+
+`gen_fixtures.py` is the independent fixture generator for issue #38. A
+reference model written from
+[`docs/DATE_LAYER_CONTRACT.md`](../docs/DATE_LAYER_CONTRACT.md) computes every
+expected result with Python standard-library date arithmetic; it never imports,
+executes or translates the VBA implementation. The generator writes the
+canonical `tests/fixtures/date_layer_fixtures.tsv` and then derives
+`tests/modules/KPR_Test_Fixtures_Generated.bas` from the parsed TSV.
+
+```bash
+python3 tools/gen_fixtures.py --root . --write
+python3 tools/gen_fixtures.py --root . --check
+python3 tools/gen_fixtures.py --root . --self-test
+```
+
+`--check` fails when either committed file differs from a fresh generation.
+`--self-test` asserts the model against worked examples quoted from the
+contract, confirms deterministic output and encoding round trips, checks VBA
+line limits and production independence, and proves that `--check` detects a
+stale TSV and a stale VBA module. Generation also fails if a contract function
+or registry condition has no fixture. Hosted Repository integrity runs
+`--self-test` and `--check`. The schema, encoding and contract interpretation
+notes are in [`tests/fixtures/README.md`](../tests/fixtures/README.md).
+
 ## KPR migration evidence binding
 
 `check_migration_evidence.py` validates the retained v0.0.2 source-versus-

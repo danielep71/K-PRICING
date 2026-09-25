@@ -278,6 +278,16 @@ jobs:
           --output test-results/kpr-contract.json
           --summary test-results/kpr-contract.md
 
+      - name: Exercise the independent fixture generator
+        id: fixture-generator-self-test
+        continue-on-error: true
+        run: python3 tools/gen_fixtures.py --root . --self-test
+
+      - name: Verify generated fixtures are current
+        id: generated-fixtures
+        continue-on-error: true
+        run: python3 tools/gen_fixtures.py --root . --check
+
       - name: Exercise migration-evidence validator fixtures
         id: migration-evidence-self-test
         continue-on-error: true
@@ -418,6 +428,8 @@ jobs:
           VBA_API_OUTCOME: ${{ steps.vba-api.outcome }}
           KPR_CONTRACT_SELF_TEST_OUTCOME: ${{ steps.kpr-contract-self-test.outcome }}
           KPR_CONTRACT_OUTCOME: ${{ steps.kpr-contract.outcome }}
+          FIXTURE_GENERATOR_SELF_TEST_OUTCOME: ${{ steps.fixture-generator-self-test.outcome }}
+          GENERATED_FIXTURES_OUTCOME: ${{ steps.generated-fixtures.outcome }}
           MIGRATION_EVIDENCE_SELF_TEST_OUTCOME: ${{ steps.migration-evidence-self-test.outcome }}
           LOCAL_ACTION_SELF_TEST_OUTCOME: ${{ steps.local-action-self-test.outcome }}
           LOCAL_ACTIONS_OUTCOME: ${{ steps.local-actions.outcome }}
@@ -452,6 +464,8 @@ jobs:
             "VBA public API:$VBA_API_OUTCOME" \
             "KPR contract self-test:$KPR_CONTRACT_SELF_TEST_OUTCOME" \
             "KPR contract:$KPR_CONTRACT_OUTCOME" \
+            "Fixture-generator self-test:$FIXTURE_GENERATOR_SELF_TEST_OUTCOME" \
+            "Generated fixtures current:$GENERATED_FIXTURES_OUTCOME" \
             "Migration-evidence validator self-test:$MIGRATION_EVIDENCE_SELF_TEST_OUTCOME" \
             "Repository-local Action self-test:$LOCAL_ACTION_SELF_TEST_OUTCOME" \
             "Repository-local Actions:$LOCAL_ACTIONS_OUTCOME" \

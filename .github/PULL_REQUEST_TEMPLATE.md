@@ -157,6 +157,7 @@ Use `docs/DEVELOPER_SETUP.md` for the complete local setup and `.github/workflow
 - `python3 tools/check_repo.py --root .`
 - `python3 tools/check_kpr_contract.py --root . --self-test`
 - `python3 tools/check_kpr_contract.py --root .`
+- `python3 tools/gen_fixtures.py --root . --check`
 - `python3 tools/check_documentation.py --root .`
 - `python3 tools/test_documentation.py -v`
 - `git diff --check`

@@ -25,6 +25,18 @@ run counts are not destination certification. The authoritative
 entry-point roles, existing coverage and gaps, exact source-versus-destination
 comparison and the additional host/shape/array logs required by #17.
 
+## Independent generated fixtures
+
+`fixtures/date_layer_fixtures.tsv` holds independently generated expected
+results for the 22-function date layer, computed from the contract by
+`tools/gen_fixtures.py` without running or translating the VBA implementation.
+`modules/KPR_Test_Fixtures_Generated.bas` replays the same cases as VBA values
+through `KPR_Fixtures_Count`, `KPR_Fixtures_Case` and `KPR_Fixtures_SourceHash`.
+It references no production module and is test infrastructure, not supported
+API. Both files are generated: regenerate them with the tool and never edit
+them by hand. [`fixtures/README.md`](fixtures/README.md) documents the schema;
+executing the fixtures through the durable runner is issue #39.
+
 The optional [Windows/Excel evidence interface](../docs/EXCEL_EVIDENCE.md)
 records this harness output, source identity and host environment with explicit
 manual/automated execution. Its validator does not execute Excel.

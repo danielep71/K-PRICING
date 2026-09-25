@@ -102,9 +102,10 @@ behavior including 1904 call-level `#N/A`.
 The migrated harness is a focused implementation candidate, not the unfinished
 full KPR regression architecture.
 
-- Independent generated fixtures (#38) are not implemented.
-  Existing expected values are reviewed test expectations, but they are not a
-  complete external oracle.
+- Independent generated fixtures (#38) are produced by `tools/gen_fixtures.py`
+  in `tests/fixtures/`; executing them through a runner is #39. The migrated
+  harness's own expected values are reviewed test expectations, but they are
+  not a complete external oracle.
 - The broader final runner/evidence and complete error/state matrix planned in
   #39 and #40 are not represented as completed work. The
   destination `KPR_Tests_RunEvidence` adapter is intentionally narrower: it

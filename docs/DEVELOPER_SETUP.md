@@ -60,6 +60,8 @@ python3 tools/check_repo.py --root . --self-test
 python3 tools/check_repo.py --root .
 python3 tools/check_kpr_contract.py --root . --self-test
 python3 tools/check_kpr_contract.py --root .
+python3 tools/gen_fixtures.py --root . --self-test
+python3 tools/gen_fixtures.py --root . --check
 python3 tools/test_documentation.py -v
 python3 tools/test_verification_depth.py -v
 python3 tools/check_documentation.py --root .

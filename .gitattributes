@@ -236,6 +236,15 @@ Makefile        text eol=lf
 
 
 #------------------------------------------------------------------------------
+# GENERATED SOURCE
+#------------------------------------------------------------------------------
+# Written by tools/gen_fixtures.py and checked for drift in CI. Review changes
+# through the generator and the canonical TSV, never by hand-editing output.
+tests/fixtures/date_layer_fixtures.tsv            linguist-generated=true
+tests/modules/KPR_Test_Fixtures_Generated.bas     linguist-generated=true
+
+
+#------------------------------------------------------------------------------
 # GITHUB LANGUAGE REPORTING
 #------------------------------------------------------------------------------
 # These directories contain project documentation visuals, not vendored code.
