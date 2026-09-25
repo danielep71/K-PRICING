@@ -109,7 +109,8 @@ as a JSON `\u` escape.
 | `result` | `PASS` only when every suite passed, no failure is listed and state was restored |
 
 A case is one assertion. Passing assertions are counted per suite; each failing
-assertion is listed with the label that identifies it. For the fixture suites,
+assertion is listed with the label that identifies it. A suite that executes no
+assertion fails with the case `<suite>/runner`. For the fixture suites,
 that label is the generated fixture ID.
 
 ### Determinism
@@ -170,7 +171,8 @@ against the schema, then:
 - an `all` selection lists the complete `TestRegistry` in order, and a single
   selection lists exactly that suite;
 - both timestamps are real local dates and times, in order;
-- suite kinds, statuses, failure counts and totals agree with the failure list;
+- suite kinds, statuses, failure counts and totals agree with the failure list,
+  and a passing suite executed at least one assertion;
 - `result` and the `regression` outcome follow from the suites, failures and
   state restoration;
 - every certification outcome follows the detail and reason rules;

@@ -184,7 +184,8 @@ def _scalar_errors(value: Any, node: dict[str, Any], at: str) -> list[str]:
     if isinstance(value, str):
         if len(value) < node.get("minLength", 0):
             errors.append(f"{at}: shorter than {node['minLength']} character(s)")
-        if "pattern" in node and not re.search(node["pattern"], value):
+        # fullmatch: "$" in re.search also matches before a trailing newline
+        if "pattern" in node and not re.fullmatch(node["pattern"], value):
             errors.append(f"{at}: does not match {node['pattern']}")
     if _is_type(value, "integer") and "minimum" in node and value < node["minimum"]:
         errors.append(f"{at}: below minimum {node['minimum']}")
@@ -306,6 +307,8 @@ def _suite_errors(record: dict[str, Any]) -> list[str]:
             errors.append(f"suite {name}: failures {count} but {listed.get(name, 0)} listed")
         if status == "PASS" and count:
             errors.append(f"suite {name}: PASS with {count} failure(s)")
+        if status == "PASS" and not suite["assertions"]:
+            errors.append(f"suite {name}: PASS without an executed assertion")
         if status == "FAIL" and not count:
             errors.append(f"suite {name}: FAIL without a listed failure")
         if status == "NOT_RUN" and (count or suite["assertions"]):
@@ -576,6 +579,11 @@ def self_test(root: Path) -> int:
         ("unlisted failure", _set("suites/0/failures", 1), {}, "listed"),
         ("PASS with failures", lambda r: _set("suites/0/status", "PASS")(_failed(r)), {}, "PASS with"),
         ("FAIL without failures", _set("suites/0/status", "FAIL"), {}, "FAIL without"),
+        ("PASS without assertions", lambda r: _set("totals/assertions", r["totals"]["assertions"]
+                                                    - r["suites"][0]["assertions"])(
+            _set("suites/0/assertions", 0)(r)), {"certification": True}, "without an executed"),
+        ("SHA with trailing newline", _set("source_sha", "0123456789abcdef0123456789abcdef01234567\n"),
+         {}, "does not match"),
         ("NOT_RUN with assertions", _set("suites/0/status", "NOT_RUN"), {}, "NOT_RUN with"),
         ("orphan failure", lambda r: _orphan_failure(r), {}, "did not run"),
         ("assertion total", _set("totals/assertions", 0), {}, "totals.assertions"),

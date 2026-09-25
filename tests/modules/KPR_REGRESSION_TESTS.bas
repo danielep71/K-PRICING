@@ -1074,6 +1074,11 @@ Private Sub HarvestSuite( _
     If Len(ExtraFailure) > 0 Then
         Rec.Failures.Add Array(Rec.SuiteNames(Index), Rec.SuiteNames(Index) & "/runner", ExtraFailure)
         Rec.SuiteFails(Index) = Rec.SuiteFails(Index) + 1
+    ElseIf mChecks = 0 And mFailures.Count = 0 Then
+        'A suite that asserted nothing proves nothing, so it cannot pass
+        Rec.Failures.Add Array(Rec.SuiteNames(Index), Rec.SuiteNames(Index) & "/runner", _
+                               "suite executed no assertions")
+        Rec.SuiteFails(Index) = 1
     End If
     Rec.SuiteMs(Index) = Milliseconds
     Rec.TotalChecks = Rec.TotalChecks + mChecks
