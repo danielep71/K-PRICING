@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import datetime
 import hashlib
 import json
 import re
@@ -261,8 +262,13 @@ def _identity_errors(
         errors.append(f"runner.fixture_cases is not the {fixture_cases} cases in {FIXTURE_PATH}")
     if tuple(record["nondeterministic_fields"]) != NONDETERMINISTIC_FIELDS:
         errors.append(f"nondeterministic_fields must be {list(NONDETERMINISTIC_FIELDS)}")
-    timing = record["timing"]
-    if timing["finished_local"] < timing["started_local"]:
+    stamps: dict[str, datetime.datetime] = {}
+    for key in ("started_local", "finished_local"):
+        try:
+            stamps[key] = datetime.datetime.strptime(record["timing"][key], "%Y-%m-%dT%H:%M:%S")
+        except ValueError:
+            errors.append(f"timing.{key} is not a real local date and time")
+    if len(stamps) == 2 and stamps["finished_local"] < stamps["started_local"]:
         errors.append("timing.finished_local precedes timing.started_local")
     return errors
 
@@ -578,6 +584,8 @@ def self_test(root: Path) -> int:
         ("nondeterministic list", _set("nondeterministic_fields", ["/timing"]), {},
          "nondeterministic_fields"),
         ("time order", _set("timing/finished_local", "2026-09-24T10:00:00"), {}, "precedes"),
+        ("impossible timestamp", _set("timing/started_local", "2026-99-99T99:99:99"), {},
+         "not a real local date and time"),
         ("result with failures", lambda r: _set("result", "PASS")(_failed(r)), {}, "result must be"),
         ("state failure passes", _set("state_restoration/status", "FAIL"), {}, "result must be"),
         ("PASS outcome without detail", _set("certification/regression/detail", None), {},

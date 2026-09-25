@@ -82,8 +82,10 @@ screen updating, alerts, the status bar, the active workbook, the active sheet
 and the selection. During the run it suppresses events, screen updating and
 alerts, uses manual calculation and shows its progress in the status bar.
 On every exit path, including a runtime error, it restores the captured state
-and then reads each item back. Any item that does not match is recorded in
-`state_restoration` and fails the run. Each worksheet suite closes its own
+and then reads each item back. A Range selection is compared by address; a
+chart, shape or other selected object is compared by type and, when it has
+one, by name. A failed activation or re-selection, or any item that does not
+match, is recorded in `state_restoration` and fails the run. Each worksheet suite closes its own
 scratch workbook with `SaveChanges:=False`.
 
 ## Evidence record
@@ -167,6 +169,7 @@ against the schema, then:
 - the fixture SHA-256 and case count match `tests/fixtures/date_layer_fixtures.tsv`;
 - an `all` selection lists the complete `TestRegistry` in order, and a single
   selection lists exactly that suite;
+- both timestamps are real local dates and times, in order;
 - suite kinds, statuses, failure counts and totals agree with the failure list;
 - `result` and the `regression` outcome follow from the suites, failures and
   state restoration;

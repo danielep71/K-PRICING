@@ -183,7 +183,9 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
             SelectionObject     As Object
             BookName            As String
             SheetName           As String
+            SelectionType       As String
             SelectionAddress    As String
+            SelectionName       As String
         End Type
 
     'Everything one durable run records in its evidence file
@@ -1302,8 +1304,16 @@ Private Sub CaptureCallerState( _
     Set State.SelectionObject = Selection
     If Not State.Book Is Nothing Then State.BookName = State.Book.FullName
     If Not State.SheetObject Is Nothing Then State.SheetName = State.SheetObject.Name
-    If TypeName(State.SelectionObject) = "Range" Then
-        State.SelectionAddress = State.SelectionObject.Address(External:=True)
+    If Not State.SelectionObject Is Nothing Then
+        State.SelectionType = TypeName(State.SelectionObject)
+        If State.SelectionType = "Range" Then
+            State.SelectionAddress = State.SelectionObject.Address(External:=True)
+        Else
+            'A chart, shape or other object is identified by its name when it has one
+            Err.Clear
+            State.SelectionName = CStr(State.SelectionObject.Name)
+            If Err.Number <> 0 Then State.SelectionName = ""
+        End If
     End If
     Err.Clear
 
@@ -1316,21 +1326,36 @@ Private Function RestoreCallerState( _
 '
 ' Restores the captured state, then reads every item back. Activation runs
 ' first, while events are still suppressed, so restoring the caller's
-' workbook cannot fire the caller's own event handlers.
+' workbook cannot fire the caller's own event handlers. A failed activation or
+' selection is itself a restoration failure, not only a failed read-back.
 '
 
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
     Dim Problems        As String       'Items that did not restore
+    Dim CurrentType     As String       'TypeName of the restored selection
 
 '------------------------------------------------------------------------------
 ' RESTORE
 '------------------------------------------------------------------------------
     On Error Resume Next
-    If Not State.Book Is Nothing Then State.Book.Activate
-    If Not State.SheetObject Is Nothing Then State.SheetObject.Activate
-    If Not State.SelectionObject Is Nothing Then State.SelectionObject.Select
+    If Not State.Book Is Nothing Then
+        Err.Clear
+        State.Book.Activate
+        If Err.Number <> 0 Then Problems = Problems & "; active workbook (error " & CStr(Err.Number) & ")"
+    End If
+    If Not State.SheetObject Is Nothing Then
+        Err.Clear
+        State.SheetObject.Activate
+        If Err.Number <> 0 Then Problems = Problems & "; active sheet (error " & CStr(Err.Number) & ")"
+    End If
+    If Not State.SelectionObject Is Nothing Then
+        Err.Clear
+        State.SelectionObject.Select
+        If Err.Number <> 0 Then Problems = Problems & "; selection (error " & CStr(Err.Number) & ")"
+    End If
+    Err.Clear
     Application.StatusBar = State.StatusBar
     Application.DisplayAlerts = State.DisplayAlerts
     Application.ScreenUpdating = State.ScreenUpdating
@@ -1364,11 +1389,16 @@ Private Function RestoreCallerState( _
             Problems = Problems & "; active sheet"
         End If
     End If
-    If Len(State.SelectionAddress) > 0 Then
-        If TypeName(Selection) <> "Range" Then
-            Problems = Problems & "; selection"
-        ElseIf Selection.Address(External:=True) <> State.SelectionAddress Then
-            Problems = Problems & "; selection"
+    If Len(State.SelectionType) > 0 Then
+        CurrentType = TypeName(Selection)
+        If CurrentType <> State.SelectionType Then
+            Problems = Problems & "; selection type"
+        ElseIf Len(State.SelectionAddress) > 0 Then
+            If Selection.Address(External:=True) <> State.SelectionAddress Then
+                Problems = Problems & "; selection"
+            End If
+        ElseIf Len(State.SelectionName) > 0 Then
+            If CStr(Selection.Name) <> State.SelectionName Then Problems = Problems & "; selection"
         End If
     End If
     If Err.Number <> 0 Then
