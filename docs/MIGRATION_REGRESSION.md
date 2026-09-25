@@ -240,9 +240,14 @@ turn unfinished #39–#41 work into completed scope.
 
 ## Handover to later work
 
-Issue #17 executes this protocol. Issue #16 maps the unfinished KPR fixture,
-runner-expansion and cross-oracle work to future destination backlog. Issue #15
-may describe only the behavior and environments that #17 actually verifies.
+Issue #17 executed this protocol on one Windows 64-bit host
+([`evidence/migration-2026-09-24`](../evidence/migration-2026-09-24/session.txt)).
+Issue #16 mapped the unfinished fixture, runner-expansion and cross-oracle work
+to the destination backlog, and issue #15 limited the documentation to the
+behavior and environments that #17 verified. Of that backlog, the independent
+fixture generator is complete (#38); the runner and evidence schema (#39), the
+regression matrix (#40) and the cross-oracle checks (#41) remain future work in
+the [roadmap](ROADMAP.md).
 
 **Acceptance principle:** parity means the same observable behavior on the same
 environment and inputs, with independent contract expectations still governing
