@@ -814,23 +814,28 @@ def _object_misuse(statement: str, objects: set[str]) -> list[str]:
     return misuse
 
 
-def _oracle_names(statements: list[tuple[int, str]]) -> set[str]:
-    """Names the oracle module declares: procedures, parameters, variables, constants and labels."""
-    names: set[str] = set()
+def _oracle_names(statements: list[tuple[int, str]]) -> dict[str, set[str]]:
+    """Names visible in each procedure ("" is module level): module declarations and procedure
+    names everywhere, plus each procedure's own parameters, local declarations and labels."""
+    module: set[str] = set()
+    local: dict[str, set[str]] = {}
+    procedure = ""
     for _, statement in statements:
         header = ORACLE_PROCEDURE.match(statement)
         label = re.match(r"^([A-Za-z_]\w*):(?!=)", statement)
-        if header:
-            names.add(header.group(1).casefold())
-            params = re.search(r"\((.*)\)", statement)
-            if params:
-                names.update(name for name, _ in _declared(params.group(1)))
-        elif label:
-            names.add(label.group(1).casefold())
         start = DECLARATION_START.match(statement)
-        if start and not header:
-            names.update(name for name, _ in _declared(statement[start.end():]))
-    return names
+        if header:
+            procedure = header.group(1).casefold()
+            module.add(procedure)
+            params = re.search(r"\((.*)\)", statement)
+            local[procedure] = {name for name, _ in _declared(params.group(1))} if params else set()
+        elif re.fullmatch(r"End\s+(?:Function|Sub|Property)", statement, re.I):
+            procedure = ""
+        elif label:
+            (local[procedure] if procedure else module).add(label.group(1).casefold())
+        elif start:
+            (local[procedure] if procedure else module).update(name for name, _ in _declared(statement[start.end():]))
+    return {"": module, **{name: module | names for name, names in local.items()}}
 
 
 def _unlisted_names(statement: str, names: set[str]) -> list[str]:
@@ -924,7 +929,7 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
                     "the scratch workbook.",
                     number,
                 ))
-            elif unlisted := _unlisted_names(statement, names):
+            elif unlisted := _unlisted_names(statement, names.get(procedure, names[""])):
                 failures.append(finding(
                     path,
                     f"Outside Xl the oracle may use only declared names and approved VBA or Excel members; "
@@ -1200,6 +1205,18 @@ def self_test(root: Path) -> None:
         ("worksheet read without Set", "Boundaries = Application.Workbooks.Add"),
     ):
         scenarios.append((label, "kpr-oracle-scope", mutate(base, oracle, "D = CDate(Serial)", f"D = CDate(Serial): {probe}")))
+    scenarios.append((
+        "Excel global shadowed only in another procedure",
+        "kpr-oracle-scope",
+        mutate(
+            mutate(
+                base, oracle, "Private Function NextInt(",
+                "Private Sub Probe()\r\n    Dim ActiveCell As Long\r\n    ActiveCell = 1\r\nEnd Sub\r\n\r\n"
+                "Private Function NextInt(",
+            ),
+            oracle, "D = CDate(Serial)", 'D = CDate(Serial): ActiveCell = "=DATEVALUE(1)"',
+        ),
+    ))
     scenarios.append((
         "extra evaluation inside Xl",
         "kpr-oracle-scope",
