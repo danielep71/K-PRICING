@@ -37,6 +37,18 @@
 
 </div>
 
+---
+
+<!-- generated-social-preview: assets/social-preview.png -->
+<p align="center">
+  <a href="assets/social-preview.png">
+    <img src="assets/social-preview.png"
+         alt="KPR — multi-screen market quotations, rate curves and instrument-pricing analytics for Excel/VBA"
+         title="KPR — financial analytics and instrument pricing for Excel/VBA"
+         width="100%">
+  </a>
+</p>
+
 
 ---
 
