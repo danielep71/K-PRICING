@@ -16,6 +16,7 @@
     "KNOWN_LIMITATION": [
       "Repository initialization only: the neutral starter is not a pricing implementation; migration of existing pricing work is pending.",
       "No supported workbook or add-in, functional release, or exact-source Excel runtime certification is available."
-    ]
+    ],
+    "SOCIAL_PREVIEW_PATH": "assets/social-preview.png"
   }
 }
