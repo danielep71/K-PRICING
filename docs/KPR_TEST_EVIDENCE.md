@@ -108,7 +108,9 @@ Excel worksheet functions only where the two contracts overlap. It evaluates
 `EOMONTH`, `EDATE`, `WEEKDAY`, `DAY`, `YEAR` and `MONTH` on a scratch workbook
 whose date system is 1900. `check_kpr_contract.py` (`kpr-oracle-scope`)
 rejects any other worksheet function in an oracle formula, including
-`WORKDAY.INTL` and `NETWORKDAYS.INTL`.
+`WORKDAY.INTL` and `NETWORKDAYS.INTL`. It recognises `Xl` calls in any letter
+case and requires every formula to reach Excel through `Xl`, so no other
+procedure may call `Evaluate`, `ExecuteExcel4Macro` or bracket evaluation.
 
 Every case label states the identity it tests, for example
 `EndOfMonth(d) = EOMONTH(d,0)`. The identities cover month, quarter and year
@@ -234,7 +236,8 @@ against the schema, then:
 - `result` and the `regression` outcome follow from the suites, failures and
   state restoration;
 - every certification outcome follows the detail and reason rules, and
-  `cross_oracle` matches the `worksheet-oracle` suite;
+  `cross_oracle` matches the `worksheet-oracle` suite, and is `NOT_RUN` when
+  that suite was not selected;
 - with `--compare`, the second record passes the same schema and semantic
   checks, and both records are identical outside the declared
   nondeterministic fields;

@@ -357,8 +357,8 @@ def _oracle_rules(record: dict[str, Any]) -> list[str]:
     status = record["certification"]["cross_oracle"]["status"]
     suite = next((s for s in record["suites"] if s["name"] == ORACLE_SUITE), None)
     if suite is None:
-        if status in {"PASS", "FAIL"}:
-            return [f"certification.cross_oracle cannot be {status} when {ORACLE_SUITE} did not run"]
+        if status != "NOT_RUN":
+            return [f"certification.cross_oracle must be NOT_RUN when {ORACLE_SUITE} did not run"]
         return []
     expected = suite["status"] if suite["status"] in {"PASS", "FAIL"} else "NOT_RUN"
     if status != expected:
@@ -628,6 +628,9 @@ def self_test(root: Path) -> int:
         ("oracle outcome without the suite",
          lambda r: _set("certification/cross_oracle", _outcome("PASS", "x", None))(_single_suite(r)), {},
          "did not run"),
+        ("oracle marked not applicable without the suite",
+         lambda r: _set("certification/cross_oracle", _outcome("NOT_APPLICABLE", None, "n/a"))(_single_suite(r)),
+         {}, "must be NOT_RUN when"),
         ("certification of one suite", lambda r: _certified(_single_suite(r)), {"certification": True},
          "KPR_Test_RunAll record"),
         ("compile marked not applicable",

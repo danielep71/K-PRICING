@@ -620,14 +620,20 @@ def rule_day_zero(data: dict[str, Any]) -> dict[str, Any]:
 
 ORACLE_MODULE = "kpr_test_oracle"
 ORACLE_FUNCTIONS = frozenset({"EOMONTH", "EDATE", "WEEKDAY", "DAY", "YEAR", "MONTH"})
+ORACLE_CALL = re.compile(r"\bXl\s*\(", re.I)
+ORACLE_PROCEDURE = re.compile(
+    r"^(?:(?:Public|Private|Friend|Static)\s+)*(?:Function|Sub|Property\s+(?:Get|Let|Set))\s+(\w+)", re.I
+)
+# Any way to hand a formula to Excel; only the Xl helper may use one.
+ORACLE_EVALUATION = re.compile(r"\b(?:Evaluate|ExecuteExcel4Macro)\b|\[[^\]]*\(", re.I)
 
 
 def oracle_expressions(statement: str) -> list[str]:
     """String literals inside each Xl(...) call: the formulas Excel evaluates."""
     expressions: list[str] = []
-    start = statement.find("Xl(")
-    while start != -1:
-        index, depth, in_string, literal, parts = start + 3, 1, False, "", []
+    match = ORACLE_CALL.search(statement)
+    while match:
+        index, depth, in_string, literal, parts = match.end(), 1, False, "", []
         while index < len(statement) and depth:
             char = statement[index]
             if in_string:
@@ -648,7 +654,7 @@ def oracle_expressions(statement: str) -> list[str]:
                 depth -= 1
             index += 1
         expressions.append(" ".join(parts))
-        start = statement.find("Xl(", index)
+        match = ORACLE_CALL.search(statement, index)
     return expressions
 
 
@@ -659,7 +665,13 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
     if not modules:
         failures.append(finding(CONFIG_PATH, "The Excel cross-oracle module KPR_Test_Oracle is not registered."))
     for path, text in modules:
+        procedure = ""
         for number, statement in logical(text):
+            header = ORACLE_PROCEDURE.match(statement)
+            if header:
+                procedure = header.group(1)
+            if procedure.casefold() != "xl" and ORACLE_EVALUATION.search(strip_strings(statement)):
+                failures.append(finding(path, "Oracle formulas must reach Excel only through the Xl helper.", number))
             for literal in re.findall(r'"((?:[^"]|"")*)"', statement):
                 if re.search(r"WORKDAY|NETWORKDAYS", literal, re.I):
                     failures.append(finding(path, "WORKDAY.INTL and NETWORKDAYS.INTL are out of v0.0.4 scope.", number))
@@ -858,6 +870,16 @@ def self_test(root: Path) -> None:
         "unlisted oracle function",
         "kpr-oracle-scope",
         mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'Xl("DATEVALUE(" & S & ")")'),
+    ))
+    scenarios.append((
+        "lower-case oracle call",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'xl("DATEVALUE(" & S & ")")'),
+    ))
+    scenarios.append((
+        "evaluation outside Xl",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'mSheet.Evaluate("DATEVALUE(" & S & ")")'),
     ))
     for name, expected, case in scenarios:
         rep = report(root, case)
