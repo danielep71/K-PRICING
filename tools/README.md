@@ -322,6 +322,7 @@ and `MONTH`, and rejects `WORKDAY.INTL` and `NETWORKDAYS.INTL`. Every formula
 must reach Excel through the `Xl` helper, whose calls are matched in any letter
 case; no other procedure may evaluate a formula, through bracket evaluation,
 `WorksheetFunction`, cell or name formulas, recalculation or a macro call.
+`Xl` itself holds only `Xl = mSheet.Evaluate(Formula)`.
 Each formula is built only from literals and `CStr` of arithmetic over numeric
 literals and numeric-typed variables, so it can be inspected. The oracle may
 depend on `KPR_DATES_DAYS` alone.

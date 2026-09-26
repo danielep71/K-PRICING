@@ -112,7 +112,8 @@ rejects any other worksheet function in an oracle formula, including
 case and requires every formula to reach Excel through `Xl`, so no other
 procedure may call `Evaluate`, `ExecuteExcel4Macro`, bracket evaluation
 (`[...]`) or `WorksheetFunction`, touch cells, names or their formulas and
-values, recalculate, or run a macro. Each `Xl` formula must be built only from string literals and
+values, recalculate, or run a macro. `Xl` itself holds only
+`Xl = mSheet.Evaluate(Formula)`, with `Formula` a required `ByVal` String. Each `Xl` formula must be built only from string literals and
 `CStr` of arithmetic over numeric literals and variables declared with a
 numeric type. No text variable reaches a formula, so the check can read every
 function it calls.

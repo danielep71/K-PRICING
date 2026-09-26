@@ -631,6 +631,12 @@ ORACLE_EVALUATION = re.compile(
     r"|\.(?:Formula\w*|Value2?|RefersTo\w*|Calculate\w*|Run)\b|\[",
     re.I,
 )
+# The Xl helper holds its header, this one statement and End Function.
+ORACLE_XL_BODY = re.compile(
+    r"Private\s+Function\s+Xl\s*\(\s*ByVal\s+Formula\s+As\s+String\s*\)\s*As\s+Variant"
+    r"|Xl\s*=\s*mSheet\.Evaluate\s*\(\s*Formula\s*\)|End\s+Function",
+    re.I,
+)
 ORACLE_DECLARATION = re.compile(r"(\w+)(?:\s*\([^)]*\))?\s+As\s+(\w+)", re.I)
 NUMERIC_TYPES = frozenset({"byte", "integer", "long", "longlong", "single", "double", "currency"})
 
@@ -731,12 +737,18 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
         for number, statement in statements:
             header = ORACLE_PROCEDURE.match(statement)
             if header:
-                procedure = header.group(1)
-            if procedure.casefold() != "xl" and ORACLE_EVALUATION.search(strip_strings(statement)):
+                procedure = header.group(1).casefold()
+            if procedure == "xl":
+                if statement and not ORACLE_XL_BODY.fullmatch(statement):
+                    failures.append(finding(path, "Xl may only return mSheet.Evaluate(Formula).", number))
+            elif ORACLE_EVALUATION.search(strip_strings(statement)):
                 failures.append(finding(path, "Oracle formulas must reach Excel only through the Xl helper.", number))
-            if procedure.casefold() == "xl":
-                continue
-            failures.extend(finding(path, error, number) for error in _oracle_statement_errors(statement, numeric_names, used))
+            else:
+                failures.extend(
+                    finding(path, error, number) for error in _oracle_statement_errors(statement, numeric_names, used)
+                )
+            if re.fullmatch(r"End\s+(?:Function|Sub|Property)", statement, re.I):
+                procedure = ""
     return result(
         "kpr-oracle-scope",
         "Excel cross-oracle function scope",
@@ -969,6 +981,21 @@ def self_test(root: Path) -> None:
         ("workbook name outside Xl", 'mSheet.Parent.Names.Add "Hidden", "=DATEVALUE(1)"'),
     ):
         scenarios.append((label, "kpr-oracle-scope", mutate(base, oracle, "D = CDate(Serial)", f"D = CDate(Serial): {probe}")))
+    scenarios.append((
+        "extra evaluation inside Xl",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "Xl = mSheet.Evaluate(Formula)", 'Xl = mSheet.Evaluate("DATEVALUE(1)")'),
+    ))
+    scenarios.append((
+        "second statement inside Xl",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "Xl = mSheet.Evaluate(Formula)", 'Xl = mSheet.Evaluate(Formula): Xl = Xl + 0'),
+    ))
+    scenarios.append((
+        "default formula on Xl",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "ByVal Formula As String) _", 'Optional ByVal Formula As String = "DATEVALUE(1)") _'),
+    ))
     for name, expected, case in scenarios:
         rep = report(root, case)
         failed_ids = {
