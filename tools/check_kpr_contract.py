@@ -637,7 +637,6 @@ ORACLE_XL_BODY = re.compile(
     r"|Xl\s*=\s*mSheet\.Evaluate\s*\(\s*Formula\s*\)|End\s+Function",
     re.I,
 )
-ORACLE_DECLARATION = re.compile(r"(\w+)(?:\s*\([^)]*\))?\s+As\s+(\w+)", re.I)
 NUMERIC_TYPES = frozenset({"byte", "integer", "long", "longlong", "single", "double", "currency"})
 
 
@@ -747,6 +746,56 @@ def _formula_grammar_errors(formula: str, used: set[str]) -> list[str]:
     return errors
 
 
+DECLARATION_START = re.compile(
+    r"^(?:(?:Private|Public|Global|Dim|Static|ReDim|Const)\s+)+(?!Function\b|Sub\b|Property\b|Type\b|Enum\b|Declare\b)",
+    re.I,
+)
+DECLARATION_ITEM = re.compile(
+    r"(?:Optional\s+)?(?:ByVal\s+|ByRef\s+)?(?:ParamArray\s+)?(\w+)([&%#!@$^]?)(?:\s*\([^)]*\))?"
+    r"(?:\s+As\s+(?:New\s+)?([\w.]+))?",
+    re.I,
+)
+NUMERIC_SUFFIXES = frozenset("&%#!@^")
+
+
+def _declared(items: str) -> list[tuple[str, bool]]:
+    """(name, numeric) for each comma-separated declaration; untyped names are Variant."""
+    declared: list[tuple[str, bool]] = []
+    for item in _split_top(items, ","):
+        match = DECLARATION_ITEM.match(item.split("=")[0].strip())
+        if match:
+            kind = (match.group(3) or "").casefold()
+            declared.append((match.group(1).casefold(), kind in NUMERIC_TYPES or match.group(2) in NUMERIC_SUFFIXES))
+    return declared
+
+
+def _numeric_scopes(statements: list[tuple[int, str]]) -> dict[str, set[str]]:
+    """Numeric-typed names visible in each procedure ("" is module level); a local declaration shadows."""
+    module: dict[str, bool] = {}
+    local: dict[str, dict[str, bool]] = {}
+    procedure = ""
+    for _, statement in statements:
+        header = ORACLE_PROCEDURE.match(statement)
+        if header:
+            procedure = header.group(1).casefold()
+            returns = re.search(r"\)\s*As\s+(\w+)\s*$", statement, re.I)
+            module[procedure] = bool(returns and returns.group(1).casefold() in NUMERIC_TYPES)
+            params = re.search(r"\((.*)\)", statement)
+            local[procedure] = dict(_declared(params.group(1))) if params else {}
+        elif re.fullmatch(r"End\s+(?:Function|Sub|Property)", statement, re.I):
+            procedure = ""
+        else:
+            start = DECLARATION_START.match(statement)
+            if start:
+                target = local[procedure] if procedure else module
+                target.update(_declared(statement[start.end():]))
+    scopes = {"": {name for name, numeric in module.items() if numeric}}
+    for name, names in local.items():
+        visible = {**module, **names}
+        scopes[name] = {item for item, numeric in visible.items() if numeric}
+    return scopes
+
+
 def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
     failures: list[dict[str, Any]] = []
     used: set[str] = set()
@@ -755,12 +804,7 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
         failures.append(finding(CONFIG_PATH, "The Excel cross-oracle module KPR_Test_Oracle is not registered."))
     for path, text in modules:
         statements = logical(text)
-        declared = [
-            (name.casefold(), kind.casefold())
-            for _, statement in statements
-            for name, kind in ORACLE_DECLARATION.findall(statement)
-        ]
-        numeric_names = {n for n, k in declared if k in NUMERIC_TYPES} - {n for n, k in declared if k not in NUMERIC_TYPES}
+        scopes = _numeric_scopes(statements)
         procedure = ""
         for number, statement in statements:
             header = ORACLE_PROCEDURE.match(statement)
@@ -773,7 +817,8 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
                 failures.append(finding(path, "Oracle formulas must reach Excel only through the Xl helper.", number))
             else:
                 failures.extend(
-                    finding(path, error, number) for error in _oracle_statement_errors(statement, numeric_names, used)
+                    finding(path, error, number)
+                    for error in _oracle_statement_errors(statement, scopes.get(procedure, scopes[""]), used)
                 )
             if re.fullmatch(r"End\s+(?:Function|Sub|Property)", statement, re.I):
                 procedure = ""
@@ -1018,6 +1063,15 @@ def self_test(root: Path) -> None:
         "cell reference in an oracle formula",
         "kpr-oracle-scope",
         mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl("DAY(A1)")'),
+    ))
+    scenarios.append((
+        "untyped local shadows a numeric name",
+        "kpr-oracle-scope",
+        mutate(
+            base, oracle, "Private Function NextInt(",
+            'Private Sub Probe()\r\n    Dim Serial\r\n    Serial = "DATEVALUE(1)"\r\n'
+            '    Serial = Xl(CStr(Serial))\r\nEnd Sub\r\n\r\nPrivate Function NextInt(',
+        ),
     ))
     scenarios.append((
         "extra evaluation inside Xl",

@@ -115,7 +115,8 @@ procedure may call `Evaluate`, `ExecuteExcel4Macro`, bracket evaluation
 values, recalculate, or run a macro. `Xl` itself holds only
 `Xl = mSheet.Evaluate(Formula)`, with `Formula` a required `ByVal` String. Each `Xl` formula must be built only from string literals and
 `CStr` of arithmetic over numeric literals and variables declared with a
-numeric type. No text variable reaches a formula, and the formula text may
+numeric type in scope (a local declaration shadows a module one, and an untyped
+name is a Variant). No text variable reaches a formula, and the formula text may
 hold only numbers, `+ - * /`, commas, parentheses and the permitted functions,
 so no defined name or cell reference can hide another formula.
 
