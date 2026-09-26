@@ -1345,9 +1345,10 @@ Private Function RestoreCallerState( _
     ByRef Detail As String) _
     As Boolean
 '
-' Restores the captured state, then reads every item back. Activation runs
-' first, while events are still suppressed, so restoring the caller's
-' workbook cannot fire the caller's own event handlers. A failed activation or
+' Restores the captured state, then reads every item back. Events are
+' switched off before activation, whatever their current setting, so
+' restoring the caller's workbook, sheet or selection cannot fire the caller's
+' own event handlers; the caller's event setting is restored last. A failed activation or
 ' selection is itself a restoration failure, not only a failed read-back.
 '
 
@@ -1361,6 +1362,7 @@ Private Function RestoreCallerState( _
 ' RESTORE
 '------------------------------------------------------------------------------
     On Error Resume Next
+    Application.EnableEvents = False
     If Not State.Book Is Nothing Then
         Err.Clear
         State.Book.Activate
