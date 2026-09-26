@@ -114,7 +114,8 @@ full KPR regression architecture.
   implemented and awaits its first Excel run. The destination `KPR_Tests_RunEvidence`
   adapter is intentionally narrower: it formats the migrated pure suites for
   K-PRICING host evidence.
-- Excel cross-oracles planned in #41 are not implemented.
+- Excel cross-oracle checks (#41) are implemented in `KPR_Test_Oracle` and
+  await their first Excel run.
 - Platform support, Excel build compatibility and dynamic-array availability are
   claims only for environments actually executed in #17.
 - No CSE/legacy multi-cell compatibility claim is made.
@@ -249,8 +250,8 @@ to the destination backlog, and issue #15 limited the documentation to the
 behavior and environments that #17 verified. Of that backlog, the independent
 fixture generator (#38) and the durable runner and evidence schema (#39) are
 complete, and the regression matrix (#40) is implemented and awaits its first
-Excel run. The cross-oracle checks (#41) remain future work in the
-[roadmap](ROADMAP.md).
+Excel run. The cross-oracle checks (#41) are implemented; see the
+[roadmap](ROADMAP.md) for their status.
 
 **Acceptance principle:** parity means the same observable behavior on the same
 environment and inputs, with independent contract expectations still governing

@@ -181,7 +181,7 @@ Relevant entry points:
 - `KPR_Tests_Run` — primary migrated regression dispatcher
 - `KPR_Tests_RunEvidence` — retained-evidence adapter; delegates to the all-suite dispatcher and emits the validator format
 - `KPR_Test_RunAll`, `KPR_Test_RunSuite` — durable runner; writes `kpr-test-evidence.json` for an exact source SHA
-- `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, `KPR_Tests_RunArray`, `KPR_Tests_RunFixtureHost` — focused host/shape/dynamic-array/worksheet-fixture runners
+- `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, `KPR_Tests_RunArray`, `KPR_Tests_RunFixtureHost`, `KPR_Tests_RunOracle`, `KPR_Tests_RunStateCheck` — focused host/shape/dynamic-array/worksheet-fixture/cross-oracle/state runners
 - `KPR_DateExample.RunDateExample` — minimal direct-VBA consumer smoke
 
 | Evidence | Result |

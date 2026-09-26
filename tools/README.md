@@ -316,6 +316,11 @@ The same checker keeps the generated fixture module independent: it may not
 reference any production module, and only the regression harness may depend on
 it.
 
+Its `kpr-oracle-scope` rule limits the Excel cross-oracle (`KPR_Test_Oracle`,
+#41) to formulas that call only `EOMONTH`, `EDATE`, `WEEKDAY`, `DAY`, `YEAR`
+and `MONTH`, and rejects `WORKDAY.INTL` and `NETWORKDAYS.INTL`. The oracle may
+depend on `KPR_DATES_DAYS` alone.
+
 ## Independent date-layer fixtures
 
 `gen_fixtures.py` is the independent fixture generator for issue #38. A

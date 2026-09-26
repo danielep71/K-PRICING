@@ -61,7 +61,7 @@ The implementation order for an adapter is:
    workbook/worksheet document modules in their corresponding host objects;
    do not import them as ordinary classes. Record reference resolution and any
    host-specific setup. K-PRICING imports the four `KPR_Core_*` modules,
-   `KPR_DATES_DAYS` and both test modules (see [INSTALLATION.md](../INSTALLATION.md)).
+   `KPR_DATES_DAYS` and the three test modules (see [INSTALLATION.md](../INSTALLATION.md)).
 3. Compile with an adapter capable of observing the actual compile outcome.
    Do not equate a successful import or a button click with compilation. A
    complete successful harness run also demonstrates that its executed VBA
@@ -119,7 +119,8 @@ values, all digest markers, environment and timestamps with observed values:
     {"path": "src/core/KPR_Core_Parse.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
     {"path": "src/modules/KPR_DATES_DAYS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
     {"path": "tests/modules/KPR_REGRESSION_TESTS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
-    {"path": "tests/modules/KPR_Test_Fixtures_Generated.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"}
+    {"path": "tests/modules/KPR_Test_Fixtures_Generated.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "tests/modules/KPR_Test_Oracle.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"}
   ],
   "stages": {
     "import": {"status": "PASS", "detail": "Imported exact inventory into fresh test project", "log": {"path": "session.log", "sha256": "REPLACE_WITH_LOG_DIGEST"}},
@@ -194,7 +195,7 @@ top-level evidence cases.
    settings to make the test run. Record start time with timezone.
 3. In the VBA editor, import the exact candidate inventory in the documented
    order: the four `KPR_Core_*` modules, `KPR_DATES_DAYS`,
-   `KPR_Test_Fixtures_Generated` and `KPR_REGRESSION_TESTS`. Review references, compile, and run
+   `KPR_Test_Fixtures_Generated`, `KPR_Test_Oracle` and `KPR_REGRESSION_TESTS`. Review references, compile, and run
    `KPR_Tests_RunEvidence`. Preserve its complete Immediate-window output as
    `harness.log`. The adapter delegates to the native all-suite dispatcher and
    emits the structured evidence records required by the validator. If it fails,

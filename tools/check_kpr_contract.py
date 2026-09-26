@@ -47,10 +47,13 @@ ALLOWED_DEPENDENCIES = {
             "kpr_core_array",
             "kpr_dates_days",
             "kpr_test_fixtures_generated",
+            "kpr_test_oracle",
         }
     ),
     # Generated expectations must stay independent of every production module.
     "kpr_test_fixtures_generated": frozenset(),
+    # The Excel cross-oracle compares the public facade only.
+    "kpr_test_oracle": frozenset({"kpr_dates_days"}),
 }
 REQUIRED_MEMBERS = {
     "kpr_core_err": frozenset({"ErrValue", "ErrNum", "ErrNA", "ErrForCondition"}),
@@ -91,6 +94,7 @@ REQUIRED_MEMBERS = {
     "kpr_test_fixtures_generated": frozenset(
         {"KPR_Fixtures_Count", "KPR_Fixtures_Case", "KPR_Fixtures_SourceHash"}
     ),
+    "kpr_test_oracle": frozenset({"KPR_Oracle_RunCases"}),
     "kpr_regression_tests": frozenset({
         "KPR_Tests_Run",
         "KPR_Tests_RunSuite",
@@ -102,6 +106,7 @@ REQUIRED_MEMBERS = {
         "KPR_Tests_RunArray",
         "KPR_Tests_RunFixtureHost",
         "KPR_Tests_RunStateCheck",
+        "KPR_Tests_RunOracle",
         "KPR_Test_RunAll",
         "KPR_Test_RunSuite",
     }),
@@ -613,6 +618,68 @@ def rule_day_zero(data: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+ORACLE_MODULE = "kpr_test_oracle"
+ORACLE_FUNCTIONS = frozenset({"EOMONTH", "EDATE", "WEEKDAY", "DAY", "YEAR", "MONTH"})
+
+
+def oracle_expressions(statement: str) -> list[str]:
+    """String literals inside each Xl(...) call: the formulas Excel evaluates."""
+    expressions: list[str] = []
+    start = statement.find("Xl(")
+    while start != -1:
+        index, depth, in_string, literal, parts = start + 3, 1, False, "", []
+        while index < len(statement) and depth:
+            char = statement[index]
+            if in_string:
+                if char == '"' and statement[index + 1:index + 2] == '"':
+                    literal += '"'
+                    index += 1
+                elif char == '"':
+                    in_string = False
+                    parts.append(literal)
+                    literal = ""
+                else:
+                    literal += char
+            elif char == '"':
+                in_string = True
+            elif char == "(":
+                depth += 1
+            elif char == ")":
+                depth -= 1
+            index += 1
+        expressions.append(" ".join(parts))
+        start = statement.find("Xl(", index)
+    return expressions
+
+
+def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
+    failures: list[dict[str, Any]] = []
+    used: set[str] = set()
+    modules = [(p, t) for p, t in data["sources"].items() if Path(p).stem.casefold() == ORACLE_MODULE]
+    if not modules:
+        failures.append(finding(CONFIG_PATH, "The Excel cross-oracle module KPR_Test_Oracle is not registered."))
+    for path, text in modules:
+        for number, statement in logical(text):
+            for literal in re.findall(r'"((?:[^"]|"")*)"', statement):
+                if re.search(r"WORKDAY|NETWORKDAYS", literal, re.I):
+                    failures.append(finding(path, "WORKDAY.INTL and NETWORKDAYS.INTL are out of v0.0.4 scope.", number))
+            for expression in oracle_expressions(statement):
+                for name in re.findall(r"([A-Za-z_][A-Za-z0-9_.]*)\s*\(", expression):
+                    used.add(name.upper())
+                    if name.upper() not in ORACLE_FUNCTIONS:
+                        failures.append(finding(
+                            path,
+                            f"Oracle formula calls {name}; only {', '.join(sorted(ORACLE_FUNCTIONS))} are permitted.",
+                            number,
+                        ))
+    return result(
+        "kpr-oracle-scope",
+        "Excel cross-oracle function scope",
+        failures,
+        f"The cross-oracle evaluates only {', '.join(sorted(used)) or 'no functions'}",
+    )
+
+
 RULES = (
     rule_components,
     rule_surface,
@@ -625,6 +692,7 @@ RULES = (
     rule_host_authority,
     rule_array_purity,
     rule_day_zero,
+    rule_oracle_scope,
 )
 
 
@@ -780,6 +848,17 @@ def self_test(root: Path) -> None:
     boundary["sources"][dates] += "\r\nPublic Function ProbeBoundary(ByVal Y As Long, ByVal M As Long) As Date\r\n    ProbeBoundary = DateSerial(Y, M + 1, 0)\r\nEnd Function\r\n"
     scenarios.append(("day-zero DateSerial", "kpr-day-zero", boundary))
 
+    oracle = next(path for path in base["sources"] if Path(path).stem.casefold() == ORACLE_MODULE)
+    scenarios.append((
+        "business-day oracle",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("WEEKDAY(" & S & ",2)")', 'Xl("WORKDAY.INTL(" & S & ",2)")'),
+    ))
+    scenarios.append((
+        "unlisted oracle function",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'Xl("DATEVALUE(" & S & ")")'),
+    ))
     for name, expected, case in scenarios:
         rep = report(root, case)
         failed_ids = {

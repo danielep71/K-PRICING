@@ -10,9 +10,10 @@ does not execute Excel.
 The runner was verified in Windows Excel for #39: two runs on candidate
 `9a978cd` (Excel 16.0 build 20326, 64-bit) each passed 17 suites and 1,577
 assertions with state restored, and the two records matched outside the
-declared nondeterministic fields. The regression matrix and the
-`worksheet-state` suite added by #40 have not yet been run in Excel; counts
-for them are structural expectations until a retained run validates.
+declared nondeterministic fields. The #40 regression matrix and `worksheet-state` suite were verified the same
+way on candidate `33b07cd` (18 suites, 1,953 assertions). The #41
+`worksheet-oracle` suite has not yet been run in Excel; its counts are
+structural expectations until a retained run validates.
 
 ## Runner interface
 
@@ -63,6 +64,7 @@ Replace the example SHA with the exact candidate you imported.
 | `worksheet-shape` | worksheet | `KPR_Tests_RunShape`: Range orientation, multi-area, blanks, errors, `UsedRange` independence |
 | `worksheet-array` | worksheet | `KPR_Tests_RunArray`: dynamic-array spill and 1904 call-level `#N/A` |
 | `worksheet-fixtures` | worksheet | `KPR_Tests_RunFixtureHost`: the generated cases whose context is a 1900 or 1904 worksheet caller |
+| `worksheet-oracle` | worksheet | `KPR_Tests_RunOracle`: the Excel cross-oracle cases in `KPR_Test_Oracle` (#41) |
 | `worksheet-state` | worksheet | `KPR_Tests_RunStateCheck`: runs the durable runner on `date-type` twice, once with a deliberately injected failure, and proves the caller's state is restored after both |
 
 `KPR_Tests_RunAll("all")`, `KPR_Tests_RunEvidence` and the
@@ -98,6 +100,37 @@ suite it interrupted, and the remaining suites are marked `NOT_RUN`.
 
 `gen_fixtures.py` fails generation if any matrix case is missing for any
 value-taking function or value argument.
+
+## Excel cross-oracle (#41)
+
+`tests/modules/KPR_Test_Oracle.bas` compares the date primitives with native
+Excel worksheet functions only where the two contracts overlap. It evaluates
+`EOMONTH`, `EDATE`, `WEEKDAY`, `DAY`, `YEAR` and `MONTH` on a scratch workbook
+whose date system is 1900. `check_kpr_contract.py` (`kpr-oracle-scope`)
+rejects any other worksheet function in an oracle formula, including
+`WORKDAY.INTL` and `NETWORKDAYS.INTL`.
+
+Every case label states the identity it tests, for example
+`EndOfMonth(d) = EOMONTH(d,0)`. The identities cover month, quarter and year
+boundaries and predicates, `DaysInMonth`, leap years and `DaysInYear`,
+`DayOfWeek` in both weekday bases, `AddMonths` and `AddYears` against `EDATE`,
+`EndOfMonth` of `AddMonths` against `EOMONTH`, `AddDays` and `AddWeeks`
+against serial arithmetic, and both weekday locators.
+
+Samples are 22 boundary dates (window edges, month ends, leap days and
+century years), each with a forward and a backward parameter set, followed by
+300 samples from a Park-Miller generator with a fixed seed. Case order and
+values are identical on every run: 344 samples of 21 assertions, 7,224 in all.
+
+Documented exclusions are asserted, never skipped:
+
+- where Excel's answer lies outside the supported window, or Excel refuses,
+  the contract requires `#NUM!` and the case asserts `#NUM!`;
+- Excel's February 1900 has a fictitious 29th day, so `IsLeapYear(1900)` and
+  `DaysInYear(1900)` are asserted against the Gregorian `FALSE` and 365;
+- text or coerced inputs, fractional serials, serials before 1900-03-01 and
+  the 1904 date system are not compared, because Excel's behaviour there is
+  not the KPR contract.
 
 ## Caller-state restoration
 
@@ -166,9 +199,10 @@ Each outcome has a `status` of `PASS`, `FAIL`, `NOT_RUN` or `NOT_APPLICABLE`.
 `PASS` and `FAIL` carry a nonempty `detail` and a null `reason`. `NOT_RUN` and
 `NOT_APPLICABLE` carry a nonempty `reason` and a null `detail`.
 
-The runner writes `regression` from the run itself. It writes `cross_oracle`
-as `NOT_RUN` until a cross-oracle suite is registered. Every other outcome is
-`NOT_RUN`, because the runner cannot observe it. The certification operator
+The runner writes `regression` from the run itself and `cross_oracle` from the
+`worksheet-oracle` suite: `PASS` or `FAIL` when that suite ran, `NOT_RUN` when
+it was not selected. Every other outcome is `NOT_RUN`, because the runner
+cannot observe it. The certification operator
 completes those outcomes in the same file after observing them, and never
 edits a field the runner wrote.
 
@@ -199,7 +233,8 @@ against the schema, then:
   and a passing suite executed at least one assertion;
 - `result` and the `regression` outcome follow from the suites, failures and
   state restoration;
-- every certification outcome follows the detail and reason rules;
+- every certification outcome follows the detail and reason rules, and
+  `cross_oracle` matches the `worksheet-oracle` suite;
 - with `--compare`, the second record passes the same schema and semantic
   checks, and both records are identical outside the declared
   nondeterministic fields;

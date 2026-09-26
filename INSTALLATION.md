@@ -104,8 +104,10 @@ Import the migrated production dependency set in this order:
 5. `src/modules/KPR_DATES_DAYS.bas`
 6. `tests/modules/KPR_Test_Fixtures_Generated.bas` — development/regression
    only; generated fixture data with no dependencies
-7. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
-8. `examples/modules/KPR_DateExample.bas` — optional consumer example
+7. `tests/modules/KPR_Test_Oracle.bas` — development/regression only; Excel
+   cross-oracle cases that depend on `KPR_DATES_DAYS` alone
+8. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
+9. `examples/modules/KPR_DateExample.bas` — optional consumer example
 
 The four core modules are project-internal; `KPR_DATES_DAYS` owns the supported
 22-function calculation API. Source provenance and path adaptation are recorded

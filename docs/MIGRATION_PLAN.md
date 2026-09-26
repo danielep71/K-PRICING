@@ -187,7 +187,7 @@ separately implemented and evidenced.
 | Independent generated fixtures | Open at migration; defer generator/TSV/generated-module implementation | #16; delivered after migration by #38 (PR #54) |
 | Full runner and evidence | Open at migration; preserve current harness first | #14, #16; delivered after migration by #39 (PRs #56, #58; verified in Windows Excel) |
 | Complete regression matrix | Open; preserve implemented tests; broader coverage remains future | #14, #16; now #40 |
-| Native Excel cross-oracle | Open; defer independent overlap checks, not a current certification | #16; now #41 |
+| Native Excel cross-oracle | Open at migration; independent overlap checks deferred | #16; implemented after migration by #41 (`KPR_Test_Oracle`) |
 | Deterministic demo builder | Open; no workbook builder to import | #16; now #46 |
 | Ribbon integration | Open; no XML/callback/package implementation to import | #16; now #47 |
 | CommandBars lifecycle | Open; no install/remove implementation to import | #16; now #48 |
