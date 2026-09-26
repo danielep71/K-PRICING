@@ -711,11 +711,39 @@ def _oracle_statement_errors(statement: str, numeric_names: set[str], used: set[
     for argument in oracle_calls(statement):
         if _opaque_formula(argument, numeric_names):
             errors.append("Every Xl formula must be built from literals and CStr of numeric expressions so it can be inspected.")
-    for expression in oracle_expressions(statement):
-        for name in re.findall(r"([A-Za-z_][A-Za-z0-9_.]*)\s*\(", expression):
+    for argument in oracle_calls(statement):
+        errors.extend(_formula_grammar_errors(_formula_template(argument), used))
+    return errors
+
+
+def _formula_template(argument: str) -> str:
+    """The formula text Excel receives, with each CStr number shown as 0."""
+    pieces = []
+    for part in _split_top(argument, "&"):
+        literal = re.fullmatch(r'"((?:[^"]|"")*)"', part)
+        pieces.append(literal.group(1).replace('""', '"') if literal else "0")
+    return "".join(pieces)
+
+
+FORMULA_TOKEN = re.compile(r"\s+|\d+(?:\.\d+)?|[+\-*/,()]|([A-Za-z_][\w.]*)\s*(?=\()|(.)")
+
+
+def _formula_grammar_errors(formula: str, used: set[str]) -> list[str]:
+    """A formula may hold only numbers, + - * /, commas, parentheses and the permitted functions."""
+    errors: list[str] = []
+    for match in FORMULA_TOKEN.finditer(formula):
+        name, stray = match.group(1), match.group(2)
+        if name:
             used.add(name.upper())
             if name.upper() not in ORACLE_FUNCTIONS:
                 errors.append(f"Oracle formula calls {name}; only {', '.join(sorted(ORACLE_FUNCTIONS))} are permitted.")
+        elif stray:
+            rest = re.match(r"[^\s+\-*/,()]*", formula[match.start():])
+            errors.append(
+                f"Oracle formula holds {rest.group(0) if rest else stray!r}; only numbers, arithmetic "
+                "and the permitted functions may appear."
+            )
+            break
     return errors
 
 
@@ -981,6 +1009,16 @@ def self_test(root: Path) -> None:
         ("workbook name outside Xl", 'mSheet.Parent.Names.Add "Hidden", "=DATEVALUE(1)"'),
     ):
         scenarios.append((label, "kpr-oracle-scope", mutate(base, oracle, "D = CDate(Serial)", f"D = CDate(Serial): {probe}")))
+    scenarios.append((
+        "defined name in an oracle formula",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl("HiddenFormula")'),
+    ))
+    scenarios.append((
+        "cell reference in an oracle formula",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl("DAY(A1)")'),
+    ))
     scenarios.append((
         "extra evaluation inside Xl",
         "kpr-oracle-scope",

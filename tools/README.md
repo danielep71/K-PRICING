@@ -324,7 +324,8 @@ case; no other procedure may evaluate a formula, through bracket evaluation,
 `WorksheetFunction`, cell or name formulas, recalculation or a macro call.
 `Xl` itself holds only `Xl = mSheet.Evaluate(Formula)`.
 Each formula is built only from literals and `CStr` of arithmetic over numeric
-literals and numeric-typed variables, so it can be inspected. The oracle may
+literals and numeric-typed variables, so it can be inspected, and its text holds
+only numbers, arithmetic and the permitted functions (no names or references). The oracle may
 depend on `KPR_DATES_DAYS` alone.
 
 ## Independent date-layer fixtures

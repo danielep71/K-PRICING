@@ -115,8 +115,9 @@ procedure may call `Evaluate`, `ExecuteExcel4Macro`, bracket evaluation
 values, recalculate, or run a macro. `Xl` itself holds only
 `Xl = mSheet.Evaluate(Formula)`, with `Formula` a required `ByVal` String. Each `Xl` formula must be built only from string literals and
 `CStr` of arithmetic over numeric literals and variables declared with a
-numeric type. No text variable reaches a formula, so the check can read every
-function it calls.
+numeric type. No text variable reaches a formula, and the formula text may
+hold only numbers, `+ - * /`, commas, parentheses and the permitted functions,
+so no defined name or cell reference can hide another formula.
 
 Every case label states the identity it tests, for example
 `EndOfMonth(d) = EOMONTH(d,0)`. The identities cover month, quarter and year
