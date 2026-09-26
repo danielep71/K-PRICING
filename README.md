@@ -247,7 +247,7 @@ These are the current limitations. The
 2026-09-23 setup inputs and is provenance, not a live copy of this section.
 
 - Exact-source Excel compilation and parity passed on one Windows 64-bit host only (#17); 32-bit Office, other builds and other locales are untested. Migration acceptance is recorded in [MIGRATION_COMPLETION.md](docs/MIGRATION_COMPLETION.md).
-- Test hardening and registration continue in milestone v0.0.3: the independent fixture generator (#38) is merged, the durable runner and evidence schema (#39) are implemented and await their first Windows Excel run, and the regression suites, cross-oracle checks and MacroOptions registration (#40–#42) remain open. The demo, UI, candidate assembly and first functional release are scheduled in v0.0.4 (#46–#52), and calendars and business-day arithmetic are planned for v0.0.5 and v0.0.6. See the [roadmap](docs/ROADMAP.md). Broader pricing capabilities remain unscheduled.
+- Test hardening and registration continue in milestone v0.0.3: the independent fixture generator (#38) is merged, the durable runner and evidence schema (#39) are complete and verified in Windows Excel, the regression matrix (#40) is implemented and awaits its Excel run, and the cross-oracle checks and MacroOptions registration (#41–#42) remain open. The demo, UI, candidate assembly and first functional release are scheduled in v0.0.4 (#46–#52), and calendars and business-day arithmetic are planned for v0.0.5 and v0.0.6. See the [roadmap](docs/ROADMAP.md). Broader pricing capabilities remain unscheduled.
 - No supported workbook/add-in or functional product release is available; the historical neutral-starter run certifies setup only.
 
 The general evidence boundaries still apply: static inspection is not Excel

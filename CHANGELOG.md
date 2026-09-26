@@ -104,6 +104,14 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added the regression matrix (#40): the fixture generator now emits a
+  systematic `matrix` family for each of the 21 value-taking functions and
+  each value argument (valid, edge, invalid-domain, propagated, 1x1, row,
+  column and rectangle cases, and 1900/1904 worksheet calls), bringing the
+  fixtures to 1,353 cases, and fails generation if any matrix case is missing.
+  The durable runner adds a `worksheet-state` suite that proves caller-state
+  restoration after a deliberately failing and a passing nested run. Not yet
+  run in Excel.
 - Added the durable VBA test runner and structured evidence schema (#39):
   `KPR_Test_RunAll` and `KPR_Test_RunSuite` run a 17-suite registry, including
   the 981 generated fixture cases (direct VBA and 1900/1904 worksheet callers)

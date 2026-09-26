@@ -31,6 +31,16 @@ if a function or registry condition has no fixture. The one exclusion is
 recorded in the generator: `HOST_UNRESOLVED` needs a worksheet host whose date
 system cannot be read, which only failure injection can produce.
 
+## Regression matrix
+
+The `matrix` family (#40) is generated systematically for each of the 21
+value-taking functions: a valid scalar call, a valid 1900 worksheet call, a
+1904 worksheet call and a 1904 worksheet vector call; and for each value
+argument its lowest and highest supported values, two invalid-domain values,
+a propagated error, and 1x1, row, column and rectangle arrays that mix valid,
+edge, invalid and error elements. Generation fails if any of these cases is
+missing.
+
 ## Columns
 
 | Column | Meaning |

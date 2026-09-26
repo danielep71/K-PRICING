@@ -185,7 +185,7 @@ separately implemented and evidenced.
 | Array facade integration | Complete; preserve implementation; repeat exact-candidate parity | #12, #17 |
 | Function registration | Open; defer new MacroOptions category/argument registration | #16; now #42 |
 | Independent generated fixtures | Open at migration; defer generator/TSV/generated-module implementation | #16; delivered after migration by #38 (PR #54) |
-| Full runner and evidence | Open at migration; preserve current harness first | #14, #16; implemented after migration by #39 (Excel run pending) |
+| Full runner and evidence | Open at migration; preserve current harness first | #14, #16; delivered after migration by #39 (PRs #56, #58; verified in Windows Excel) |
 | Complete regression matrix | Open; preserve implemented tests; broader coverage remains future | #14, #16; now #40 |
 | Native Excel cross-oracle | Open; defer independent overlap checks, not a current certification | #16; now #41 |
 | Deterministic demo builder | Open; no workbook builder to import | #16; now #46 |

@@ -44,8 +44,8 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 ' DURABLE REGISTRY
 '   KPR_Test_RunAll runs TestRegistry in order: the twelve suites above, then
 '   fixtures, then the macro-only runners as worksheet-host, worksheet-shape,
-'   worksheet-array and worksheet-fixtures. KPR_Test_RunSuite runs one of
-'   them. tools/check_test_evidence.py reads the registry from this source.
+'   worksheet-array, worksheet-fixtures and worksheet-state.
+'   KPR_Test_RunSuite runs one of them. tools/check_test_evidence.py reads the registry from this source.
 '
 ' SCOPE
 '   - Condition classification is asserted directly against KPR_Core_Parse, so a
@@ -81,7 +81,7 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '       KPR_Tests_RunAll()            returns a two-column array for a worksheet
 '                                     or for programmatic use
 '
-'   Four stateful entry points are deliberately NOT reachable from the
+'   Five stateful entry points are deliberately NOT reachable from the
 '   pure dispatcher above; the durable runner orchestrates them:
 '
 '       KPR_Tests_RunHost             creates a scratch workbook, exercises the
@@ -107,6 +107,10 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '                                     context is a 1900 or 1904 worksheet
 '                                     caller as Range formulas in a scratch
 '                                     workbook.
+'       KPR_Tests_RunStateCheck       runs the durable runner on one suite
+'                                     twice, once with a deliberate failure,
+'                                     and proves caller state is restored
+'                                     after both.
 '
 '   KPR_Tests_RunAll returns an array, so it cannot be inspected with ? in the
 '   Immediate window and cannot appear in the macro list. Use KPR_Tests_Run
@@ -161,6 +165,10 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
     'Immediate-window reports and migration trace lines are suppressed and a
     'failed cleanup is recorded as a failure instead of only being printed
         Private mQuietTrace As Boolean
+
+    'TRUE only while KPR_Tests_RunStateCheck asks the durable runner to record
+    'one deliberate failure, so restoration is proven after a failing run
+        Private mInjectFailure As Boolean
 
 '------------------------------------------------------------------------------
 ' MODULE CONSTANTS
@@ -798,7 +806,7 @@ Private Function TestRegistry() As Variant
         "date-type", "date-text", "date-window", "integer", "control", _
         "boundary", "mapper", "host", "pillar", "surface", "shape", _
         "parity", "fixtures", "worksheet-host", "worksheet-shape", _
-        "worksheet-array", "worksheet-fixtures")
+        "worksheet-array", "worksheet-fixtures", "worksheet-state")
 
 End Function
 
@@ -815,7 +823,8 @@ Private Function SuiteKind( _
     Select Case SuiteName
         Case "fixtures"
             SuiteKind = "fixture"
-        Case "worksheet-host", "worksheet-shape", "worksheet-array", "worksheet-fixtures"
+        Case "worksheet-host", "worksheet-shape", "worksheet-array", "worksheet-fixtures", _
+             "worksheet-state"
             SuiteKind = "worksheet"
         Case Else
             SuiteKind = "pure"
@@ -839,6 +848,7 @@ Private Sub ExecuteSuite( _
         Case "worksheet-shape":     KPR_Tests_RunShape
         Case "worksheet-array":     KPR_Tests_RunArray
         Case "worksheet-fixtures":  KPR_Tests_RunFixtureHost
+        Case "worksheet-state":     KPR_Tests_RunStateCheck
         Case Else
             If Not RunSuite(SuiteName) Then
                 Record "runner/" & SuiteName, "suite is registered but has no dispatch"
@@ -980,6 +990,9 @@ Private Function RunRegistry( _
             mChecks = 0
             SuiteTimer = Timer
             ExecuteSuite Rec.SuiteNames(I)
+            If mInjectFailure Then
+                Record "state-probe/injected", "deliberate failure injected by KPR_Tests_RunStateCheck"
+            End If
             HarvestSuite Rec, I, ElapsedMs(SuiteTimer), ""
             Harvested = True
         Next I
@@ -1033,17 +1046,20 @@ Run_Restore:
 '------------------------------------------------------------------------------
 ' REPORT
 '------------------------------------------------------------------------------
-    Debug.Print "KPR test runner [" & SuiteSelection & "]  suites: " & CStr(Rec.SuiteCount) & _
-                "  assertions: " & CStr(Rec.TotalChecks) & _
-                "  failures: " & CStr(Rec.Failures.Count) & _
-                "  state: " & IIf(Rec.StateOk, "PASS", "FAIL") & _
-                "  RESULT=" & IIf(Rec.Passed, "PASS", "FAIL")
-    For F = 1 To Rec.Failures.Count
-        Entry = Rec.Failures.Item(F)
-        Debug.Print "  FAIL  " & CStr(Entry(0)) & " / " & CStr(Entry(1)) & " : " & CStr(Entry(2))
-    Next F
-    If Not Rec.StateOk Then Debug.Print "  FAIL  state : " & Rec.StateDetail
-    Debug.Print "  evidence: " & EvidencePath
+    'A run nested inside another durable run reports through its caller
+        If Not OuterQuiet Then
+            Debug.Print "KPR test runner [" & SuiteSelection & "]  suites: " & CStr(Rec.SuiteCount) & _
+                        "  assertions: " & CStr(Rec.TotalChecks) & _
+                        "  failures: " & CStr(Rec.Failures.Count) & _
+                        "  state: " & IIf(Rec.StateOk, "PASS", "FAIL") & _
+                        "  RESULT=" & IIf(Rec.Passed, "PASS", "FAIL")
+            For F = 1 To Rec.Failures.Count
+                Entry = Rec.Failures.Item(F)
+                Debug.Print "  FAIL  " & CStr(Entry(0)) & " / " & CStr(Entry(1)) & " : " & CStr(Entry(2))
+            Next F
+            If Not Rec.StateOk Then Debug.Print "  FAIL  state : " & Rec.StateDetail
+            Debug.Print "  evidence: " & EvidencePath
+        End If
 
     RunRegistry = Rec.Passed
 
@@ -2138,6 +2154,152 @@ Private Function TryWriteCell( _
     TryWriteCell = True
 
 End Function
+
+'
+'------------------------------------------------------------------------------
+'
+'                   STATEFUL RESTORATION RUNNER (MACRO ONLY)
+'
+'------------------------------------------------------------------------------
+'
+
+Public Sub KPR_Tests_RunStateCheck()
+'
+'==============================================================================
+'                            KPR_Tests_RunStateCheck
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Proves that the durable runner restores caller state after a failing run
+'   and after a passing run, and prints the report to the Immediate window.
+'
+' METHOD
+'   Sets distinctive caller state (status-bar text, semiautomatic
+'   calculation, events, alerts and screen updating on), runs the date-type
+'   suite through the durable runner twice, first with one deliberately
+'   injected failure and then without, and checks both the returned result
+'   and every restored item after each run.
+'
+' STATE
+'   The nested runs write throwaway evidence to %TEMP%\kpr-state-check. The
+'   state this runner changes for the probe is restored on every exit path.
+'   Macro-only: the nested runs add and close workbooks.
+'
+' UPDATED
+'   2026-09-26
+'==============================================================================
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROBE_SHA     As String = "0000000000000000000000000000000000000000"
+    Const PROBE_TEXT    As String = "KPR state probe"
+    Const EXPECT_CHECKS As Long = 4     'Result and restoration, for two runs
+    Dim Outer           As CallerState  'State to put back after the probe
+    Dim Captured        As Boolean      'TRUE once Outer holds the state
+    Dim Folder          As String       'Throwaway evidence folder
+    Dim Label           As String       'Which run is being checked
+    Dim Injected        As Boolean      'TRUE for the deliberately failing run
+    Dim Returned        As Boolean      'Result of the nested run
+    Dim ProbeBook       As String       'Active workbook before the nested run
+    Dim ProbeSheet      As String       'Active sheet before the nested run
+    Dim ProbeSelection  As String       'Selection before the nested run
+    Dim Detail          As String       'Restoration differences
+    Dim Pass            As Long         'Run cursor
+    Dim I               As Long         'Report cursor
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    Set mFailures = New Collection
+    mChecks = 0
+    On Error GoTo Cleanup
+    Folder = Environ$("TEMP")
+    If Len(Folder) = 0 Then Folder = CurDir$
+    Folder = Folder & Application.PathSeparator & "kpr-state-check"
+    CaptureCallerState Outer
+    Captured = True
+
+'------------------------------------------------------------------------------
+' TWO NESTED RUNS
+'------------------------------------------------------------------------------
+    For Pass = 1 To 2
+        Injected = (Pass = 1)
+        If Injected Then Label = "after a failing run" Else Label = "after a passing run"
+
+        'Distinctive caller state for the durable runner to capture and restore
+            Application.StatusBar = PROBE_TEXT
+            Application.Calculation = xlCalculationSemiautomatic
+            Application.EnableEvents = True
+            Application.DisplayAlerts = True
+            Application.ScreenUpdating = True
+            ProbeBook = ActiveWorkbook.FullName
+            ProbeSheet = ActiveSheet.Name
+            ProbeSelection = ""
+            If TypeName(Selection) = "Range" Then ProbeSelection = Selection.Address(External:=True)
+
+        'The nested run: one suite, with or without an injected failure
+            mInjectFailure = Injected
+            Returned = RunRegistry("date-type", "KPR_Test_RunSuite", PROBE_SHA, Folder)
+            mInjectFailure = False
+
+        'A failing run must return FALSE and a passing run TRUE
+            mChecks = mChecks + 1
+            If Returned = Injected Then
+                Record "state/" & Label & " result", "the durable runner returned " & CStr(Returned)
+            End If
+
+        'Every captured item must read back exactly as it was set
+            mChecks = mChecks + 1
+            Detail = ""
+            If VarType(Application.StatusBar) <> vbString Then
+                Detail = Detail & "; status bar"
+            ElseIf CStr(Application.StatusBar) <> PROBE_TEXT Then
+                Detail = Detail & "; status bar"
+            End If
+            If Application.Calculation <> xlCalculationSemiautomatic Then Detail = Detail & "; calculation"
+            If Not Application.EnableEvents Then Detail = Detail & "; events"
+            If Not Application.DisplayAlerts Then Detail = Detail & "; alerts"
+            If Not Application.ScreenUpdating Then Detail = Detail & "; screen updating"
+            If ActiveWorkbook.FullName <> ProbeBook Then Detail = Detail & "; active workbook"
+            If ActiveSheet.Name <> ProbeSheet Then Detail = Detail & "; active sheet"
+            If Len(ProbeSelection) > 0 Then
+                If TypeName(Selection) <> "Range" Then
+                    Detail = Detail & "; selection"
+                ElseIf Selection.Address(External:=True) <> ProbeSelection Then
+                    Detail = Detail & "; selection"
+                End If
+            End If
+            If Len(Detail) > 0 Then Record "state/" & Label & " restoration", "not restored: " & Mid$(Detail, 3)
+    Next Pass
+
+'------------------------------------------------------------------------------
+' CLEANUP
+'------------------------------------------------------------------------------
+Cleanup:
+    If Err.Number <> 0 Then
+        Record "state/runner", "unexpected runtime error " & CStr(Err.Number) & ": " & Err.Description
+        Err.Clear
+    End If
+    mInjectFailure = False
+    If Captured Then
+        If Not RestoreCallerState(Outer, Detail) Then Record "state/probe cleanup", Detail
+    End If
+
+'------------------------------------------------------------------------------
+' REPORT
+'------------------------------------------------------------------------------
+    If mChecks <> EXPECT_CHECKS Then
+        Record "state/runner state", "expected " & CStr(EXPECT_CHECKS) & " assertions but counted " & CStr(mChecks)
+    End If
+    If Not mQuietTrace Then
+        Debug.Print "KPR state regression  checks: " & CStr(mChecks) & "  failures: " & CStr(mFailures.Count)
+        For I = 1 To mFailures.Count
+            Debug.Print "  FAIL  " & CStr(mFailures(I)(0)) & " : " & CStr(mFailures(I)(1))
+        Next I
+    End If
+
+End Sub
 
 '
 '------------------------------------------------------------------------------
