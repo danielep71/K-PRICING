@@ -27,6 +27,10 @@ Attribute VB_Name = "KPR_Test_Oracle"
 '   - Year 1900 leap-year identities: Excel's February 1900 has a fictitious
 '     29th day, so IsLeapYear(1900) and DaysInYear(1900) are asserted against
 '     the Gregorian answers FALSE and 365 rather than against Excel.
+'   - March 1900 month start: Excel's EOMONTH(d,-1)+1 does not give
+'     1-Mar-1900 across the fictitious 29-Feb-1900, so BeginOfMonth is
+'     asserted against d-DAY(d)+1 there, and the weekday locators always
+'     take the month start as d-DAY(d)+1.
 '   - Not compared at all: text or coerced inputs (Excel parses permissively,
 '     KPR strictly), fractional serials (KPR normalizes to the date), serials
 '     before 1900-03-01, and the 1904 date system.
@@ -216,7 +220,7 @@ Private Sub CheckSample( _
     Dim Eom             As Double       'EOMONTH(d,0)
     Dim QuarterEnd      As Double       'EOMONTH(d,2-Q)
     Dim FebDays         As Long         'DAY(EOMONTH(d,2-MONTH(d)))
-    Dim First           As Double       'EOMONTH(d,-1)+1
+    Dim First           As Double       'd-DAY(d)+1
     Dim WeekType        As Long         'WEEKDAY return type: 2 Monday base, 1 Sunday base
     Dim FirstWeekday    As Long         'WEEKDAY(first,type)
     Dim LastWeekday     As Long         'WEEKDAY(EOMONTH(d,0),type)
@@ -237,7 +241,13 @@ Private Sub CheckSample( _
 ' MONTH, QUARTER AND YEAR BOUNDARIES
 '------------------------------------------------------------------------------
     ExpectDate "EndOfMonth(d) = EOMONTH(d,0)", Tag, KPR_Dates_EndOfMonth(D), Eom
-    ExpectDate "BeginOfMonth(d) = EOMONTH(d,-1)+1", Tag, KPR_Dates_BeginOfMonth(D), Xl("EOMONTH(" & CStr(Serial) & ",-1)+1")
+    If Yr = 1900 And Mo = 3 Then
+        'Documented exclusion: Excel's EOMONTH(d,-1)+1 is not 1-Mar-1900 across its fictitious 29-Feb-1900
+            ExpectDate "BeginOfMonth(d) = d-DAY(d)+1 (March 1900: EOMONTH(d,-1)+1 crosses Excel's fictitious 29-Feb-1900)", _
+                       Tag, KPR_Dates_BeginOfMonth(D), Xl(CStr(Serial) & "-DAY(" & CStr(Serial) & ")+1")
+    Else
+        ExpectDate "BeginOfMonth(d) = EOMONTH(d,-1)+1", Tag, KPR_Dates_BeginOfMonth(D), Xl("EOMONTH(" & CStr(Serial) & ",-1)+1")
+    End If
     ExpectNumber "DaysInMonth(d) = DAY(EOMONTH(d,0))", Tag, KPR_Dates_DaysInMonth(D), Xl("DAY(EOMONTH(" & CStr(Serial) & ",0))")
     ExpectBoolean "IsMonthEnd(d) = (d = EOMONTH(d,0))", Tag, KPR_Dates_IsMonthEnd(D), (CDbl(Serial) = Eom)
     ExpectDate "BeginOfQuarter(d) = EOMONTH(d,-MOD(MONTH(d)-1,3)-1)+1", Tag, KPR_Dates_BeginOfQuarter(D), _
@@ -293,14 +303,15 @@ Private Sub CheckSample( _
 ' WEEKDAY LOCATORS
 '------------------------------------------------------------------------------
     If MondayBase Then WeekType = 2 Else WeekType = 1
-    First = CDbl(Xl("EOMONTH(" & CStr(Serial) & ",-1)+1"))
+    'd-DAY(d)+1, not EOMONTH(d,-1)+1, which crosses Excel's fictitious 29-Feb-1900 in March 1900
+    First = CDbl(Xl(CStr(Serial) & "-DAY(" & CStr(Serial) & ")+1"))
     FirstWeekday = CLng(Xl("WEEKDAY(" & CStr(First) & "," & CStr(WeekType) & ")"))
     Nth = First + ((WeekdayIndex - FirstWeekday + 7) Mod 7) + 7 * (Occurrence - 1)
     If Nth > Eom Then
         'The occurrence is absent from the month: the contract requires #NUM!
             Nth = MAX_SERIAL + 1
     End If
-    ExpectDate "NthWeekdayOfMonth(y,m,i,n) = first+MOD(i-WEEKDAY(first,t),7)+7*(n-1), absent after EOMONTH(d,0)", _
+    ExpectDate "NthWeekdayOfMonth(y,m,i,n) = first+MOD(i-WEEKDAY(first,t),7)+7*(n-1), first = d-DAY(d)+1, absent after EOMONTH(d,0)", _
                Tag & " i=" & CStr(WeekdayIndex) & " n=" & CStr(Occurrence) & " t=" & CStr(WeekType), _
                KPR_Dates_NthWeekdayOfMonth(Yr, Mo, WeekdayIndex, Occurrence, MondayBase), Nth
     LastWeekday = CLng(Xl("WEEKDAY(" & CStr(Eom) & "," & CStr(WeekType) & ")"))

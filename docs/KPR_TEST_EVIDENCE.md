@@ -136,6 +136,9 @@ Documented exclusions are asserted, never skipped:
   the contract requires `#NUM!` and the case asserts `#NUM!`;
 - Excel's February 1900 has a fictitious 29th day, so `IsLeapYear(1900)` and
   `DaysInYear(1900)` are asserted against the Gregorian `FALSE` and 365;
+- across that fictitious day Excel's `EOMONTH(d,-1)+1` does not give
+  1-Mar-1900, so `BeginOfMonth` is asserted against `d-DAY(d)+1` for March
+  1900, and the weekday locators always take the month start as `d-DAY(d)+1`;
 - text or coerced inputs, fractional serials, serials before 1900-03-01 and
   the 1904 date system are not compared, because Excel's behaviour there is
   not the KPR contract.
