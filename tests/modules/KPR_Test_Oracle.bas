@@ -180,7 +180,15 @@ Cleanup:
             Err.Clear
         End If
     End If
-    If CalcChanged Then Application.Calculation = PriorCalc
+    If CalcChanged Then
+        Application.Calculation = PriorCalc
+        If Err.Number <> 0 Then
+            Fail "oracle/cleanup", "calculation mode was not restored (error " & CStr(Err.Number) & ")"
+            Err.Clear
+        ElseIf Application.Calculation <> PriorCalc Then
+            Fail "oracle/cleanup", "calculation mode is " & CStr(Application.Calculation) & ", expected " & CStr(PriorCalc)
+        End If
+    End If
     Err.Clear
     On Error GoTo 0
     Checks = Checks + mChecks
