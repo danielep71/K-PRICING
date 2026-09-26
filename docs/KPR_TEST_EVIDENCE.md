@@ -118,7 +118,9 @@ call or a listed VBA or Excel name, and every member access is one of the
 few the scratch workbook needs, so `ActiveCell`, `Selection` and similar
 implicit cell writes fail. Excel object variables and `Application` may appear
 only in the few forms that open, set up and close the scratch workbook, so no
-default-member call such as `mSheet("A1") = ...` can write a cell. `Xl` itself holds only
+default-member call such as `mSheet("A1") = ...` can write a cell, and an Excel
+object may be stored only in a variable declared with an Excel object type,
+never in a Variant alias. `Xl` itself holds only
 `Xl = mSheet.Evaluate(Formula)`, with `Formula` a required `ByVal` String. Each `Xl` formula must be built only from string literals and
 `CStr` of arithmetic over numeric literals and variables declared with a
 numeric type in scope (a local declaration shadows a module one, and an untyped

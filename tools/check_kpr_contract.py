@@ -793,6 +793,15 @@ def _object_misuse(statement: str, objects: set[str]) -> list[str]:
     if DECLARATION_START.match(code) or ORACLE_PROCEDURE.match(code):
         return []
     misuse: list[str] = []
+    # An Excel object may be stored only in a variable declared with an Excel object type
+    stored = re.search(r"(?:^|\bThen\s+|:\s*)Set\s+(\w+)\s*=(.*)$", code, re.I)
+    if stored and stored.group(1).casefold() not in objects:
+        if any(name.casefold() in objects for name in re.findall(r"[A-Za-z_]\w*", stored.group(2))):
+            misuse.append(stored.group(1))
+    if re.search(r"\.Worksheets\b|\.Workbooks\b", code, re.I) and not (
+        stored and stored.group(1).casefold() in objects
+    ):
+        misuse.append("Worksheets/Workbooks outside a Set of an object variable")
     for match in re.finditer(r"(?<![\w.])([A-Za-z_]\w*)", code):
         name = match.group(1)
         if name.casefold() not in objects:
@@ -1186,6 +1195,9 @@ def self_test(root: Path) -> None:
         ("worksheet member outside the allowlist", 'Nth = mSheet.UsedRange.Count'),
         ("default member of a worksheet", 'mSheet("A1") = "=DATEVALUE(1)"'),
         ("worksheet passed to another procedure", "Fail Tag, mSheet"),
+        ("worksheet held in a Variant alias", 'Set Boundaries = mSheet: Boundaries("A1") = "=DATEVALUE(1)"'),
+        ("new worksheet held in a Variant", "Set Boundaries = Application.Workbooks.Add"),
+        ("worksheet read without Set", "Boundaries = Application.Workbooks.Add"),
     ):
         scenarios.append((label, "kpr-oracle-scope", mutate(base, oracle, "D = CDate(Serial)", f"D = CDate(Serial): {probe}")))
     scenarios.append((
