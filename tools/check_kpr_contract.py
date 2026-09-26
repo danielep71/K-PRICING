@@ -100,6 +100,9 @@ REQUIRED_MEMBERS = {
         "KPR_Tests_RunHost",
         "KPR_Tests_RunShape",
         "KPR_Tests_RunArray",
+        "KPR_Tests_RunFixtureHost",
+        "KPR_Test_RunAll",
+        "KPR_Test_RunSuite",
     }),
 }
 FORBIDDEN_PARSE_CALLS = ("IsDate", "DateValue", "CVDate", "IsNumeric")

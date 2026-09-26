@@ -288,6 +288,11 @@ jobs:
         continue-on-error: true
         run: python3 tools/gen_fixtures.py --root . --check
 
+      - name: Exercise the test-evidence validator
+        id: test-evidence-self-test
+        continue-on-error: true
+        run: python3 tools/check_test_evidence.py --root . --self-test
+
       - name: Exercise migration-evidence validator fixtures
         id: migration-evidence-self-test
         continue-on-error: true
@@ -430,6 +435,7 @@ jobs:
           KPR_CONTRACT_OUTCOME: ${{ steps.kpr-contract.outcome }}
           FIXTURE_GENERATOR_SELF_TEST_OUTCOME: ${{ steps.fixture-generator-self-test.outcome }}
           GENERATED_FIXTURES_OUTCOME: ${{ steps.generated-fixtures.outcome }}
+          TEST_EVIDENCE_SELF_TEST_OUTCOME: ${{ steps.test-evidence-self-test.outcome }}
           MIGRATION_EVIDENCE_SELF_TEST_OUTCOME: ${{ steps.migration-evidence-self-test.outcome }}
           LOCAL_ACTION_SELF_TEST_OUTCOME: ${{ steps.local-action-self-test.outcome }}
           LOCAL_ACTIONS_OUTCOME: ${{ steps.local-actions.outcome }}
@@ -466,6 +472,7 @@ jobs:
             "KPR contract:$KPR_CONTRACT_OUTCOME" \
             "Fixture-generator self-test:$FIXTURE_GENERATOR_SELF_TEST_OUTCOME" \
             "Generated fixtures current:$GENERATED_FIXTURES_OUTCOME" \
+            "Test-evidence validator self-test:$TEST_EVIDENCE_SELF_TEST_OUTCOME" \
             "Migration-evidence validator self-test:$MIGRATION_EVIDENCE_SELF_TEST_OUTCOME" \
             "Repository-local Action self-test:$LOCAL_ACTION_SELF_TEST_OUTCOME" \
             "Repository-local Actions:$LOCAL_ACTIONS_OUTCOME" \

@@ -158,6 +158,7 @@ Use `docs/DEVELOPER_SETUP.md` for the complete local setup and `.github/workflow
 - `python3 tools/check_kpr_contract.py --root . --self-test`
 - `python3 tools/check_kpr_contract.py --root .`
 - `python3 tools/gen_fixtures.py --root . --check`
+- `python3 tools/check_test_evidence.py --root . --self-test`
 - `python3 tools/check_documentation.py --root .`
 - `python3 tools/test_documentation.py -v`
 - `git diff --check`
@@ -179,7 +180,8 @@ Relevant entry points:
 
 - `KPR_Tests_Run` — primary migrated regression dispatcher
 - `KPR_Tests_RunEvidence` — retained-evidence adapter; delegates to the all-suite dispatcher and emits the validator format
-- `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, `KPR_Tests_RunArray` — focused host/shape/dynamic-array runners
+- `KPR_Test_RunAll`, `KPR_Test_RunSuite` — durable runner; writes `kpr-test-evidence.json` for an exact source SHA
+- `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, `KPR_Tests_RunArray`, `KPR_Tests_RunFixtureHost` — focused host/shape/dynamic-array/worksheet-fixture runners
 - `KPR_DateExample.RunDateExample` — minimal direct-VBA consumer smoke
 
 | Evidence | Result |

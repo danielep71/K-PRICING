@@ -104,6 +104,14 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added the durable VBA test runner and structured evidence schema (#39):
+  `KPR_Test_RunAll` and `KPR_Test_RunSuite` run a 17-suite registry, including
+  the 981 generated fixture cases (direct VBA and 1900/1904 worksheet callers)
+  and the worksheet runners, restore the caller's Excel state, and write
+  `kpr-test-evidence.json` bound to an exact source SHA with the #52
+  certification outcomes. `docs/kpr-test-evidence.schema.json` defines the
+  record and `tools/check_test_evidence.py` validates it. The runner has not
+  yet been executed on a Windows Excel host.
 - Added the independent date-layer fixture generator (#38): `tools/gen_fixtures.py`
   computes 981 expected results from the contract with Python standard-library
   date arithmetic, writes the canonical `tests/fixtures/date_layer_fixtures.tsv`

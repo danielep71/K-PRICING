@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/danielep71/K-PRICING/docs/kpr-test-evidence.schema.json",
+  "title": "K-PRICING test evidence",
+  "description": "Structured record written by KPR_Test_RunAll and KPR_Test_RunSuite, and completed by the certification operator. Semantic rules beyond this structure are enforced by tools/check_test_evidence.py and documented in docs/KPR_TEST_EVIDENCE.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "source_sha",
+    "runner",
+    "environment",
+    "timing",
+    "nondeterministic_fields",
+    "suites",
+    "failures",
+    "totals",
+    "state_restoration",
+    "certification",
+    "result"
+  ],
+  "properties": {
+    "schema": {"const": "kpr-test-evidence"},
+    "schema_version": {"const": 1},
+    "source_sha": {"$ref": "#/$defs/sha1"},
+    "runner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["module", "entry_point", "selection", "fixture_source_sha256", "fixture_cases"],
+      "properties": {
+        "module": {"const": "KPR_REGRESSION_TESTS"},
+        "entry_point": {"enum": ["KPR_Test_RunAll", "KPR_Test_RunSuite"]},
+        "selection": {"$ref": "#/$defs/name"},
+        "fixture_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "fixture_cases": {"type": "integer", "minimum": 0}
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "excel_version",
+        "excel_build",
+        "office_bitness",
+        "vba_version",
+        "operating_system",
+        "locale",
+        "workbook_date_system",
+        "caller"
+      ],
+      "properties": {
+        "excel_version": {"$ref": "#/$defs/text"},
+        "excel_build": {"$ref": "#/$defs/text"},
+        "office_bitness": {"enum": ["32-bit", "64-bit"]},
+        "vba_version": {"enum": ["VBA6", "VBA7"]},
+        "operating_system": {"$ref": "#/$defs/text"},
+        "locale": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["country_code", "country_setting", "decimal_separator", "list_separator", "date_order"],
+          "properties": {
+            "country_code": {"type": "integer"},
+            "country_setting": {"type": "integer"},
+            "decimal_separator": {"type": "string"},
+            "list_separator": {"type": "string"},
+            "date_order": {"enum": ["MDY", "DMY", "YMD", "UNKNOWN"]}
+          }
+        },
+        "workbook_date_system": {"enum": [1900, 1904]},
+        "caller": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["application_caller_type", "direct_suites", "worksheet_suites"],
+          "properties": {
+            "application_caller_type": {"$ref": "#/$defs/text"},
+            "direct_suites": {"const": "direct-vba-1900"},
+            "worksheet_suites": {"const": "scratch-workbook-range"}
+          }
+        }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["started_local", "finished_local", "elapsed_ms"],
+      "properties": {
+        "started_local": {"$ref": "#/$defs/local_time"},
+        "finished_local": {"$ref": "#/$defs/local_time"},
+        "elapsed_ms": {"type": "integer", "minimum": 0}
+      }
+    },
+    "nondeterministic_fields": {
+      "type": "array",
+      "items": {"enum": ["/environment", "/timing", "/suites/*/elapsed_ms"]}
+    },
+    "suites": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "kind", "status", "assertions", "failures", "elapsed_ms"],
+        "properties": {
+          "name": {"$ref": "#/$defs/name"},
+          "kind": {"enum": ["pure", "fixture", "worksheet"]},
+          "status": {"enum": ["PASS", "FAIL", "NOT_RUN"]},
+          "assertions": {"type": "integer", "minimum": 0},
+          "failures": {"type": "integer", "minimum": 0},
+          "elapsed_ms": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["suite", "case", "detail"],
+        "properties": {
+          "suite": {"$ref": "#/$defs/name"},
+          "case": {"$ref": "#/$defs/text"},
+          "detail": {"$ref": "#/$defs/text"}
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["suites", "assertions", "failures"],
+      "properties": {
+        "suites": {"type": "integer", "minimum": 1},
+        "assertions": {"type": "integer", "minimum": 0},
+        "failures": {"type": "integer", "minimum": 0}
+      }
+    },
+    "state_restoration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "detail"],
+      "properties": {
+        "status": {"enum": ["PASS", "FAIL"]},
+        "detail": {"$ref": "#/$defs/text"}
+      }
+    },
+    "certification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_import",
+        "vba_compile",
+        "regression",
+        "cross_oracle",
+        "macro_options",
+        "ribbonx",
+        "commandbars",
+        "demo_generation",
+        "source_round_trip"
+      ],
+      "properties": {
+        "source_import": {"$ref": "#/$defs/outcome"},
+        "vba_compile": {"$ref": "#/$defs/outcome"},
+        "regression": {"$ref": "#/$defs/outcome"},
+        "cross_oracle": {"$ref": "#/$defs/outcome"},
+        "macro_options": {"$ref": "#/$defs/outcome"},
+        "ribbonx": {"$ref": "#/$defs/outcome"},
+        "commandbars": {"$ref": "#/$defs/outcome"},
+        "demo_generation": {"$ref": "#/$defs/outcome"},
+        "source_round_trip": {"$ref": "#/$defs/outcome"}
+      }
+    },
+    "result": {"enum": ["PASS", "FAIL"]}
+  },
+  "$defs": {
+    "sha1": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "text": {"type": "string", "minLength": 1},
+    "local_time": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"},
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "detail", "reason"],
+      "properties": {
+        "status": {"enum": ["PASS", "FAIL", "NOT_RUN", "NOT_APPLICABLE"]},
+        "detail": {"type": ["string", "null"]},
+        "reason": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

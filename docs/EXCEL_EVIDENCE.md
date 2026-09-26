@@ -150,6 +150,12 @@ candidate SHA identifies the VBA source being tested. Manual records must have
 no workflow object and cannot claim the automated runner class. The validator
 checks identities and bindings, not whether a service really executed that run.
 
+The durable runner's [structured test evidence](KPR_TEST_EVIDENCE.md) is a
+separate record: `KPR_Test_RunAll` runs the complete suite registry, including
+the generated fixtures, and records per-suite results, caller-state
+restoration and the #52 certification outcomes. This host record and its
+twelve-case `KPR_Tests_RunEvidence` policy are unchanged by it.
+
 For the completed v0.0.2 migration acceptance (#17,
 [`evidence/migration-2026-09-24`](../evidence/migration-2026-09-24/session.txt)),
 this host record was only the destination side of the evidence.

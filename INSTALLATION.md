@@ -179,7 +179,10 @@ For the migrated date layer, compile the complete project and run
 `KPR_Tests_RunAll`, `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, and
 `KPR_Tests_RunArray` for focused execution. `KPR_Tests_RunEvidence` emits the
 machine-readable host-evidence log, and `KPR_Tests_RunMigrationEvidence` is
-retained for the historical #17 parity run.
+retained for the historical #17 parity run. `KPR_Test_RunAll` and
+`KPR_Test_RunSuite` run the complete durable registry, including the generated
+fixtures and the worksheet runners, and write structured evidence bound to an
+exact source SHA ([KPR_TEST_EVIDENCE.md](docs/KPR_TEST_EVIDENCE.md)).
 
 Run `KPR_DateExample.RunDateExample` separately for the minimal direct-VBA
 consumer smoke. Historical KPR results are source evidence only. Destination
