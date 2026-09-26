@@ -1361,9 +1361,16 @@ Private Function RestoreCallerState( _
         If Err.Number <> 0 Then Problems = Problems & "; selection (error " & CStr(Err.Number) & ")"
     End If
     Err.Clear
-    Application.StatusBar = State.StatusBar
-    Application.DisplayAlerts = State.DisplayAlerts
+    'Screen updating first: Excel does not apply a status-bar reset made while
+    'screen updating is off, so the bar would read back as the runner's text
     Application.ScreenUpdating = State.ScreenUpdating
+    Application.DisplayAlerts = State.DisplayAlerts
+    Application.StatusBar = State.StatusBar
+    If VarType(State.StatusBar) = vbBoolean And VarType(Application.StatusBar) <> vbBoolean Then
+        'Hand the bar back to Excel once more after pending messages are processed
+        DoEvents
+        Application.StatusBar = False
+    End If
     Application.Calculation = State.Calculation
     Application.EnableEvents = State.EnableEvents
     Err.Clear
@@ -1376,9 +1383,12 @@ Private Function RestoreCallerState( _
     If Application.ScreenUpdating <> State.ScreenUpdating Then Problems = Problems & "; screen updating"
     If Application.DisplayAlerts <> State.DisplayAlerts Then Problems = Problems & "; alerts"
     If VarType(State.StatusBar) = vbBoolean Then
-        If VarType(Application.StatusBar) <> vbBoolean Then Problems = Problems & "; status bar"
+        If VarType(Application.StatusBar) <> vbBoolean Then
+            Problems = Problems & "; status bar (expected Excel control, read '" & _
+                       CStr(Application.StatusBar) & "')"
+        End If
     ElseIf CStr(Application.StatusBar) <> CStr(State.StatusBar) Then
-        Problems = Problems & "; status bar"
+        Problems = Problems & "; status bar (read '" & CStr(Application.StatusBar) & "')"
     End If
     If Len(State.BookName) > 0 Then
         If ActiveWorkbook Is Nothing Then
