@@ -682,10 +682,10 @@ def _numeric_text(expression: str, numeric_names: set[str]) -> bool:
 
 
 def _opaque_formula(argument: str, numeric_names: set[str]) -> bool:
-    """True when a formula part is neither a literal, the serial S nor CStr of a number."""
+    """True when a formula part is neither a literal nor CStr of a numeric expression."""
     for part in _split_top(argument, "&"):
         inner = re.fullmatch(r"CStr\s*\((.*)\)", part, re.I | re.S)
-        if re.fullmatch(r'"(?:[^"]|"")*"', part) or part.casefold() == "s":
+        if re.fullmatch(r'"(?:[^"]|"")*"', part):
             continue
         if not (inner and _numeric_text(inner.group(1), numeric_names)):
             return True
@@ -694,16 +694,12 @@ def _opaque_formula(argument: str, numeric_names: set[str]) -> bool:
 
 def _oracle_statement_errors(statement: str, numeric_names: set[str], used: set[str]) -> list[str]:
     errors: list[str] = []
-    assigned = re.fullmatch(r"S\s*=\s*(.*)", statement, re.I)
-    serial = re.fullmatch(r"CStr\s*\((.*)\)", assigned.group(1).strip(), re.I | re.S) if assigned else None
-    if assigned and not (serial and _numeric_text(serial.group(1), numeric_names)):
-        errors.append("S may hold only CStr of a numeric serial.")
     for literal in re.findall(r'"((?:[^"]|"")*)"', statement):
         if re.search(r"WORKDAY|NETWORKDAYS", literal, re.I):
             errors.append("WORKDAY.INTL and NETWORKDAYS.INTL are out of v0.0.4 scope.")
     for argument in oracle_calls(statement):
         if _opaque_formula(argument, numeric_names):
-            errors.append("Every Xl formula must be built from literals, S and CStr of numbers so it can be inspected.")
+            errors.append("Every Xl formula must be built from literals and CStr of numeric expressions so it can be inspected.")
     for expression in oracle_expressions(statement):
         for name in re.findall(r"([A-Za-z_][A-Za-z0-9_.]*)\s*\(", expression):
             used.add(name.upper())
@@ -916,47 +912,50 @@ def self_test(root: Path) -> None:
     scenarios.append((
         "business-day oracle",
         "kpr-oracle-scope",
-        mutate(base, oracle, 'Xl("WEEKDAY(" & S & ",2)")', 'Xl("WORKDAY.INTL(" & S & ",2)")'),
+        mutate(base, oracle, 'Xl("WEEKDAY(" & CStr(Serial) & ",2)")', 'Xl("WORKDAY.INTL(" & CStr(Serial) & ",2)")'),
     ))
     scenarios.append((
         "unlisted oracle function",
         "kpr-oracle-scope",
-        mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'Xl("DATEVALUE(" & S & ")")'),
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl("DATEVALUE(" & CStr(Serial) & ")")'),
     ))
     scenarios.append((
         "lower-case oracle call",
         "kpr-oracle-scope",
-        mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'xl("DATEVALUE(" & S & ")")'),
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'xl("DATEVALUE(" & CStr(Serial) & ")")'),
     ))
     scenarios.append((
         "evaluation outside Xl",
         "kpr-oracle-scope",
-        mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'mSheet.Evaluate("DATEVALUE(" & S & ")")'),
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'mSheet.Evaluate("DATEVALUE(" & CStr(Serial) & ")")'),
     ))
     scenarios.append((
         "formula held in a variable",
         "kpr-oracle-scope",
-        mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'Xl(Tag)'),
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl(Tag)'),
     ))
     scenarios.append((
         "text smuggled through CStr",
         "kpr-oracle-scope",
-        mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'Xl("DAY(" & CStr(Tag) & ")")'),
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl("DAY(" & CStr(Tag) & ")")'),
     ))
     scenarios.append((
-        "text serial",
+        "text assigned inside If",
         "kpr-oracle-scope",
-        mutate(base, oracle, "S = CStr(Serial)", 'S = "DATEVALUE(1)"'),
+        mutate(
+            mutate(base, oracle, "Tag = IsoText(Serial)", 'If Serial > 0 Then Tag = "DATEVALUE(1)"'),
+            oracle, 'Xl("DAY(" & CStr(Serial) & ")")', "Xl(Tag)",
+        ),
     ))
     scenarios.append((
         "text built from character codes",
         "kpr-oracle-scope",
-        mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'Xl(CStr(Chr$(68) & Chr$(65)))'),
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl(CStr(Chr$(68) & Chr$(65)))'),
     ))
     scenarios.append((
         "bracket evaluation of a name",
         "kpr-oracle-scope",
-        mutate(base, oracle, "S = CStr(Serial)", "S = CStr(Serial): Tag = [HiddenFormula]"),
+        mutate(base, oracle, "D = CDate(Serial)", "D = CDate(Serial): Tag = [HiddenFormula]"),
     ))
     for name, expected, case in scenarios:
         rep = report(root, case)

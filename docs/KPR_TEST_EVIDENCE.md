@@ -111,9 +111,10 @@ rejects any other worksheet function in an oracle formula, including
 `WORKDAY.INTL` and `NETWORKDAYS.INTL`. It recognises `Xl` calls in any letter
 case and requires every formula to reach Excel through `Xl`, so no other
 procedure may call `Evaluate`, `ExecuteExcel4Macro` or bracket evaluation
-(`[...]`). Each `Xl` formula must be built only from string literals, the
-serial text `S` and `CStr` of arithmetic over numeric literals and variables
-declared with a numeric type, so the check can read every function it calls.
+(`[...]`). Each `Xl` formula must be built only from string literals and
+`CStr` of arithmetic over numeric literals and variables declared with a
+numeric type. No text variable reaches a formula, so the check can read every
+function it calls.
 
 Every case label states the identity it tests, for example
 `EndOfMonth(d) = EOMONTH(d,0)`. The identities cover month, quarter and year

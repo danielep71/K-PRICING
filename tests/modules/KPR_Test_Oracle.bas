@@ -208,7 +208,6 @@ Private Sub CheckSample( _
 ' DECLARE
 '------------------------------------------------------------------------------
     Dim D               As Date         'The sample as a native VBA Date
-    Dim S               As String       'The sample serial as formula text
     Dim Tag             As String       'Sample label
     Dim Yr              As Long         'YEAR(d)
     Dim Mo              As Long         'MONTH(d)
@@ -227,31 +226,30 @@ Private Sub CheckSample( _
 ' SAMPLE
 '------------------------------------------------------------------------------
     D = CDate(Serial)
-    S = CStr(Serial)
     Tag = IsoText(Serial)
-    Yr = CLng(Xl("YEAR(" & S & ")"))
-    Mo = CLng(Xl("MONTH(" & S & ")"))
-    Dy = CLng(Xl("DAY(" & S & ")"))
-    Eom = CDbl(Xl("EOMONTH(" & S & ",0)"))
+    Yr = CLng(Xl("YEAR(" & CStr(Serial) & ")"))
+    Mo = CLng(Xl("MONTH(" & CStr(Serial) & ")"))
+    Dy = CLng(Xl("DAY(" & CStr(Serial) & ")"))
+    Eom = CDbl(Xl("EOMONTH(" & CStr(Serial) & ",0)"))
     Q = (Mo - 1) Mod 3
 
 '------------------------------------------------------------------------------
 ' MONTH, QUARTER AND YEAR BOUNDARIES
 '------------------------------------------------------------------------------
     ExpectDate "EndOfMonth(d) = EOMONTH(d,0)", Tag, KPR_Dates_EndOfMonth(D), Eom
-    ExpectDate "BeginOfMonth(d) = EOMONTH(d,-1)+1", Tag, KPR_Dates_BeginOfMonth(D), Xl("EOMONTH(" & S & ",-1)+1")
-    ExpectNumber "DaysInMonth(d) = DAY(EOMONTH(d,0))", Tag, KPR_Dates_DaysInMonth(D), Xl("DAY(EOMONTH(" & S & ",0))")
+    ExpectDate "BeginOfMonth(d) = EOMONTH(d,-1)+1", Tag, KPR_Dates_BeginOfMonth(D), Xl("EOMONTH(" & CStr(Serial) & ",-1)+1")
+    ExpectNumber "DaysInMonth(d) = DAY(EOMONTH(d,0))", Tag, KPR_Dates_DaysInMonth(D), Xl("DAY(EOMONTH(" & CStr(Serial) & ",0))")
     ExpectBoolean "IsMonthEnd(d) = (d = EOMONTH(d,0))", Tag, KPR_Dates_IsMonthEnd(D), (CDbl(Serial) = Eom)
     ExpectDate "BeginOfQuarter(d) = EOMONTH(d,-MOD(MONTH(d)-1,3)-1)+1", Tag, KPR_Dates_BeginOfQuarter(D), _
-               Xl("EOMONTH(" & S & "," & CStr(-Q - 1) & ")+1")
-    QuarterEnd = CDbl(Xl("EOMONTH(" & S & "," & CStr(2 - Q) & ")"))
+               Xl("EOMONTH(" & CStr(Serial) & "," & CStr(-Q - 1) & ")+1")
+    QuarterEnd = CDbl(Xl("EOMONTH(" & CStr(Serial) & "," & CStr(2 - Q) & ")"))
     ExpectDate "EndOfQuarter(d) = EOMONTH(d,2-MOD(MONTH(d)-1,3))", Tag, KPR_Dates_EndOfQuarter(D), QuarterEnd
     ExpectBoolean "IsQuarterEnd(d) = (d = EOMONTH(d,2-MOD(MONTH(d)-1,3)))", Tag, KPR_Dates_IsQuarterEnd(D), _
                   (CDbl(Serial) = QuarterEnd)
     ExpectDate "BeginOfYear(d) = EOMONTH(d,-MONTH(d))+1", Tag, KPR_Dates_BeginOfYear(D), _
-               Xl("EOMONTH(" & S & "," & CStr(-Mo) & ")+1")
+               Xl("EOMONTH(" & CStr(Serial) & "," & CStr(-Mo) & ")+1")
     ExpectDate "EndOfYear(d) = EOMONTH(d,12-MONTH(d))", Tag, KPR_Dates_EndOfYear(D), _
-               Xl("EOMONTH(" & S & "," & CStr(12 - Mo) & ")")
+               Xl("EOMONTH(" & CStr(Serial) & "," & CStr(12 - Mo) & ")")
     ExpectBoolean "IsYearEnd(d) = (MONTH(d)=12 AND DAY(d)=31)", Tag, KPR_Dates_IsYearEnd(D), (Mo = 12 And Dy = 31)
 
 '------------------------------------------------------------------------------
@@ -264,7 +262,7 @@ Private Sub CheckSample( _
             ExpectNumber "DaysInYear(1900) = 365 (excluded from the oracle: Excel's fictitious 29-Feb-1900)", _
                          Tag, KPR_Dates_DaysInYear(Yr), 365
     Else
-        FebDays = CLng(Xl("DAY(EOMONTH(" & S & "," & CStr(2 - Mo) & "))"))
+        FebDays = CLng(Xl("DAY(EOMONTH(" & CStr(Serial) & "," & CStr(2 - Mo) & "))"))
         ExpectBoolean "IsLeapYear(YEAR(d)) = (DAY(EOMONTH(d,2-MONTH(d)))=29)", Tag, KPR_Dates_IsLeapYear(Yr), _
                       (FebDays = 29)
         ExpectNumber "DaysInYear(YEAR(d)) = 337+DAY(EOMONTH(d,2-MONTH(d)))", Tag, KPR_Dates_DaysInYear(Yr), _
@@ -274,28 +272,28 @@ Private Sub CheckSample( _
 '------------------------------------------------------------------------------
 ' WEEKDAYS
 '------------------------------------------------------------------------------
-    ExpectNumber "DayOfWeek(d) = WEEKDAY(d,2)", Tag, KPR_Dates_DayOfWeek(D), Xl("WEEKDAY(" & S & ",2)")
-    ExpectNumber "DayOfWeek(d,FALSE) = WEEKDAY(d,1)", Tag, KPR_Dates_DayOfWeek(D, False), Xl("WEEKDAY(" & S & ",1)")
+    ExpectNumber "DayOfWeek(d) = WEEKDAY(d,2)", Tag, KPR_Dates_DayOfWeek(D), Xl("WEEKDAY(" & CStr(Serial) & ",2)")
+    ExpectNumber "DayOfWeek(d,FALSE) = WEEKDAY(d,1)", Tag, KPR_Dates_DayOfWeek(D, False), Xl("WEEKDAY(" & CStr(Serial) & ",1)")
 
 '------------------------------------------------------------------------------
 ' ARITHMETIC
 '------------------------------------------------------------------------------
     ExpectDate "AddMonths(d,k) = EDATE(d,k)", Tag & " k=" & CStr(Months), KPR_Dates_AddMonths(D, Months), _
-               Xl("EDATE(" & S & "," & CStr(Months) & ")")
+               Xl("EDATE(" & CStr(Serial) & "," & CStr(Months) & ")")
     ExpectDate "AddYears(d,j) = EDATE(d,12*j)", Tag & " j=" & CStr(Years), KPR_Dates_AddYears(D, Years), _
-               Xl("EDATE(" & S & "," & CStr(12 * Years) & ")")
+               Xl("EDATE(" & CStr(Serial) & "," & CStr(12 * Years) & ")")
     ExpectDate "EndOfMonth(AddMonths(d,k)) = EOMONTH(d,k)", Tag & " k=" & CStr(Months), _
-               KPR_Dates_EndOfMonth(KPR_Dates_AddMonths(D, Months)), Xl("EOMONTH(" & S & "," & CStr(Months) & ")")
+               KPR_Dates_EndOfMonth(KPR_Dates_AddMonths(D, Months)), Xl("EOMONTH(" & CStr(Serial) & "," & CStr(Months) & ")")
     ExpectDate "AddDays(d,n) = d+n", Tag & " n=" & CStr(Days), KPR_Dates_AddDays(D, Days), _
-               Xl(S & "+(" & CStr(Days) & ")")
+               Xl(CStr(Serial) & "+(" & CStr(Days) & ")")
     ExpectDate "AddWeeks(d,w) = d+7*w", Tag & " w=" & CStr(Months), KPR_Dates_AddWeeks(D, Months), _
-               Xl(S & "+7*(" & CStr(Months) & ")")
+               Xl(CStr(Serial) & "+7*(" & CStr(Months) & ")")
 
 '------------------------------------------------------------------------------
 ' WEEKDAY LOCATORS
 '------------------------------------------------------------------------------
     If MondayBase Then WeekType = 2 Else WeekType = 1
-    First = CDbl(Xl("EOMONTH(" & S & ",-1)+1"))
+    First = CDbl(Xl("EOMONTH(" & CStr(Serial) & ",-1)+1"))
     FirstWeekday = CLng(Xl("WEEKDAY(" & CStr(First) & "," & CStr(WeekType) & ")"))
     Nth = First + ((WeekdayIndex - FirstWeekday + 7) Mod 7) + 7 * (Occurrence - 1)
     If Nth > Eom Then

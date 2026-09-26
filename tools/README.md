@@ -321,9 +321,8 @@ Its `kpr-oracle-scope` rule limits the Excel cross-oracle (`KPR_Test_Oracle`,
 and `MONTH`, and rejects `WORKDAY.INTL` and `NETWORKDAYS.INTL`. Every formula
 must reach Excel through the `Xl` helper, whose calls are matched in any letter
 case; no other procedure may evaluate a formula, including bracket evaluation.
-Each formula is built only from literals, the serial text `S` and `CStr` of
-arithmetic over numeric literals and numeric-typed variables, so it can be
-inspected. The oracle may
+Each formula is built only from literals and `CStr` of arithmetic over numeric
+literals and numeric-typed variables, so it can be inspected. The oracle may
 depend on `KPR_DATES_DAYS` alone.
 
 ## Independent date-layer fixtures
