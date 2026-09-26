@@ -116,7 +116,9 @@ values, recalculate, or run a macro. Outside `Xl` the module is also held to an
 allowlist: every bare name is declared in the module, a label, a `KPR_Dates_`
 call or a listed VBA or Excel name, and every member access is one of the
 few the scratch workbook needs, so `ActiveCell`, `Selection` and similar
-implicit cell writes fail. `Xl` itself holds only
+implicit cell writes fail. Excel object variables and `Application` may appear
+only in the few forms that open, set up and close the scratch workbook, so no
+default-member call such as `mSheet("A1") = ...` can write a cell. `Xl` itself holds only
 `Xl = mSheet.Evaluate(Formula)`, with `Formula` a required `ByVal` String. Each `Xl` formula must be built only from string literals and
 `CStr` of arithmetic over numeric literals and variables declared with a
 numeric type in scope (a local declaration shadows a module one, and an untyped

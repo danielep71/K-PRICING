@@ -764,6 +764,47 @@ ORACLE_MEMBERS = frozenset(
 )
 
 
+OBJECT_TYPES = frozenset({"object", "workbook", "worksheet"})
+# The only ways the oracle may touch an Excel object outside Xl; NAME is the object.
+OBJECT_USES = (
+    r"Application\.Workbooks\.Add",
+    r"Application\.Calculation",
+    r"NAME\.Date1904",
+    r"NAME\.Close",
+    r"NAME\.Worksheets\(\s*\d+\s*\)",
+    r"NAME\s+Is\s+Nothing",
+    r"NAME\s*=\s*(?:Nothing|Application\.Workbooks\.Add|\w+\.Worksheets\(\s*\d+\s*\))",
+)
+
+
+def _object_names(statements: list[tuple[int, str]]) -> set[str]:
+    """Names declared with an Excel object type, plus Application."""
+    names = {"application"}
+    for _, statement in statements:
+        for item in re.finditer(r"(\w+)\s+As\s+(?:New\s+)?(\w+)", statement, re.I):
+            if item.group(2).casefold() in OBJECT_TYPES:
+                names.add(item.group(1).casefold())
+    return names
+
+
+def _object_misuse(statement: str, objects: set[str]) -> list[str]:
+    """Excel object references that are not one of the approved OBJECT_USES."""
+    code = strip_strings(statement)
+    if DECLARATION_START.match(code) or ORACLE_PROCEDURE.match(code):
+        return []
+    misuse: list[str] = []
+    for match in re.finditer(r"(?<![\w.])([A-Za-z_]\w*)", code):
+        name = match.group(1)
+        if name.casefold() not in objects:
+            continue
+        rest = code[match.start():]
+        if not any(
+            re.match(use.replace("NAME", re.escape(name)) + r"(?![\w.(])", rest, re.I) for use in OBJECT_USES
+        ):
+            misuse.append(name)
+    return misuse
+
+
 def _oracle_names(statements: list[tuple[int, str]]) -> set[str]:
     """Names the oracle module declares: procedures, parameters, variables, constants and labels."""
     names: set[str] = set()
@@ -856,6 +897,7 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
         statements = logical(text)
         scopes = _numeric_scopes(statements)
         names = _oracle_names(statements)
+        objects = _object_names(statements)
         procedure = ""
         for number, statement in statements:
             header = ORACLE_PROCEDURE.match(statement)
@@ -866,6 +908,13 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
                     failures.append(finding(path, "Xl may only return mSheet.Evaluate(Formula).", number))
             elif ORACLE_EVALUATION.search(strip_strings(statement)):
                 failures.append(finding(path, "Oracle formulas must reach Excel only through the Xl helper.", number))
+            elif misuse := _object_misuse(statement, objects):
+                failures.append(finding(
+                    path,
+                    f"Outside Xl the oracle may use {', '.join(sorted(set(misuse)))} only to open, set up and close "
+                    "the scratch workbook.",
+                    number,
+                ))
             elif unlisted := _unlisted_names(statement, names):
                 failures.append(finding(
                     path,
@@ -1135,6 +1184,8 @@ def self_test(root: Path) -> None:
         ("implicit ActiveCell formula", 'Application.ActiveCell = "=DATEVALUE(1)"'),
         ("unqualified Selection formula", 'Selection = "=DATEVALUE(1)"'),
         ("worksheet member outside the allowlist", 'Nth = mSheet.UsedRange.Count'),
+        ("default member of a worksheet", 'mSheet("A1") = "=DATEVALUE(1)"'),
+        ("worksheet passed to another procedure", "Fail Tag, mSheet"),
     ):
         scenarios.append((label, "kpr-oracle-scope", mutate(base, oracle, "D = CDate(Serial)", f"D = CDate(Serial): {probe}")))
     scenarios.append((
