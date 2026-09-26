@@ -624,8 +624,13 @@ ORACLE_CALL = re.compile(r"\bXl\s*\(", re.I)
 ORACLE_PROCEDURE = re.compile(
     r"^(?:(?:Public|Private|Friend|Static)\s+)*(?:Function|Sub|Property\s+(?:Get|Let|Set))\s+(\w+)", re.I
 )
-# Any way to hand a formula to Excel; only the Xl helper may use one.
-ORACLE_EVALUATION = re.compile(r"\b(?:Evaluate|ExecuteExcel4Macro)\b|\[", re.I)
+# Any way to hand a formula to Excel (evaluation, worksheet functions, cell or
+# name formulas, recalculation, macro calls); only the Xl helper may use one.
+ORACLE_EVALUATION = re.compile(
+    r"\b(?:Evaluate|ExecuteExcel4Macro|WorksheetFunction|CallByName|Range|Cells|Names|SendKeys|DDE\w*)\b"
+    r"|\.(?:Formula\w*|Value2?|RefersTo\w*|Calculate\w*|Run)\b|\[",
+    re.I,
+)
 ORACLE_DECLARATION = re.compile(r"(\w+)(?:\s*\([^)]*\))?\s+As\s+(\w+)", re.I)
 NUMERIC_TYPES = frozenset({"byte", "integer", "long", "longlong", "single", "double", "currency"})
 
@@ -957,6 +962,13 @@ def self_test(root: Path) -> None:
         "kpr-oracle-scope",
         mutate(base, oracle, "D = CDate(Serial)", "D = CDate(Serial): Tag = [HiddenFormula]"),
     ))
+    for label, probe in (
+        ("worksheet function outside Xl", "Nth = Application.WorksheetFunction.NetworkDays_Intl(1, 2)"),
+        ("cell formula outside Xl", 'mSheet.Cells(1, 1).Formula = "=DATEVALUE(1)": mSheet.Calculate'),
+        ("cell value outside Xl", 'mSheet.Cells(1, 1).Value = "=DATEVALUE(1)"'),
+        ("workbook name outside Xl", 'mSheet.Parent.Names.Add "Hidden", "=DATEVALUE(1)"'),
+    ):
+        scenarios.append((label, "kpr-oracle-scope", mutate(base, oracle, "D = CDate(Serial)", f"D = CDate(Serial): {probe}")))
     for name, expected, case in scenarios:
         rep = report(root, case)
         failed_ids = {
