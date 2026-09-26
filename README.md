@@ -39,6 +39,7 @@
 
 ---
 
+<!-- generated-social-preview: assets/social-preview.png -->
 <p align="center">
   <a href="assets/social-preview.png">
     <img src="assets/social-preview.png"
