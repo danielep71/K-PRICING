@@ -628,34 +628,84 @@ ORACLE_PROCEDURE = re.compile(
 ORACLE_EVALUATION = re.compile(r"\b(?:Evaluate|ExecuteExcel4Macro)\b|\[[^\]]*\(", re.I)
 
 
-def oracle_expressions(statement: str) -> list[str]:
-    """String literals inside each Xl(...) call: the formulas Excel evaluates."""
-    expressions: list[str] = []
+def _split_top(text: str, separator: str) -> list[str]:
+    """Split VBA text on a separator outside string literals and parentheses."""
+    parts, current, depth, in_string = [], "", 0, False
+    for char in text:
+        if char == '"':
+            in_string = not in_string
+        elif not in_string and char in "()":
+            depth += 1 if char == "(" else -1
+        if char == separator and not in_string and depth == 0:
+            parts.append(current.strip())
+            current = ""
+        else:
+            current += char
+    parts.append(current.strip())
+    return parts
+
+
+def oracle_calls(statement: str) -> list[str]:
+    """The argument text of each Xl(...) call: the formula Excel evaluates."""
+    calls: list[str] = []
     match = ORACLE_CALL.search(statement)
     while match:
-        index, depth, in_string, literal, parts = match.end(), 1, False, "", []
+        index, depth, in_string = match.end(), 1, False
         while index < len(statement) and depth:
             char = statement[index]
-            if in_string:
-                if char == '"' and statement[index + 1:index + 2] == '"':
-                    literal += '"'
-                    index += 1
-                elif char == '"':
-                    in_string = False
-                    parts.append(literal)
-                    literal = ""
-                else:
-                    literal += char
-            elif char == '"':
-                in_string = True
-            elif char == "(":
-                depth += 1
-            elif char == ")":
-                depth -= 1
+            if char == '"':
+                in_string = not in_string
+            elif not in_string and char in "()":
+                depth += 1 if char == "(" else -1
             index += 1
-        expressions.append(" ".join(parts))
+        calls.append(statement[match.end():index - 1])
         match = ORACLE_CALL.search(statement, index)
-    return expressions
+    return calls
+
+
+def oracle_expressions(statement: str) -> list[str]:
+    """String literals inside each Xl(...) call: the formulas Excel evaluates."""
+    return [
+        " ".join(item.replace('""', '"') for item in re.findall(r'"((?:[^"]|"")*)"', call))
+        for call in oracle_calls(statement)
+    ]
+
+
+def _numeric_text(expression: str, text_names: set[str]) -> bool:
+    """True when CStr(expression) can only yield a number: no literal, no String variable."""
+    names = {name.casefold() for name in re.findall(r"[A-Za-z_]\w*", expression)}
+    return '"' not in expression and not names & text_names
+
+
+def _opaque_formula(argument: str, text_names: set[str]) -> bool:
+    """True when a formula part is neither a literal, the serial S nor CStr of a number."""
+    for part in _split_top(argument, "&"):
+        inner = re.fullmatch(r"CStr\s*\((.*)\)", part, re.I | re.S)
+        if re.fullmatch(r'"(?:[^"]|"")*"', part) or part.casefold() == "s":
+            continue
+        if not (inner and _numeric_text(inner.group(1), text_names)):
+            return True
+    return False
+
+
+def _oracle_statement_errors(statement: str, text_names: set[str], used: set[str]) -> list[str]:
+    errors: list[str] = []
+    assigned = re.fullmatch(r"S\s*=\s*(.*)", statement, re.I)
+    serial = re.fullmatch(r"CStr\s*\((.*)\)", assigned.group(1).strip(), re.I | re.S) if assigned else None
+    if assigned and not (serial and _numeric_text(serial.group(1), text_names)):
+        errors.append("S may hold only CStr of a numeric serial.")
+    for literal in re.findall(r'"((?:[^"]|"")*)"', statement):
+        if re.search(r"WORKDAY|NETWORKDAYS", literal, re.I):
+            errors.append("WORKDAY.INTL and NETWORKDAYS.INTL are out of v0.0.4 scope.")
+    for argument in oracle_calls(statement):
+        if _opaque_formula(argument, text_names):
+            errors.append("Every Xl formula must be built from literals, S and CStr of numbers so it can be inspected.")
+    for expression in oracle_expressions(statement):
+        for name in re.findall(r"([A-Za-z_][A-Za-z0-9_.]*)\s*\(", expression):
+            used.add(name.upper())
+            if name.upper() not in ORACLE_FUNCTIONS:
+                errors.append(f"Oracle formula calls {name}; only {', '.join(sorted(ORACLE_FUNCTIONS))} are permitted.")
+    return errors
 
 
 def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
@@ -665,25 +715,22 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
     if not modules:
         failures.append(finding(CONFIG_PATH, "The Excel cross-oracle module KPR_Test_Oracle is not registered."))
     for path, text in modules:
+        statements = logical(text)
+        text_names = {
+            name.casefold()
+            for _, statement in statements
+            for name in re.findall(r"(\w+)(?:\s*\([^)]*\))?\s+As\s+(?:String|Variant)\b", statement, re.I)
+        }
         procedure = ""
-        for number, statement in logical(text):
+        for number, statement in statements:
             header = ORACLE_PROCEDURE.match(statement)
             if header:
                 procedure = header.group(1)
             if procedure.casefold() != "xl" and ORACLE_EVALUATION.search(strip_strings(statement)):
                 failures.append(finding(path, "Oracle formulas must reach Excel only through the Xl helper.", number))
-            for literal in re.findall(r'"((?:[^"]|"")*)"', statement):
-                if re.search(r"WORKDAY|NETWORKDAYS", literal, re.I):
-                    failures.append(finding(path, "WORKDAY.INTL and NETWORKDAYS.INTL are out of v0.0.4 scope.", number))
-            for expression in oracle_expressions(statement):
-                for name in re.findall(r"([A-Za-z_][A-Za-z0-9_.]*)\s*\(", expression):
-                    used.add(name.upper())
-                    if name.upper() not in ORACLE_FUNCTIONS:
-                        failures.append(finding(
-                            path,
-                            f"Oracle formula calls {name}; only {', '.join(sorted(ORACLE_FUNCTIONS))} are permitted.",
-                            number,
-                        ))
+            if procedure.casefold() == "xl":
+                continue
+            failures.extend(finding(path, error, number) for error in _oracle_statement_errors(statement, text_names, used))
     return result(
         "kpr-oracle-scope",
         "Excel cross-oracle function scope",
@@ -880,6 +927,21 @@ def self_test(root: Path) -> None:
         "evaluation outside Xl",
         "kpr-oracle-scope",
         mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'mSheet.Evaluate("DATEVALUE(" & S & ")")'),
+    ))
+    scenarios.append((
+        "formula held in a variable",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'Xl(Tag)'),
+    ))
+    scenarios.append((
+        "text smuggled through CStr",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & S & ")")', 'Xl("DAY(" & CStr(Tag) & ")")'),
+    ))
+    scenarios.append((
+        "text serial",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "S = CStr(Serial)", 'S = "DATEVALUE(1)"'),
     ))
     for name, expected, case in scenarios:
         rep = report(root, case)

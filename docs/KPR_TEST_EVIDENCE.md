@@ -110,7 +110,9 @@ whose date system is 1900. `check_kpr_contract.py` (`kpr-oracle-scope`)
 rejects any other worksheet function in an oracle formula, including
 `WORKDAY.INTL` and `NETWORKDAYS.INTL`. It recognises `Xl` calls in any letter
 case and requires every formula to reach Excel through `Xl`, so no other
-procedure may call `Evaluate`, `ExecuteExcel4Macro` or bracket evaluation.
+procedure may call `Evaluate`, `ExecuteExcel4Macro` or bracket evaluation. Each
+`Xl` formula must be built only from string literals, the serial text `S` and
+`CStr` of numeric values, so the check can read every function it calls.
 
 Every case label states the identity it tests, for example
 `EndOfMonth(d) = EOMONTH(d,0)`. The identities cover month, quarter and year
