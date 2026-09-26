@@ -746,6 +746,56 @@ def _formula_grammar_errors(formula: str, used: set[str]) -> list[str]:
     return errors
 
 
+# Allowlists for the oracle module outside Xl: every bare identifier is a
+# declared name, a label, a KPR_Dates_ facade call or one of these VBA and
+# Excel names, and every member access is one of ORACLE_MEMBERS. Anything
+# else (ActiveCell, Selection, Range, Names, Run, CreateObject, ...) fails.
+ORACLE_IDENTIFIERS = frozenset(
+    """
+    and application array as attribute boolean byref byval case cbool cdate cdbl cint clng collection const cstr
+    date dateserial day dim double else elseif end err error explicit false for function goto if int is isarray
+    lbound left long mid mod module month next not nothing on option private public resume right savechanges
+    select set str string sub then to trim true typename ubound variant vartype vb_name vbboolean vbdate vbempty
+    vberror vblong vbstring workbook worksheet xlcalculation xlcalculationmanual year
+    """.split()
+)
+ORACLE_MEMBERS = frozenset(
+    {"add", "calculation", "clear", "close", "date1904", "description", "number", "workbooks", "worksheets"}
+)
+
+
+def _oracle_names(statements: list[tuple[int, str]]) -> set[str]:
+    """Names the oracle module declares: procedures, parameters, variables, constants and labels."""
+    names: set[str] = set()
+    for _, statement in statements:
+        header = ORACLE_PROCEDURE.match(statement)
+        label = re.match(r"^([A-Za-z_]\w*):(?!=)", statement)
+        if header:
+            names.add(header.group(1).casefold())
+            params = re.search(r"\((.*)\)", statement)
+            if params:
+                names.update(name for name, _ in _declared(params.group(1)))
+        elif label:
+            names.add(label.group(1).casefold())
+        start = DECLARATION_START.match(statement)
+        if start and not header:
+            names.update(name for name, _ in _declared(statement[start.end():]))
+    return names
+
+
+def _unlisted_names(statement: str, names: set[str]) -> list[str]:
+    """Bare identifiers and member names outside the oracle allowlists."""
+    code = strip_strings(statement)
+    unlisted = [
+        f".{member}" for member in re.findall(r"\.([A-Za-z_]\w*)", code) if member.casefold() not in ORACLE_MEMBERS
+    ]
+    for name in re.findall(r"(?<![\w.])([A-Za-z_]\w*)", code):
+        folded = name.casefold()
+        if folded not in names and folded not in ORACLE_IDENTIFIERS and not folded.startswith("kpr_dates_"):
+            unlisted.append(name)
+    return unlisted
+
+
 DECLARATION_START = re.compile(
     r"^(?:(?:Private|Public|Global|Dim|Static|ReDim|Const)\s+)+(?!Function\b|Sub\b|Property\b|Type\b|Enum\b|Declare\b)",
     re.I,
@@ -805,6 +855,7 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
     for path, text in modules:
         statements = logical(text)
         scopes = _numeric_scopes(statements)
+        names = _oracle_names(statements)
         procedure = ""
         for number, statement in statements:
             header = ORACLE_PROCEDURE.match(statement)
@@ -815,6 +866,13 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
                     failures.append(finding(path, "Xl may only return mSheet.Evaluate(Formula).", number))
             elif ORACLE_EVALUATION.search(strip_strings(statement)):
                 failures.append(finding(path, "Oracle formulas must reach Excel only through the Xl helper.", number))
+            elif unlisted := _unlisted_names(statement, names):
+                failures.append(finding(
+                    path,
+                    f"Outside Xl the oracle may use only declared names and approved VBA or Excel members; "
+                    f"found {', '.join(sorted(set(unlisted)))}.",
+                    number,
+                ))
             else:
                 failures.extend(
                     finding(path, error, number)
@@ -1073,6 +1131,12 @@ def self_test(root: Path) -> None:
             '    Serial = Xl(CStr(Serial))\r\nEnd Sub\r\n\r\nPrivate Function NextInt(',
         ),
     ))
+    for label, probe in (
+        ("implicit ActiveCell formula", 'Application.ActiveCell = "=DATEVALUE(1)"'),
+        ("unqualified Selection formula", 'Selection = "=DATEVALUE(1)"'),
+        ("worksheet member outside the allowlist", 'Nth = mSheet.UsedRange.Count'),
+    ):
+        scenarios.append((label, "kpr-oracle-scope", mutate(base, oracle, "D = CDate(Serial)", f"D = CDate(Serial): {probe}")))
     scenarios.append((
         "extra evaluation inside Xl",
         "kpr-oracle-scope",
