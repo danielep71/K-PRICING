@@ -101,6 +101,7 @@ REQUIRED_MEMBERS = {
         "KPR_Tests_RunShape",
         "KPR_Tests_RunArray",
         "KPR_Tests_RunFixtureHost",
+        "KPR_Tests_RunStateCheck",
         "KPR_Test_RunAll",
         "KPR_Test_RunSuite",
     }),

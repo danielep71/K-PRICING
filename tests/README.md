@@ -32,8 +32,9 @@ worksheet-context cases. They restore the caller's Excel state, write
 only when every selected case passed. The record's schema is
 [`docs/kpr-test-evidence.schema.json`](../docs/kpr-test-evidence.schema.json),
 documented in [KPR_TEST_EVIDENCE.md](../docs/KPR_TEST_EVIDENCE.md), and
-`tools/check_test_evidence.py` validates it. The runner has not yet been
-executed on a Windows Excel host.
+`tools/check_test_evidence.py` validates it. The runner was verified in Windows
+Excel for #39; the #40 regression matrix and `worksheet-state` suite await
+their first Excel run.
 
 The source expectations and condition identifiers are preserved. Historical KPR
 run counts are not destination certification. The authoritative

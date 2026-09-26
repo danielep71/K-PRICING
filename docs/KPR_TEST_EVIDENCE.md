@@ -7,9 +7,12 @@ structured evidence record it writes (#39). The committed schema is
 record against that schema and against the semantic rules below. The validator
 does not execute Excel.
 
-The runner and schema are implemented but have not yet been executed on a
-Windows Excel host. Until a retained run validates, treat every count in this
-document as a structural expectation, not an observed result.
+The runner was verified in Windows Excel for #39: two runs on candidate
+`9a978cd` (Excel 16.0 build 20326, 64-bit) each passed 17 suites and 1,577
+assertions with state restored, and the two records matched outside the
+declared nondeterministic fields. The regression matrix and the
+`worksheet-state` suite added by #40 have not yet been run in Excel; counts
+for them are structural expectations until a retained run validates.
 
 ## Runner interface
 
@@ -60,6 +63,7 @@ Replace the example SHA with the exact candidate you imported.
 | `worksheet-shape` | worksheet | `KPR_Tests_RunShape`: Range orientation, multi-area, blanks, errors, `UsedRange` independence |
 | `worksheet-array` | worksheet | `KPR_Tests_RunArray`: dynamic-array spill and 1904 call-level `#N/A` |
 | `worksheet-fixtures` | worksheet | `KPR_Tests_RunFixtureHost`: the generated cases whose context is a 1900 or 1904 worksheet caller |
+| `worksheet-state` | worksheet | `KPR_Tests_RunStateCheck`: runs the durable runner on `date-type` twice, once with a deliberately injected failure, and proves the caller's state is restored after both |
 
 `KPR_Tests_RunAll("all")`, `KPR_Tests_RunEvidence` and the
 [Excel host-evidence policy](EXCEL_EVIDENCE.md) keep the migrated twelve-suite
@@ -74,6 +78,26 @@ subtype. A worksheet result carries no VBA subtype, so worksheet `Long` and
 `Date` results compare by numeric value. A failed assertion records its case
 and the run continues. An unexpected runtime error is recorded against the
 suite it interrupted, and the remaining suites are marked `NOT_RUN`.
+
+## Regression matrix (#40)
+
+| #40 criterion | Where it is asserted |
+| --- | --- |
+| Positive, edge and invalid-domain cases for every value-taking function | Generated `matrix` cases: for each of the 21 functions a valid call, and for each value argument its lowest and highest supported values and two invalid-domain values |
+| Scalar, 1x1 and array elements compared | `matrix` `array-1x1` cases equal the scalar call; row, column and rectangle cases reuse the same element values; the migrated `parity` suite |
+| Row, column and rectangle orientation asserted | Every array expectation is a 1-based two-dimensional array of the exact shape |
+| Mixed arrays keep valid neighbours | `matrix` `array-row` and `array-rectangle` cases mix valid, invalid and error elements |
+| `#VALUE!`, `#NUM!`, host `#N/A` and propagated errors, scalar and array | `matrix` invalid-domain, `propagated`, array and `ws1904-array` cases; `propagation` and `shape` fixtures |
+| Host and propagated `#N/A` provenance | `host` fixtures keep separate case IDs and conditions for the same Excel value |
+| Direct VBA under the 1900 contract | The `fixtures` suite calls with no worksheet caller |
+| 21 functions succeed in 1900 and return one call-level `#N/A` in 1904 | `matrix` `ws1900`, `ws1904` and `ws1904-array` cases, replayed by `worksheet-fixtures` |
+| `HostDateSystem()` 1900/1904 and ordinary-recalculation refresh | `host` fixtures and `worksheet-host` |
+| State restoration after passing and failing cases | `worksheet-state` |
+| Two consecutive runs identical | Two `KPR_Test_RunAll` records compared with `check_test_evidence.py --compare` |
+| No `_Spill`, calendar, weekend-mask, holiday or business-day case | Fixtures may call only the 22 contract names (`gen_fixtures.py`), and the public surface is pinned by `check_kpr_contract.py` |
+
+`gen_fixtures.py` fails generation if any matrix case is missing for any
+value-taking function or value argument.
 
 ## Caller-state restoration
 

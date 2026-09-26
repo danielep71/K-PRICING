@@ -1314,11 +1314,76 @@ def author_surface(book: Book) -> None:
                      f"Section 3: an invalid {param} is an element-level #VALUE!.")
 
 
+# Regression matrix (#40): every value-taking function, every value argument.
+MATRIX_BASE: dict[str, list[Val]] = {
+    "DayOfWeek": [D("2024-02-10")], "DaysInMonth": [D("2024-02-10")], "DaysInYear": [N("2024")],
+    "BeginOfMonth": [D("2024-02-10")], "EndOfMonth": [D("2024-02-10")],
+    "BeginOfQuarter": [D("2024-02-10")], "EndOfQuarter": [D("2024-02-10")],
+    "BeginOfYear": [D("2024-02-10")], "EndOfYear": [D("2024-02-10")],
+    "IsMonthEnd": [D("2024-02-29")], "IsQuarterEnd": [D("2024-03-31")], "IsYearEnd": [D("2024-12-31")],
+    "IsLeapYear": [N("2024")], "AddDays": [D("2024-02-10"), N("20")], "AddWeeks": [D("2024-02-10"), N("3")],
+    "AddMonths": [D("2024-01-31"), N("1")], "AddYears": [D("2024-02-29"), N("1")],
+    "NthWeekdayOfMonth": [N("2024"), N("2"), N("5"), N("1")],
+    "LastWeekdayOfMonth": [N("2024"), N("2"), N("5")],
+    "PillarFromDates": [D("2024-01-15"), D("2024-07-15")], "DateFromPillar": [D("2024-01-15"), S("6M")],
+}
+MATRIX_ALT = {"date": D("2023-11-30"), "int": N("-45"), "year": N("2023"), "month": N("11"),
+              "weekday": N("3"), "occurrence": N("2"), "pillar": S("3M")}
+MATRIX_EDGES = {"date": (D("1900-03-01"), D("9999-12-31")), "int": (N("-2147483648"), N("2147483647")),
+                "year": (N("1900"), N("9999")), "month": (N("1"), N("12")),
+                "weekday": (N("1"), N("7")), "occurrence": (N("1"), N("5")),
+                "pillar": (S("0D"), S("ON"))}
+MATRIX_INVALID = {"date": (D("1900-02-28"), S("2024-02-30")), "int": (N("2.5"), N("1E+20")),
+                  "year": (N("1899"), N("10000")), "month": (N("0"), N("13")),
+                  "weekday": (N("0"), N("8")), "occurrence": (N("0"), N("6")),
+                  "pillar": (S("1X"), B(True))}
+MATRIX_SCALAR_LABELS = ("ok", "ws1900", "ws1904", "ws1904-array")
+MATRIX_ARGUMENT_LABELS = ("edge-low", "edge-high", "invalid-a", "invalid-b", "propagated",
+                          "array-1x1", "array-row", "array-column", "array-rectangle")
+
+
+def author_matrix(book: Book) -> None:
+    """Section 8.2: positive, edge, invalid-domain, propagated and shaped cases per argument."""
+    suite = "matrix"
+    for name, base in MATRIX_BASE.items():
+        fn = F + name
+        book.add(suite, slug(name, "ok"), fn, list(base), "Section 8.2: a valid scalar call.")
+        book.add(suite, slug(name, "ws1900"), fn, list(base),
+                 "Sections 4 and 6: a valid 1900 worksheet call evaluates normally.", "ws1900")
+        book.add(suite, slug(name, "ws1904"), fn, list(base),
+                 "Sections 4 and 6: a 1904 worksheet call is one call-level #N/A.", "ws1904")
+        row = [A2(1, 3, [base[0]] * 3)] + list(base[1:])
+        book.add(suite, slug(name, "ws1904-array"), fn, row,
+                 "Sections 4 and 6: a 1904 worksheet refuses a vector call before any element.", "ws1904")
+        for index, (param, kind) in enumerate(FUNCTIONS[fn].params):
+            good = base[index]
+            low, high = MATRIX_EDGES[kind]
+            bad_a, bad_b = MATRIX_INVALID[kind]
+            alt = MATRIX_ALT[kind]
+            variants = [
+                ("edge-low", low, "the lowest supported value"),
+                ("edge-high", high, "the highest supported value"),
+                ("invalid-a", bad_a, "an invalid-domain value"),
+                ("invalid-b", bad_b, "a second invalid-domain value"),
+                ("propagated", E("#N/A"), "an incoming error propagates"),
+                ("array-1x1", A2(1, 1, [good]), "a 1x1 array is the scalar call"),
+                ("array-row", A2(1, 3, [good, bad_a, E("#DIV/0!")]),
+                 "a row keeps valid, invalid and error elements at their positions"),
+                ("array-column", A2(3, 1, [good, low, alt]), "a column keeps its orientation"),
+                ("array-rectangle", A2(2, 2, [good, high, bad_b, alt]),
+                 "a rectangle keeps its shape and per-element outcomes"),
+            ]
+            for label, value, why in variants:
+                args = list(base)
+                args[index] = value
+                book.add(suite, slug(name, param, label), fn, args, f"Section 8.2: {param}: {why}.")
+
+
 AUTHORS = (
     author_date_input, author_integer_input, author_controls, author_boundaries, author_years,
     author_arithmetic, author_locators, author_pillar_parse, author_pillar_format,
     author_pillar_roundtrip, author_shapes, author_capacity, author_host, author_propagation,
-    author_surface,
+    author_surface, author_matrix,
 )
 
 
@@ -1724,6 +1789,21 @@ def contract_functions(root: Path) -> list[str]:
     return re.findall(r"^Public Function (KPR_Dates_\w+)\(", text, re.M)
 
 
+def matrix_problems(cases: list[Case]) -> list[str]:
+    """The #40 matrix must cover every value-taking function and value argument."""
+    ids = {case.id for case in cases}
+    problems: list[str] = []
+    if sorted(F + name for name in MATRIX_BASE) != sorted(FUNCTIONS):
+        problems.append("the regression matrix does not list every value-taking function")
+    for fn, spec in FUNCTIONS.items():
+        name = fn.removeprefix(F)
+        wanted = [slug(name, label) for label in MATRIX_SCALAR_LABELS]
+        wanted += [slug(name, param, label) for param, _ in spec.params for label in MATRIX_ARGUMENT_LABELS]
+        problems += [f"regression matrix case matrix.{item} is missing" for item in wanted
+                     if f"matrix.{item}" not in ids]
+    return problems
+
+
 def coverage_problems(root: Path, cases: list[Case]) -> list[str]:
     problems: list[str] = []
     if contract_functions(root) != list(ALL_FUNCTIONS):
@@ -1742,6 +1822,7 @@ def coverage_problems(root: Path, cases: list[Case]) -> list[str]:
         if condition not in conditions and condition not in UNFIXTURABLE:
             problems.append(f"registry condition {condition} has no fixture")
     problems += [f"condition {c} is not in the contract registry" for c in sorted(conditions - set(registry))]
+    problems += matrix_problems(cases)
     sizes = {(arg.rows * arg.cols) for case in cases for arg in case.args if arg.kind == "fill2"}
     problems += [f"no capacity fixture of {n} elements" for n in (CAPACITY, CAPACITY + 1) if n not in sizes]
     return problems

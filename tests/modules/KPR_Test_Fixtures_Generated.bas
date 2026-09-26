@@ -5,8 +5,8 @@ Attribute VB_Name = "KPR_Test_Fixtures_Generated"
 ' GENERATED FILE - DO NOT EDIT
 '   Regenerate with: python3 tools/gen_fixtures.py --write
 '   Canonical source: tests/fixtures/date_layer_fixtures.tsv
-'   Source SHA-256: eb4f3a7b1e35b48eb892c04fab850bf863d9e2e732d25630cd0e3c7662fb9435
-'   Fixture cases: 981
+'   Source SHA-256: 99217630828ea332f90e653bc6ea9d7193b39c6e7ac2068033563effa5ca6c5f
+'   Fixture cases: 1353
 '
 ' PURPOSE
 '   Independently generated expected results for the KPR date-layer
@@ -65,9 +65,9 @@ Attribute VB_Name = "KPR_Test_Fixtures_Generated"
         Public Const KPR_FX_LEVEL         As Long = 9   'element, call or blank
 
     'Generated data identity
-        Private Const FX_CASE_COUNT       As Long = 981   'Number of fixture cases
+        Private Const FX_CASE_COUNT       As Long = 1353   'Number of fixture cases
         Private Const FX_BLOCK_SIZE       As Long = 40   'Cases per block procedure
-        Private Const FX_SOURCE_HASH      As String = "eb4f3a7b1e35b48eb892c04fab850bf863d9e2e732d25630cd0e3c7662fb9435"   'Canonical TSV SHA-256
+        Private Const FX_SOURCE_HASH      As String = "99217630828ea332f90e653bc6ea9d7193b39c6e7ac2068033563effa5ca6c5f"   'Canonical TSV SHA-256
 
     'Native Excel error numbers used with CVErr
         Private Const FX_ERR_NULL         As Long = 2000   '#NULL!
@@ -191,6 +191,15 @@ Public Function KPR_Fixtures_Case( _
             Case 22: KPR_Fixtures_Case = FixtureBlock023(Index)
             Case 23: KPR_Fixtures_Case = FixtureBlock024(Index)
             Case 24: KPR_Fixtures_Case = FixtureBlock025(Index)
+            Case 25: KPR_Fixtures_Case = FixtureBlock026(Index)
+            Case 26: KPR_Fixtures_Case = FixtureBlock027(Index)
+            Case 27: KPR_Fixtures_Case = FixtureBlock028(Index)
+            Case 28: KPR_Fixtures_Case = FixtureBlock029(Index)
+            Case 29: KPR_Fixtures_Case = FixtureBlock030(Index)
+            Case 30: KPR_Fixtures_Case = FixtureBlock031(Index)
+            Case 31: KPR_Fixtures_Case = FixtureBlock032(Index)
+            Case 32: KPR_Fixtures_Case = FixtureBlock033(Index)
+            Case 33: KPR_Fixtures_Case = FixtureBlock034(Index)
         End Select
 
 End Function
@@ -1881,7 +1890,7 @@ Private Function FixtureBlock025( _
 '                               FixtureBlock025
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Returns fixture cases 961 to 981.
+'   Returns fixture cases 961 to 1000.
 '
 ' UPDATED
 '   2026-09-25
@@ -1913,6 +1922,594 @@ Private Function FixtureBlock025( _
         Case 979: FixtureBlock025 = Fx("surface.datefrompillar-ok", "surface", "KPR_Dates_DateFromPillar", "direct", 2, Array("2024-01-15", "6M"), "Date", DateSerial(2024, 7, 15), "", "")
         Case 980: FixtureBlock025 = Fx("surface.datefrompillar-bad-startdate", "surface", "KPR_Dates_DateFromPillar", "direct", 2, Array("2024/02/10", "6M"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_FORMAT", "element")
         Case 981: FixtureBlock025 = Fx("surface.datefrompillar-bad-pillar", "surface", "KPR_Dates_DateFromPillar", "direct", 2, Array("2024-01-15", "1X"), "Error", CVErr(FX_ERR_VALUE), "PILLAR_TOKEN_MALFORMED", "element")
+        Case 982: FixtureBlock025 = Fx("matrix.dayofweek-ok", "matrix", "KPR_Dates_DayOfWeek", "direct", 1, Array(DateSerial(2024, 2, 10)), "Long", CLng(6), "", "")
+        Case 983: FixtureBlock025 = Fx("matrix.dayofweek-ws1900", "matrix", "KPR_Dates_DayOfWeek", "ws1900", 1, Array(DateSerial(2024, 2, 10)), "Long", CLng(6), "", "")
+        Case 984: FixtureBlock025 = Fx("matrix.dayofweek-ws1904", "matrix", "KPR_Dates_DayOfWeek", "ws1904", 1, Array(DateSerial(2024, 2, 10)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 985: FixtureBlock025 = Fx("matrix.dayofweek-ws1904-array", "matrix", "KPR_Dates_DayOfWeek", "ws1904", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 986: FixtureBlock025 = Fx("matrix.dayofweek-datein-edge-low", "matrix", "KPR_Dates_DayOfWeek", "direct", 1, Array(DateSerial(1900, 3, 1)), "Long", CLng(4), "", "")
+        Case 987: FixtureBlock025 = Fx("matrix.dayofweek-datein-edge-high", "matrix", "KPR_Dates_DayOfWeek", "direct", 1, Array(DateSerial(9999, 12, 31)), "Long", CLng(5), "", "")
+        Case 988: FixtureBlock025 = Fx("matrix.dayofweek-datein-invalid-a", "matrix", "KPR_Dates_DayOfWeek", "direct", 1, Array(DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 989: FixtureBlock025 = Fx("matrix.dayofweek-datein-invalid-b", "matrix", "KPR_Dates_DayOfWeek", "direct", 1, Array("2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 990: FixtureBlock025 = Fx("matrix.dayofweek-datein-propagated", "matrix", "KPR_Dates_DayOfWeek", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 991: FixtureBlock025 = Fx("matrix.dayofweek-datein-array-1x1", "matrix", "KPR_Dates_DayOfWeek", "direct", 1, Array(M2(1, 1, Array(DateSerial(2024, 2, 10)))), "Long", CLng(6), "", "")
+        Case 992: FixtureBlock025 = Fx("matrix.dayofweek-datein-array-row", "matrix", "KPR_Dates_DayOfWeek", "direct", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(CLng(6), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 993: FixtureBlock025 = Fx("matrix.dayofweek-datein-array-column", "matrix", "KPR_Dates_DayOfWeek", "direct", 1, Array(M2(3, 1, Array(DateSerial(2024, 2, 10), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array(CLng(6), CLng(4), CLng(4))), "", "")
+        Case 994: FixtureBlock025 = Fx("matrix.dayofweek-datein-array-rectangle", "matrix", "KPR_Dates_DayOfWeek", "direct", 1, Array(M2(2, 2, Array(DateSerial(2024, 2, 10), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array(CLng(6), CLng(5), CVErr(FX_ERR_VALUE), CLng(4))), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 995: FixtureBlock025 = Fx("matrix.daysinmonth-ok", "matrix", "KPR_Dates_DaysInMonth", "direct", 1, Array(DateSerial(2024, 2, 10)), "Long", CLng(29), "", "")
+        Case 996: FixtureBlock025 = Fx("matrix.daysinmonth-ws1900", "matrix", "KPR_Dates_DaysInMonth", "ws1900", 1, Array(DateSerial(2024, 2, 10)), "Long", CLng(29), "", "")
+        Case 997: FixtureBlock025 = Fx("matrix.daysinmonth-ws1904", "matrix", "KPR_Dates_DaysInMonth", "ws1904", 1, Array(DateSerial(2024, 2, 10)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 998: FixtureBlock025 = Fx("matrix.daysinmonth-ws1904-array", "matrix", "KPR_Dates_DaysInMonth", "ws1904", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 999: FixtureBlock025 = Fx("matrix.daysinmonth-datein-edge-low", "matrix", "KPR_Dates_DaysInMonth", "direct", 1, Array(DateSerial(1900, 3, 1)), "Long", CLng(31), "", "")
+        Case 1000: FixtureBlock025 = Fx("matrix.daysinmonth-datein-edge-high", "matrix", "KPR_Dates_DaysInMonth", "direct", 1, Array(DateSerial(9999, 12, 31)), "Long", CLng(31), "", "")
+        End Select
+
+End Function
+
+
+Private Function FixtureBlock026( _
+    ByVal Index As Long) _
+    As Variant
+'
+'==============================================================================
+'                               FixtureBlock026
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns fixture cases 1001 to 1040.
+'
+' UPDATED
+'   2026-09-25
+'==============================================================================
+
+'------------------------------------------------------------------------------
+' SELECT CASE
+'------------------------------------------------------------------------------
+    'One generated record per case number.
+        Select Case Index
+        Case 1001: FixtureBlock026 = Fx("matrix.daysinmonth-datein-invalid-a", "matrix", "KPR_Dates_DaysInMonth", "direct", 1, Array(DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1002: FixtureBlock026 = Fx("matrix.daysinmonth-datein-invalid-b", "matrix", "KPR_Dates_DaysInMonth", "direct", 1, Array("2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1003: FixtureBlock026 = Fx("matrix.daysinmonth-datein-propagated", "matrix", "KPR_Dates_DaysInMonth", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1004: FixtureBlock026 = Fx("matrix.daysinmonth-datein-array-1x1", "matrix", "KPR_Dates_DaysInMonth", "direct", 1, Array(M2(1, 1, Array(DateSerial(2024, 2, 10)))), "Long", CLng(29), "", "")
+        Case 1005: FixtureBlock026 = Fx("matrix.daysinmonth-datein-array-row", "matrix", "KPR_Dates_DaysInMonth", "direct", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(CLng(29), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1006: FixtureBlock026 = Fx("matrix.daysinmonth-datein-array-column", "matrix", "KPR_Dates_DaysInMonth", "direct", 1, Array(M2(3, 1, Array(DateSerial(2024, 2, 10), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array(CLng(29), CLng(31), CLng(30))), "", "")
+        Case 1007: FixtureBlock026 = Fx("matrix.daysinmonth-datein-array-rectangle", "matrix", "KPR_Dates_DaysInMonth", "direct", 1, Array(M2(2, 2, Array(DateSerial(2024, 2, 10), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array(CLng(29), CLng(31), CVErr(FX_ERR_VALUE), CLng(30))), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1008: FixtureBlock026 = Fx("matrix.daysinyear-ok", "matrix", "KPR_Dates_DaysInYear", "direct", 1, Array(CDbl(2024)), "Long", CLng(366), "", "")
+        Case 1009: FixtureBlock026 = Fx("matrix.daysinyear-ws1900", "matrix", "KPR_Dates_DaysInYear", "ws1900", 1, Array(CDbl(2024)), "Long", CLng(366), "", "")
+        Case 1010: FixtureBlock026 = Fx("matrix.daysinyear-ws1904", "matrix", "KPR_Dates_DaysInYear", "ws1904", 1, Array(CDbl(2024)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1011: FixtureBlock026 = Fx("matrix.daysinyear-ws1904-array", "matrix", "KPR_Dates_DaysInYear", "ws1904", 1, Array(M2(1, 3, Array(CDbl(2024), CDbl(2024), CDbl(2024)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1012: FixtureBlock026 = Fx("matrix.daysinyear-yearin-edge-low", "matrix", "KPR_Dates_DaysInYear", "direct", 1, Array(CDbl(1900)), "Long", CLng(365), "", "")
+        Case 1013: FixtureBlock026 = Fx("matrix.daysinyear-yearin-edge-high", "matrix", "KPR_Dates_DaysInYear", "direct", 1, Array(CDbl(9999)), "Long", CLng(365), "", "")
+        Case 1014: FixtureBlock026 = Fx("matrix.daysinyear-yearin-invalid-a", "matrix", "KPR_Dates_DaysInYear", "direct", 1, Array(CDbl(1899)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_YEAR", "element")
+        Case 1015: FixtureBlock026 = Fx("matrix.daysinyear-yearin-invalid-b", "matrix", "KPR_Dates_DaysInYear", "direct", 1, Array(CDbl(10000)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_YEAR", "element")
+        Case 1016: FixtureBlock026 = Fx("matrix.daysinyear-yearin-propagated", "matrix", "KPR_Dates_DaysInYear", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1017: FixtureBlock026 = Fx("matrix.daysinyear-yearin-array-1x1", "matrix", "KPR_Dates_DaysInYear", "direct", 1, Array(M2(1, 1, Array(CDbl(2024)))), "Long", CLng(366), "", "")
+        Case 1018: FixtureBlock026 = Fx("matrix.daysinyear-yearin-array-row", "matrix", "KPR_Dates_DaysInYear", "direct", 1, Array(M2(1, 3, Array(CDbl(2024), CDbl(1899), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(CLng(366), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=DOMAIN_YEAR;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1019: FixtureBlock026 = Fx("matrix.daysinyear-yearin-array-column", "matrix", "KPR_Dates_DaysInYear", "direct", 1, Array(M2(3, 1, Array(CDbl(2024), CDbl(1900), CDbl(2023)))), "Array", M2(3, 1, Array(CLng(366), CLng(365), CLng(365))), "", "")
+        Case 1020: FixtureBlock026 = Fx("matrix.daysinyear-yearin-array-rectangle", "matrix", "KPR_Dates_DaysInYear", "direct", 1, Array(M2(2, 2, Array(CDbl(2024), CDbl(9999), CDbl(10000), CDbl(2023)))), "Array", M2(2, 2, Array(CLng(366), CLng(365), CVErr(FX_ERR_VALUE), CLng(365))), "r2c1=DOMAIN_YEAR", "element")
+        Case 1021: FixtureBlock026 = Fx("matrix.beginofmonth-ok", "matrix", "KPR_Dates_BeginOfMonth", "direct", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 2, 1), "", "")
+        Case 1022: FixtureBlock026 = Fx("matrix.beginofmonth-ws1900", "matrix", "KPR_Dates_BeginOfMonth", "ws1900", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 2, 1), "", "")
+        Case 1023: FixtureBlock026 = Fx("matrix.beginofmonth-ws1904", "matrix", "KPR_Dates_BeginOfMonth", "ws1904", 1, Array(DateSerial(2024, 2, 10)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1024: FixtureBlock026 = Fx("matrix.beginofmonth-ws1904-array", "matrix", "KPR_Dates_BeginOfMonth", "ws1904", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1025: FixtureBlock026 = Fx("matrix.beginofmonth-datein-edge-low", "matrix", "KPR_Dates_BeginOfMonth", "direct", 1, Array(DateSerial(1900, 3, 1)), "Date", DateSerial(1900, 3, 1), "", "")
+        Case 1026: FixtureBlock026 = Fx("matrix.beginofmonth-datein-edge-high", "matrix", "KPR_Dates_BeginOfMonth", "direct", 1, Array(DateSerial(9999, 12, 31)), "Date", DateSerial(9999, 12, 1), "", "")
+        Case 1027: FixtureBlock026 = Fx("matrix.beginofmonth-datein-invalid-a", "matrix", "KPR_Dates_BeginOfMonth", "direct", 1, Array(DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1028: FixtureBlock026 = Fx("matrix.beginofmonth-datein-invalid-b", "matrix", "KPR_Dates_BeginOfMonth", "direct", 1, Array("2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1029: FixtureBlock026 = Fx("matrix.beginofmonth-datein-propagated", "matrix", "KPR_Dates_BeginOfMonth", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1030: FixtureBlock026 = Fx("matrix.beginofmonth-datein-array-1x1", "matrix", "KPR_Dates_BeginOfMonth", "direct", 1, Array(M2(1, 1, Array(DateSerial(2024, 2, 10)))), "Date", DateSerial(2024, 2, 1), "", "")
+        Case 1031: FixtureBlock026 = Fx("matrix.beginofmonth-datein-array-row", "matrix", "KPR_Dates_BeginOfMonth", "direct", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 2, 1), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1032: FixtureBlock026 = Fx("matrix.beginofmonth-datein-array-column", "matrix", "KPR_Dates_BeginOfMonth", "direct", 1, Array(M2(3, 1, Array(DateSerial(2024, 2, 10), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array(DateSerial(2024, 2, 1), DateSerial(1900, 3, 1), DateSerial(2023, 11, 1))), "", "")
+        Case 1033: FixtureBlock026 = Fx("matrix.beginofmonth-datein-array-rectangle", "matrix", "KPR_Dates_BeginOfMonth", "direct", 1, Array(M2(2, 2, Array(DateSerial(2024, 2, 10), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array(DateSerial(2024, 2, 1), DateSerial(9999, 12, 1), CVErr(FX_ERR_VALUE), DateSerial(2023, 11, 1))), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1034: FixtureBlock026 = Fx("matrix.endofmonth-ok", "matrix", "KPR_Dates_EndOfMonth", "direct", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 2, 29), "", "")
+        Case 1035: FixtureBlock026 = Fx("matrix.endofmonth-ws1900", "matrix", "KPR_Dates_EndOfMonth", "ws1900", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 2, 29), "", "")
+        Case 1036: FixtureBlock026 = Fx("matrix.endofmonth-ws1904", "matrix", "KPR_Dates_EndOfMonth", "ws1904", 1, Array(DateSerial(2024, 2, 10)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1037: FixtureBlock026 = Fx("matrix.endofmonth-ws1904-array", "matrix", "KPR_Dates_EndOfMonth", "ws1904", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1038: FixtureBlock026 = Fx("matrix.endofmonth-datein-edge-low", "matrix", "KPR_Dates_EndOfMonth", "direct", 1, Array(DateSerial(1900, 3, 1)), "Date", DateSerial(1900, 3, 31), "", "")
+        Case 1039: FixtureBlock026 = Fx("matrix.endofmonth-datein-edge-high", "matrix", "KPR_Dates_EndOfMonth", "direct", 1, Array(DateSerial(9999, 12, 31)), "Date", DateSerial(9999, 12, 31), "", "")
+        Case 1040: FixtureBlock026 = Fx("matrix.endofmonth-datein-invalid-a", "matrix", "KPR_Dates_EndOfMonth", "direct", 1, Array(DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        End Select
+
+End Function
+
+
+Private Function FixtureBlock027( _
+    ByVal Index As Long) _
+    As Variant
+'
+'==============================================================================
+'                               FixtureBlock027
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns fixture cases 1041 to 1080.
+'
+' UPDATED
+'   2026-09-25
+'==============================================================================
+
+'------------------------------------------------------------------------------
+' SELECT CASE
+'------------------------------------------------------------------------------
+    'One generated record per case number.
+        Select Case Index
+        Case 1041: FixtureBlock027 = Fx("matrix.endofmonth-datein-invalid-b", "matrix", "KPR_Dates_EndOfMonth", "direct", 1, Array("2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1042: FixtureBlock027 = Fx("matrix.endofmonth-datein-propagated", "matrix", "KPR_Dates_EndOfMonth", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1043: FixtureBlock027 = Fx("matrix.endofmonth-datein-array-1x1", "matrix", "KPR_Dates_EndOfMonth", "direct", 1, Array(M2(1, 1, Array(DateSerial(2024, 2, 10)))), "Date", DateSerial(2024, 2, 29), "", "")
+        Case 1044: FixtureBlock027 = Fx("matrix.endofmonth-datein-array-row", "matrix", "KPR_Dates_EndOfMonth", "direct", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 2, 29), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1045: FixtureBlock027 = Fx("matrix.endofmonth-datein-array-column", "matrix", "KPR_Dates_EndOfMonth", "direct", 1, Array(M2(3, 1, Array(DateSerial(2024, 2, 10), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array(DateSerial(2024, 2, 29), DateSerial(1900, 3, 31), DateSerial(2023, 11, 30))), "", "")
+        Case 1046: FixtureBlock027 = Fx("matrix.endofmonth-datein-array-rectangle", "matrix", "KPR_Dates_EndOfMonth", "direct", 1, Array(M2(2, 2, Array(DateSerial(2024, 2, 10), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array(DateSerial(2024, 2, 29), DateSerial(9999, 12, 31), CVErr(FX_ERR_VALUE), DateSerial(2023, 11, 30))), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1047: FixtureBlock027 = Fx("matrix.beginofquarter-ok", "matrix", "KPR_Dates_BeginOfQuarter", "direct", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 1, 1), "", "")
+        Case 1048: FixtureBlock027 = Fx("matrix.beginofquarter-ws1900", "matrix", "KPR_Dates_BeginOfQuarter", "ws1900", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 1, 1), "", "")
+        Case 1049: FixtureBlock027 = Fx("matrix.beginofquarter-ws1904", "matrix", "KPR_Dates_BeginOfQuarter", "ws1904", 1, Array(DateSerial(2024, 2, 10)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1050: FixtureBlock027 = Fx("matrix.beginofquarter-ws1904-array", "matrix", "KPR_Dates_BeginOfQuarter", "ws1904", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1051: FixtureBlock027 = Fx("matrix.beginofquarter-datein-edge-low", "matrix", "KPR_Dates_BeginOfQuarter", "direct", 1, Array(DateSerial(1900, 3, 1)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1052: FixtureBlock027 = Fx("matrix.beginofquarter-datein-edge-high", "matrix", "KPR_Dates_BeginOfQuarter", "direct", 1, Array(DateSerial(9999, 12, 31)), "Date", DateSerial(9999, 10, 1), "", "")
+        Case 1053: FixtureBlock027 = Fx("matrix.beginofquarter-datein-invalid-a", "matrix", "KPR_Dates_BeginOfQuarter", "direct", 1, Array(DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1054: FixtureBlock027 = Fx("matrix.beginofquarter-datein-invalid-b", "matrix", "KPR_Dates_BeginOfQuarter", "direct", 1, Array("2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1055: FixtureBlock027 = Fx("matrix.beginofquarter-datein-propagated", "matrix", "KPR_Dates_BeginOfQuarter", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1056: FixtureBlock027 = Fx("matrix.beginofquarter-datein-array-1x1", "matrix", "KPR_Dates_BeginOfQuarter", "direct", 1, Array(M2(1, 1, Array(DateSerial(2024, 2, 10)))), "Date", DateSerial(2024, 1, 1), "", "")
+        Case 1057: FixtureBlock027 = Fx("matrix.beginofquarter-datein-array-row", "matrix", "KPR_Dates_BeginOfQuarter", "direct", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 1, 1), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1058: FixtureBlock027 = Fx("matrix.beginofquarter-datein-array-column", "matrix", "KPR_Dates_BeginOfQuarter", "direct", 1, Array(M2(3, 1, Array(DateSerial(2024, 2, 10), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array(DateSerial(2024, 1, 1), CVErr(FX_ERR_NUM), DateSerial(2023, 10, 1))), "r2c1=RESULT_WINDOW", "element")
+        Case 1059: FixtureBlock027 = Fx("matrix.beginofquarter-datein-array-rectangle", "matrix", "KPR_Dates_BeginOfQuarter", "direct", 1, Array(M2(2, 2, Array(DateSerial(2024, 2, 10), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array(DateSerial(2024, 1, 1), DateSerial(9999, 10, 1), CVErr(FX_ERR_VALUE), DateSerial(2023, 10, 1))), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1060: FixtureBlock027 = Fx("matrix.endofquarter-ok", "matrix", "KPR_Dates_EndOfQuarter", "direct", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 3, 31), "", "")
+        Case 1061: FixtureBlock027 = Fx("matrix.endofquarter-ws1900", "matrix", "KPR_Dates_EndOfQuarter", "ws1900", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 3, 31), "", "")
+        Case 1062: FixtureBlock027 = Fx("matrix.endofquarter-ws1904", "matrix", "KPR_Dates_EndOfQuarter", "ws1904", 1, Array(DateSerial(2024, 2, 10)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1063: FixtureBlock027 = Fx("matrix.endofquarter-ws1904-array", "matrix", "KPR_Dates_EndOfQuarter", "ws1904", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1064: FixtureBlock027 = Fx("matrix.endofquarter-datein-edge-low", "matrix", "KPR_Dates_EndOfQuarter", "direct", 1, Array(DateSerial(1900, 3, 1)), "Date", DateSerial(1900, 3, 31), "", "")
+        Case 1065: FixtureBlock027 = Fx("matrix.endofquarter-datein-edge-high", "matrix", "KPR_Dates_EndOfQuarter", "direct", 1, Array(DateSerial(9999, 12, 31)), "Date", DateSerial(9999, 12, 31), "", "")
+        Case 1066: FixtureBlock027 = Fx("matrix.endofquarter-datein-invalid-a", "matrix", "KPR_Dates_EndOfQuarter", "direct", 1, Array(DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1067: FixtureBlock027 = Fx("matrix.endofquarter-datein-invalid-b", "matrix", "KPR_Dates_EndOfQuarter", "direct", 1, Array("2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1068: FixtureBlock027 = Fx("matrix.endofquarter-datein-propagated", "matrix", "KPR_Dates_EndOfQuarter", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1069: FixtureBlock027 = Fx("matrix.endofquarter-datein-array-1x1", "matrix", "KPR_Dates_EndOfQuarter", "direct", 1, Array(M2(1, 1, Array(DateSerial(2024, 2, 10)))), "Date", DateSerial(2024, 3, 31), "", "")
+        Case 1070: FixtureBlock027 = Fx("matrix.endofquarter-datein-array-row", "matrix", "KPR_Dates_EndOfQuarter", "direct", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 3, 31), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1071: FixtureBlock027 = Fx("matrix.endofquarter-datein-array-column", "matrix", "KPR_Dates_EndOfQuarter", "direct", 1, Array(M2(3, 1, Array(DateSerial(2024, 2, 10), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array(DateSerial(2024, 3, 31), DateSerial(1900, 3, 31), DateSerial(2023, 12, 31))), "", "")
+        Case 1072: FixtureBlock027 = Fx("matrix.endofquarter-datein-array-rectangle", "matrix", "KPR_Dates_EndOfQuarter", "direct", 1, Array(M2(2, 2, Array(DateSerial(2024, 2, 10), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array(DateSerial(2024, 3, 31), DateSerial(9999, 12, 31), CVErr(FX_ERR_VALUE), DateSerial(2023, 12, 31))), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1073: FixtureBlock027 = Fx("matrix.beginofyear-ok", "matrix", "KPR_Dates_BeginOfYear", "direct", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 1, 1), "", "")
+        Case 1074: FixtureBlock027 = Fx("matrix.beginofyear-ws1900", "matrix", "KPR_Dates_BeginOfYear", "ws1900", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 1, 1), "", "")
+        Case 1075: FixtureBlock027 = Fx("matrix.beginofyear-ws1904", "matrix", "KPR_Dates_BeginOfYear", "ws1904", 1, Array(DateSerial(2024, 2, 10)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1076: FixtureBlock027 = Fx("matrix.beginofyear-ws1904-array", "matrix", "KPR_Dates_BeginOfYear", "ws1904", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1077: FixtureBlock027 = Fx("matrix.beginofyear-datein-edge-low", "matrix", "KPR_Dates_BeginOfYear", "direct", 1, Array(DateSerial(1900, 3, 1)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1078: FixtureBlock027 = Fx("matrix.beginofyear-datein-edge-high", "matrix", "KPR_Dates_BeginOfYear", "direct", 1, Array(DateSerial(9999, 12, 31)), "Date", DateSerial(9999, 1, 1), "", "")
+        Case 1079: FixtureBlock027 = Fx("matrix.beginofyear-datein-invalid-a", "matrix", "KPR_Dates_BeginOfYear", "direct", 1, Array(DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1080: FixtureBlock027 = Fx("matrix.beginofyear-datein-invalid-b", "matrix", "KPR_Dates_BeginOfYear", "direct", 1, Array("2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        End Select
+
+End Function
+
+
+Private Function FixtureBlock028( _
+    ByVal Index As Long) _
+    As Variant
+'
+'==============================================================================
+'                               FixtureBlock028
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns fixture cases 1081 to 1120.
+'
+' UPDATED
+'   2026-09-25
+'==============================================================================
+
+'------------------------------------------------------------------------------
+' SELECT CASE
+'------------------------------------------------------------------------------
+    'One generated record per case number.
+        Select Case Index
+        Case 1081: FixtureBlock028 = Fx("matrix.beginofyear-datein-propagated", "matrix", "KPR_Dates_BeginOfYear", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1082: FixtureBlock028 = Fx("matrix.beginofyear-datein-array-1x1", "matrix", "KPR_Dates_BeginOfYear", "direct", 1, Array(M2(1, 1, Array(DateSerial(2024, 2, 10)))), "Date", DateSerial(2024, 1, 1), "", "")
+        Case 1083: FixtureBlock028 = Fx("matrix.beginofyear-datein-array-row", "matrix", "KPR_Dates_BeginOfYear", "direct", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 1, 1), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1084: FixtureBlock028 = Fx("matrix.beginofyear-datein-array-column", "matrix", "KPR_Dates_BeginOfYear", "direct", 1, Array(M2(3, 1, Array(DateSerial(2024, 2, 10), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array(DateSerial(2024, 1, 1), CVErr(FX_ERR_NUM), DateSerial(2023, 1, 1))), "r2c1=RESULT_WINDOW", "element")
+        Case 1085: FixtureBlock028 = Fx("matrix.beginofyear-datein-array-rectangle", "matrix", "KPR_Dates_BeginOfYear", "direct", 1, Array(M2(2, 2, Array(DateSerial(2024, 2, 10), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array(DateSerial(2024, 1, 1), DateSerial(9999, 1, 1), CVErr(FX_ERR_VALUE), DateSerial(2023, 1, 1))), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1086: FixtureBlock028 = Fx("matrix.endofyear-ok", "matrix", "KPR_Dates_EndOfYear", "direct", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 12, 31), "", "")
+        Case 1087: FixtureBlock028 = Fx("matrix.endofyear-ws1900", "matrix", "KPR_Dates_EndOfYear", "ws1900", 1, Array(DateSerial(2024, 2, 10)), "Date", DateSerial(2024, 12, 31), "", "")
+        Case 1088: FixtureBlock028 = Fx("matrix.endofyear-ws1904", "matrix", "KPR_Dates_EndOfYear", "ws1904", 1, Array(DateSerial(2024, 2, 10)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1089: FixtureBlock028 = Fx("matrix.endofyear-ws1904-array", "matrix", "KPR_Dates_EndOfYear", "ws1904", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1090: FixtureBlock028 = Fx("matrix.endofyear-datein-edge-low", "matrix", "KPR_Dates_EndOfYear", "direct", 1, Array(DateSerial(1900, 3, 1)), "Date", DateSerial(1900, 12, 31), "", "")
+        Case 1091: FixtureBlock028 = Fx("matrix.endofyear-datein-edge-high", "matrix", "KPR_Dates_EndOfYear", "direct", 1, Array(DateSerial(9999, 12, 31)), "Date", DateSerial(9999, 12, 31), "", "")
+        Case 1092: FixtureBlock028 = Fx("matrix.endofyear-datein-invalid-a", "matrix", "KPR_Dates_EndOfYear", "direct", 1, Array(DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1093: FixtureBlock028 = Fx("matrix.endofyear-datein-invalid-b", "matrix", "KPR_Dates_EndOfYear", "direct", 1, Array("2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1094: FixtureBlock028 = Fx("matrix.endofyear-datein-propagated", "matrix", "KPR_Dates_EndOfYear", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1095: FixtureBlock028 = Fx("matrix.endofyear-datein-array-1x1", "matrix", "KPR_Dates_EndOfYear", "direct", 1, Array(M2(1, 1, Array(DateSerial(2024, 2, 10)))), "Date", DateSerial(2024, 12, 31), "", "")
+        Case 1096: FixtureBlock028 = Fx("matrix.endofyear-datein-array-row", "matrix", "KPR_Dates_EndOfYear", "direct", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 12, 31), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1097: FixtureBlock028 = Fx("matrix.endofyear-datein-array-column", "matrix", "KPR_Dates_EndOfYear", "direct", 1, Array(M2(3, 1, Array(DateSerial(2024, 2, 10), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array(DateSerial(2024, 12, 31), DateSerial(1900, 12, 31), DateSerial(2023, 12, 31))), "", "")
+        Case 1098: FixtureBlock028 = Fx("matrix.endofyear-datein-array-rectangle", "matrix", "KPR_Dates_EndOfYear", "direct", 1, Array(M2(2, 2, Array(DateSerial(2024, 2, 10), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array(DateSerial(2024, 12, 31), DateSerial(9999, 12, 31), CVErr(FX_ERR_VALUE), DateSerial(2023, 12, 31))), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1099: FixtureBlock028 = Fx("matrix.ismonthend-ok", "matrix", "KPR_Dates_IsMonthEnd", "direct", 1, Array(DateSerial(2024, 2, 29)), "Boolean", True, "", "")
+        Case 1100: FixtureBlock028 = Fx("matrix.ismonthend-ws1900", "matrix", "KPR_Dates_IsMonthEnd", "ws1900", 1, Array(DateSerial(2024, 2, 29)), "Boolean", True, "", "")
+        Case 1101: FixtureBlock028 = Fx("matrix.ismonthend-ws1904", "matrix", "KPR_Dates_IsMonthEnd", "ws1904", 1, Array(DateSerial(2024, 2, 29)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1102: FixtureBlock028 = Fx("matrix.ismonthend-ws1904-array", "matrix", "KPR_Dates_IsMonthEnd", "ws1904", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 29), DateSerial(2024, 2, 29), DateSerial(2024, 2, 29)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1103: FixtureBlock028 = Fx("matrix.ismonthend-datein-edge-low", "matrix", "KPR_Dates_IsMonthEnd", "direct", 1, Array(DateSerial(1900, 3, 1)), "Boolean", False, "", "")
+        Case 1104: FixtureBlock028 = Fx("matrix.ismonthend-datein-edge-high", "matrix", "KPR_Dates_IsMonthEnd", "direct", 1, Array(DateSerial(9999, 12, 31)), "Boolean", True, "", "")
+        Case 1105: FixtureBlock028 = Fx("matrix.ismonthend-datein-invalid-a", "matrix", "KPR_Dates_IsMonthEnd", "direct", 1, Array(DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1106: FixtureBlock028 = Fx("matrix.ismonthend-datein-invalid-b", "matrix", "KPR_Dates_IsMonthEnd", "direct", 1, Array("2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1107: FixtureBlock028 = Fx("matrix.ismonthend-datein-propagated", "matrix", "KPR_Dates_IsMonthEnd", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1108: FixtureBlock028 = Fx("matrix.ismonthend-datein-array-1x1", "matrix", "KPR_Dates_IsMonthEnd", "direct", 1, Array(M2(1, 1, Array(DateSerial(2024, 2, 29)))), "Boolean", True, "", "")
+        Case 1109: FixtureBlock028 = Fx("matrix.ismonthend-datein-array-row", "matrix", "KPR_Dates_IsMonthEnd", "direct", 1, Array(M2(1, 3, Array(DateSerial(2024, 2, 29), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(True, CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1110: FixtureBlock028 = Fx("matrix.ismonthend-datein-array-column", "matrix", "KPR_Dates_IsMonthEnd", "direct", 1, Array(M2(3, 1, Array(DateSerial(2024, 2, 29), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array(True, False, True)), "", "")
+        Case 1111: FixtureBlock028 = Fx("matrix.ismonthend-datein-array-rectangle", "matrix", "KPR_Dates_IsMonthEnd", "direct", 1, Array(M2(2, 2, Array(DateSerial(2024, 2, 29), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array(True, True, CVErr(FX_ERR_VALUE), True)), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1112: FixtureBlock028 = Fx("matrix.isquarterend-ok", "matrix", "KPR_Dates_IsQuarterEnd", "direct", 1, Array(DateSerial(2024, 3, 31)), "Boolean", True, "", "")
+        Case 1113: FixtureBlock028 = Fx("matrix.isquarterend-ws1900", "matrix", "KPR_Dates_IsQuarterEnd", "ws1900", 1, Array(DateSerial(2024, 3, 31)), "Boolean", True, "", "")
+        Case 1114: FixtureBlock028 = Fx("matrix.isquarterend-ws1904", "matrix", "KPR_Dates_IsQuarterEnd", "ws1904", 1, Array(DateSerial(2024, 3, 31)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1115: FixtureBlock028 = Fx("matrix.isquarterend-ws1904-array", "matrix", "KPR_Dates_IsQuarterEnd", "ws1904", 1, Array(M2(1, 3, Array(DateSerial(2024, 3, 31), DateSerial(2024, 3, 31), DateSerial(2024, 3, 31)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1116: FixtureBlock028 = Fx("matrix.isquarterend-datein-edge-low", "matrix", "KPR_Dates_IsQuarterEnd", "direct", 1, Array(DateSerial(1900, 3, 1)), "Boolean", False, "", "")
+        Case 1117: FixtureBlock028 = Fx("matrix.isquarterend-datein-edge-high", "matrix", "KPR_Dates_IsQuarterEnd", "direct", 1, Array(DateSerial(9999, 12, 31)), "Boolean", True, "", "")
+        Case 1118: FixtureBlock028 = Fx("matrix.isquarterend-datein-invalid-a", "matrix", "KPR_Dates_IsQuarterEnd", "direct", 1, Array(DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1119: FixtureBlock028 = Fx("matrix.isquarterend-datein-invalid-b", "matrix", "KPR_Dates_IsQuarterEnd", "direct", 1, Array("2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1120: FixtureBlock028 = Fx("matrix.isquarterend-datein-propagated", "matrix", "KPR_Dates_IsQuarterEnd", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        End Select
+
+End Function
+
+
+Private Function FixtureBlock029( _
+    ByVal Index As Long) _
+    As Variant
+'
+'==============================================================================
+'                               FixtureBlock029
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns fixture cases 1121 to 1160.
+'
+' UPDATED
+'   2026-09-25
+'==============================================================================
+
+'------------------------------------------------------------------------------
+' SELECT CASE
+'------------------------------------------------------------------------------
+    'One generated record per case number.
+        Select Case Index
+        Case 1121: FixtureBlock029 = Fx("matrix.isquarterend-datein-array-1x1", "matrix", "KPR_Dates_IsQuarterEnd", "direct", 1, Array(M2(1, 1, Array(DateSerial(2024, 3, 31)))), "Boolean", True, "", "")
+        Case 1122: FixtureBlock029 = Fx("matrix.isquarterend-datein-array-row", "matrix", "KPR_Dates_IsQuarterEnd", "direct", 1, Array(M2(1, 3, Array(DateSerial(2024, 3, 31), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(True, CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1123: FixtureBlock029 = Fx("matrix.isquarterend-datein-array-column", "matrix", "KPR_Dates_IsQuarterEnd", "direct", 1, Array(M2(3, 1, Array(DateSerial(2024, 3, 31), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array(True, False, False)), "", "")
+        Case 1124: FixtureBlock029 = Fx("matrix.isquarterend-datein-array-rectangle", "matrix", "KPR_Dates_IsQuarterEnd", "direct", 1, Array(M2(2, 2, Array(DateSerial(2024, 3, 31), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array(True, True, CVErr(FX_ERR_VALUE), False)), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1125: FixtureBlock029 = Fx("matrix.isyearend-ok", "matrix", "KPR_Dates_IsYearEnd", "direct", 1, Array(DateSerial(2024, 12, 31)), "Boolean", True, "", "")
+        Case 1126: FixtureBlock029 = Fx("matrix.isyearend-ws1900", "matrix", "KPR_Dates_IsYearEnd", "ws1900", 1, Array(DateSerial(2024, 12, 31)), "Boolean", True, "", "")
+        Case 1127: FixtureBlock029 = Fx("matrix.isyearend-ws1904", "matrix", "KPR_Dates_IsYearEnd", "ws1904", 1, Array(DateSerial(2024, 12, 31)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1128: FixtureBlock029 = Fx("matrix.isyearend-ws1904-array", "matrix", "KPR_Dates_IsYearEnd", "ws1904", 1, Array(M2(1, 3, Array(DateSerial(2024, 12, 31), DateSerial(2024, 12, 31), DateSerial(2024, 12, 31)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1129: FixtureBlock029 = Fx("matrix.isyearend-datein-edge-low", "matrix", "KPR_Dates_IsYearEnd", "direct", 1, Array(DateSerial(1900, 3, 1)), "Boolean", False, "", "")
+        Case 1130: FixtureBlock029 = Fx("matrix.isyearend-datein-edge-high", "matrix", "KPR_Dates_IsYearEnd", "direct", 1, Array(DateSerial(9999, 12, 31)), "Boolean", True, "", "")
+        Case 1131: FixtureBlock029 = Fx("matrix.isyearend-datein-invalid-a", "matrix", "KPR_Dates_IsYearEnd", "direct", 1, Array(DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1132: FixtureBlock029 = Fx("matrix.isyearend-datein-invalid-b", "matrix", "KPR_Dates_IsYearEnd", "direct", 1, Array("2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1133: FixtureBlock029 = Fx("matrix.isyearend-datein-propagated", "matrix", "KPR_Dates_IsYearEnd", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1134: FixtureBlock029 = Fx("matrix.isyearend-datein-array-1x1", "matrix", "KPR_Dates_IsYearEnd", "direct", 1, Array(M2(1, 1, Array(DateSerial(2024, 12, 31)))), "Boolean", True, "", "")
+        Case 1135: FixtureBlock029 = Fx("matrix.isyearend-datein-array-row", "matrix", "KPR_Dates_IsYearEnd", "direct", 1, Array(M2(1, 3, Array(DateSerial(2024, 12, 31), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(True, CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1136: FixtureBlock029 = Fx("matrix.isyearend-datein-array-column", "matrix", "KPR_Dates_IsYearEnd", "direct", 1, Array(M2(3, 1, Array(DateSerial(2024, 12, 31), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array(True, False, False)), "", "")
+        Case 1137: FixtureBlock029 = Fx("matrix.isyearend-datein-array-rectangle", "matrix", "KPR_Dates_IsYearEnd", "direct", 1, Array(M2(2, 2, Array(DateSerial(2024, 12, 31), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array(True, True, CVErr(FX_ERR_VALUE), False)), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1138: FixtureBlock029 = Fx("matrix.isleapyear-ok", "matrix", "KPR_Dates_IsLeapYear", "direct", 1, Array(CDbl(2024)), "Boolean", True, "", "")
+        Case 1139: FixtureBlock029 = Fx("matrix.isleapyear-ws1900", "matrix", "KPR_Dates_IsLeapYear", "ws1900", 1, Array(CDbl(2024)), "Boolean", True, "", "")
+        Case 1140: FixtureBlock029 = Fx("matrix.isleapyear-ws1904", "matrix", "KPR_Dates_IsLeapYear", "ws1904", 1, Array(CDbl(2024)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1141: FixtureBlock029 = Fx("matrix.isleapyear-ws1904-array", "matrix", "KPR_Dates_IsLeapYear", "ws1904", 1, Array(M2(1, 3, Array(CDbl(2024), CDbl(2024), CDbl(2024)))), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1142: FixtureBlock029 = Fx("matrix.isleapyear-yearin-edge-low", "matrix", "KPR_Dates_IsLeapYear", "direct", 1, Array(CDbl(1900)), "Boolean", False, "", "")
+        Case 1143: FixtureBlock029 = Fx("matrix.isleapyear-yearin-edge-high", "matrix", "KPR_Dates_IsLeapYear", "direct", 1, Array(CDbl(9999)), "Boolean", False, "", "")
+        Case 1144: FixtureBlock029 = Fx("matrix.isleapyear-yearin-invalid-a", "matrix", "KPR_Dates_IsLeapYear", "direct", 1, Array(CDbl(1899)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_YEAR", "element")
+        Case 1145: FixtureBlock029 = Fx("matrix.isleapyear-yearin-invalid-b", "matrix", "KPR_Dates_IsLeapYear", "direct", 1, Array(CDbl(10000)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_YEAR", "element")
+        Case 1146: FixtureBlock029 = Fx("matrix.isleapyear-yearin-propagated", "matrix", "KPR_Dates_IsLeapYear", "direct", 1, Array(CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1147: FixtureBlock029 = Fx("matrix.isleapyear-yearin-array-1x1", "matrix", "KPR_Dates_IsLeapYear", "direct", 1, Array(M2(1, 1, Array(CDbl(2024)))), "Boolean", True, "", "")
+        Case 1148: FixtureBlock029 = Fx("matrix.isleapyear-yearin-array-row", "matrix", "KPR_Dates_IsLeapYear", "direct", 1, Array(M2(1, 3, Array(CDbl(2024), CDbl(1899), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(True, CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=DOMAIN_YEAR;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1149: FixtureBlock029 = Fx("matrix.isleapyear-yearin-array-column", "matrix", "KPR_Dates_IsLeapYear", "direct", 1, Array(M2(3, 1, Array(CDbl(2024), CDbl(1900), CDbl(2023)))), "Array", M2(3, 1, Array(True, False, False)), "", "")
+        Case 1150: FixtureBlock029 = Fx("matrix.isleapyear-yearin-array-rectangle", "matrix", "KPR_Dates_IsLeapYear", "direct", 1, Array(M2(2, 2, Array(CDbl(2024), CDbl(9999), CDbl(10000), CDbl(2023)))), "Array", M2(2, 2, Array(True, False, CVErr(FX_ERR_VALUE), False)), "r2c1=DOMAIN_YEAR", "element")
+        Case 1151: FixtureBlock029 = Fx("matrix.adddays-ok", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(2024, 2, 10), CDbl(20)), "Date", DateSerial(2024, 3, 1), "", "")
+        Case 1152: FixtureBlock029 = Fx("matrix.adddays-ws1900", "matrix", "KPR_Dates_AddDays", "ws1900", 2, Array(DateSerial(2024, 2, 10), CDbl(20)), "Date", DateSerial(2024, 3, 1), "", "")
+        Case 1153: FixtureBlock029 = Fx("matrix.adddays-ws1904", "matrix", "KPR_Dates_AddDays", "ws1904", 2, Array(DateSerial(2024, 2, 10), CDbl(20)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1154: FixtureBlock029 = Fx("matrix.adddays-ws1904-array", "matrix", "KPR_Dates_AddDays", "ws1904", 2, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10))), CDbl(20)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1155: FixtureBlock029 = Fx("matrix.adddays-datein-edge-low", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(1900, 3, 1), CDbl(20)), "Date", DateSerial(1900, 3, 21), "", "")
+        Case 1156: FixtureBlock029 = Fx("matrix.adddays-datein-edge-high", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(9999, 12, 31), CDbl(20)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1157: FixtureBlock029 = Fx("matrix.adddays-datein-invalid-a", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(1900, 2, 28), CDbl(20)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1158: FixtureBlock029 = Fx("matrix.adddays-datein-invalid-b", "matrix", "KPR_Dates_AddDays", "direct", 2, Array("2024-02-30", CDbl(20)), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1159: FixtureBlock029 = Fx("matrix.adddays-datein-propagated", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(CVErr(FX_ERR_NA), CDbl(20)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1160: FixtureBlock029 = Fx("matrix.adddays-datein-array-1x1", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(M2(1, 1, Array(DateSerial(2024, 2, 10))), CDbl(20)), "Date", DateSerial(2024, 3, 1), "", "")
+        End Select
+
+End Function
+
+
+Private Function FixtureBlock030( _
+    ByVal Index As Long) _
+    As Variant
+'
+'==============================================================================
+'                               FixtureBlock030
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns fixture cases 1161 to 1200.
+'
+' UPDATED
+'   2026-09-25
+'==============================================================================
+
+'------------------------------------------------------------------------------
+' SELECT CASE
+'------------------------------------------------------------------------------
+    'One generated record per case number.
+        Select Case Index
+        Case 1161: FixtureBlock030 = Fx("matrix.adddays-datein-array-row", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0))), CDbl(20)), "Array", M2(1, 3, Array(DateSerial(2024, 3, 1), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1162: FixtureBlock030 = Fx("matrix.adddays-datein-array-column", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(M2(3, 1, Array(DateSerial(2024, 2, 10), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30))), CDbl(20)), "Array", M2(3, 1, Array(DateSerial(2024, 3, 1), DateSerial(1900, 3, 21), DateSerial(2023, 12, 20))), "", "")
+        Case 1163: FixtureBlock030 = Fx("matrix.adddays-datein-array-rectangle", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(M2(2, 2, Array(DateSerial(2024, 2, 10), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30))), CDbl(20)), "Array", M2(2, 2, Array(DateSerial(2024, 3, 1), CVErr(FX_ERR_NUM), CVErr(FX_ERR_VALUE), DateSerial(2023, 12, 20))), "r1c2=RESULT_WINDOW;r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1164: FixtureBlock030 = Fx("matrix.adddays-ndays-edge-low", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(2024, 2, 10), CDbl(-2147483648#)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1165: FixtureBlock030 = Fx("matrix.adddays-ndays-edge-high", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(2024, 2, 10), CDbl(2147483647)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1166: FixtureBlock030 = Fx("matrix.adddays-ndays-invalid-a", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(2024, 2, 10), CDbl(2.5)), "Error", CVErr(FX_ERR_VALUE), "INTEGER_FRACTION", "element")
+        Case 1167: FixtureBlock030 = Fx("matrix.adddays-ndays-invalid-b", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(2024, 2, 10), CDbl(1E+20)), "Error", CVErr(FX_ERR_NUM), "INTEGER_RANGE", "element")
+        Case 1168: FixtureBlock030 = Fx("matrix.adddays-ndays-propagated", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(2024, 2, 10), CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1169: FixtureBlock030 = Fx("matrix.adddays-ndays-array-1x1", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(2024, 2, 10), M2(1, 1, Array(CDbl(20)))), "Date", DateSerial(2024, 3, 1), "", "")
+        Case 1170: FixtureBlock030 = Fx("matrix.adddays-ndays-array-row", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(2024, 2, 10), M2(1, 3, Array(CDbl(20), CDbl(2.5), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 3, 1), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=INTEGER_FRACTION;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1171: FixtureBlock030 = Fx("matrix.adddays-ndays-array-column", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(2024, 2, 10), M2(3, 1, Array(CDbl(20), CDbl(-2147483648#), CDbl(-45)))), "Array", M2(3, 1, Array(DateSerial(2024, 3, 1), CVErr(FX_ERR_NUM), DateSerial(2023, 12, 27))), "r2c1=RESULT_WINDOW", "element")
+        Case 1172: FixtureBlock030 = Fx("matrix.adddays-ndays-array-rectangle", "matrix", "KPR_Dates_AddDays", "direct", 2, Array(DateSerial(2024, 2, 10), M2(2, 2, Array(CDbl(20), CDbl(2147483647), CDbl(1E+20), CDbl(-45)))), "Array", M2(2, 2, Array(DateSerial(2024, 3, 1), CVErr(FX_ERR_NUM), CVErr(FX_ERR_NUM), DateSerial(2023, 12, 27))), "r1c2=RESULT_WINDOW;r2c1=INTEGER_RANGE", "element")
+        Case 1173: FixtureBlock030 = Fx("matrix.addweeks-ok", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(2024, 2, 10), CDbl(3)), "Date", DateSerial(2024, 3, 2), "", "")
+        Case 1174: FixtureBlock030 = Fx("matrix.addweeks-ws1900", "matrix", "KPR_Dates_AddWeeks", "ws1900", 2, Array(DateSerial(2024, 2, 10), CDbl(3)), "Date", DateSerial(2024, 3, 2), "", "")
+        Case 1175: FixtureBlock030 = Fx("matrix.addweeks-ws1904", "matrix", "KPR_Dates_AddWeeks", "ws1904", 2, Array(DateSerial(2024, 2, 10), CDbl(3)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1176: FixtureBlock030 = Fx("matrix.addweeks-ws1904-array", "matrix", "KPR_Dates_AddWeeks", "ws1904", 2, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10))), CDbl(3)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1177: FixtureBlock030 = Fx("matrix.addweeks-datein-edge-low", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(1900, 3, 1), CDbl(3)), "Date", DateSerial(1900, 3, 22), "", "")
+        Case 1178: FixtureBlock030 = Fx("matrix.addweeks-datein-edge-high", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(9999, 12, 31), CDbl(3)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1179: FixtureBlock030 = Fx("matrix.addweeks-datein-invalid-a", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(1900, 2, 28), CDbl(3)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1180: FixtureBlock030 = Fx("matrix.addweeks-datein-invalid-b", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array("2024-02-30", CDbl(3)), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1181: FixtureBlock030 = Fx("matrix.addweeks-datein-propagated", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(CVErr(FX_ERR_NA), CDbl(3)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1182: FixtureBlock030 = Fx("matrix.addweeks-datein-array-1x1", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(M2(1, 1, Array(DateSerial(2024, 2, 10))), CDbl(3)), "Date", DateSerial(2024, 3, 2), "", "")
+        Case 1183: FixtureBlock030 = Fx("matrix.addweeks-datein-array-row", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(M2(1, 3, Array(DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0))), CDbl(3)), "Array", M2(1, 3, Array(DateSerial(2024, 3, 2), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1184: FixtureBlock030 = Fx("matrix.addweeks-datein-array-column", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(M2(3, 1, Array(DateSerial(2024, 2, 10), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30))), CDbl(3)), "Array", M2(3, 1, Array(DateSerial(2024, 3, 2), DateSerial(1900, 3, 22), DateSerial(2023, 12, 21))), "", "")
+        Case 1185: FixtureBlock030 = Fx("matrix.addweeks-datein-array-rectangle", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(M2(2, 2, Array(DateSerial(2024, 2, 10), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30))), CDbl(3)), "Array", M2(2, 2, Array(DateSerial(2024, 3, 2), CVErr(FX_ERR_NUM), CVErr(FX_ERR_VALUE), DateSerial(2023, 12, 21))), "r1c2=RESULT_WINDOW;r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1186: FixtureBlock030 = Fx("matrix.addweeks-nweeks-edge-low", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(2024, 2, 10), CDbl(-2147483648#)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1187: FixtureBlock030 = Fx("matrix.addweeks-nweeks-edge-high", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(2024, 2, 10), CDbl(2147483647)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1188: FixtureBlock030 = Fx("matrix.addweeks-nweeks-invalid-a", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(2024, 2, 10), CDbl(2.5)), "Error", CVErr(FX_ERR_VALUE), "INTEGER_FRACTION", "element")
+        Case 1189: FixtureBlock030 = Fx("matrix.addweeks-nweeks-invalid-b", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(2024, 2, 10), CDbl(1E+20)), "Error", CVErr(FX_ERR_NUM), "INTEGER_RANGE", "element")
+        Case 1190: FixtureBlock030 = Fx("matrix.addweeks-nweeks-propagated", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(2024, 2, 10), CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1191: FixtureBlock030 = Fx("matrix.addweeks-nweeks-array-1x1", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(2024, 2, 10), M2(1, 1, Array(CDbl(3)))), "Date", DateSerial(2024, 3, 2), "", "")
+        Case 1192: FixtureBlock030 = Fx("matrix.addweeks-nweeks-array-row", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(2024, 2, 10), M2(1, 3, Array(CDbl(3), CDbl(2.5), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 3, 2), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=INTEGER_FRACTION;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1193: FixtureBlock030 = Fx("matrix.addweeks-nweeks-array-column", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(2024, 2, 10), M2(3, 1, Array(CDbl(3), CDbl(-2147483648#), CDbl(-45)))), "Array", M2(3, 1, Array(DateSerial(2024, 3, 2), CVErr(FX_ERR_NUM), DateSerial(2023, 4, 1))), "r2c1=RESULT_WINDOW", "element")
+        Case 1194: FixtureBlock030 = Fx("matrix.addweeks-nweeks-array-rectangle", "matrix", "KPR_Dates_AddWeeks", "direct", 2, Array(DateSerial(2024, 2, 10), M2(2, 2, Array(CDbl(3), CDbl(2147483647), CDbl(1E+20), CDbl(-45)))), "Array", M2(2, 2, Array(DateSerial(2024, 3, 2), CVErr(FX_ERR_NUM), CVErr(FX_ERR_NUM), DateSerial(2023, 4, 1))), "r1c2=RESULT_WINDOW;r2c1=INTEGER_RANGE", "element")
+        Case 1195: FixtureBlock030 = Fx("matrix.addmonths-ok", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(2024, 1, 31), CDbl(1)), "Date", DateSerial(2024, 2, 29), "", "")
+        Case 1196: FixtureBlock030 = Fx("matrix.addmonths-ws1900", "matrix", "KPR_Dates_AddMonths", "ws1900", 2, Array(DateSerial(2024, 1, 31), CDbl(1)), "Date", DateSerial(2024, 2, 29), "", "")
+        Case 1197: FixtureBlock030 = Fx("matrix.addmonths-ws1904", "matrix", "KPR_Dates_AddMonths", "ws1904", 2, Array(DateSerial(2024, 1, 31), CDbl(1)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1198: FixtureBlock030 = Fx("matrix.addmonths-ws1904-array", "matrix", "KPR_Dates_AddMonths", "ws1904", 2, Array(M2(1, 3, Array(DateSerial(2024, 1, 31), DateSerial(2024, 1, 31), DateSerial(2024, 1, 31))), CDbl(1)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1199: FixtureBlock030 = Fx("matrix.addmonths-datein-edge-low", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(1900, 3, 1), CDbl(1)), "Date", DateSerial(1900, 4, 1), "", "")
+        Case 1200: FixtureBlock030 = Fx("matrix.addmonths-datein-edge-high", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(9999, 12, 31), CDbl(1)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        End Select
+
+End Function
+
+
+Private Function FixtureBlock031( _
+    ByVal Index As Long) _
+    As Variant
+'
+'==============================================================================
+'                               FixtureBlock031
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns fixture cases 1201 to 1240.
+'
+' UPDATED
+'   2026-09-25
+'==============================================================================
+
+'------------------------------------------------------------------------------
+' SELECT CASE
+'------------------------------------------------------------------------------
+    'One generated record per case number.
+        Select Case Index
+        Case 1201: FixtureBlock031 = Fx("matrix.addmonths-datein-invalid-a", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(1900, 2, 28), CDbl(1)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1202: FixtureBlock031 = Fx("matrix.addmonths-datein-invalid-b", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array("2024-02-30", CDbl(1)), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1203: FixtureBlock031 = Fx("matrix.addmonths-datein-propagated", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(CVErr(FX_ERR_NA), CDbl(1)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1204: FixtureBlock031 = Fx("matrix.addmonths-datein-array-1x1", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(M2(1, 1, Array(DateSerial(2024, 1, 31))), CDbl(1)), "Date", DateSerial(2024, 2, 29), "", "")
+        Case 1205: FixtureBlock031 = Fx("matrix.addmonths-datein-array-row", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(M2(1, 3, Array(DateSerial(2024, 1, 31), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0))), CDbl(1)), "Array", M2(1, 3, Array(DateSerial(2024, 2, 29), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1206: FixtureBlock031 = Fx("matrix.addmonths-datein-array-column", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(M2(3, 1, Array(DateSerial(2024, 1, 31), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30))), CDbl(1)), "Array", M2(3, 1, Array(DateSerial(2024, 2, 29), DateSerial(1900, 4, 1), DateSerial(2023, 12, 30))), "", "")
+        Case 1207: FixtureBlock031 = Fx("matrix.addmonths-datein-array-rectangle", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(M2(2, 2, Array(DateSerial(2024, 1, 31), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30))), CDbl(1)), "Array", M2(2, 2, Array(DateSerial(2024, 2, 29), CVErr(FX_ERR_NUM), CVErr(FX_ERR_VALUE), DateSerial(2023, 12, 30))), "r1c2=RESULT_WINDOW;r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1208: FixtureBlock031 = Fx("matrix.addmonths-nmonths-edge-low", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(2024, 1, 31), CDbl(-2147483648#)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1209: FixtureBlock031 = Fx("matrix.addmonths-nmonths-edge-high", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(2024, 1, 31), CDbl(2147483647)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1210: FixtureBlock031 = Fx("matrix.addmonths-nmonths-invalid-a", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(2024, 1, 31), CDbl(2.5)), "Error", CVErr(FX_ERR_VALUE), "INTEGER_FRACTION", "element")
+        Case 1211: FixtureBlock031 = Fx("matrix.addmonths-nmonths-invalid-b", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(2024, 1, 31), CDbl(1E+20)), "Error", CVErr(FX_ERR_NUM), "INTEGER_RANGE", "element")
+        Case 1212: FixtureBlock031 = Fx("matrix.addmonths-nmonths-propagated", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(2024, 1, 31), CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1213: FixtureBlock031 = Fx("matrix.addmonths-nmonths-array-1x1", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(2024, 1, 31), M2(1, 1, Array(CDbl(1)))), "Date", DateSerial(2024, 2, 29), "", "")
+        Case 1214: FixtureBlock031 = Fx("matrix.addmonths-nmonths-array-row", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(2024, 1, 31), M2(1, 3, Array(CDbl(1), CDbl(2.5), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 2, 29), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=INTEGER_FRACTION;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1215: FixtureBlock031 = Fx("matrix.addmonths-nmonths-array-column", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(2024, 1, 31), M2(3, 1, Array(CDbl(1), CDbl(-2147483648#), CDbl(-45)))), "Array", M2(3, 1, Array(DateSerial(2024, 2, 29), CVErr(FX_ERR_NUM), DateSerial(2020, 4, 30))), "r2c1=RESULT_WINDOW", "element")
+        Case 1216: FixtureBlock031 = Fx("matrix.addmonths-nmonths-array-rectangle", "matrix", "KPR_Dates_AddMonths", "direct", 2, Array(DateSerial(2024, 1, 31), M2(2, 2, Array(CDbl(1), CDbl(2147483647), CDbl(1E+20), CDbl(-45)))), "Array", M2(2, 2, Array(DateSerial(2024, 2, 29), CVErr(FX_ERR_NUM), CVErr(FX_ERR_NUM), DateSerial(2020, 4, 30))), "r1c2=RESULT_WINDOW;r2c1=INTEGER_RANGE", "element")
+        Case 1217: FixtureBlock031 = Fx("matrix.addyears-ok", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(2024, 2, 29), CDbl(1)), "Date", DateSerial(2025, 2, 28), "", "")
+        Case 1218: FixtureBlock031 = Fx("matrix.addyears-ws1900", "matrix", "KPR_Dates_AddYears", "ws1900", 2, Array(DateSerial(2024, 2, 29), CDbl(1)), "Date", DateSerial(2025, 2, 28), "", "")
+        Case 1219: FixtureBlock031 = Fx("matrix.addyears-ws1904", "matrix", "KPR_Dates_AddYears", "ws1904", 2, Array(DateSerial(2024, 2, 29), CDbl(1)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1220: FixtureBlock031 = Fx("matrix.addyears-ws1904-array", "matrix", "KPR_Dates_AddYears", "ws1904", 2, Array(M2(1, 3, Array(DateSerial(2024, 2, 29), DateSerial(2024, 2, 29), DateSerial(2024, 2, 29))), CDbl(1)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1221: FixtureBlock031 = Fx("matrix.addyears-datein-edge-low", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(1900, 3, 1), CDbl(1)), "Date", DateSerial(1901, 3, 1), "", "")
+        Case 1222: FixtureBlock031 = Fx("matrix.addyears-datein-edge-high", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(9999, 12, 31), CDbl(1)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1223: FixtureBlock031 = Fx("matrix.addyears-datein-invalid-a", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(1900, 2, 28), CDbl(1)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1224: FixtureBlock031 = Fx("matrix.addyears-datein-invalid-b", "matrix", "KPR_Dates_AddYears", "direct", 2, Array("2024-02-30", CDbl(1)), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1225: FixtureBlock031 = Fx("matrix.addyears-datein-propagated", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(CVErr(FX_ERR_NA), CDbl(1)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1226: FixtureBlock031 = Fx("matrix.addyears-datein-array-1x1", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(M2(1, 1, Array(DateSerial(2024, 2, 29))), CDbl(1)), "Date", DateSerial(2025, 2, 28), "", "")
+        Case 1227: FixtureBlock031 = Fx("matrix.addyears-datein-array-row", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(M2(1, 3, Array(DateSerial(2024, 2, 29), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0))), CDbl(1)), "Array", M2(1, 3, Array(DateSerial(2025, 2, 28), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1228: FixtureBlock031 = Fx("matrix.addyears-datein-array-column", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(M2(3, 1, Array(DateSerial(2024, 2, 29), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30))), CDbl(1)), "Array", M2(3, 1, Array(DateSerial(2025, 2, 28), DateSerial(1901, 3, 1), DateSerial(2024, 11, 30))), "", "")
+        Case 1229: FixtureBlock031 = Fx("matrix.addyears-datein-array-rectangle", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(M2(2, 2, Array(DateSerial(2024, 2, 29), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30))), CDbl(1)), "Array", M2(2, 2, Array(DateSerial(2025, 2, 28), CVErr(FX_ERR_NUM), CVErr(FX_ERR_VALUE), DateSerial(2024, 11, 30))), "r1c2=RESULT_WINDOW;r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1230: FixtureBlock031 = Fx("matrix.addyears-nyears-edge-low", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(2024, 2, 29), CDbl(-2147483648#)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1231: FixtureBlock031 = Fx("matrix.addyears-nyears-edge-high", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(2024, 2, 29), CDbl(2147483647)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1232: FixtureBlock031 = Fx("matrix.addyears-nyears-invalid-a", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(2024, 2, 29), CDbl(2.5)), "Error", CVErr(FX_ERR_VALUE), "INTEGER_FRACTION", "element")
+        Case 1233: FixtureBlock031 = Fx("matrix.addyears-nyears-invalid-b", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(2024, 2, 29), CDbl(1E+20)), "Error", CVErr(FX_ERR_NUM), "INTEGER_RANGE", "element")
+        Case 1234: FixtureBlock031 = Fx("matrix.addyears-nyears-propagated", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(2024, 2, 29), CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1235: FixtureBlock031 = Fx("matrix.addyears-nyears-array-1x1", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(2024, 2, 29), M2(1, 1, Array(CDbl(1)))), "Date", DateSerial(2025, 2, 28), "", "")
+        Case 1236: FixtureBlock031 = Fx("matrix.addyears-nyears-array-row", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(2024, 2, 29), M2(1, 3, Array(CDbl(1), CDbl(2.5), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2025, 2, 28), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=INTEGER_FRACTION;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1237: FixtureBlock031 = Fx("matrix.addyears-nyears-array-column", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(2024, 2, 29), M2(3, 1, Array(CDbl(1), CDbl(-2147483648#), CDbl(-45)))), "Array", M2(3, 1, Array(DateSerial(2025, 2, 28), CVErr(FX_ERR_NUM), DateSerial(1979, 2, 28))), "r2c1=RESULT_WINDOW", "element")
+        Case 1238: FixtureBlock031 = Fx("matrix.addyears-nyears-array-rectangle", "matrix", "KPR_Dates_AddYears", "direct", 2, Array(DateSerial(2024, 2, 29), M2(2, 2, Array(CDbl(1), CDbl(2147483647), CDbl(1E+20), CDbl(-45)))), "Array", M2(2, 2, Array(DateSerial(2025, 2, 28), CVErr(FX_ERR_NUM), CVErr(FX_ERR_NUM), DateSerial(1979, 2, 28))), "r1c2=RESULT_WINDOW;r2c1=INTEGER_RANGE", "element")
+        Case 1239: FixtureBlock031 = Fx("matrix.nthweekdayofmonth-ok", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(5), CDbl(1)), "Date", DateSerial(2024, 2, 2), "", "")
+        Case 1240: FixtureBlock031 = Fx("matrix.nthweekdayofmonth-ws1900", "matrix", "KPR_Dates_NthWeekdayOfMonth", "ws1900", 4, Array(CDbl(2024), CDbl(2), CDbl(5), CDbl(1)), "Date", DateSerial(2024, 2, 2), "", "")
+        End Select
+
+End Function
+
+
+Private Function FixtureBlock032( _
+    ByVal Index As Long) _
+    As Variant
+'
+'==============================================================================
+'                               FixtureBlock032
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns fixture cases 1241 to 1280.
+'
+' UPDATED
+'   2026-09-25
+'==============================================================================
+
+'------------------------------------------------------------------------------
+' SELECT CASE
+'------------------------------------------------------------------------------
+    'One generated record per case number.
+        Select Case Index
+        Case 1241: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-ws1904", "matrix", "KPR_Dates_NthWeekdayOfMonth", "ws1904", 4, Array(CDbl(2024), CDbl(2), CDbl(5), CDbl(1)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1242: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-ws1904-array", "matrix", "KPR_Dates_NthWeekdayOfMonth", "ws1904", 4, Array(M2(1, 3, Array(CDbl(2024), CDbl(2024), CDbl(2024))), CDbl(2), CDbl(5), CDbl(1)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1243: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-yearin-edge-low", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(1900), CDbl(2), CDbl(5), CDbl(1)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1244: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-yearin-edge-high", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(9999), CDbl(2), CDbl(5), CDbl(1)), "Date", DateSerial(9999, 2, 5), "", "")
+        Case 1245: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-yearin-invalid-a", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(1899), CDbl(2), CDbl(5), CDbl(1)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_YEAR", "element")
+        Case 1246: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-yearin-invalid-b", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(10000), CDbl(2), CDbl(5), CDbl(1)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_YEAR", "element")
+        Case 1247: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-yearin-propagated", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CVErr(FX_ERR_NA), CDbl(2), CDbl(5), CDbl(1)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1248: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-yearin-array-1x1", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(M2(1, 1, Array(CDbl(2024))), CDbl(2), CDbl(5), CDbl(1)), "Date", DateSerial(2024, 2, 2), "", "")
+        Case 1249: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-yearin-array-row", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(M2(1, 3, Array(CDbl(2024), CDbl(1899), CVErr(FX_ERR_DIV0))), CDbl(2), CDbl(5), CDbl(1)), "Array", M2(1, 3, Array(DateSerial(2024, 2, 2), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=DOMAIN_YEAR;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1250: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-yearin-array-column", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(M2(3, 1, Array(CDbl(2024), CDbl(1900), CDbl(2023))), CDbl(2), CDbl(5), CDbl(1)), "Array", M2(3, 1, Array(DateSerial(2024, 2, 2), CVErr(FX_ERR_NUM), DateSerial(2023, 2, 3))), "r2c1=RESULT_WINDOW", "element")
+        Case 1251: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-yearin-array-rectangle", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(M2(2, 2, Array(CDbl(2024), CDbl(9999), CDbl(10000), CDbl(2023))), CDbl(2), CDbl(5), CDbl(1)), "Array", M2(2, 2, Array(DateSerial(2024, 2, 2), DateSerial(9999, 2, 5), CVErr(FX_ERR_VALUE), DateSerial(2023, 2, 3))), "r2c1=DOMAIN_YEAR", "element")
+        Case 1252: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-monthin-edge-low", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(1), CDbl(5), CDbl(1)), "Date", DateSerial(2024, 1, 5), "", "")
+        Case 1253: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-monthin-edge-high", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(12), CDbl(5), CDbl(1)), "Date", DateSerial(2024, 12, 6), "", "")
+        Case 1254: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-monthin-invalid-a", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(0), CDbl(5), CDbl(1)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_MONTH", "element")
+        Case 1255: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-monthin-invalid-b", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(13), CDbl(5), CDbl(1)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_MONTH", "element")
+        Case 1256: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-monthin-propagated", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CVErr(FX_ERR_NA), CDbl(5), CDbl(1)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1257: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-monthin-array-1x1", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), M2(1, 1, Array(CDbl(2))), CDbl(5), CDbl(1)), "Date", DateSerial(2024, 2, 2), "", "")
+        Case 1258: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-monthin-array-row", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), M2(1, 3, Array(CDbl(2), CDbl(0), CVErr(FX_ERR_DIV0))), CDbl(5), CDbl(1)), "Array", M2(1, 3, Array(DateSerial(2024, 2, 2), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=DOMAIN_MONTH;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1259: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-monthin-array-column", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), M2(3, 1, Array(CDbl(2), CDbl(1), CDbl(11))), CDbl(5), CDbl(1)), "Array", M2(3, 1, Array(DateSerial(2024, 2, 2), DateSerial(2024, 1, 5), DateSerial(2024, 11, 1))), "", "")
+        Case 1260: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-monthin-array-rectangle", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), M2(2, 2, Array(CDbl(2), CDbl(12), CDbl(13), CDbl(11))), CDbl(5), CDbl(1)), "Array", M2(2, 2, Array(DateSerial(2024, 2, 2), DateSerial(2024, 12, 6), CVErr(FX_ERR_VALUE), DateSerial(2024, 11, 1))), "r2c1=DOMAIN_MONTH", "element")
+        Case 1261: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-wdindex-edge-low", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(1), CDbl(1)), "Date", DateSerial(2024, 2, 5), "", "")
+        Case 1262: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-wdindex-edge-high", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(7), CDbl(1)), "Date", DateSerial(2024, 2, 4), "", "")
+        Case 1263: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-wdindex-invalid-a", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(0), CDbl(1)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_WEEKDAY", "element")
+        Case 1264: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-wdindex-invalid-b", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(8), CDbl(1)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_WEEKDAY", "element")
+        Case 1265: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-wdindex-propagated", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CVErr(FX_ERR_NA), CDbl(1)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1266: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-wdindex-array-1x1", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), M2(1, 1, Array(CDbl(5))), CDbl(1)), "Date", DateSerial(2024, 2, 2), "", "")
+        Case 1267: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-wdindex-array-row", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), M2(1, 3, Array(CDbl(5), CDbl(0), CVErr(FX_ERR_DIV0))), CDbl(1)), "Array", M2(1, 3, Array(DateSerial(2024, 2, 2), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=DOMAIN_WEEKDAY;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1268: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-wdindex-array-column", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), M2(3, 1, Array(CDbl(5), CDbl(1), CDbl(3))), CDbl(1)), "Array", M2(3, 1, Array(DateSerial(2024, 2, 2), DateSerial(2024, 2, 5), DateSerial(2024, 2, 7))), "", "")
+        Case 1269: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-wdindex-array-rectangle", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), M2(2, 2, Array(CDbl(5), CDbl(7), CDbl(8), CDbl(3))), CDbl(1)), "Array", M2(2, 2, Array(DateSerial(2024, 2, 2), DateSerial(2024, 2, 4), CVErr(FX_ERR_VALUE), DateSerial(2024, 2, 7))), "r2c1=DOMAIN_WEEKDAY", "element")
+        Case 1270: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-n-edge-low", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(5), CDbl(1)), "Date", DateSerial(2024, 2, 2), "", "")
+        Case 1271: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-n-edge-high", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(5), CDbl(5)), "Error", CVErr(FX_ERR_NUM), "OCCURRENCE_ABSENT", "element")
+        Case 1272: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-n-invalid-a", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(5), CDbl(0)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_OCCURRENCE", "element")
+        Case 1273: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-n-invalid-b", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(5), CDbl(6)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_OCCURRENCE", "element")
+        Case 1274: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-n-propagated", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(5), CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1275: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-n-array-1x1", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(5), M2(1, 1, Array(CDbl(1)))), "Date", DateSerial(2024, 2, 2), "", "")
+        Case 1276: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-n-array-row", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(5), M2(1, 3, Array(CDbl(1), CDbl(0), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 2, 2), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=DOMAIN_OCCURRENCE;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1277: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-n-array-column", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(5), M2(3, 1, Array(CDbl(1), CDbl(1), CDbl(2)))), "Array", M2(3, 1, Array(DateSerial(2024, 2, 2), DateSerial(2024, 2, 2), DateSerial(2024, 2, 9))), "", "")
+        Case 1278: FixtureBlock032 = Fx("matrix.nthweekdayofmonth-n-array-rectangle", "matrix", "KPR_Dates_NthWeekdayOfMonth", "direct", 4, Array(CDbl(2024), CDbl(2), CDbl(5), M2(2, 2, Array(CDbl(1), CDbl(5), CDbl(6), CDbl(2)))), "Array", M2(2, 2, Array(DateSerial(2024, 2, 2), CVErr(FX_ERR_NUM), CVErr(FX_ERR_VALUE), DateSerial(2024, 2, 9))), "r1c2=OCCURRENCE_ABSENT;r2c1=DOMAIN_OCCURRENCE", "element")
+        Case 1279: FixtureBlock032 = Fx("matrix.lastweekdayofmonth-ok", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(2), CDbl(5)), "Date", DateSerial(2024, 2, 23), "", "")
+        Case 1280: FixtureBlock032 = Fx("matrix.lastweekdayofmonth-ws1900", "matrix", "KPR_Dates_LastWeekdayOfMonth", "ws1900", 3, Array(CDbl(2024), CDbl(2), CDbl(5)), "Date", DateSerial(2024, 2, 23), "", "")
+        End Select
+
+End Function
+
+
+Private Function FixtureBlock033( _
+    ByVal Index As Long) _
+    As Variant
+'
+'==============================================================================
+'                               FixtureBlock033
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns fixture cases 1281 to 1320.
+'
+' UPDATED
+'   2026-09-25
+'==============================================================================
+
+'------------------------------------------------------------------------------
+' SELECT CASE
+'------------------------------------------------------------------------------
+    'One generated record per case number.
+        Select Case Index
+        Case 1281: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-ws1904", "matrix", "KPR_Dates_LastWeekdayOfMonth", "ws1904", 3, Array(CDbl(2024), CDbl(2), CDbl(5)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1282: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-ws1904-array", "matrix", "KPR_Dates_LastWeekdayOfMonth", "ws1904", 3, Array(M2(1, 3, Array(CDbl(2024), CDbl(2024), CDbl(2024))), CDbl(2), CDbl(5)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1283: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-yearin-edge-low", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(1900), CDbl(2), CDbl(5)), "Error", CVErr(FX_ERR_NUM), "RESULT_WINDOW", "element")
+        Case 1284: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-yearin-edge-high", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(9999), CDbl(2), CDbl(5)), "Date", DateSerial(9999, 2, 26), "", "")
+        Case 1285: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-yearin-invalid-a", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(1899), CDbl(2), CDbl(5)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_YEAR", "element")
+        Case 1286: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-yearin-invalid-b", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(10000), CDbl(2), CDbl(5)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_YEAR", "element")
+        Case 1287: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-yearin-propagated", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CVErr(FX_ERR_NA), CDbl(2), CDbl(5)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1288: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-yearin-array-1x1", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(M2(1, 1, Array(CDbl(2024))), CDbl(2), CDbl(5)), "Date", DateSerial(2024, 2, 23), "", "")
+        Case 1289: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-yearin-array-row", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(M2(1, 3, Array(CDbl(2024), CDbl(1899), CVErr(FX_ERR_DIV0))), CDbl(2), CDbl(5)), "Array", M2(1, 3, Array(DateSerial(2024, 2, 23), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=DOMAIN_YEAR;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1290: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-yearin-array-column", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(M2(3, 1, Array(CDbl(2024), CDbl(1900), CDbl(2023))), CDbl(2), CDbl(5)), "Array", M2(3, 1, Array(DateSerial(2024, 2, 23), CVErr(FX_ERR_NUM), DateSerial(2023, 2, 24))), "r2c1=RESULT_WINDOW", "element")
+        Case 1291: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-yearin-array-rectangle", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(M2(2, 2, Array(CDbl(2024), CDbl(9999), CDbl(10000), CDbl(2023))), CDbl(2), CDbl(5)), "Array", M2(2, 2, Array(DateSerial(2024, 2, 23), DateSerial(9999, 2, 26), CVErr(FX_ERR_VALUE), DateSerial(2023, 2, 24))), "r2c1=DOMAIN_YEAR", "element")
+        Case 1292: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-monthin-edge-low", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(1), CDbl(5)), "Date", DateSerial(2024, 1, 26), "", "")
+        Case 1293: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-monthin-edge-high", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(12), CDbl(5)), "Date", DateSerial(2024, 12, 27), "", "")
+        Case 1294: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-monthin-invalid-a", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(0), CDbl(5)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_MONTH", "element")
+        Case 1295: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-monthin-invalid-b", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(13), CDbl(5)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_MONTH", "element")
+        Case 1296: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-monthin-propagated", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CVErr(FX_ERR_NA), CDbl(5)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1297: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-monthin-array-1x1", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), M2(1, 1, Array(CDbl(2))), CDbl(5)), "Date", DateSerial(2024, 2, 23), "", "")
+        Case 1298: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-monthin-array-row", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), M2(1, 3, Array(CDbl(2), CDbl(0), CVErr(FX_ERR_DIV0))), CDbl(5)), "Array", M2(1, 3, Array(DateSerial(2024, 2, 23), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=DOMAIN_MONTH;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1299: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-monthin-array-column", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), M2(3, 1, Array(CDbl(2), CDbl(1), CDbl(11))), CDbl(5)), "Array", M2(3, 1, Array(DateSerial(2024, 2, 23), DateSerial(2024, 1, 26), DateSerial(2024, 11, 29))), "", "")
+        Case 1300: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-monthin-array-rectangle", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), M2(2, 2, Array(CDbl(2), CDbl(12), CDbl(13), CDbl(11))), CDbl(5)), "Array", M2(2, 2, Array(DateSerial(2024, 2, 23), DateSerial(2024, 12, 27), CVErr(FX_ERR_VALUE), DateSerial(2024, 11, 29))), "r2c1=DOMAIN_MONTH", "element")
+        Case 1301: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-wdindex-edge-low", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(2), CDbl(1)), "Date", DateSerial(2024, 2, 26), "", "")
+        Case 1302: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-wdindex-edge-high", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(2), CDbl(7)), "Date", DateSerial(2024, 2, 25), "", "")
+        Case 1303: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-wdindex-invalid-a", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(2), CDbl(0)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_WEEKDAY", "element")
+        Case 1304: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-wdindex-invalid-b", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(2), CDbl(8)), "Error", CVErr(FX_ERR_VALUE), "DOMAIN_WEEKDAY", "element")
+        Case 1305: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-wdindex-propagated", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(2), CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1306: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-wdindex-array-1x1", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(2), M2(1, 1, Array(CDbl(5)))), "Date", DateSerial(2024, 2, 23), "", "")
+        Case 1307: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-wdindex-array-row", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(2), M2(1, 3, Array(CDbl(5), CDbl(0), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 2, 23), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=DOMAIN_WEEKDAY;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1308: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-wdindex-array-column", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(2), M2(3, 1, Array(CDbl(5), CDbl(1), CDbl(3)))), "Array", M2(3, 1, Array(DateSerial(2024, 2, 23), DateSerial(2024, 2, 26), DateSerial(2024, 2, 28))), "", "")
+        Case 1309: FixtureBlock033 = Fx("matrix.lastweekdayofmonth-wdindex-array-rectangle", "matrix", "KPR_Dates_LastWeekdayOfMonth", "direct", 3, Array(CDbl(2024), CDbl(2), M2(2, 2, Array(CDbl(5), CDbl(7), CDbl(8), CDbl(3)))), "Array", M2(2, 2, Array(DateSerial(2024, 2, 23), DateSerial(2024, 2, 25), CVErr(FX_ERR_VALUE), DateSerial(2024, 2, 28))), "r2c1=DOMAIN_WEEKDAY", "element")
+        Case 1310: FixtureBlock033 = Fx("matrix.pillarfromdates-ok", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(2024, 1, 15), DateSerial(2024, 7, 15)), "String", "6M", "", "")
+        Case 1311: FixtureBlock033 = Fx("matrix.pillarfromdates-ws1900", "matrix", "KPR_Dates_PillarFromDates", "ws1900", 2, Array(DateSerial(2024, 1, 15), DateSerial(2024, 7, 15)), "String", "6M", "", "")
+        Case 1312: FixtureBlock033 = Fx("matrix.pillarfromdates-ws1904", "matrix", "KPR_Dates_PillarFromDates", "ws1904", 2, Array(DateSerial(2024, 1, 15), DateSerial(2024, 7, 15)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1313: FixtureBlock033 = Fx("matrix.pillarfromdates-ws1904-array", "matrix", "KPR_Dates_PillarFromDates", "ws1904", 2, Array(M2(1, 3, Array(DateSerial(2024, 1, 15), DateSerial(2024, 1, 15), DateSerial(2024, 1, 15))), DateSerial(2024, 7, 15)), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1314: FixtureBlock033 = Fx("matrix.pillarfromdates-startdate-edge-low", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(1900, 3, 1), DateSerial(2024, 7, 15)), "String", "124Y4M", "", "")
+        Case 1315: FixtureBlock033 = Fx("matrix.pillarfromdates-startdate-edge-high", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(9999, 12, 31), DateSerial(2024, 7, 15)), "String", "-7975Y6M", "", "")
+        Case 1316: FixtureBlock033 = Fx("matrix.pillarfromdates-startdate-invalid-a", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(1900, 2, 28), DateSerial(2024, 7, 15)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1317: FixtureBlock033 = Fx("matrix.pillarfromdates-startdate-invalid-b", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array("2024-02-30", DateSerial(2024, 7, 15)), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1318: FixtureBlock033 = Fx("matrix.pillarfromdates-startdate-propagated", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(CVErr(FX_ERR_NA), DateSerial(2024, 7, 15)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1319: FixtureBlock033 = Fx("matrix.pillarfromdates-startdate-array-1x1", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(M2(1, 1, Array(DateSerial(2024, 1, 15))), DateSerial(2024, 7, 15)), "String", "6M", "", "")
+        Case 1320: FixtureBlock033 = Fx("matrix.pillarfromdates-startdate-array-row", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(M2(1, 3, Array(DateSerial(2024, 1, 15), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0))), DateSerial(2024, 7, 15)), "Array", M2(1, 3, Array("6M", CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        End Select
+
+End Function
+
+
+Private Function FixtureBlock034( _
+    ByVal Index As Long) _
+    As Variant
+'
+'==============================================================================
+'                               FixtureBlock034
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns fixture cases 1321 to 1353.
+'
+' UPDATED
+'   2026-09-25
+'==============================================================================
+
+'------------------------------------------------------------------------------
+' SELECT CASE
+'------------------------------------------------------------------------------
+    'One generated record per case number.
+        Select Case Index
+        Case 1321: FixtureBlock034 = Fx("matrix.pillarfromdates-startdate-array-column", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(M2(3, 1, Array(DateSerial(2024, 1, 15), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30))), DateSerial(2024, 7, 15)), "Array", M2(3, 1, Array("6M", "124Y4M", "8M")), "", "")
+        Case 1322: FixtureBlock034 = Fx("matrix.pillarfromdates-startdate-array-rectangle", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(M2(2, 2, Array(DateSerial(2024, 1, 15), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30))), DateSerial(2024, 7, 15)), "Array", M2(2, 2, Array("6M", "-7975Y6M", CVErr(FX_ERR_VALUE), "8M")), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1323: FixtureBlock034 = Fx("matrix.pillarfromdates-enddate-edge-low", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(2024, 1, 15), DateSerial(1900, 3, 1)), "String", "-123Y10M", "", "")
+        Case 1324: FixtureBlock034 = Fx("matrix.pillarfromdates-enddate-edge-high", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(2024, 1, 15), DateSerial(9999, 12, 31)), "String", "7975Y11M", "", "")
+        Case 1325: FixtureBlock034 = Fx("matrix.pillarfromdates-enddate-invalid-a", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(2024, 1, 15), DateSerial(1900, 2, 28)), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1326: FixtureBlock034 = Fx("matrix.pillarfromdates-enddate-invalid-b", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(2024, 1, 15), "2024-02-30"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1327: FixtureBlock034 = Fx("matrix.pillarfromdates-enddate-propagated", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(2024, 1, 15), CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1328: FixtureBlock034 = Fx("matrix.pillarfromdates-enddate-array-1x1", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(2024, 1, 15), M2(1, 1, Array(DateSerial(2024, 7, 15)))), "String", "6M", "", "")
+        Case 1329: FixtureBlock034 = Fx("matrix.pillarfromdates-enddate-array-row", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(2024, 1, 15), M2(1, 3, Array(DateSerial(2024, 7, 15), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array("6M", CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1330: FixtureBlock034 = Fx("matrix.pillarfromdates-enddate-array-column", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(2024, 1, 15), M2(3, 1, Array(DateSerial(2024, 7, 15), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30)))), "Array", M2(3, 1, Array("6M", "-123Y10M", "-2M")), "", "")
+        Case 1331: FixtureBlock034 = Fx("matrix.pillarfromdates-enddate-array-rectangle", "matrix", "KPR_Dates_PillarFromDates", "direct", 2, Array(DateSerial(2024, 1, 15), M2(2, 2, Array(DateSerial(2024, 7, 15), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30)))), "Array", M2(2, 2, Array("6M", "7975Y11M", CVErr(FX_ERR_VALUE), "-2M")), "r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1332: FixtureBlock034 = Fx("matrix.datefrompillar-ok", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(2024, 1, 15), "6M"), "Date", DateSerial(2024, 7, 15), "", "")
+        Case 1333: FixtureBlock034 = Fx("matrix.datefrompillar-ws1900", "matrix", "KPR_Dates_DateFromPillar", "ws1900", 2, Array(DateSerial(2024, 1, 15), "6M"), "Date", DateSerial(2024, 7, 15), "", "")
+        Case 1334: FixtureBlock034 = Fx("matrix.datefrompillar-ws1904", "matrix", "KPR_Dates_DateFromPillar", "ws1904", 2, Array(DateSerial(2024, 1, 15), "6M"), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1335: FixtureBlock034 = Fx("matrix.datefrompillar-ws1904-array", "matrix", "KPR_Dates_DateFromPillar", "ws1904", 2, Array(M2(1, 3, Array(DateSerial(2024, 1, 15), DateSerial(2024, 1, 15), DateSerial(2024, 1, 15))), "6M"), "Error", CVErr(FX_ERR_NA), "HOST_DATE1904", "call")
+        Case 1336: FixtureBlock034 = Fx("matrix.datefrompillar-startdate-edge-low", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(1900, 3, 1), "6M"), "Date", DateSerial(1900, 9, 1), "", "")
+        Case 1337: FixtureBlock034 = Fx("matrix.datefrompillar-startdate-edge-high", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(9999, 12, 31), "6M"), "Error", CVErr(FX_ERR_NUM), "PILLAR_AGGREGATE_RANGE", "element")
+        Case 1338: FixtureBlock034 = Fx("matrix.datefrompillar-startdate-invalid-a", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(1900, 2, 28), "6M"), "Error", CVErr(FX_ERR_NUM), "DATE_WINDOW", "element")
+        Case 1339: FixtureBlock034 = Fx("matrix.datefrompillar-startdate-invalid-b", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array("2024-02-30", "6M"), "Error", CVErr(FX_ERR_VALUE), "DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1340: FixtureBlock034 = Fx("matrix.datefrompillar-startdate-propagated", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(CVErr(FX_ERR_NA), "6M"), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1341: FixtureBlock034 = Fx("matrix.datefrompillar-startdate-array-1x1", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(M2(1, 1, Array(DateSerial(2024, 1, 15))), "6M"), "Date", DateSerial(2024, 7, 15), "", "")
+        Case 1342: FixtureBlock034 = Fx("matrix.datefrompillar-startdate-array-row", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(M2(1, 3, Array(DateSerial(2024, 1, 15), DateSerial(1900, 2, 28), CVErr(FX_ERR_DIV0))), "6M"), "Array", M2(1, 3, Array(DateSerial(2024, 7, 15), CVErr(FX_ERR_NUM), CVErr(FX_ERR_DIV0))), "r1c2=DATE_WINDOW;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1343: FixtureBlock034 = Fx("matrix.datefrompillar-startdate-array-column", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(M2(3, 1, Array(DateSerial(2024, 1, 15), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30))), "6M"), "Array", M2(3, 1, Array(DateSerial(2024, 7, 15), DateSerial(1900, 9, 1), DateSerial(2024, 5, 30))), "", "")
+        Case 1344: FixtureBlock034 = Fx("matrix.datefrompillar-startdate-array-rectangle", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(M2(2, 2, Array(DateSerial(2024, 1, 15), DateSerial(9999, 12, 31), "2024-02-30", DateSerial(2023, 11, 30))), "6M"), "Array", M2(2, 2, Array(DateSerial(2024, 7, 15), CVErr(FX_ERR_NUM), CVErr(FX_ERR_VALUE), DateSerial(2024, 5, 30))), "r1c2=PILLAR_AGGREGATE_RANGE;r2c1=DATE_TEXT_IMPOSSIBLE", "element")
+        Case 1345: FixtureBlock034 = Fx("matrix.datefrompillar-pillar-edge-low", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(2024, 1, 15), "0D"), "Date", DateSerial(2024, 1, 15), "", "")
+        Case 1346: FixtureBlock034 = Fx("matrix.datefrompillar-pillar-edge-high", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(2024, 1, 15), "ON"), "Date", DateSerial(2024, 1, 16), "", "")
+        Case 1347: FixtureBlock034 = Fx("matrix.datefrompillar-pillar-invalid-a", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(2024, 1, 15), "1X"), "Error", CVErr(FX_ERR_VALUE), "PILLAR_TOKEN_MALFORMED", "element")
+        Case 1348: FixtureBlock034 = Fx("matrix.datefrompillar-pillar-invalid-b", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(2024, 1, 15), True), "Error", CVErr(FX_ERR_VALUE), "PILLAR_TYPE_REJECTED", "element")
+        Case 1349: FixtureBlock034 = Fx("matrix.datefrompillar-pillar-propagated", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(2024, 1, 15), CVErr(FX_ERR_NA)), "Error", CVErr(FX_ERR_NA), "INPUT_ERROR_PROPAGATED", "element")
+        Case 1350: FixtureBlock034 = Fx("matrix.datefrompillar-pillar-array-1x1", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(2024, 1, 15), M2(1, 1, Array("6M"))), "Date", DateSerial(2024, 7, 15), "", "")
+        Case 1351: FixtureBlock034 = Fx("matrix.datefrompillar-pillar-array-row", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(2024, 1, 15), M2(1, 3, Array("6M", "1X", CVErr(FX_ERR_DIV0)))), "Array", M2(1, 3, Array(DateSerial(2024, 7, 15), CVErr(FX_ERR_VALUE), CVErr(FX_ERR_DIV0))), "r1c2=PILLAR_TOKEN_MALFORMED;r1c3=INPUT_ERROR_PROPAGATED", "element")
+        Case 1352: FixtureBlock034 = Fx("matrix.datefrompillar-pillar-array-column", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(2024, 1, 15), M2(3, 1, Array("6M", "0D", "3M"))), "Array", M2(3, 1, Array(DateSerial(2024, 7, 15), DateSerial(2024, 1, 15), DateSerial(2024, 4, 15))), "", "")
+        Case 1353: FixtureBlock034 = Fx("matrix.datefrompillar-pillar-array-rectangle", "matrix", "KPR_Dates_DateFromPillar", "direct", 2, Array(DateSerial(2024, 1, 15), M2(2, 2, Array("6M", "ON", True, "3M"))), "Array", M2(2, 2, Array(DateSerial(2024, 7, 15), DateSerial(2024, 1, 16), CVErr(FX_ERR_VALUE), DateSerial(2024, 4, 15))), "r2c1=PILLAR_TYPE_REJECTED", "element")
         End Select
 
 End Function
