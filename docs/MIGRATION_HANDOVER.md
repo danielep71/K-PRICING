@@ -70,7 +70,7 @@ each item was scheduled. Current planning lives in the [roadmap](ROADMAP.md).
 | Independent fixtures | Independent Python fixture generator, canonical TSV and generated VBA fixture module | Not implemented by migration. Delivered after v0.0.2 by #38 (PR #54): `tools/gen_fixtures.py`, `tests/fixtures/date_layer_fixtures.tsv` and `KPR_Test_Fixtures_Generated`; the #39 durable runner executes them. |
 | Durable runner | Final durable regression interface and broad structured evidence schema | Partially overlapped by migration-specific K-PRICING evidence work; not complete at migration. Implemented after v0.0.2 by #39 (`KPR_Test_RunAll`, `KPR_Test_RunSuite`, [KPR_TEST_EVIDENCE.md](KPR_TEST_EVIDENCE.md)); verified on one Windows 64-bit Excel host (PR #58). |
 | Regression matrix | Complete contract/shape/parity/error/state regression matrix | Focused migrated suites exist, but the complete matrix remains future work. Scheduled in v0.0.3 as #40. |
-| Cross-oracle | Native Excel cross-oracle module | Not implemented. Scheduled in v0.0.3 as #41. |
+| Cross-oracle | Native Excel cross-oracle module | Not implemented at migration. Implemented after v0.0.2 by #41 (`KPR_Test_Oracle`). |
 | Demo builder | Deterministic date-demo builder | Not implemented. The destination carries only a minimal direct-VBA consumer example. Scheduled in v0.0.4 as #46. |
 | Ribbon | Ribbon callbacks, RibbonX and safe package injection | Not implemented. Scheduled in v0.0.4 as #47. |
 | CommandBars | Idempotent classic CommandBars lifecycle | Not implemented. Scheduled in v0.0.4 as #48. |

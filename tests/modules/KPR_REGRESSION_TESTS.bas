@@ -44,7 +44,7 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 ' DURABLE REGISTRY
 '   KPR_Test_RunAll runs TestRegistry in order: the twelve suites above, then
 '   fixtures, then the macro-only runners as worksheet-host, worksheet-shape,
-'   worksheet-array, worksheet-fixtures and worksheet-state.
+'   worksheet-array, worksheet-fixtures, worksheet-oracle and worksheet-state.
 '   KPR_Test_RunSuite runs one of them. tools/check_test_evidence.py reads the registry from this source.
 '
 ' SCOPE
@@ -81,7 +81,7 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '       KPR_Tests_RunAll()            returns a two-column array for a worksheet
 '                                     or for programmatic use
 '
-'   Five stateful entry points are deliberately NOT reachable from the
+'   Six stateful entry points are deliberately NOT reachable from the
 '   pure dispatcher above; the durable runner orchestrates them:
 '
 '       KPR_Tests_RunHost             creates a scratch workbook, exercises the
@@ -107,6 +107,9 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '                                     context is a 1900 or 1904 worksheet
 '                                     caller as Range formulas in a scratch
 '                                     workbook.
+'       KPR_Tests_RunOracle           compares the date primitives with native
+'                                     Excel functions where the contracts
+'                                     overlap (KPR_Test_Oracle, #41).
 '       KPR_Tests_RunStateCheck       runs the durable runner on one suite
 '                                     twice, once with a deliberate failure,
 '                                     and proves caller state is restored
@@ -130,7 +133,8 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 ' ALLOWED DEPENDENCIES
 '   KPR_Core_Parse, KPR_Core_Dates, KPR_Core_Array and KPR_Core_Err, called
 '   directly to assert exact classification, KPR_DATES_DAYS for boundary
-'   behaviour, and KPR_Test_Fixtures_Generated for generated expectations.
+'   behaviour, KPR_Test_Fixtures_Generated for generated expectations, and
+'   KPR_Test_Oracle for the Excel cross-oracle cases.
 '   No other module is reachable from here. The stateful runners also
 '   use Excel.Workbooks.Add and the scratch workbooks they create, always
 '   through exact object references and never through ActiveWorkbook.
@@ -806,7 +810,7 @@ Private Function TestRegistry() As Variant
         "date-type", "date-text", "date-window", "integer", "control", _
         "boundary", "mapper", "host", "pillar", "surface", "shape", _
         "parity", "fixtures", "worksheet-host", "worksheet-shape", _
-        "worksheet-array", "worksheet-fixtures", "worksheet-state")
+        "worksheet-array", "worksheet-fixtures", "worksheet-oracle", "worksheet-state")
 
 End Function
 
@@ -824,7 +828,7 @@ Private Function SuiteKind( _
         Case "fixtures"
             SuiteKind = "fixture"
         Case "worksheet-host", "worksheet-shape", "worksheet-array", "worksheet-fixtures", _
-             "worksheet-state"
+             "worksheet-oracle", "worksheet-state"
             SuiteKind = "worksheet"
         Case Else
             SuiteKind = "pure"
@@ -848,6 +852,7 @@ Private Sub ExecuteSuite( _
         Case "worksheet-shape":     KPR_Tests_RunShape
         Case "worksheet-array":     KPR_Tests_RunArray
         Case "worksheet-fixtures":  KPR_Tests_RunFixtureHost
+        Case "worksheet-oracle":    KPR_Tests_RunOracle
         Case "worksheet-state":     KPR_Tests_RunStateCheck
         Case Else
             If Not RunSuite(SuiteName) Then
@@ -1495,6 +1500,7 @@ Private Function TryWriteEvidence( _
     Dim Sep             As String       'Array element separator
     Dim Regression      As String       'Regression outcome detail
     Dim Entry           As Variant      'One recorded failure: suite, case, detail
+    Dim Oracle          As String       'cross_oracle outcome JSON
 
 '------------------------------------------------------------------------------
 ' OPEN
@@ -1592,8 +1598,8 @@ Private Function TryWriteEvidence( _
     Else
         Print #FileNo, "    ""regression"": " & JsonOutcome("FAIL", Regression, "") & ","
     End If
-    Print #FileNo, "    ""cross_oracle"": " & _
-                   JsonOutcome("NOT_RUN", "", "No cross-oracle suite is registered in this candidate (#41).") & ","
+    Oracle = OracleOutcome(Rec)
+    Print #FileNo, "    ""cross_oracle"": " & Oracle & ","
     Print #FileNo, "    ""macro_options"": " & OperatorOutcome() & ","
     Print #FileNo, "    ""ribbonx"": " & OperatorOutcome() & ","
     Print #FileNo, "    ""commandbars"": " & OperatorOutcome() & ","
@@ -1617,6 +1623,38 @@ Write_Error:
     On Error Resume Next
     If Opened Then Close #FileNo
     Err.Clear
+
+End Function
+
+Private Function OracleOutcome( _
+    ByRef Rec As RunRecord) _
+    As String
+'
+' The cross_oracle outcome follows the worksheet-oracle suite when this run
+' selected it; otherwise the oracle did not run.
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim I               As Long         'Suite cursor
+
+'------------------------------------------------------------------------------
+' MAP
+'------------------------------------------------------------------------------
+    OracleOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-oracle suite was not selected in this run.")
+    For I = 0 To Rec.SuiteCount - 1
+        If Rec.SuiteNames(I) = "worksheet-oracle" Then
+            Select Case Rec.SuiteStatus(I)
+                Case "PASS", "FAIL"
+                    OracleOutcome = JsonOutcome(Rec.SuiteStatus(I), _
+                                                CStr(Rec.SuiteChecks(I)) & " oracle assertion(s), " & _
+                                                CStr(Rec.SuiteFails(I)) & " failure(s)", "")
+                Case Else
+                    OracleOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-oracle suite did not run.")
+            End Select
+        End If
+    Next I
 
 End Function
 
@@ -2156,6 +2194,53 @@ Private Function TryWriteCell( _
     TryWriteCell = True
 
 End Function
+
+'
+'------------------------------------------------------------------------------
+'
+'                     STATEFUL ORACLE RUNNER (MACRO ONLY)
+'
+'------------------------------------------------------------------------------
+'
+
+Public Sub KPR_Tests_RunOracle()
+'
+'==============================================================================
+'                              KPR_Tests_RunOracle
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Runs the Excel cross-oracle cases in KPR_Test_Oracle (#41) and prints the
+'   report to the Immediate window. The oracle module owns its scratch
+'   workbook and its documented overlap and exclusion rules.
+'
+' UPDATED
+'   2026-09-26
+'==============================================================================
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim I               As Long         'Report cursor
+
+'------------------------------------------------------------------------------
+' RUN
+'------------------------------------------------------------------------------
+    Set mFailures = New Collection
+    mChecks = 0
+    KPR_Oracle_RunCases mChecks, mFailures
+
+'------------------------------------------------------------------------------
+' REPORT
+'------------------------------------------------------------------------------
+    If Not mQuietTrace Then
+        Debug.Print "KPR oracle regression  checks: " & CStr(mChecks) & "  failures: " & CStr(mFailures.Count)
+        For I = 1 To mFailures.Count
+            Debug.Print "  FAIL  " & CStr(mFailures(I)(0)) & " : " & CStr(mFailures(I)(1))
+        Next I
+    End If
+
+End Sub
 
 '
 '------------------------------------------------------------------------------

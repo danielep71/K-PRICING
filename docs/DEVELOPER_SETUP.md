@@ -13,7 +13,7 @@ other environments are not certified.
 | --- | --- | --- |
 | `src/core/` | `KPR_Core_Err.bas`, `KPR_Core_Parse.bas`, `KPR_Core_Dates.bas`, `KPR_Core_Array.bas` | Internal error, parsing, calendar and array/shape implementation |
 | `src/modules/` | `KPR_DATES_DAYS.bas` | Supported 22-function `KPR_Dates_*` worksheet façade |
-| `tests/modules/` | `KPR_REGRESSION_TESTS.bas`, `KPR_Test_Fixtures_Generated.bas` | Migrated pure and stateful regression harness and the durable runner (`KPR_Test_RunAll`); generated fixture data from `tools/gen_fixtures.py` (never edit by hand) |
+| `tests/modules/` | `KPR_REGRESSION_TESTS.bas`, `KPR_Test_Fixtures_Generated.bas`, `KPR_Test_Oracle.bas` | Migrated pure and stateful regression harness and the durable runner (`KPR_Test_RunAll`); generated fixture data from `tools/gen_fixtures.py` (never edit by hand); Excel cross-oracle cases |
 | `examples/modules/` | `KPR_DateExample.bas` | Minimal direct-VBA consumer using the supported façade |
 | Future workbook/add-in/UI | Not implemented | Registration, startup/shutdown, configuration, packaging and recovery, separated from calculations |
 

@@ -47,10 +47,13 @@ ALLOWED_DEPENDENCIES = {
             "kpr_core_array",
             "kpr_dates_days",
             "kpr_test_fixtures_generated",
+            "kpr_test_oracle",
         }
     ),
     # Generated expectations must stay independent of every production module.
     "kpr_test_fixtures_generated": frozenset(),
+    # The Excel cross-oracle compares the public facade only.
+    "kpr_test_oracle": frozenset({"kpr_dates_days"}),
 }
 REQUIRED_MEMBERS = {
     "kpr_core_err": frozenset({"ErrValue", "ErrNum", "ErrNA", "ErrForCondition"}),
@@ -91,6 +94,7 @@ REQUIRED_MEMBERS = {
     "kpr_test_fixtures_generated": frozenset(
         {"KPR_Fixtures_Count", "KPR_Fixtures_Case", "KPR_Fixtures_SourceHash"}
     ),
+    "kpr_test_oracle": frozenset({"KPR_Oracle_RunCases"}),
     "kpr_regression_tests": frozenset({
         "KPR_Tests_Run",
         "KPR_Tests_RunSuite",
@@ -102,6 +106,7 @@ REQUIRED_MEMBERS = {
         "KPR_Tests_RunArray",
         "KPR_Tests_RunFixtureHost",
         "KPR_Tests_RunStateCheck",
+        "KPR_Tests_RunOracle",
         "KPR_Test_RunAll",
         "KPR_Test_RunSuite",
     }),
@@ -613,6 +618,339 @@ def rule_day_zero(data: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+ORACLE_MODULE = "kpr_test_oracle"
+ORACLE_FUNCTIONS = frozenset({"EOMONTH", "EDATE", "WEEKDAY", "DAY", "YEAR", "MONTH"})
+ORACLE_CALL = re.compile(r"\bXl\s*\(", re.I)
+ORACLE_PROCEDURE = re.compile(
+    r"^(?:(?:Public|Private|Friend|Static)\s+)*(?:Function|Sub|Property\s+(?:Get|Let|Set))\s+(\w+)", re.I
+)
+# Any way to hand a formula to Excel (evaluation, worksheet functions, cell or
+# name formulas, recalculation, macro calls); only the Xl helper may use one.
+ORACLE_EVALUATION = re.compile(
+    r"\b(?:Evaluate|ExecuteExcel4Macro|WorksheetFunction|CallByName|Range|Cells|Names|SendKeys|DDE\w*)\b"
+    r"|\.(?:Formula\w*|Value2?|RefersTo\w*|Calculate\w*|Run)\b|\[",
+    re.I,
+)
+# The Xl helper holds its header, this one statement and End Function.
+ORACLE_XL_BODY = re.compile(
+    r"Private\s+Function\s+Xl\s*\(\s*ByVal\s+Formula\s+As\s+String\s*\)\s*As\s+Variant"
+    r"|Xl\s*=\s*mSheet\.Evaluate\s*\(\s*Formula\s*\)|End\s+Function",
+    re.I,
+)
+NUMERIC_TYPES = frozenset({"byte", "integer", "long", "longlong", "single", "double", "currency"})
+
+
+def _split_top(text: str, separator: str) -> list[str]:
+    """Split VBA text on a separator outside string literals and parentheses."""
+    parts, current, depth, in_string = [], "", 0, False
+    for char in text:
+        if char == '"':
+            in_string = not in_string
+        elif not in_string and char in "()":
+            depth += 1 if char == "(" else -1
+        if char == separator and not in_string and depth == 0:
+            parts.append(current.strip())
+            current = ""
+        else:
+            current += char
+    parts.append(current.strip())
+    return parts
+
+
+def oracle_calls(statement: str) -> list[str]:
+    """The argument text of each Xl(...) call: the formula Excel evaluates."""
+    calls: list[str] = []
+    match = ORACLE_CALL.search(statement)
+    while match:
+        index, depth, in_string = match.end(), 1, False
+        while index < len(statement) and depth:
+            char = statement[index]
+            if char == '"':
+                in_string = not in_string
+            elif not in_string and char in "()":
+                depth += 1 if char == "(" else -1
+            index += 1
+        calls.append(statement[match.end():index - 1])
+        match = ORACLE_CALL.search(statement, index)
+    return calls
+
+
+def oracle_expressions(statement: str) -> list[str]:
+    """String literals inside each Xl(...) call: the formulas Excel evaluates."""
+    return [
+        " ".join(item.replace('""', '"') for item in re.findall(r'"((?:[^"]|"")*)"', call))
+        for call in oracle_calls(statement)
+    ]
+
+
+def _numeric_text(expression: str, numeric_names: set[str]) -> bool:
+    """True when expression is arithmetic over numeric literals and numeric-typed variables only."""
+    if not re.fullmatch(r"[\w\s+\-*/\\().]*", expression) or re.search(r"\w\s*\(", expression):
+        return False
+    names = {name.casefold() for name in re.findall(r"[A-Za-z_]\w*", expression)}
+    return names <= numeric_names | {"mod"}
+
+
+def _opaque_formula(argument: str, numeric_names: set[str]) -> bool:
+    """True when a formula part is neither a literal nor CStr of a numeric expression."""
+    for part in _split_top(argument, "&"):
+        inner = re.fullmatch(r"CStr\s*\((.*)\)", part, re.I | re.S)
+        if re.fullmatch(r'"(?:[^"]|"")*"', part):
+            continue
+        if not (inner and _numeric_text(inner.group(1), numeric_names)):
+            return True
+    return False
+
+
+def _oracle_statement_errors(statement: str, numeric_names: set[str], used: set[str]) -> list[str]:
+    errors: list[str] = []
+    for literal in re.findall(r'"((?:[^"]|"")*)"', statement):
+        if re.search(r"WORKDAY|NETWORKDAYS", literal, re.I):
+            errors.append("WORKDAY.INTL and NETWORKDAYS.INTL are out of v0.0.4 scope.")
+    for argument in oracle_calls(statement):
+        if _opaque_formula(argument, numeric_names):
+            errors.append("Every Xl formula must be built from literals and CStr of numeric expressions so it can be inspected.")
+    for argument in oracle_calls(statement):
+        errors.extend(_formula_grammar_errors(_formula_template(argument), used))
+    return errors
+
+
+def _formula_template(argument: str) -> str:
+    """The formula text Excel receives, with each CStr number shown as 0."""
+    pieces = []
+    for part in _split_top(argument, "&"):
+        literal = re.fullmatch(r'"((?:[^"]|"")*)"', part)
+        pieces.append(literal.group(1).replace('""', '"') if literal else "0")
+    return "".join(pieces)
+
+
+FORMULA_TOKEN = re.compile(r"\s+|\d+(?:\.\d+)?|[+\-*/,()]|([A-Za-z_][\w.]*)\s*(?=\()|(.)")
+
+
+def _formula_grammar_errors(formula: str, used: set[str]) -> list[str]:
+    """A formula may hold only numbers, + - * /, commas, parentheses and the permitted functions."""
+    errors: list[str] = []
+    for match in FORMULA_TOKEN.finditer(formula):
+        name, stray = match.group(1), match.group(2)
+        if name:
+            used.add(name.upper())
+            if name.upper() not in ORACLE_FUNCTIONS:
+                errors.append(f"Oracle formula calls {name}; only {', '.join(sorted(ORACLE_FUNCTIONS))} are permitted.")
+        elif stray:
+            rest = re.match(r"[^\s+\-*/,()]*", formula[match.start():])
+            errors.append(
+                f"Oracle formula holds {rest.group(0) if rest else stray!r}; only numbers, arithmetic "
+                "and the permitted functions may appear."
+            )
+            break
+    return errors
+
+
+# Allowlists for the oracle module outside Xl: every bare identifier is a
+# declared name, a label, a KPR_Dates_ facade call or one of these VBA and
+# Excel names, and every member access is one of ORACLE_MEMBERS. Anything
+# else (ActiveCell, Selection, Range, Names, Run, CreateObject, ...) fails.
+ORACLE_IDENTIFIERS = frozenset(
+    """
+    and application array as attribute boolean byref byval case cbool cdate cdbl cint clng collection const cstr
+    date dateserial day dim double else elseif end err error explicit false for function goto if int is isarray
+    lbound left long mid mod module month next not nothing on option private public resume right savechanges
+    select set str string sub then to trim true typename ubound variant vartype vb_name vbboolean vbdate vbempty
+    vberror vblong vbstring workbook worksheet xlcalculation xlcalculationmanual year
+    """.split()
+)
+ORACLE_MEMBERS = frozenset(
+    {"add", "calculation", "clear", "close", "date1904", "description", "number", "workbooks", "worksheets"}
+)
+
+
+OBJECT_TYPES = frozenset({"object", "workbook", "worksheet"})
+# The only ways the oracle may touch an Excel object outside Xl; NAME is the object.
+OBJECT_USES = (
+    r"Application\.Workbooks\.Add",
+    r"Application\.Calculation",
+    r"NAME\.Date1904",
+    r"NAME\.Close",
+    r"NAME\.Worksheets\(\s*\d+\s*\)",
+    r"NAME\s+Is\s+Nothing",
+    r"NAME\s*=\s*(?:Nothing|Application\.Workbooks\.Add|\w+\.Worksheets\(\s*\d+\s*\))",
+)
+
+
+def _object_names(statements: list[tuple[int, str]]) -> set[str]:
+    """Names declared with an Excel object type, plus Application."""
+    names = {"application"}
+    for _, statement in statements:
+        for item in re.finditer(r"(\w+)\s+As\s+(?:New\s+)?(\w+)", statement, re.I):
+            if item.group(2).casefold() in OBJECT_TYPES:
+                names.add(item.group(1).casefold())
+    return names
+
+
+def _object_misuse(statement: str, objects: set[str]) -> list[str]:
+    """Excel object references that are not one of the approved OBJECT_USES."""
+    code = strip_strings(statement)
+    if DECLARATION_START.match(code) or ORACLE_PROCEDURE.match(code):
+        return []
+    misuse: list[str] = []
+    # An Excel object may be stored only in a variable declared with an Excel object type
+    stored = re.search(r"(?:^|\bThen\s+|:\s*)Set\s+(\w+)\s*=(.*)$", code, re.I)
+    if stored and stored.group(1).casefold() not in objects:
+        if any(name.casefold() in objects for name in re.findall(r"[A-Za-z_]\w*", stored.group(2))):
+            misuse.append(stored.group(1))
+    if re.search(r"\.Worksheets\b|\.Workbooks\b", code, re.I) and not (
+        stored and stored.group(1).casefold() in objects
+    ):
+        misuse.append("Worksheets/Workbooks outside a Set of an object variable")
+    for match in re.finditer(r"(?<![\w.])([A-Za-z_]\w*)", code):
+        name = match.group(1)
+        if name.casefold() not in objects:
+            continue
+        rest = code[match.start():]
+        if not any(
+            re.match(use.replace("NAME", re.escape(name)) + r"(?![\w.(])", rest, re.I) for use in OBJECT_USES
+        ):
+            misuse.append(name)
+    return misuse
+
+
+def _oracle_names(statements: list[tuple[int, str]]) -> dict[str, set[str]]:
+    """Names visible in each procedure ("" is module level): module declarations and procedure
+    names everywhere, plus each procedure's own parameters, local declarations and labels."""
+    module: set[str] = set()
+    local: dict[str, set[str]] = {}
+    procedure = ""
+    for _, statement in statements:
+        header = ORACLE_PROCEDURE.match(statement)
+        label = re.match(r"^([A-Za-z_]\w*):(?!=)", statement)
+        start = DECLARATION_START.match(statement)
+        if header:
+            procedure = header.group(1).casefold()
+            module.add(procedure)
+            params = re.search(r"\((.*)\)", statement)
+            local[procedure] = {name for name, _ in _declared(params.group(1))} if params else set()
+        elif re.fullmatch(r"End\s+(?:Function|Sub|Property)", statement, re.I):
+            procedure = ""
+        elif label:
+            (local[procedure] if procedure else module).add(label.group(1).casefold())
+        elif start:
+            (local[procedure] if procedure else module).update(name for name, _ in _declared(statement[start.end():]))
+    return {"": module, **{name: module | names for name, names in local.items()}}
+
+
+def _unlisted_names(statement: str, names: set[str]) -> list[str]:
+    """Bare identifiers and member names outside the oracle allowlists."""
+    code = strip_strings(statement)
+    unlisted = [
+        f".{member}" for member in re.findall(r"\.([A-Za-z_]\w*)", code) if member.casefold() not in ORACLE_MEMBERS
+    ]
+    for name in re.findall(r"(?<![\w.])([A-Za-z_]\w*)", code):
+        folded = name.casefold()
+        if folded not in names and folded not in ORACLE_IDENTIFIERS and not folded.startswith("kpr_dates_"):
+            unlisted.append(name)
+    return unlisted
+
+
+DECLARATION_START = re.compile(
+    r"^(?:(?:Private|Public|Global|Dim|Static|ReDim|Const)\s+)+(?!Function\b|Sub\b|Property\b|Type\b|Enum\b|Declare\b)",
+    re.I,
+)
+DECLARATION_ITEM = re.compile(
+    r"(?:Optional\s+)?(?:ByVal\s+|ByRef\s+)?(?:ParamArray\s+)?(\w+)([&%#!@$^]?)(?:\s*\([^)]*\))?"
+    r"(?:\s+As\s+(?:New\s+)?([\w.]+))?",
+    re.I,
+)
+NUMERIC_SUFFIXES = frozenset("&%#!@^")
+
+
+def _declared(items: str) -> list[tuple[str, bool]]:
+    """(name, numeric) for each comma-separated declaration; untyped names are Variant."""
+    declared: list[tuple[str, bool]] = []
+    for item in _split_top(items, ","):
+        match = DECLARATION_ITEM.match(item.split("=")[0].strip())
+        if match:
+            kind = (match.group(3) or "").casefold()
+            declared.append((match.group(1).casefold(), kind in NUMERIC_TYPES or match.group(2) in NUMERIC_SUFFIXES))
+    return declared
+
+
+def _numeric_scopes(statements: list[tuple[int, str]]) -> dict[str, set[str]]:
+    """Numeric-typed names visible in each procedure ("" is module level); a local declaration shadows."""
+    module: dict[str, bool] = {}
+    local: dict[str, dict[str, bool]] = {}
+    procedure = ""
+    for _, statement in statements:
+        header = ORACLE_PROCEDURE.match(statement)
+        if header:
+            procedure = header.group(1).casefold()
+            returns = re.search(r"\)\s*As\s+(\w+)\s*$", statement, re.I)
+            module[procedure] = bool(returns and returns.group(1).casefold() in NUMERIC_TYPES)
+            params = re.search(r"\((.*)\)", statement)
+            local[procedure] = dict(_declared(params.group(1))) if params else {}
+        elif re.fullmatch(r"End\s+(?:Function|Sub|Property)", statement, re.I):
+            procedure = ""
+        else:
+            start = DECLARATION_START.match(statement)
+            if start:
+                target = local[procedure] if procedure else module
+                target.update(_declared(statement[start.end():]))
+    scopes = {"": {name for name, numeric in module.items() if numeric}}
+    for name, names in local.items():
+        visible = {**module, **names}
+        scopes[name] = {item for item, numeric in visible.items() if numeric}
+    return scopes
+
+
+def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
+    failures: list[dict[str, Any]] = []
+    used: set[str] = set()
+    modules = [(p, t) for p, t in data["sources"].items() if Path(p).stem.casefold() == ORACLE_MODULE]
+    if not modules:
+        failures.append(finding(CONFIG_PATH, "The Excel cross-oracle module KPR_Test_Oracle is not registered."))
+    for path, text in modules:
+        statements = logical(text)
+        scopes = _numeric_scopes(statements)
+        names = _oracle_names(statements)
+        objects = _object_names(statements)
+        procedure = ""
+        for number, statement in statements:
+            header = ORACLE_PROCEDURE.match(statement)
+            if header:
+                procedure = header.group(1).casefold()
+            if procedure == "xl":
+                if statement and not ORACLE_XL_BODY.fullmatch(statement):
+                    failures.append(finding(path, "Xl may only return mSheet.Evaluate(Formula).", number))
+            elif ORACLE_EVALUATION.search(strip_strings(statement)):
+                failures.append(finding(path, "Oracle formulas must reach Excel only through the Xl helper.", number))
+            elif misuse := _object_misuse(statement, objects):
+                failures.append(finding(
+                    path,
+                    f"Outside Xl the oracle may use {', '.join(sorted(set(misuse)))} only to open, set up and close "
+                    "the scratch workbook.",
+                    number,
+                ))
+            elif unlisted := _unlisted_names(statement, names.get(procedure, names[""])):
+                failures.append(finding(
+                    path,
+                    f"Outside Xl the oracle may use only declared names and approved VBA or Excel members; "
+                    f"found {', '.join(sorted(set(unlisted)))}.",
+                    number,
+                ))
+            else:
+                failures.extend(
+                    finding(path, error, number)
+                    for error in _oracle_statement_errors(statement, scopes.get(procedure, scopes[""]), used)
+                )
+            if re.fullmatch(r"End\s+(?:Function|Sub|Property)", statement, re.I):
+                procedure = ""
+    return result(
+        "kpr-oracle-scope",
+        "Excel cross-oracle function scope",
+        failures,
+        f"The cross-oracle evaluates only {', '.join(sorted(used)) or 'no functions'}",
+    )
+
+
 RULES = (
     rule_components,
     rule_surface,
@@ -625,6 +963,7 @@ RULES = (
     rule_host_authority,
     rule_array_purity,
     rule_day_zero,
+    rule_oracle_scope,
 )
 
 
@@ -780,6 +1119,119 @@ def self_test(root: Path) -> None:
     boundary["sources"][dates] += "\r\nPublic Function ProbeBoundary(ByVal Y As Long, ByVal M As Long) As Date\r\n    ProbeBoundary = DateSerial(Y, M + 1, 0)\r\nEnd Function\r\n"
     scenarios.append(("day-zero DateSerial", "kpr-day-zero", boundary))
 
+    oracle = next(path for path in base["sources"] if Path(path).stem.casefold() == ORACLE_MODULE)
+    scenarios.append((
+        "business-day oracle",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("WEEKDAY(" & CStr(Serial) & ",2)")', 'Xl("WORKDAY.INTL(" & CStr(Serial) & ",2)")'),
+    ))
+    scenarios.append((
+        "unlisted oracle function",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl("DATEVALUE(" & CStr(Serial) & ")")'),
+    ))
+    scenarios.append((
+        "lower-case oracle call",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'xl("DATEVALUE(" & CStr(Serial) & ")")'),
+    ))
+    scenarios.append((
+        "evaluation outside Xl",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'mSheet.Evaluate("DATEVALUE(" & CStr(Serial) & ")")'),
+    ))
+    scenarios.append((
+        "formula held in a variable",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl(Tag)'),
+    ))
+    scenarios.append((
+        "text smuggled through CStr",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl("DAY(" & CStr(Tag) & ")")'),
+    ))
+    scenarios.append((
+        "text assigned inside If",
+        "kpr-oracle-scope",
+        mutate(
+            mutate(base, oracle, "Tag = IsoText(Serial)", 'If Serial > 0 Then Tag = "DATEVALUE(1)"'),
+            oracle, 'Xl("DAY(" & CStr(Serial) & ")")', "Xl(Tag)",
+        ),
+    ))
+    scenarios.append((
+        "text built from character codes",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl(CStr(Chr$(68) & Chr$(65)))'),
+    ))
+    scenarios.append((
+        "bracket evaluation of a name",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "D = CDate(Serial)", "D = CDate(Serial): Tag = [HiddenFormula]"),
+    ))
+    for label, probe in (
+        ("worksheet function outside Xl", "Nth = Application.WorksheetFunction.NetworkDays_Intl(1, 2)"),
+        ("cell formula outside Xl", 'mSheet.Cells(1, 1).Formula = "=DATEVALUE(1)": mSheet.Calculate'),
+        ("cell value outside Xl", 'mSheet.Cells(1, 1).Value = "=DATEVALUE(1)"'),
+        ("workbook name outside Xl", 'mSheet.Parent.Names.Add "Hidden", "=DATEVALUE(1)"'),
+    ):
+        scenarios.append((label, "kpr-oracle-scope", mutate(base, oracle, "D = CDate(Serial)", f"D = CDate(Serial): {probe}")))
+    scenarios.append((
+        "defined name in an oracle formula",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl("HiddenFormula")'),
+    ))
+    scenarios.append((
+        "cell reference in an oracle formula",
+        "kpr-oracle-scope",
+        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl("DAY(A1)")'),
+    ))
+    scenarios.append((
+        "untyped local shadows a numeric name",
+        "kpr-oracle-scope",
+        mutate(
+            base, oracle, "Private Function NextInt(",
+            'Private Sub Probe()\r\n    Dim Serial\r\n    Serial = "DATEVALUE(1)"\r\n'
+            '    Serial = Xl(CStr(Serial))\r\nEnd Sub\r\n\r\nPrivate Function NextInt(',
+        ),
+    ))
+    for label, probe in (
+        ("implicit ActiveCell formula", 'Application.ActiveCell = "=DATEVALUE(1)"'),
+        ("unqualified Selection formula", 'Selection = "=DATEVALUE(1)"'),
+        ("worksheet member outside the allowlist", 'Nth = mSheet.UsedRange.Count'),
+        ("default member of a worksheet", 'mSheet("A1") = "=DATEVALUE(1)"'),
+        ("worksheet passed to another procedure", "Fail Tag, mSheet"),
+        ("worksheet held in a Variant alias", 'Set Boundaries = mSheet: Boundaries("A1") = "=DATEVALUE(1)"'),
+        ("new worksheet held in a Variant", "Set Boundaries = Application.Workbooks.Add"),
+        ("worksheet read without Set", "Boundaries = Application.Workbooks.Add"),
+    ):
+        scenarios.append((label, "kpr-oracle-scope", mutate(base, oracle, "D = CDate(Serial)", f"D = CDate(Serial): {probe}")))
+    scenarios.append((
+        "Excel global shadowed only in another procedure",
+        "kpr-oracle-scope",
+        mutate(
+            mutate(
+                base, oracle, "Private Function NextInt(",
+                "Private Sub Probe()\r\n    Dim ActiveCell As Long\r\n    ActiveCell = 1\r\nEnd Sub\r\n\r\n"
+                "Private Function NextInt(",
+            ),
+            oracle, "D = CDate(Serial)", 'D = CDate(Serial): ActiveCell = "=DATEVALUE(1)"',
+        ),
+    ))
+    scenarios.append((
+        "extra evaluation inside Xl",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "Xl = mSheet.Evaluate(Formula)", 'Xl = mSheet.Evaluate("DATEVALUE(1)")'),
+    ))
+    scenarios.append((
+        "second statement inside Xl",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "Xl = mSheet.Evaluate(Formula)", 'Xl = mSheet.Evaluate(Formula): Xl = Xl + 0'),
+    ))
+    scenarios.append((
+        "default formula on Xl",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "ByVal Formula As String) _", 'Optional ByVal Formula As String = "DATEVALUE(1)") _'),
+    ))
     for name, expected, case in scenarios:
         rep = report(root, case)
         failed_ids = {

@@ -104,6 +104,14 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added the Excel cross-oracle checks (#41): `KPR_Test_Oracle` compares the
+  date primitives with native `EOMONTH`, `EDATE`, `WEEKDAY`, `DAY`, `YEAR` and
+  `MONTH` where the contracts overlap, on 22 boundary dates and 300 fixed-seed
+  samples (7,224 assertions), asserting `#NUM!` where Excel's answer leaves the
+  supported window and the Gregorian answers for Excel's fictitious
+  29-Feb-1900. It runs as the `worksheet-oracle` suite and sets the evidence
+  record's `cross_oracle` outcome; `check_kpr_contract.py` rejects any other
+  worksheet function in an oracle formula. Not yet run in Excel.
 - Added the regression matrix (#40): the fixture generator now emits a
   systematic `matrix` family for each of the 21 value-taking functions and
   each value argument (valid, edge, invalid-domain, propagated, 1x1, row,

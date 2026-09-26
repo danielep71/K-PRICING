@@ -114,7 +114,8 @@
           "src/core/KPR_Core_Parse.bas": "internal",
           "src/modules/KPR_DATES_DAYS.bas": "public",
           "tests/modules/KPR_REGRESSION_TESTS.bas": "test",
-          "tests/modules/KPR_Test_Fixtures_Generated.bas": "test"
+          "tests/modules/KPR_Test_Fixtures_Generated.bas": "test",
+          "tests/modules/KPR_Test_Oracle.bas": "test"
         }
       }
     },
@@ -140,7 +141,8 @@
           "src/core/KPR_Core_Parse.bas": "internal",
           "src/modules/KPR_DATES_DAYS.bas": "public",
           "tests/modules/KPR_REGRESSION_TESTS.bas": "test",
-          "tests/modules/KPR_Test_Fixtures_Generated.bas": "test"
+          "tests/modules/KPR_Test_Fixtures_Generated.bas": "test",
+          "tests/modules/KPR_Test_Oracle.bas": "test"
         }
       }
     },
@@ -167,7 +169,8 @@
           "src/core/KPR_Core_Parse.bas": "internal",
           "src/modules/KPR_DATES_DAYS.bas": "public",
           "tests/modules/KPR_REGRESSION_TESTS.bas": "test",
-          "tests/modules/KPR_Test_Fixtures_Generated.bas": "test"
+          "tests/modules/KPR_Test_Fixtures_Generated.bas": "test",
+          "tests/modules/KPR_Test_Oracle.bas": "test"
         }
       }
     }
@@ -354,7 +357,8 @@
       "src/core/KPR_Core_Parse.bas": "internal",
       "src/modules/KPR_DATES_DAYS.bas": "public",
       "tests/modules/KPR_REGRESSION_TESTS.bas": "test",
-      "tests/modules/KPR_Test_Fixtures_Generated.bas": "test"
+      "tests/modules/KPR_Test_Fixtures_Generated.bas": "test",
+      "tests/modules/KPR_Test_Oracle.bas": "test"
     },
     "public_api_manifest": "docs/PUBLIC_API.txt"
   }
