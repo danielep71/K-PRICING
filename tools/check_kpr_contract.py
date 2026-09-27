@@ -790,7 +790,8 @@ def _oracle_shape_errors(statement: str) -> list[str]:
     return errors
 
 
-OBJECT_TYPES = frozenset({"object", "workbook", "worksheet"})
+# A Collection counts too: a caller could hand the oracle Excel objects inside one.
+OBJECT_TYPES = frozenset({"collection", "object", "workbook", "worksheet"})
 # The only ways the oracle may touch an Excel object outside Xl; NAME is the object.
 OBJECT_USES = (
     r"Application\.Workbooks\.Add",
@@ -799,6 +800,7 @@ OBJECT_USES = (
     r"NAME\.Close",
     r"NAME\.Worksheets\(\s*\d+\s*\)",
     r"NAME\s+Is\s+Nothing",
+    r"NAME\.Add(?=\s)",
     r"NAME\s*=\s*(?:Nothing|Application\.Workbooks\.Add|\w+\.Worksheets\(\s*\d+\s*\))",
 )
 
@@ -818,7 +820,18 @@ def _object_misuse(statement: str, objects: set[str]) -> list[str]:
     code = strip_strings(statement)
     if DECLARATION_START.match(code) or ORACLE_PROCEDURE.match(code):
         return []
+    # Copying one object variable into another, such as Set mFailures = Failures
+    copied = re.fullmatch(r"Set\s+(\w+)\s*=\s*(\w+)", code.strip(), re.I)
+    if copied and {copied.group(1).casefold(), copied.group(2).casefold()} <= objects:
+        return []
     misuse: list[str] = []
+    # An object's default value may not be read into a plain variable either
+    plain = re.fullmatch(r"(?:.*\bThen\s+)?(?!Set\b)(\w+)\s*=(.*)", code.strip(), re.I)
+    if plain and plain.group(1).casefold() not in objects and not re.fullmatch(
+        r"\s*Application\.Calculation\s*", plain.group(2), re.I
+    ):
+        if any(name.casefold() in objects for name in re.findall(r"[A-Za-z_]\w*", plain.group(2))):
+            misuse.append(plain.group(1))
     # An Excel object may be stored only in a variable declared with an Excel object type
     stored = re.search(r"(?:^|\bThen\s+|:\s*)Set\s+(\w+)\s*=(.*)$", code, re.I)
     if stored and stored.group(1).casefold() not in objects:
@@ -1230,6 +1243,9 @@ def self_test(root: Path) -> None:
         ("worksheet held in a Variant alias", 'Set Boundaries = mSheet: Boundaries("A1") = "=DATEVALUE(1)"'),
         ("new worksheet held in a Variant", "Set Boundaries = Application.Workbooks.Add"),
         ("worksheet read without Set", "Boundaries = Application.Workbooks.Add"),
+        ("object taken from the failure collection", 'Set Boundaries = mFailures(1): Boundaries("A1") = "=DATEVALUE(1)"'),
+        ("collection item read without Set", "Tag = mFailures(1)"),
+        ("collection member outside the allowlist", "Nth = mFailures.Count"),
     ):
         scenarios.append((label, "kpr-oracle-scope", mutate(base, oracle, "D = CDate(Serial)", f"D = CDate(Serial): {probe}")))
     scenarios.append((

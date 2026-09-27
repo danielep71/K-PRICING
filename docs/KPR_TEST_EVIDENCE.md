@@ -124,7 +124,9 @@ never in a Variant alias. The module may declare only numeric, `String`,
 `Boolean`, `Date`, `Variant`, `Collection`, `Workbook`, `Worksheet` and
 `XlCalculation` values, and `KPR_Oracle_RunCases(ByRef Checks As Long, ByVal
 Failures As Collection)` is its only public procedure, so no caller can hand
-it an `Application` or other Excel object. `Xl` itself holds only
+it an `Application` or other Excel object. The failure `Collection` is held to
+the same rule: the oracle may only `.Add` to it, so nothing can be read back out
+of it. `Xl` itself holds only
 `Xl = mSheet.Evaluate(Formula)`, with `Formula` a required `ByVal` String. Each `Xl` formula must be built only from string literals and
 `CStr` of arithmetic over numeric literals and variables declared with a
 numeric type in scope (a local declaration shadows a module one, and an untyped
