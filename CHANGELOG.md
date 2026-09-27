@@ -113,7 +113,8 @@ Use only the categories needed by a release.
   callable through `Application.Run`, preserve the workbook's saved state and
   never change a calculation. `check_kpr_contract.py` checks the manifest
   against the façade, and the new `worksheet-registration` suite sets the
-  evidence record's `macro_options` outcome. Not yet run in Excel.
+  evidence record's `macro_options` outcome. Verified in Windows Excel; the
+  durable runner also hands the status bar back with a literal `False`.
 - Added the Excel cross-oracle checks (#41): `KPR_Test_Oracle` compares the
   date primitives with native `EOMONTH`, `EDATE`, `WEEKDAY`, `DAY`, `YEAR` and
   `MONTH` where the contracts overlap, on 22 boundary dates and 300 fixed-seed

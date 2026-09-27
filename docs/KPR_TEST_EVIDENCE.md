@@ -13,9 +13,11 @@ assertions with state restored, and the two records matched outside the
 declared nondeterministic fields. The #40 regression matrix and `worksheet-state` suite were verified the same
 way on candidate `33b07cd` (18 suites, 1,953 assertions). The #41
 `worksheet-oracle` suite was verified the same way on candidate `7d3f359` (19
-suites, 9,177 assertions). The #42 `worksheet-registration` suite has not yet
-been run in Excel; its counts are structural expectations until a retained run
-validates.
+suites, 9,177 assertions). The #42 `worksheet-registration` suite was verified
+the same way on candidate `aa4aa0d` (20 suites, 9,263 assertions); a first run
+on `e4e0c75` passed every assertion but failed state restoration because the
+status bar read back as the text `FALSE`, and the runner now hands the bar back
+with a literal `False`, retried after `DoEvents`.
 
 ## Runner interface
 
