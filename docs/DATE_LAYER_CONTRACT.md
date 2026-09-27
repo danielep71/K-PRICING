@@ -212,7 +212,8 @@ instead of failing. It is an absolute distance, far larger than any residue a
 `Long`-sized value can carry and far smaller than any fraction a user means:
 `3.0000000001` is `3`, while `3.00000001` and `2.5` are `INTEGER_FRACTION`. The
 tolerance never truncates a real fraction and never applies to text, Boolean or
-date inputs.
+date inputs. A VBA `Decimal` is measured at its own precision, not after
+conversion to `Double`, so `3.000000000999999999` is inside the tolerance.
 
 After parsing, function-specific domains apply:
 

@@ -5252,6 +5252,12 @@ Private Sub Run_IntegerCases()
         AssertLongCondition "long/residue above", (0.1 + 0.2) * 10, True, "NONE"
         AssertLongCondition "long/residue below", (0.7 + 0.1) * 10, True, "NONE"
         AssertLongCondition "long/tolerance inside", 3.0000000001, True, "NONE"
+    'A Decimal is measured in Decimal: 3.000000000999999999 is inside the
+    'tolerance even though its nearest Double is just outside it
+        AssertLongCondition "long/decimal inside tolerance", _
+            CDec(3) + CDec(999999999) / CDec(1E+18), True, "NONE"
+        AssertLongCondition "long/decimal outside tolerance", _
+            CDec(3) + CDec(1000000001) / CDec(1E+18), False, "INTEGER_FRACTION"
         AssertDateResult "long/residue above value", _
             KPR_Dates_AddDays(DateSerial(2024, 1, 31), (0.1 + 0.2) * 10), DateSerial(2024, 2, 3)
         AssertDateResult "long/residue below value", _

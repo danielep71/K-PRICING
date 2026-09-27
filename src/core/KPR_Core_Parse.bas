@@ -499,6 +499,8 @@ Public Function TryParseLongScalar( _
     Dim VT              As VbVarType    'Cached VarType of the incoming scalar
     Dim X               As Double       'Numeric working value
     Dim Nearest         As Double       'Nearest whole number to X
+    Dim DecIn           As Variant      'Decimal payload, compared without a lossy Double step
+    Dim DecNearest      As Variant      'Nearest whole number to DecIn
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -554,11 +556,24 @@ Public Function TryParseLongScalar( _
         End If
 
     'No truncation and no rounding of a real fraction: only floating-point
-    'residue within the tolerance is read as the nearest whole number
-        Nearest = Int(X + 0.5)
-        If Abs(X - Nearest) > KPR_INTEGER_TOL Then
-            Condition = KPR_COND_INTEGER_FRACTION
-            Exit Function
+    'residue within the tolerance is read as the nearest whole number. A
+    'Decimal carries more digits than a Double, so its distance is measured
+    'in Decimal; converting first could push a value just inside the
+    'tolerance outside it.
+        If VT = vbDecimal Then
+            DecIn = CDec(ScalarIn)
+            DecNearest = Int(DecIn + CDec(0.5))
+            If Abs(DecIn - DecNearest) > CDec(1) / CDec(1000000000) Then
+                Condition = KPR_COND_INTEGER_FRACTION
+                Exit Function
+            End If
+            Nearest = CDbl(DecNearest)
+        Else
+            Nearest = Int(X + 0.5)
+            If Abs(X - Nearest) > KPR_INTEGER_TOL Then
+                Condition = KPR_COND_INTEGER_FRACTION
+                Exit Function
+            End If
         End If
 
 '------------------------------------------------------------------------------
