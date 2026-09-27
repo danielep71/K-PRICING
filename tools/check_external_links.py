@@ -131,6 +131,8 @@ def url_status(url: str, policy: dict[str, Any]) -> str | None:
 class PinnedHTTPS(http.client.HTTPSConnection):
     def __init__(self, host: str, address: str, timeout: int):
         self.tls_context = ssl.create_default_context()
+        # Refuse TLS 1.0 and 1.1 even where the host's OpenSSL still offers them.
+        self.tls_context.minimum_version = ssl.TLSVersion.TLSv1_2
         super().__init__(host, timeout=timeout, context=self.tls_context)
         self.address = address
 
