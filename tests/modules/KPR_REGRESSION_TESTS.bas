@@ -152,12 +152,16 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '------------------------------------------------------------------------------
     Option Explicit         'Force explicit variable declarations
 
-    'This module deliberately does NOT declare Option Private Module. A harness
-    'that cannot be launched is not a harness: Option Private Module hides its
-    'members from the Alt+F8 macro list, from Application.Run and from the
-    'worksheet, leaving the Immediate window as the only entry. Tests are
-    'developer-facing, they declare no KPR_Dates_* name, and the static gate
-    'constrains visibility only for core and facade modules.
+    'This module deliberately does NOT declare Option Private Module, so its
+    'entry points stay in the Alt+F8 macro list. Option Private Module would
+    'not block Application.Run with a workbook-qualified name: the registration
+    'suite reaches KPR_REGISTER_PUBLIC_UDFS, which is private, that way. A side
+    'effect of staying public is that a worksheet cell can name a Public
+    'Function here, such as KPR_Test_RunAll; a cell formula cannot open
+    'workbooks or change Excel state, so such a call fails and is not a
+    'supported use. Tests are developer-facing, they declare no KPR_Dates_*
+    'name, and the static gate constrains visibility only for core and facade
+    'modules.
 
 '------------------------------------------------------------------------------
 ' MODULE STATE

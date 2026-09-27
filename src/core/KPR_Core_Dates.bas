@@ -75,7 +75,7 @@ Attribute VB_Name = "KPR_Core_Dates"
 '     (29-Feb, short months, EOM) cannot drift between the two surfaces.
 '
 ' UPDATED
-'   2026-09-02
+'   2026-09-27
 '
 ' AUTHOR
 '   Daniele Penza
@@ -543,7 +543,7 @@ Public Function TryAddMonths( _
 '     overflow before the gate can reject it.
 '
 ' UPDATED
-'   2026-08-31
+'   2026-09-27
 '==============================================================================
 '
 
@@ -589,7 +589,7 @@ Public Function TryAddMonths( _
         MonthIndex = (CDbl(Y) * 12# + CDbl(M) - 1#) + CDbl(nMonths)
     'Gate the index before any coercion so DateSerial never sees a wild value
         If (MonthIndex < (CDbl(KPR_MIN_YEAR) * 12#)) Or _
-           (MonthIndex > (CDbl(KPR_MAX_YEAR) * 12# + 11#)) Then GoTo Fail
+           (MonthIndex > CDbl(KPR_MAX_MONTHIDX)) Then GoTo Fail
     'Split the gated index back into year and month
         TargetY = CLng(Int(MonthIndex / 12#))
         TargetM = CLng(MonthIndex - (CDbl(TargetY) * 12#)) + 1
@@ -1024,6 +1024,8 @@ Public Function TryPillar_Format( _
 '
 ' ERROR POLICY
 '   - Does not raise. The single failure path returns FALSE with a condition.
+'   - A local handler converts any unexpected runtime error into that same
+'     FALSE return, so a raise can never escape to facade containment.
 '
 ' DEPENDENCIES
 '   - TryAddMonths, KPR_MIN_DATE, KPR_MAX_DATE
@@ -1037,7 +1039,7 @@ Public Function TryPillar_Format( _
 '     of distance.
 '
 ' UPDATED
-'   2026-09-01
+'   2026-09-27
 '==============================================================================
 '
 
@@ -1077,6 +1079,8 @@ Public Function TryPillar_Format( _
     'Default outcome is failure with an explicit condition
         TryPillar_Format = False
         Condition = KPR_COND_RESULT_WINDOW
+    'Trap runtime errors and convert them to that FALSE return
+        On Error GoTo Fail
 
     'Direction and magnitude from the ORIGINAL start date
         SerialStart = Int(CDbl(DtStart))
@@ -1249,6 +1253,17 @@ Public Function TryPillar_Format( _
     'Contract: TRUE only when TokenOut was assigned
         Condition = KPR_COND_NONE
         TryPillar_Format = True
+        Exit Function
+
+'------------------------------------------------------------------------------
+' FAIL
+'------------------------------------------------------------------------------
+Fail:
+    'Return FALSE per contract, leaving TokenOut untouched
+        TryPillar_Format = False
+        Condition = KPR_COND_RESULT_WINDOW
+    'Do not leave stale error state for the caller to observe
+        Err.Clear
 
 End Function
 

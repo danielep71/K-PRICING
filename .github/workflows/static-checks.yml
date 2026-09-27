@@ -490,3 +490,79 @@ jobs:
             fi
           done
           exit "$failed"
+
+  python-coverage:
+    name: Python tooling coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHON_VERSION: "3.10"
+
+    steps:
+      - name: Check out the exact SHA under review
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up the declared Python runtime series
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pinned Python quality tools
+        run: |
+          python -m pip install \
+            --disable-pip-version-check \
+            --only-binary=:all: \
+            --require-hashes \
+            -r tools/requirements-quality-ci.txt
+          python -m coverage --version
+
+      # The same self-tests and checks the Repository integrity job runs, under
+      # coverage. Thresholds and scope live in pyproject.toml.
+      - name: Measure maintained Python tooling under coverage
+        run: |
+          set -o pipefail
+          mkdir -p test-results
+          python -m coverage erase
+          while read -r command; do
+            echo "::group::$command"
+            # shellcheck disable=SC2086
+            python -m coverage run $command
+            echo "::endgroup::"
+          done <<'COMMANDS'
+          tools/check_release.py --root . --self-test
+          tools/test_release_provenance.py
+          tools/test_excel_evidence.py
+          tools/test_verification_depth.py
+          tools/test_documentation.py
+          tools/check_documentation.py --root .
+          tools/check_release_semantics.py --root . --self-test
+          tools/initialize_repository.py --root . --self-test
+          tools/check_committed_whitespace.py --root . --self-test
+          tools/check_vba_jumps.py --root . --self-test
+          tools/check_vba_conditionals.py --root . --self-test
+          tools/check_vba_public_api.py --root . --self-test
+          tools/check_kpr_contract.py --root . --self-test
+          tools/check_kpr_contract.py --root .
+          tools/gen_fixtures.py --root . --self-test
+          tools/gen_fixtures.py --root . --check
+          tools/check_test_evidence.py --root . --self-test
+          tools/check_migration_evidence.py --self-test
+          tools/check_local_actions.py --root . --self-test
+          tools/check_template_contract.py --root . --self-test
+          tools/check_repo.py --root . --self-test
+          tools/check_repo.py --root .
+          COMMANDS
+          python -m coverage combine
+          python -m coverage report 2>&1 | tee test-results/python-coverage.txt
+          {
+            echo "## Python tooling coverage"
+            echo
+            echo '```text'
+            cat test-results/python-coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

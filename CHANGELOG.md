@@ -180,6 +180,10 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- Hosted static checks now measure statement coverage of the Python tooling in
+  a parallel **Python tooling coverage** job and fail below the `fail_under`
+  ratchet (80%, measured baseline 81%). This replaces the unenforced 95%
+  setting, which pointed at a workflow removed at initialization.
 - Adapted the date-layer contract's version labels to the K-PRICING milestones:
   the contract targets v0.0.4 and `KPR_Cal_*` is reserved for v0.0.5. Behavior,
   signatures, defaults and errors are unchanged; provenance records the
@@ -209,6 +213,12 @@ Use only the categories needed by a release.
 
 ### Fixed
 
+- Corrected the Function Wizard error text of `KPR_Dates_DaysInYear` and
+  `KPR_Dates_IsLeapYear`: a year outside 1900-9999 returns `#VALUE!`
+  (`DOMAIN_YEAR`), and only a year beyond the `Long` range returns `#NUM!`.
+  `TryPillar_Format` gained the local error handler every other `Try*`
+  routine has, the month-shift window gate uses its named constant, and two
+  misleading source comments were corrected. No calculation changed.
 - Classify grammatically valid pillar quantities and aggregates that exceed the
   parser's numeric domain as `PILLAR_AGGREGATE_RANGE` / `#NUM!`, while
   preserving parser outputs on failure (#32).

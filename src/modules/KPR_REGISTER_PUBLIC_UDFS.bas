@@ -490,7 +490,7 @@ Private Sub LoadManifest()
             "Returns the number of days, 28 to 31, in the month containing DateIn. Scalar input gives one value; a range or array spills one result per cell (dynamic-array Excel). Invalid input: #VALUE!; date out of range: #NUM!.", _
             "DateIn: a date, date serial or ISO text yyyy-mm-dd from 1900-03-01 to 9999-12-31. A range or array gives one result per cell (dynamic-array Excel). Other text gives #VALUE!; a date outside the window gives #NUM!."
         AddRecord "KPR_Dates_DaysInYear", "YearIn", _
-            "Returns 366 for a Gregorian leap year and 365 otherwise. Takes a year, not a date. Scalar input gives one value; a range or array spills one result per cell (dynamic-array Excel). Invalid input: #VALUE!; date out of range: #NUM!.", _
+            "Returns 366 for a Gregorian leap year and 365 otherwise. Takes a year, not a date. Scalar input gives one value; a range or array spills one result per cell (dynamic-array Excel). Invalid input or year outside 1900-9999: #VALUE!; year overflow: #NUM!.", _
             "YearIn: a calendar year as a whole number, 1900 to 9999; not a date (use YEAR(date)). A range or array gives one result per cell (dynamic-array Excel). Other values give #VALUE!."
         AddRecord "KPR_Dates_BeginOfMonth", "DateIn", _
             "Returns the first day of the month containing DateIn. Scalar input gives one value; a range or array spills one result per cell (dynamic-array Excel). Invalid input: #VALUE!; date out of range: #NUM!.", _
@@ -520,7 +520,7 @@ Private Sub LoadManifest()
             "Returns TRUE if DateIn is 31 December, otherwise FALSE. Scalar input gives one value; a range or array spills one result per cell (dynamic-array Excel). Invalid input: #VALUE!; date out of range: #NUM!.", _
             "DateIn: a date, date serial or ISO text yyyy-mm-dd from 1900-03-01 to 9999-12-31. A range or array gives one result per cell (dynamic-array Excel). Other text gives #VALUE!; a date outside the window gives #NUM!."
         AddRecord "KPR_Dates_IsLeapYear", "YearIn", _
-            "Returns TRUE if YearIn is a Gregorian leap year. Takes a year, not a date. Scalar input gives one value; a range or array spills one result per cell (dynamic-array Excel). Invalid input: #VALUE!; date out of range: #NUM!.", _
+            "Returns TRUE if YearIn is a Gregorian leap year. Takes a year, not a date. Scalar input gives one value; a range or array spills one result per cell (dynamic-array Excel). Invalid input or year outside 1900-9999: #VALUE!; year overflow: #NUM!.", _
             "YearIn: a calendar year as a whole number, 1900 to 9999; not a date (use YEAR(date)). A range or array gives one result per cell (dynamic-array Excel). Other values give #VALUE!."
 
     'Date arithmetic
