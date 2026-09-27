@@ -61,7 +61,7 @@ The implementation order for an adapter is:
    workbook/worksheet document modules in their corresponding host objects;
    do not import them as ordinary classes. Record reference resolution and any
    host-specific setup. K-PRICING imports the four `KPR_Core_*` modules,
-   `KPR_DATES_DAYS` and the three test modules (see [INSTALLATION.md](../INSTALLATION.md)).
+   `KPR_DATES_DAYS`, `KPR_REGISTER_PUBLIC_UDFS` and the three test modules (see [INSTALLATION.md](../INSTALLATION.md)).
 3. Compile with an adapter capable of observing the actual compile outcome.
    Do not equate a successful import or a button click with compilation. A
    complete successful harness run also demonstrates that its executed VBA
@@ -194,7 +194,7 @@ top-level evidence cases.
    architecture, and the existing Trust Center settings. Do not change trust
    settings to make the test run. Record start time with timezone.
 3. In the VBA editor, import the exact candidate inventory in the documented
-   order: the four `KPR_Core_*` modules, `KPR_DATES_DAYS`,
+   order: the four `KPR_Core_*` modules, `KPR_DATES_DAYS`, `KPR_REGISTER_PUBLIC_UDFS`,
    `KPR_Test_Fixtures_Generated`, `KPR_Test_Oracle` and `KPR_REGRESSION_TESTS`. Review references, compile, and run
    `KPR_Tests_RunEvidence`. Preserve its complete Immediate-window output as
    `harness.log`. The adapter delegates to the native all-suite dispatcher and

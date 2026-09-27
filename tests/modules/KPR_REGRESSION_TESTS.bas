@@ -44,7 +44,8 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 ' DURABLE REGISTRY
 '   KPR_Test_RunAll runs TestRegistry in order: the twelve suites above, then
 '   fixtures, then the macro-only runners as worksheet-host, worksheet-shape,
-'   worksheet-array, worksheet-fixtures, worksheet-oracle and worksheet-state.
+'   worksheet-array, worksheet-fixtures, worksheet-oracle,
+'   worksheet-registration and worksheet-state.
 '   KPR_Test_RunSuite runs one of them. tools/check_test_evidence.py reads the registry from this source.
 '
 ' SCOPE
@@ -140,7 +141,7 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '   through exact object references and never through ActiveWorkbook.
 '
 ' UPDATED
-'   2026-09-25
+'   2026-09-27
 '
 ' AUTHOR
 '   Daniele Penza
@@ -810,7 +811,8 @@ Private Function TestRegistry() As Variant
         "date-type", "date-text", "date-window", "integer", "control", _
         "boundary", "mapper", "host", "pillar", "surface", "shape", _
         "parity", "fixtures", "worksheet-host", "worksheet-shape", _
-        "worksheet-array", "worksheet-fixtures", "worksheet-oracle", "worksheet-state")
+        "worksheet-array", "worksheet-fixtures", "worksheet-oracle", "worksheet-registration", _
+        "worksheet-state")
 
 End Function
 
@@ -828,7 +830,7 @@ Private Function SuiteKind( _
         Case "fixtures"
             SuiteKind = "fixture"
         Case "worksheet-host", "worksheet-shape", "worksheet-array", "worksheet-fixtures", _
-             "worksheet-oracle", "worksheet-state"
+             "worksheet-oracle", "worksheet-registration", "worksheet-state"
             SuiteKind = "worksheet"
         Case Else
             SuiteKind = "pure"
@@ -853,6 +855,7 @@ Private Sub ExecuteSuite( _
         Case "worksheet-array":     KPR_Tests_RunArray
         Case "worksheet-fixtures":  KPR_Tests_RunFixtureHost
         Case "worksheet-oracle":    KPR_Tests_RunOracle
+        Case "worksheet-registration": KPR_Tests_RunRegistration
         Case "worksheet-state":     KPR_Tests_RunStateCheck
         Case Else
             If Not RunSuite(SuiteName) Then
@@ -1600,7 +1603,7 @@ Private Function TryWriteEvidence( _
     End If
     Oracle = OracleOutcome(Rec)
     Print #FileNo, "    ""cross_oracle"": " & Oracle & ","
-    Print #FileNo, "    ""macro_options"": " & OperatorOutcome() & ","
+    Print #FileNo, "    ""macro_options"": " & RegistrationOutcome(Rec) & ","
     Print #FileNo, "    ""ribbonx"": " & OperatorOutcome() & ","
     Print #FileNo, "    ""commandbars"": " & OperatorOutcome() & ","
     Print #FileNo, "    ""demo_generation"": " & OperatorOutcome() & ","
@@ -1652,6 +1655,38 @@ Private Function OracleOutcome( _
                                                 CStr(Rec.SuiteFails(I)) & " failure(s)", "")
                 Case Else
                     OracleOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-oracle suite did not run.")
+            End Select
+        End If
+    Next I
+
+End Function
+
+Private Function RegistrationOutcome( _
+    ByRef Rec As RunRecord) _
+    As String
+'
+' The macro_options outcome follows the worksheet-registration suite when this
+' run selected it; otherwise registration was not exercised.
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim I               As Long         'Suite cursor
+
+'------------------------------------------------------------------------------
+' MAP
+'------------------------------------------------------------------------------
+    RegistrationOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-registration suite was not selected in this run.")
+    For I = 0 To Rec.SuiteCount - 1
+        If Rec.SuiteNames(I) = "worksheet-registration" Then
+            Select Case Rec.SuiteStatus(I)
+                Case "PASS", "FAIL"
+                    RegistrationOutcome = JsonOutcome(Rec.SuiteStatus(I), _
+                                                      CStr(Rec.SuiteChecks(I)) & " registration assertion(s), " & _
+                                                      CStr(Rec.SuiteFails(I)) & " failure(s)", "")
+                Case Else
+                    RegistrationOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-registration suite did not run.")
             End Select
         End If
     Next I
@@ -2241,6 +2276,241 @@ Public Sub KPR_Tests_RunOracle()
     End If
 
 End Sub
+
+'
+'------------------------------------------------------------------------------
+'
+'                   STATEFUL REGISTRATION RUNNER (MACRO ONLY)
+'
+'------------------------------------------------------------------------------
+'
+
+Public Sub KPR_Tests_RunRegistration()
+'
+'==============================================================================
+'                           KPR_Tests_RunRegistration
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Exercises the MacroOptions lifecycle in KPR_REGISTER_PUBLIC_UDFS (#42) and
+'   prints the report to the Immediate window.
+'
+' METHOD
+'   Checks the manifest shape (22 unique supported names, complete 1-based
+'   argument-description arrays within the 255-character limit, no arguments
+'   for KPR_Dates_HostDateSystem). Then, through Application.Run on the
+'   workbook-qualified entry points, registers twice, cleans up twice and
+'   registers again, requiring every call to report all 22 functions and an
+'   empty failure report. Finally checks that ThisWorkbook.Saved,
+'   calculation, events, screen updating, alerts, the active workbook and
+'   sheet and the selection are exactly as found. Excel cannot read
+'   MacroOptions metadata back, so idempotency is shown by identical results.
+'
+' UPDATED
+'   2026-09-27
+'==============================================================================
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Prefix          As String       'Workbook-qualified macro prefix
+    Dim Total           As Long         'Manifest records
+    Dim Seen            As Collection   'Names already checked
+    Dim FunctionName    As String       'One manifest name
+    Dim ArgCount        As Long         'Arguments of one record
+    Dim Descs           As Variant      'Argument descriptions of one record
+    Dim Zero            As Long         'Records without arguments
+    Dim Valid           As Boolean      'Array shape verdict
+    Dim I               As Long         'Record cursor
+    Dim J               As Long         'Element cursor
+    Dim EntryPoint      As Variant      'Lifecycle entry point
+    Dim K               As Long         'Lifecycle call number
+    Dim Outcome         As Long         'Functions reported by one call
+    Dim Why             As String       'Application.Run failure
+    Dim WasSaved        As Boolean      'ThisWorkbook.Saved on entry
+    Dim Calc            As XlCalculation 'Calculation mode on entry
+    Dim Events          As Boolean      'EnableEvents on entry
+    Dim Screen          As Boolean      'ScreenUpdating on entry
+    Dim Alerts          As Boolean      'DisplayAlerts on entry
+    Dim BookName        As String       'Active workbook on entry
+    Dim SheetName       As String       'Active sheet on entry
+    Dim SelectionText   As String       'Selection on entry
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    Set mFailures = New Collection
+    mChecks = 0
+    Prefix = "'" & Replace(ThisWorkbook.Name, "'", "''") & "'!"
+    WasSaved = ThisWorkbook.Saved
+    Calc = Application.Calculation
+    Events = Application.EnableEvents
+    Screen = Application.ScreenUpdating
+    Alerts = Application.DisplayAlerts
+    BookName = RegistrationActiveBook()
+    SheetName = RegistrationActiveSheet()
+    SelectionText = RegistrationSelection()
+
+'------------------------------------------------------------------------------
+' MANIFEST
+'------------------------------------------------------------------------------
+    Total = KPR_Register_ManifestCount()
+    CheckRegistration "registration/manifest count", Total = 22, "expected 22 records, found " & CStr(Total)
+    Set Seen = New Collection
+    For I = 1 To Total
+        FunctionName = KPR_Register_ManifestName(I)
+        CheckRegistration "registration/name " & FunctionName, _
+                          Left$(FunctionName, 10) = "KPR_Dates_" And InStr(1, FunctionName, "_Spill", vbTextCompare) = 0, _
+                          "not a supported KPR_Dates_* name"
+        CheckRegistration "registration/unique " & FunctionName, Not RegistrationSeen(Seen, FunctionName), "listed more than once"
+        ArgCount = KPR_Register_ManifestArgCount(I)
+        Descs = KPR_Register_ManifestArgDescriptions(I)
+        If ArgCount = 0 Then
+            Zero = Zero + 1
+            CheckRegistration "registration/no arguments " & FunctionName, _
+                              IsEmpty(Descs) And FunctionName = "KPR_Dates_HostDateSystem", _
+                              "only KPR_Dates_HostDateSystem may omit ArgumentDescriptions"
+        Else
+            Valid = IsArray(Descs)
+            If Valid Then Valid = (LBound(Descs) = 1 And UBound(Descs) = ArgCount)
+            If Valid Then
+                For J = 1 To ArgCount
+                    If Len(Descs(J)) = 0 Or Len(Descs(J)) > 255 Then Valid = False
+                Next J
+            End If
+            CheckRegistration "registration/arguments " & FunctionName, Valid, _
+                              "expected a complete 1-based array of " & CStr(ArgCount) & " non-blank descriptions of at most 255 characters"
+        End If
+    Next I
+    CheckRegistration "registration/zero-argument records", Zero = 1, "expected 1, found " & CStr(Zero)
+
+'------------------------------------------------------------------------------
+' LIFECYCLE
+'------------------------------------------------------------------------------
+    'Register twice, clean up twice, then leave the functions registered
+        For Each EntryPoint In Array("KPR_Register_PublicUDFs", "KPR_Register_PublicUDFs", _
+                               "KPR_Register_ClearPublicUDFs", "KPR_Register_ClearPublicUDFs", _
+                               "KPR_Register_PublicUDFs")
+            K = K + 1
+            Outcome = RegistrationRun(Prefix & CStr(EntryPoint), Why)
+            CheckRegistration "registration/" & CStr(EntryPoint) & " #" & CStr(K), _
+                              Len(Why) = 0 And Outcome = Total, _
+                              IIf(Len(Why) > 0, Why, "reported " & CStr(Outcome) & " of " & CStr(Total) & _
+                                  " function(s); " & KPR_Register_LastReport())
+            CheckRegistration "registration/" & CStr(EntryPoint) & " report #" & CStr(K), _
+                              Len(KPR_Register_LastReport()) = 0, KPR_Register_LastReport()
+        Next EntryPoint
+
+'------------------------------------------------------------------------------
+' STATE
+'------------------------------------------------------------------------------
+    CheckRegistration "registration/state saved flag", ThisWorkbook.Saved = WasSaved, _
+                      "ThisWorkbook.Saved changed to " & CStr(ThisWorkbook.Saved)
+    CheckRegistration "registration/state calculation", Application.Calculation = Calc, "calculation mode changed"
+    CheckRegistration "registration/state events", Application.EnableEvents = Events, "EnableEvents changed"
+    CheckRegistration "registration/state screen updating", Application.ScreenUpdating = Screen, "ScreenUpdating changed"
+    CheckRegistration "registration/state alerts", Application.DisplayAlerts = Alerts, "DisplayAlerts changed"
+    CheckRegistration "registration/state active workbook", RegistrationActiveBook() = BookName, "active workbook changed"
+    CheckRegistration "registration/state active sheet", RegistrationActiveSheet() = SheetName, "active sheet changed"
+    CheckRegistration "registration/state selection", RegistrationSelection() = SelectionText, "selection changed"
+
+'------------------------------------------------------------------------------
+' REPORT
+'------------------------------------------------------------------------------
+    If Not mQuietTrace Then
+        Debug.Print "KPR registration regression  checks: " & CStr(mChecks) & "  failures: " & CStr(mFailures.Count)
+        For I = 1 To mFailures.Count
+            Debug.Print "  FAIL  " & CStr(mFailures(I)(0)) & " : " & CStr(mFailures(I)(1))
+        Next I
+    End If
+
+End Sub
+
+Private Sub CheckRegistration( _
+    ByVal Label As String, _
+    ByVal Passed As Boolean, _
+    ByVal Detail As String)
+'
+' Counts one registration assertion and records it when it fails.
+'
+    mChecks = mChecks + 1
+    If Not Passed Then Record Label, Detail
+
+End Sub
+
+Private Function RegistrationSeen( _
+    ByVal Seen As Collection, _
+    ByVal Key As String) _
+    As Boolean
+'
+' TRUE when Key was already added to Seen; otherwise adds it.
+'
+
+'------------------------------------------------------------------------------
+' LOOKUP
+'------------------------------------------------------------------------------
+    On Error Resume Next
+    Seen.Add Key, LCase$(Key)
+    RegistrationSeen = (Err.Number <> 0)
+    Err.Clear
+    On Error GoTo 0
+
+End Function
+
+Private Function RegistrationRun( _
+    ByVal Macro As String, _
+    ByRef Why As String) _
+    As Long
+'
+' Runs one registration entry point through Application.Run; Why receives the
+' error text when Excel cannot run it.
+'
+
+'------------------------------------------------------------------------------
+' RUN
+'------------------------------------------------------------------------------
+    Why = vbNullString
+    On Error GoTo Run_Error
+    RegistrationRun = CLng(Application.Run(Macro))
+    Exit Function
+
+Run_Error:
+    Why = "Application.Run " & Macro & ": error " & CStr(Err.Number) & ": " & Err.Description
+    Err.Clear
+    RegistrationRun = -1
+
+End Function
+
+Private Function RegistrationActiveBook() As String
+'
+' Name of the active workbook, or "" when none.
+'
+    On Error Resume Next
+    RegistrationActiveBook = ActiveWorkbook.Name
+    Err.Clear
+
+End Function
+
+Private Function RegistrationActiveSheet() As String
+'
+' Name of the active sheet, or "" when none.
+'
+    On Error Resume Next
+    RegistrationActiveSheet = ActiveSheet.Name
+    Err.Clear
+
+End Function
+
+Private Function RegistrationSelection() As String
+'
+' The selection as its type and, for a range, its external address.
+'
+    On Error Resume Next
+    RegistrationSelection = TypeName(Selection)
+    If TypeName(Selection) = "Range" Then RegistrationSelection = Selection.Address(External:=True)
+    Err.Clear
+
+End Function
 
 '
 '------------------------------------------------------------------------------

@@ -104,6 +104,16 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added MacroOptions registration (#42): the internal
+  `KPR_REGISTER_PUBLIC_UDFS` module holds a machine-readable manifest of the 22
+  supported functions and registers them under the single **KPR Dates**
+  category with a description and complete argument help
+  (`KPR_Register_PublicUDFs`), or blanks that metadata and returns them to
+  **User Defined** (`KPR_Register_ClearPublicUDFs`). Both are idempotent,
+  callable through `Application.Run`, preserve the workbook's saved state and
+  never change a calculation. `check_kpr_contract.py` checks the manifest
+  against the façade, and the new `worksheet-registration` suite sets the
+  evidence record's `macro_options` outcome. Not yet run in Excel.
 - Added the Excel cross-oracle checks (#41): `KPR_Test_Oracle` compares the
   date primitives with native `EOMONTH`, `EDATE`, `WEEKDAY`, `DAY`, `YEAR` and
   `MONTH` where the contracts overlap, on 22 boundary dates and 300 fixed-seed
@@ -111,7 +121,7 @@ Use only the categories needed by a release.
   supported window and the Gregorian answers for Excel's fictitious
   29-Feb-1900. It runs as the `worksheet-oracle` suite and sets the evidence
   record's `cross_oracle` outcome; `check_kpr_contract.py` rejects any other
-  worksheet function in an oracle formula. Not yet run in Excel.
+  worksheet function in an oracle formula. Verified in Windows Excel.
 - Added the regression matrix (#40): the fixture generator now emits a
   systematic `matrix` family for each of the 21 value-taking functions and
   each value argument (valid, edge, invalid-domain, propagated, 1x1, row,
