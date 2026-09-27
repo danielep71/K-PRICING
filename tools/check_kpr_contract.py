@@ -658,7 +658,7 @@ def _split_top(text: str, separator: str) -> list[str]:
 
 
 def oracle_calls(statement: str) -> list[str]:
-    """The argument text of each Xl(...) call: the formula Excel evaluates."""
+    """Argument text of each Xl call, including VBA statement-call syntax."""
     calls: list[str] = []
     match = ORACLE_CALL.search(statement)
     while match:
@@ -672,6 +672,17 @@ def oracle_calls(statement: str) -> list[str]:
             index += 1
         calls.append(statement[match.end():index - 1])
         match = ORACLE_CALL.search(statement, index)
+
+    # VBA also permits a function to be invoked as a statement without
+    # parentheses: Xl "DAY(1)", also after Then, Else or a colon in a logical statement.
+    # Those calls must pass through the same formula grammar as Xl(...).
+    for part in _split_top(statement, ":"):
+        bare = re.search(r"(?:^|\b(?:Then|Else)\s+)Xl\s+(.+)$", part.strip(), re.I)
+        if not bare:
+            continue
+        argument = bare.group(1).strip()
+        if argument and not argument.startswith(("(", "=")):
+            calls.append(argument)
     return calls
 
 
@@ -1175,6 +1186,19 @@ def self_test(root: Path) -> None:
         "lower-case oracle call",
         "kpr-oracle-scope",
         mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'xl("DATEVALUE(" & CStr(Serial) & ")")'),
+    ))
+    scenarios.append((
+        "parenthesis-free oracle statement call",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "D = CDate(Serial)", 'D = CDate(Serial)\r\n    Xl "DATEVALUE(" & CStr(Serial) & ")"'),
+    ))
+    scenarios.append((
+        "parenthesis-free oracle call in an Else branch",
+        "kpr-oracle-scope",
+        mutate(
+            base, oracle, "D = CDate(Serial)",
+            'D = CDate(Serial)\r\n    If Serial > 0 Then Dy = CLng(Serial) Else Xl "DATEVALUE(" & CStr(Serial) & ")"',
+        ),
     ))
     scenarios.append((
         "evaluation outside Xl",
