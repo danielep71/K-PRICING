@@ -674,10 +674,10 @@ def oracle_calls(statement: str) -> list[str]:
         match = ORACLE_CALL.search(statement, index)
 
     # VBA also permits a function to be invoked as a statement without
-    # parentheses: Xl "DAY(1)" (and after Then/colon in a logical statement).
+    # parentheses: Xl "DAY(1)", also after Then, Else or a colon in a logical statement.
     # Those calls must pass through the same formula grammar as Xl(...).
     for part in _split_top(statement, ":"):
-        bare = re.search(r"(?:^|\bThen\s+)Xl\s+(.+)$", part.strip(), re.I)
+        bare = re.search(r"(?:^|\b(?:Then|Else)\s+)Xl\s+(.+)$", part.strip(), re.I)
         if not bare:
             continue
         argument = bare.group(1).strip()
@@ -1190,7 +1190,15 @@ def self_test(root: Path) -> None:
     scenarios.append((
         "parenthesis-free oracle statement call",
         "kpr-oracle-scope",
-        mutate(base, oracle, 'Xl("DAY(" & CStr(Serial) & ")")', 'Xl "DATEVALUE(" & CStr(Serial) & ")"'),
+        mutate(base, oracle, "D = CDate(Serial)", 'D = CDate(Serial)\r\n    Xl "DATEVALUE(" & CStr(Serial) & ")"'),
+    ))
+    scenarios.append((
+        "parenthesis-free oracle call in an Else branch",
+        "kpr-oracle-scope",
+        mutate(
+            base, oracle, "D = CDate(Serial)",
+            'D = CDate(Serial)\r\n    If Serial > 0 Then Dy = CLng(Serial) Else Xl "DATEVALUE(" & CStr(Serial) & ")"',
+        ),
     ))
     scenarios.append((
         "evaluation outside Xl",
