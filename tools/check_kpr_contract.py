@@ -764,6 +764,32 @@ ORACLE_MEMBERS = frozenset(
 )
 
 
+# Every declared type in the oracle module; Application, Object, Range and the
+# like cannot be declared, so no Excel object can enter except the scratch ones.
+ORACLE_TYPES = NUMERIC_TYPES | frozenset(
+    {"boolean", "collection", "date", "string", "variant", "workbook", "worksheet", "xlcalculation"}
+)
+# The oracle's only public entry point, so callers cannot hand it an Excel object.
+ORACLE_ENTRY = re.compile(
+    r"Public\s+Sub\s+KPR_Oracle_RunCases\s*\(\s*ByRef\s+Checks\s+As\s+Long\s*,"
+    r"\s*ByVal\s+Failures\s+As\s+Collection\s*\)",
+    re.I,
+)
+
+
+def _oracle_shape_errors(statement: str) -> list[str]:
+    """Undeclarable types, and public procedures other than the single entry point."""
+    code = strip_strings(statement)
+    errors = [
+        f"The oracle may not declare a {kind}; allowed types are {', '.join(sorted(ORACLE_TYPES))}."
+        for kind in re.findall(r"\bAs\s+(?:New\s+)?([\w.]+)", code, re.I)
+        if kind.casefold() not in ORACLE_TYPES
+    ]
+    if ORACLE_PROCEDURE.match(code) and not re.match(r"Private\b", code, re.I) and not ORACLE_ENTRY.fullmatch(code):
+        errors.append("KPR_Oracle_RunCases(ByRef Checks As Long, ByVal Failures As Collection) is the only public procedure.")
+    return errors
+
+
 OBJECT_TYPES = frozenset({"object", "workbook", "worksheet"})
 # The only ways the oracle may touch an Excel object outside Xl; NAME is the object.
 OBJECT_USES = (
@@ -917,6 +943,7 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
             header = ORACLE_PROCEDURE.match(statement)
             if header:
                 procedure = header.group(1).casefold()
+            failures.extend(finding(path, error, number) for error in _oracle_shape_errors(statement))
             if procedure == "xl":
                 if statement and not ORACLE_XL_BODY.fullmatch(statement):
                     failures.append(finding(path, "Xl may only return mSheet.Evaluate(Formula).", number))
@@ -1216,6 +1243,28 @@ def self_test(root: Path) -> None:
             ),
             oracle, "D = CDate(Serial)", 'D = CDate(Serial): ActiveCell = "=DATEVALUE(1)"',
         ),
+    ))
+    scenarios.append((
+        "public procedure taking an Application",
+        "kpr-oracle-scope",
+        mutate(
+            base, oracle, "Private Function NextInt(",
+            'Public Sub Evil(ByVal Alias As Application)\r\n    Alias("DATEVALUE(1)")\r\nEnd Sub\r\n\r\n'
+            "Private Function NextInt(",
+        ),
+    ))
+    scenarios.append((
+        "public procedure with a Variant parameter",
+        "kpr-oracle-scope",
+        mutate(
+            base, oracle, "Private Function NextInt(",
+            "Sub Evil(ByVal Alias As Variant)\r\nEnd Sub\r\n\r\nPrivate Function NextInt(",
+        ),
+    ))
+    scenarios.append((
+        "private procedure declaring an Object",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "Dim Tag             As String", "Dim Probe As Object\r\n    Dim Tag             As String"),
     ))
     scenarios.append((
         "extra evaluation inside Xl",
