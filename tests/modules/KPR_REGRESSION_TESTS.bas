@@ -1365,6 +1365,7 @@ Private Function RestoreCallerState( _
 '------------------------------------------------------------------------------
     Dim Problems        As String       'Items that did not restore
     Dim CurrentType     As String       'TypeName of the restored selection
+    Dim Attempt         As Long         'Status-bar hand-back attempt
 
 '------------------------------------------------------------------------------
 ' RESTORE
@@ -1391,11 +1392,17 @@ Private Function RestoreCallerState( _
     'screen updating is off, so the bar would read back as the runner's text
     Application.ScreenUpdating = State.ScreenUpdating
     Application.DisplayAlerts = State.DisplayAlerts
-    Application.StatusBar = State.StatusBar
-    If VarType(State.StatusBar) = vbBoolean And VarType(Application.StatusBar) <> vbBoolean Then
-        'Hand the bar back to Excel once more after pending messages are processed
-        DoEvents
+    If VarType(State.StatusBar) = vbBoolean Then
+        'Hand the bar back with a literal False: Excel can store a Variant
+        'Boolean as the text FALSE. Retry after pending messages are processed
         Application.StatusBar = False
+        For Attempt = 1 To 3
+            If VarType(Application.StatusBar) = vbBoolean Then Exit For
+            DoEvents
+            Application.StatusBar = False
+        Next Attempt
+    Else
+        Application.StatusBar = State.StatusBar
     End If
     Application.Calculation = State.Calculation
     Application.EnableEvents = State.EnableEvents
