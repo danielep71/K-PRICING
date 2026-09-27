@@ -180,6 +180,15 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- Integer arguments now accept a number within `1E-9` of a whole number as
+  that whole number, so binary floating-point residue such as
+  `2.9999999999999996` no longer returns `#VALUE!`; a real fraction such as
+  `2.5` or `3.00000001` still returns `INTEGER_FRACTION`. The contract also
+  fixes three v0.0.4 decisions: `DayOfWeek` keeps Monday = 1 (the reverse of
+  `WEEKDAY`), `ON`/`TN` pillars stay calendar days in `KPR_Dates_*` (business
+  days arrive through v0.0.6 calendar-aware functions), and performance is
+  measured with an external VBA performance add-in. The fixtures grow to
+  1,358 cases.
 - Adapted the date-layer contract's version labels to the K-PRICING milestones:
   the contract targets v0.0.4 and `KPR_Cal_*` is reserved for v0.0.5. Behavior,
   signatures, defaults and errors are unchanged; provenance records the

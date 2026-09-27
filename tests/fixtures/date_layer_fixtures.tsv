@@ -67,6 +67,11 @@ integer-input.fraction-half	integer-input	KPR_Dates_AddDays	direct	date:2024-01-
 integer-input.fraction-minus-half	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:-0.5	-	-	-	date,num	Error	err:#VALUE!	INTEGER_FRACTION	element	Section 3.2: negative fraction.
 integer-input.fraction-one-half	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:1.5	-	-	-	date,num	Error	err:#VALUE!	INTEGER_FRACTION	element	Section 3.2: fraction is never rounded.
 integer-input.fraction-near-max	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:2147483646.5	-	-	-	date,num	Error	err:#VALUE!	INTEGER_FRACTION	element	Section 3.2: fraction inside the Long range.
+integer-input.residue-below	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:2.99999999999999	-	-	-	date,num	Date	date:2024-02-03			Section 3.2: within 1E-9 below 3, read as 3.
+integer-input.residue-above	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:3.00000000000001	-	-	-	date,num	Date	date:2024-02-03			Section 3.2: within 1E-9 above 3, read as 3.
+integer-input.tolerance-inside	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:3.0000000001	-	-	-	date,num	Date	date:2024-02-03			Section 3.2: 1E-10 from 3 is inside the tolerance.
+integer-input.tolerance-outside	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:3.00000001	-	-	-	date,num	Error	err:#VALUE!	INTEGER_FRACTION	element	Section 3.2: 1E-8 from 3 is outside the tolerance.
+integer-input.tolerance-negative	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:-2.99999999999999	-	-	-	date,num	Date	date:2024-01-28			Section 3.2: negative residue, read as -3.
 integer-input.range-above	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:2147483648	-	-	-	date,num	Error	err:#NUM!	INTEGER_RANGE	element	Section 3.2: one above the Long range.
 integer-input.range-below	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:-2147483649	-	-	-	date,num	Error	err:#NUM!	INTEGER_RANGE	element	Section 3.2: one below the Long range.
 integer-input.range-fraction-above	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:2147483648.5	-	-	-	date,num	Error	err:#NUM!	INTEGER_RANGE	element	Section 3.2: range precedes integrality.

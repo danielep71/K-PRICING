@@ -19,7 +19,7 @@ import shutil
 import sys
 import tempfile
 from dataclasses import dataclass, field
-from decimal import ROUND_FLOOR, Decimal, InvalidOperation
+from decimal import ROUND_FLOOR, ROUND_HALF_EVEN, Decimal, InvalidOperation
 from pathlib import Path
 from typing import Callable, Iterable, NamedTuple, Union
 
@@ -314,8 +314,11 @@ def parse_date_text(text: str) -> dt.date | Fail:
     return parsed
 
 
+INTEGER_TOLERANCE = Decimal("1E-9")
+
+
 def parse_long(value: Val) -> int | Fail:
-    """Section 3.2: range precedes integrality; no truncation or rounding."""
+    """Section 3.2: range precedes integrality; only residue within 1E-9 rounds."""
     kind = value.kind
     if kind == "err":
         return fail(value.payload, "INPUT_ERROR_PROPAGATED")
@@ -326,9 +329,10 @@ def parse_long(value: Val) -> int | Fail:
     number = Decimal(value.payload)
     if number < LONG_MIN or number > LONG_MAX:
         return fail("#NUM!", "INTEGER_RANGE")
-    if number != number.to_integral_value():
+    nearest = number.to_integral_value(rounding=ROUND_HALF_EVEN)
+    if abs(number - nearest) > INTEGER_TOLERANCE:
         return fail("#VALUE!", "INTEGER_FRACTION")
-    return int(number)
+    return int(nearest)
 
 
 DOMAINS = {
@@ -870,6 +874,11 @@ def author_integer_input(book: Book) -> None:
         ("fraction-minus-half", N("-0.5"), "negative fraction"),
         ("fraction-one-half", N("1.5"), "fraction is never rounded"),
         ("fraction-near-max", N("2147483646.5"), "fraction inside the Long range"),
+        ("residue-below", N("2.99999999999999"), "within 1E-9 below 3, read as 3"),
+        ("residue-above", N("3.00000000000001"), "within 1E-9 above 3, read as 3"),
+        ("tolerance-inside", N("3.0000000001"), "1E-10 from 3 is inside the tolerance"),
+        ("tolerance-outside", N("3.00000001"), "1E-8 from 3 is outside the tolerance"),
+        ("tolerance-negative", N("-2.99999999999999"), "negative residue, read as -3"),
         ("range-above", N("2147483648"), "one above the Long range"),
         ("range-below", N("-2147483649"), "one below the Long range"),
         ("range-fraction-above", N("2147483648.5"), "range precedes integrality"),

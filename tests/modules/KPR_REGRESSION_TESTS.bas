@@ -5218,8 +5218,8 @@ End Sub
 
 Private Sub Run_IntegerCases()
 '
-' Integer arguments reject fractions, Boolean and text, and range precedes
-' integrality.
+' Integer arguments reject fractions beyond the 1E-9 residue tolerance,
+' Boolean and text, and range precedes integrality.
 '
 
 '------------------------------------------------------------------------------
@@ -5248,6 +5248,15 @@ Private Sub Run_IntegerCases()
         AssertLongCondition "long/max", 2147483647#, True, "NONE"
         AssertLongCondition "long/min", -2147483648#, True, "NONE"
 
+    'Binary floating-point residue within 1E-9 reads as the nearest integer
+        AssertLongCondition "long/residue above", (0.1 + 0.2) * 10, True, "NONE"
+        AssertLongCondition "long/residue below", (0.7 + 0.1) * 10, True, "NONE"
+        AssertLongCondition "long/tolerance inside", 3.0000000001, True, "NONE"
+        AssertDateResult "long/residue above value", _
+            KPR_Dates_AddDays(DateSerial(2024, 1, 31), (0.1 + 0.2) * 10), DateSerial(2024, 2, 3)
+        AssertDateResult "long/residue below value", _
+            KPR_Dates_AddDays(DateSerial(2024, 1, 31), (0.7 + 0.1) * 10), DateSerial(2024, 2, 8)
+
 '------------------------------------------------------------------------------
 ' REJECTED
 '------------------------------------------------------------------------------
@@ -5256,6 +5265,7 @@ Private Sub Run_IntegerCases()
         AssertLongCondition "long/fraction tie", 2.5, False, "INTEGER_FRACTION"
         AssertLongCondition "long/fraction down", 2.4, False, "INTEGER_FRACTION"
         AssertLongCondition "long/tiny fraction", 3.0000001, False, "INTEGER_FRACTION"
+        AssertLongCondition "long/outside tolerance", 3.00000001, False, "INTEGER_FRACTION"
 
     'Range precedes integrality when both apply
         AssertLongCondition "long/over range", 2147483648#, False, "INTEGER_RANGE"

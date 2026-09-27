@@ -78,8 +78,11 @@ acceptance criteria are created when the milestone is activated.
 ## v0.0.6 — Business-Day Arithmetic and Roll Conventions
 
 Planned. Adds business-day arithmetic and following, preceding, modified and
-other roll conventions on top of the v0.0.5 calendars. Its issues and
-acceptance criteria are created when the milestone is activated.
+other roll conventions on top of the v0.0.5 calendars. It also gives the `ON`
+and `TN` pillars their business-day meaning through its calendar-aware
+functions; `KPR_Dates_*` pillars stay calendar days (contract section 3.4).
+Its issues and acceptance criteria are created when the milestone is
+activated.
 
 ## Scope transitions
 
@@ -91,3 +94,5 @@ acceptance criteria are created when the milestone is activated.
 | Ctrl+Shift+Enter or legacy multi-cell compatibility | All milestones | Not planned |
 | Committed Office binaries | All milestones | Release assets only |
 | Broader pricing capabilities | v0.0.3–v0.0.6 | Not yet scheduled |
+| Business-day `ON` / `TN` pillars | v0.0.4, v0.0.5 | v0.0.6, calendar-aware functions only |
+| In-repository performance benchmarks | All milestones | Not planned; measured with an external VBA performance add-in |
