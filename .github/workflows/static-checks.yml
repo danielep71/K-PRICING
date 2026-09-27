@@ -524,6 +524,10 @@ jobs:
       # The same self-tests and checks the Repository integrity job runs, under
       # coverage. Thresholds and scope live in pyproject.toml.
       - name: Measure maintained Python tooling under coverage
+        env:
+          # Under coverage on Python 3.10 the script directory is not put on
+          # sys.path, so the checkers' sibling imports need it explicitly.
+          PYTHONPATH: tools
         run: |
           set -o pipefail
           mkdir -p test-results
