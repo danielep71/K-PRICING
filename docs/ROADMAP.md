@@ -30,7 +30,7 @@ K-PRICING. Neither is a current plan.
 | --- | --- | --- | --- |
 | v0.0.1 | Repository setup | Closed | Setup record, not a functional release |
 | v0.0.2 | Repository migration of the frozen date layer | Closed | Migration record, not a functional release |
-| v0.0.3 — Test Hardening and Registration | Independent fixtures, durable runner and evidence schema, complete regression suites, Excel cross-oracle checks and scope hardening, MacroOptions registration | #38 (done, PR #54), #39 (done, PRs #56 and #58), #40 (done, PR #59), #41 (done, PR #60), #63 (done, PR #64), #42 (in progress) | No release |
+| v0.0.3 — Test Hardening and Registration | Independent fixtures, durable runner and evidence schema, complete regression suites, Excel cross-oracle checks and scope hardening, MacroOptions registration | #38 (done, PR #54), #39 (done, PRs #56 and #58), #40 (done, PR #59), #41 (done, PR #60), #63 (done, PR #64), #42 (done, PR #65) | No release |
 | v0.0.4 — Date Primitives | Demo builder, Ribbon and CommandBars, public/infrastructure classification, final static controls and drift monitoring, candidate assembly, exact-source certification | #46–#52 | First functional release: tag `v0.0.4` |
 | v0.0.5 — Business Calendars and Holidays | Calendars, weekend masks and holiday sets in the reserved `KPR_Cal_*` namespace | Not yet created | Planned |
 | v0.0.6 — Business-Day Arithmetic and Roll Conventions | Business-day arithmetic and roll conventions built on v0.0.5 calendars | Not yet created | Planned |
@@ -46,7 +46,7 @@ acceptance (#18).
         ├─> #40 regression suites (done, PR #59)
         └─> #41 Excel cross-oracle checks (done, PR #60)
               └─> #63 oracle-scope hardening (done, PR #64)
-#38, #39, #40, #41, #63 ─> #42 MacroOptions registration
+#38, #39, #40, #41, #63 ─> #42 MacroOptions registration (done, PR #65)
 ```
 
 Boundary: test and evidence infrastructure plus registration. No change to the
