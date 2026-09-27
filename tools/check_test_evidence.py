@@ -41,10 +41,13 @@ CERTIFICATION_KEYS = (
 )
 OUTCOME_STATUSES = ("PASS", "FAIL", "NOT_RUN", "NOT_APPLICABLE")
 # Outcomes a certification record may never mark NOT_APPLICABLE.
-ALWAYS_APPLICABLE = ("source_import", "vba_compile", "regression", "cross_oracle")
+ALWAYS_APPLICABLE = ("source_import", "vba_compile", "regression", "cross_oracle", "macro_options")
 NONDETERMINISTIC_FIELDS = ("/environment", "/timing", "/suites/*/elapsed_ms")
 RUNNER_FAILURE_SUITE = "runner"
 ORACLE_SUITE = "worksheet-oracle"
+REGISTRATION_SUITE = "worksheet-registration"
+# Certification outcomes the runner derives from one registered suite.
+SUITE_OUTCOMES = {"cross_oracle": ORACLE_SUITE, "macro_options": REGISTRATION_SUITE}
 REGISTRY_PATTERN = re.compile(
     r"Private Function TestRegistry\(\)[^\n]*\n(?P<body>.*?)\nEnd Function",
     re.DOTALL,
@@ -348,21 +351,22 @@ def _outcome_rules(record: dict[str, Any]) -> list[str]:
         errors.extend(_outcome_errors(key, certification[key]))
     if certification["regression"]["status"] != record["result"]:
         errors.append("certification.regression.status must equal result")
-    errors.extend(_oracle_rules(record))
+    for key, suite_name in SUITE_OUTCOMES.items():
+        errors.extend(_suite_outcome_rules(record, key, suite_name))
     return errors
 
 
-def _oracle_rules(record: dict[str, Any]) -> list[str]:
-    """cross_oracle follows the worksheet-oracle suite; without it the oracle did not run."""
-    status = record["certification"]["cross_oracle"]["status"]
-    suite = next((s for s in record["suites"] if s["name"] == ORACLE_SUITE), None)
+def _suite_outcome_rules(record: dict[str, Any], key: str, suite_name: str) -> list[str]:
+    """A suite-derived outcome follows its suite; without the suite it did not run."""
+    status = record["certification"][key]["status"]
+    suite = next((s for s in record["suites"] if s["name"] == suite_name), None)
     if suite is None:
         if status != "NOT_RUN":
-            return [f"certification.cross_oracle must be NOT_RUN when {ORACLE_SUITE} did not run"]
+            return [f"certification.{key} must be NOT_RUN when {suite_name} did not run"]
         return []
     expected = suite["status"] if suite["status"] in {"PASS", "FAIL"} else "NOT_RUN"
     if status != expected:
-        return [f"certification.cross_oracle must be {expected} to match the {ORACLE_SUITE} suite"]
+        return [f"certification.{key} must be {expected} to match the {suite_name} suite"]
     return []
 
 
@@ -473,7 +477,7 @@ def synthetic_record(root: Path) -> dict[str, Any]:
             "vba_compile": _outcome("NOT_RUN", None, operator),
             "regression": _outcome("PASS", f"{len(suites)} suite(s)", None),
             "cross_oracle": _outcome("PASS", "21 oracle assertion(s), 0 failure(s)", None),
-            "macro_options": _outcome("NOT_RUN", None, operator),
+            "macro_options": _outcome("PASS", "40 registration assertion(s), 0 failure(s)", None),
             "ribbonx": _outcome("NOT_RUN", None, operator),
             "commandbars": _outcome("NOT_RUN", None, operator),
             "demo_generation": _outcome("NOT_RUN", None, operator),
@@ -503,6 +507,8 @@ def _single_suite(record: dict[str, Any]) -> dict[str, Any]:
     record["totals"] = {"suites": 1, "assertions": suite["assertions"], "failures": 0}
     record["certification"]["cross_oracle"] = _outcome(
         "NOT_RUN", None, "The worksheet-oracle suite was not selected in this run.")
+    record["certification"]["macro_options"] = _outcome(
+        "NOT_RUN", None, "The worksheet-registration suite was not selected in this run.")
     return record
 
 
@@ -631,6 +637,15 @@ def self_test(root: Path) -> int:
         ("oracle marked not applicable without the suite",
          lambda r: _set("certification/cross_oracle", _outcome("NOT_APPLICABLE", None, "n/a"))(_single_suite(r)),
          {}, "must be NOT_RUN when"),
+        ("registration outcome disagrees with suite",
+         _set("certification/macro_options", _outcome("NOT_RUN", None, "skipped")), {},
+         "macro_options must be PASS to match"),
+        ("registration outcome without the suite",
+         lambda r: _set("certification/macro_options", _outcome("PASS", "x", None))(_single_suite(r)), {},
+         "macro_options must be NOT_RUN when"),
+        ("registration marked not applicable in certification",
+         lambda r: _set("certification/macro_options", _outcome("NOT_APPLICABLE", None, "n/a"))(_certified(r)),
+         {"certification": True}, "macro_options"),
         ("certification of one suite", lambda r: _certified(_single_suite(r)), {"certification": True},
          "KPR_Test_RunAll record"),
         ("compile marked not applicable",

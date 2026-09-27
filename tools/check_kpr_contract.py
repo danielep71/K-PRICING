@@ -29,6 +29,7 @@ EXPECTED_COMPONENTS = {
     "src/core/KPR_Core_Dates.bas": "internal",
     "src/core/KPR_Core_Array.bas": "internal",
     "src/modules/KPR_DATES_DAYS.bas": "public",
+    "src/modules/KPR_REGISTER_PUBLIC_UDFS.bas": "internal",
     "tests/modules/KPR_REGRESSION_TESTS.bas": "test",
 }
 ALLOWED_DEPENDENCIES = {
@@ -46,10 +47,13 @@ ALLOWED_DEPENDENCIES = {
             "kpr_core_dates",
             "kpr_core_array",
             "kpr_dates_days",
+            "kpr_register_public_udfs",
             "kpr_test_fixtures_generated",
             "kpr_test_oracle",
         }
     ),
+    # Registration holds function names as manifest text only.
+    "kpr_register_public_udfs": frozenset(),
     # Generated expectations must stay independent of every production module.
     "kpr_test_fixtures_generated": frozenset(),
     # The Excel cross-oracle compares the public facade only.
@@ -91,6 +95,17 @@ REQUIRED_MEMBERS = {
         }
     ),
     "kpr_dates_days": frozenset({"KPR_Dates_HostDateSystem"}),
+    "kpr_register_public_udfs": frozenset(
+        {
+            "KPR_Register_PublicUDFs",
+            "KPR_Register_ClearPublicUDFs",
+            "KPR_Register_LastReport",
+            "KPR_Register_ManifestCount",
+            "KPR_Register_ManifestName",
+            "KPR_Register_ManifestArgCount",
+            "KPR_Register_ManifestArgDescriptions",
+        }
+    ),
     "kpr_test_fixtures_generated": frozenset(
         {"KPR_Fixtures_Count", "KPR_Fixtures_Case", "KPR_Fixtures_SourceHash"}
     ),
@@ -107,6 +122,7 @@ REQUIRED_MEMBERS = {
         "KPR_Tests_RunFixtureHost",
         "KPR_Tests_RunStateCheck",
         "KPR_Tests_RunOracle",
+        "KPR_Tests_RunRegistration",
         "KPR_Test_RunAll",
         "KPR_Test_RunSuite",
     }),
@@ -1003,6 +1019,135 @@ def rule_oracle_scope(data: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+REGISTRATION_PATH = "src/modules/KPR_REGISTER_PUBLIC_UDFS.bas"
+REGISTRATION_CATEGORY = "KPR Dates"
+USER_DEFINED_CATEGORY = 14
+MACRO_OPTIONS_TEXT_LIMIT = 255
+REGISTRATION_CATEGORY_CONSTANTS = frozenset({"KPR_UDF_CATEGORY", "USER_DEFINED_CATEGORY"})
+
+
+def registration_records(text: str) -> list[dict[str, Any]]:
+    """The AddRecord manifest as data: name, argument names, description, argument descriptions."""
+    records: list[dict[str, Any]] = []
+    for number, statement in logical(text):
+        if not re.match(r"^AddRecord\b", statement, re.I):
+            continue
+        literals = [item.replace('""', '"') for item in re.findall(r'"((?:[^"]|"")*)"', statement)]
+        literal_only = bool(re.fullmatch(r'AddRecord\s+""(?:\s*,\s*"")*', strip_strings(statement).strip(), re.I))
+        records.append({
+            "line": number,
+            "literal": literal_only and len(literals) >= 3,
+            "name": literals[0] if literals else "",
+            "arguments": [item for item in literals[1].split("|") if item] if len(literals) > 1 else [],
+            "description": literals[2] if len(literals) > 2 else "",
+            "argument_descriptions": literals[3:],
+        })
+    return records
+
+
+def signature_arguments(statement: str) -> list[tuple[str, bool]]:
+    """(name, optional) for each parameter of a normalized Public Function statement."""
+    inner = re.search(r"\((.*)\)\s*As\s+\w+\s*$", statement)
+    if not inner or not inner.group(1).strip():
+        return []
+    output: list[tuple[str, bool]] = []
+    for item in _split_top(inner.group(1), ","):
+        hit = re.match(r"(Optional\s+)?(?:ByVal\s+|ByRef\s+)?(\w+)", item.strip(), re.I)
+        if hit:
+            output.append((hit.group(2), bool(hit.group(1))))
+    return output
+
+
+def _registration_record_errors(record: dict[str, Any], signature: list[tuple[str, bool]]) -> list[str]:
+    errors: list[str] = []
+    name = record["name"]
+    if not record["literal"]:
+        errors.append(f"{name or 'AddRecord'}: a manifest record must consist of string literals only.")
+    expected = [argument for argument, _ in signature]
+    if record["arguments"] != expected:
+        errors.append(f"{name}: argument names {record['arguments']} must match the signature {expected}.")
+    if len(record["argument_descriptions"]) != len(signature):
+        errors.append(
+            f"{name}: {len(record['argument_descriptions'])} argument description(s) for "
+            f"{len(signature)} argument(s); the array must be complete."
+        )
+    description = record["description"]
+    if not description.strip() or len(description) > MACRO_OPTIONS_TEXT_LIMIT:
+        errors.append(f"{name}: the description must be non-blank and at most {MACRO_OPTIONS_TEXT_LIMIT} characters.")
+    if signature and not ("Scalar input" in description and "dynamic-array Excel" in description):
+        errors.append(f"{name}: the description must state scalar and dynamic-array multi-cell behaviour.")
+    if not signature and "Scalar only" not in description:
+        errors.append(f"{name}: a zero-argument function must be described as scalar only.")
+    for (argument, optional), text in zip(signature, record["argument_descriptions"]):
+        prefix = f"{argument} (optional, default " if optional else f"{argument}: "
+        if not text.startswith(prefix):
+            errors.append(f"{name}: the description of {argument} must begin with {prefix.strip()!r}.")
+        if not text[len(prefix):].strip() or len(text) > MACRO_OPTIONS_TEXT_LIMIT:
+            errors.append(
+                f"{name}: the description of {argument} must be non-blank and at most "
+                f"{MACRO_OPTIONS_TEXT_LIMIT} characters."
+            )
+    return errors
+
+
+def _registration_module_errors(text: str) -> list[str]:
+    errors: list[str] = []
+    category = _constant(text, "KPR_UDF_CATEGORY")
+    if category is None or not re.search(rf'=\s*"{re.escape(REGISTRATION_CATEGORY)}"\s*$', category):
+        errors.append(f'KPR_UDF_CATEGORY must be the single category "{REGISTRATION_CATEGORY}".')
+    user = _constant(text, "USER_DEFINED_CATEGORY")
+    if user is None or not re.search(rf"=\s*{USER_DEFINED_CATEGORY}\s*$", user):
+        errors.append(f"USER_DEFINED_CATEGORY must be Excel's built-in category {USER_DEFINED_CATEGORY}.")
+    code = executable_text(text)
+    for value in re.findall(r"\bCategory\s*:=\s*([^,\s]+)", code, re.I):
+        if value not in REGISTRATION_CATEGORY_CONSTANTS:
+            errors.append(f"MacroOptions Category must be KPR_UDF_CATEGORY or USER_DEFINED_CATEGORY; found {value}.")
+    for array in ("Descs", "Blank"):
+        if not re.search(rf"\bReDim\s+{array}\s*\(\s*1\s+To\b", code, re.I):
+            errors.append(f"The {array} argument-description array must be allocated 1-based.")
+    return errors
+
+
+def rule_registration_manifest(data: dict[str, Any]) -> dict[str, Any]:
+    failures: list[dict[str, Any]] = []
+    text = data["sources"].get(REGISTRATION_PATH)
+    facade = facade_functions(data)
+    if text is None:
+        failures.append(finding(CONFIG_PATH, "The registration module KPR_REGISTER_PUBLIC_UDFS is not registered."))
+        text = ""
+    records = registration_records(text)
+    failures.extend(finding(REGISTRATION_PATH, error) for error in _registration_module_errors(text))
+    seen: set[str] = set()
+    for record in records:
+        folded = record["name"].casefold()
+        if folded in seen:
+            failures.append(finding(REGISTRATION_PATH, f"{record['name']} has more than one manifest record.", record["line"]))
+        seen.add(folded)
+        if record["name"] not in facade:
+            failures.append(finding(
+                REGISTRATION_PATH,
+                f"{record['name']} is not a supported KPR_Dates_* function; only the public surface may be registered.",
+                record["line"],
+            ))
+            continue
+        signature = signature_arguments(facade[record["name"]][1])
+        failures.extend(
+            finding(REGISTRATION_PATH, error, record["line"])
+            for error in _registration_record_errors(record, signature)
+        )
+    for name in sorted(set(facade) - {record["name"] for record in records}):
+        failures.append(finding(REGISTRATION_PATH, f"{name} has no manifest record."))
+    for path, source in data["sources"].items():
+        if path != REGISTRATION_PATH and re.search(r"\bMacroOptions\b", executable_text(source), re.I):
+            failures.append(finding(path, "MacroOptions belongs only to the registration module."))
+    return result(
+        "kpr-registration-manifest",
+        "MacroOptions registration manifest",
+        failures,
+        f'{len(records)} manifest records match the public signatures in the single "{REGISTRATION_CATEGORY}" category',
+    )
+
+
 RULES = (
     rule_components,
     rule_surface,
@@ -1016,6 +1161,7 @@ RULES = (
     rule_array_purity,
     rule_day_zero,
     rule_oracle_scope,
+    rule_registration_manifest,
 )
 
 
@@ -1044,6 +1190,10 @@ def report(root: Path, data: dict[str, Any] | None = None) -> dict[str, Any]:
             "findings": sum(len(item["findings"]) for item in rules),
         },
         "rules": rules,
+        "registration_manifest": [
+            {"name": record["name"], "arguments": record["arguments"]}
+            for record in registration_records(data["sources"].get(REGISTRATION_PATH, ""))
+        ],
     }
 
 
@@ -1333,6 +1483,34 @@ def self_test(root: Path) -> None:
         "kpr-oracle-scope",
         mutate(base, oracle, "ByVal Formula As String) _", 'Optional ByVal Formula As String = "DATEVALUE(1)") _'),
     ))
+    register = REGISTRATION_PATH
+    registration_cases = (
+        ("unregistered function", 'AddRecord "KPR_Dates_HostDateSystem", "", _',
+         'AddRecord "KPR_Dates_HostDateSystem_Spill", "", _'),
+        ("duplicate manifest record", 'AddRecord "KPR_Dates_EndOfMonth", "DateIn", _',
+         'AddRecord "KPR_Dates_BeginOfMonth", "DateIn", _'),
+        ("argument order swapped", '"DateIn|nMonths|Opt_KeepEOM"', '"nMonths|DateIn|Opt_KeepEOM"'),
+        ("incomplete argument descriptions", '(dynamic-array Excel).", _\r\n            "Opt_Rounding',
+         "(dynamic-array Excel).\"\r\n            '\"Opt_Rounding"),
+        ("overlong description", '"Returns the number of days, 28 to 31, in the month containing DateIn.',
+         '"Returns the number of days, 28 to 31, in the month containing DateIn.' + "x" * 200),
+        ("optional argument described as required", '"Opt_KeepEOM (optional, default FALSE):', '"Opt_KeepEOM:'),
+        ("second category", 'Private Const KPR_UDF_CATEGORY As String = "KPR Dates"',
+         'Private Const KPR_UDF_CATEGORY As String = "KPR Dates - Days"'),
+        ("literal category in a MacroOptions call", "Category:=KPR_UDF_CATEGORY, _", 'Category:="KPR Misc", _'),
+        ("zero-based argument descriptions", "ReDim Descs(1 To Total)", "ReDim Descs(0 To Total - 1)"),
+        ("record built from a variable", 'AddRecord "KPR_Dates_IsYearEnd", "DateIn", _',
+         'AddRecord "KPR_Dates_IsYearEnd", mArgNames(1), _'),
+        ("zero-argument function without scalar note", "Scalar only; volatile.", "Single value; volatile."),
+    )
+    for label, old, new in registration_cases:
+        scenarios.append((label, "kpr-registration-manifest", mutate(base, register, old, new)))
+    stray = copy.deepcopy(base)
+    stray["sources"][facade] += (
+        "\r\nPrivate Sub ProbeRegistration()\r\n"
+        '    Application.MacroOptions Macro:="KPR_Dates_AddDays", Description:="x"\r\nEnd Sub\r\n'
+    )
+    scenarios.append(("MacroOptions outside the registration module", "kpr-registration-manifest", stray))
     for name, expected, case in scenarios:
         rep = report(root, case)
         failed_ids = {

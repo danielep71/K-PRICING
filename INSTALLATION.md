@@ -102,15 +102,23 @@ Import the migrated production dependency set in this order:
 3. `src/core/KPR_Core_Dates.bas`
 4. `src/core/KPR_Core_Array.bas`
 5. `src/modules/KPR_DATES_DAYS.bas`
-6. `tests/modules/KPR_Test_Fixtures_Generated.bas` — development/regression
+6. `src/modules/KPR_REGISTER_PUBLIC_UDFS.bas` — project-internal
+   MacroOptions registration manifest; no module dependencies
+7. `tests/modules/KPR_Test_Fixtures_Generated.bas` — development/regression
    only; generated fixture data with no dependencies
-7. `tests/modules/KPR_Test_Oracle.bas` — development/regression only; Excel
+8. `tests/modules/KPR_Test_Oracle.bas` — development/regression only; Excel
    cross-oracle cases that depend on `KPR_DATES_DAYS` alone
-8. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
-9. `examples/modules/KPR_DateExample.bas` — optional consumer example
+9. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
+10. `examples/modules/KPR_DateExample.bas` — optional consumer example
 
 The four core modules are project-internal; `KPR_DATES_DAYS` owns the supported
-22-function calculation API. Source provenance and path adaptation are recorded
+22-function calculation API. `KPR_REGISTER_PUBLIC_UDFS` is unsupported
+infrastructure: in the Immediate window, `? KPR_Register_PublicUDFs()` shows the
+22 functions in the Insert Function dialog under the **KPR Dates** category
+with argument help and returns 22, and `? KPR_Register_ClearPublicUDFs()`
+blanks that metadata and returns them to **User Defined**. Both are idempotent,
+preserve the workbook's saved state, and never change a calculation; a
+non-empty `? KPR_Register_LastReport()` lists any function that failed. Source provenance and path adaptation are recorded
 in [`docs/MIGRATION_PROVENANCE.md`](docs/MIGRATION_PROVENANCE.md).
 
 > [!CAUTION]

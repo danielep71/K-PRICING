@@ -12,8 +12,12 @@ The runner was verified in Windows Excel for #39: two runs on candidate
 assertions with state restored, and the two records matched outside the
 declared nondeterministic fields. The #40 regression matrix and `worksheet-state` suite were verified the same
 way on candidate `33b07cd` (18 suites, 1,953 assertions). The #41
-`worksheet-oracle` suite has not yet been run in Excel; its counts are
-structural expectations until a retained run validates.
+`worksheet-oracle` suite was verified the same way on candidate `7d3f359` (19
+suites, 9,177 assertions). The #42 `worksheet-registration` suite was verified
+the same way on candidate `aa4aa0d` (20 suites, 9,263 assertions); a first run
+on `e4e0c75` passed every assertion but failed state restoration because the
+status bar read back as the text `FALSE`, and the runner now hands the bar back
+with a literal `False`, retried after `DoEvents`.
 
 ## Runner interface
 
@@ -65,6 +69,7 @@ Replace the example SHA with the exact candidate you imported.
 | `worksheet-array` | worksheet | `KPR_Tests_RunArray`: dynamic-array spill and 1904 call-level `#N/A` |
 | `worksheet-fixtures` | worksheet | `KPR_Tests_RunFixtureHost`: the generated cases whose context is a 1900 or 1904 worksheet caller |
 | `worksheet-oracle` | worksheet | `KPR_Tests_RunOracle`: the Excel cross-oracle cases in `KPR_Test_Oracle` (#41) |
+| `worksheet-registration` | worksheet | `KPR_Tests_RunRegistration`: the MacroOptions manifest and register / clean-up lifecycle in `KPR_REGISTER_PUBLIC_UDFS` (#42) |
 | `worksheet-state` | worksheet | `KPR_Tests_RunStateCheck`: runs the durable runner on `date-type` twice, once with a deliberately injected failure, and proves the caller's state is restored after both |
 
 `KPR_Tests_RunAll("all")`, `KPR_Tests_RunEvidence` and the
@@ -159,6 +164,39 @@ Documented exclusions are asserted, never skipped:
   the 1904 date system are not compared, because Excel's behaviour there is
   not the KPR contract.
 
+## MacroOptions registration (#42)
+
+`src/modules/KPR_REGISTER_PUBLIC_UDFS.bas` registers the Function Wizard
+description, category and argument help of the 22 supported functions. It is
+unsupported infrastructure (`Option Private Module`, role `internal`) and
+contains no date algorithm. Its manifest is one `AddRecord` statement per
+function: name, argument names in signature order, description and one
+argument description per argument. `check_kpr_contract.py`
+(`kpr-registration-manifest`) reads the records as data and requires exactly
+one record per supported function, argument names that match the public
+signature, complete argument descriptions that begin with the argument name
+(optional ones with `(optional, default ...)`), descriptions within Excel's
+255-character limit that state scalar and dynamic-array behaviour, 1-based
+argument arrays, the single category `KPR Dates`, and no MacroOptions call in
+any other module. Its JSON report carries the parsed manifest as
+`registration_manifest` (name and arguments only) for later completeness
+checks.
+
+The `worksheet-registration` suite checks the manifest shape at run time, then
+calls the workbook-qualified entry points through `Application.Run`: register
+twice, clean up twice and register again. Every call must report all 22
+functions with an empty failure report, and `ThisWorkbook.Saved`, calculation,
+events, screen updating, alerts, the active workbook and sheet and the
+selection must be exactly as found. Excel cannot read MacroOptions metadata
+back, so repeatability is shown by identical results rather than by reading
+the registered text. The suite leaves the functions registered. It has 86
+assertions, so an `all` run has 20 suites and 9,263 assertions.
+
+Excel has no operation that unregisters a VBA function. Clean-up blanks each
+description and argument description and moves the function to Excel's
+built-in "User Defined" category; the functions stay callable while the
+project is loaded.
+
 ## Caller-state restoration
 
 Before any suite runs, the runner captures the calculation mode, events,
@@ -226,9 +264,10 @@ Each outcome has a `status` of `PASS`, `FAIL`, `NOT_RUN` or `NOT_APPLICABLE`.
 `PASS` and `FAIL` carry a nonempty `detail` and a null `reason`. `NOT_RUN` and
 `NOT_APPLICABLE` carry a nonempty `reason` and a null `detail`.
 
-The runner writes `regression` from the run itself and `cross_oracle` from the
-`worksheet-oracle` suite: `PASS` or `FAIL` when that suite ran, `NOT_RUN` when
-it was not selected. Every other outcome is `NOT_RUN`, because the runner
+The runner writes `regression` from the run itself, `cross_oracle` from the
+`worksheet-oracle` suite and `macro_options` from the `worksheet-registration`
+suite: `PASS` or `FAIL` when that suite ran, `NOT_RUN` when it was not
+selected. Every other outcome is `NOT_RUN`, because the runner
 cannot observe it. The certification operator
 completes those outcomes in the same file after observing them, and never
 edits a field the runner wrote.
@@ -260,15 +299,16 @@ against the schema, then:
   and a passing suite executed at least one assertion;
 - `result` and the `regression` outcome follow from the suites, failures and
   state restoration;
-- every certification outcome follows the detail and reason rules, and
-  `cross_oracle` matches the `worksheet-oracle` suite, and is `NOT_RUN` when
-  that suite was not selected;
+- every certification outcome follows the detail and reason rules;
+  `cross_oracle` matches the `worksheet-oracle` suite and `macro_options` the
+  `worksheet-registration` suite, each `NOT_RUN` when its suite was not
+  selected;
 - with `--compare`, the second record passes the same schema and semantic
   checks, and both records are identical outside the declared
   nondeterministic fields;
 - with `--certification`, the record is a `KPR_Test_RunAll` record and every
-  outcome is `PASS`. `macro_options`, `ribbonx`, `commandbars`,
-  `demo_generation` and `source_round_trip` may instead be `NOT_APPLICABLE`.
+  outcome is `PASS`. `ribbonx`, `commandbars`, `demo_generation` and
+  `source_round_trip` may instead be `NOT_APPLICABLE`.
 
 Exit 0 means a valid record of a passing run. Exit 1 means an invalid record
 or a valid record of a failing run. Exit 2 means a usage or input error.

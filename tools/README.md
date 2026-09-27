@@ -329,6 +329,16 @@ literals and numeric-typed variables, so it can be inspected, and its text holds
 only numbers, arithmetic and the permitted functions (no names or references). The oracle may
 depend on `KPR_DATES_DAYS` alone.
 
+Its `kpr-registration-manifest` rule (#42) parses the `AddRecord` manifest in
+`KPR_REGISTER_PUBLIC_UDFS` and requires exactly one record per supported
+function, in the `KPR_DATES_DAYS` argument order, with a complete argument
+description list, the optional-argument prefix wherever the signature is
+`Optional`, the scalar/array and error notes, and every MacroOptions text within
+255 characters. Records must be literal, the single `KPR Dates` category and the
+cleanup `User Defined` category must be named constants, argument arrays must
+be 1-based, and no other module may call `MacroOptions`. `--report` includes
+the parsed manifest as `registration_manifest`.
+
 ## Independent date-layer fixtures
 
 `gen_fixtures.py` is the independent fixture generator for issue #38. A

@@ -183,7 +183,7 @@ separately implemented and evidenced.
 | 22 public functions | Complete; preserve exact signatures and supported surface | #12, #13 |
 | Array shape engine | Complete; preserve shapes, caps and failure rules | #12, #14 |
 | Array facade integration | Complete; preserve implementation; repeat exact-candidate parity | #12, #17 |
-| Function registration | Open; defer new MacroOptions category/argument registration | #16; now #42 |
+| Function registration | Open; defer new MacroOptions category/argument registration | #16; implemented after migration by #42 (`KPR_REGISTER_PUBLIC_UDFS`) |
 | Independent generated fixtures | Open at migration; defer generator/TSV/generated-module implementation | #16; delivered after migration by #38 (PR #54) |
 | Full runner and evidence | Open at migration; preserve current harness first | #14, #16; delivered after migration by #39 (PRs #56, #58; verified in Windows Excel) |
 | Complete regression matrix | Open; preserve implemented tests; broader coverage remains future | #14, #16; now #40 |

@@ -33,8 +33,7 @@ only when every selected case passed. The record's schema is
 [`docs/kpr-test-evidence.schema.json`](../docs/kpr-test-evidence.schema.json),
 documented in [KPR_TEST_EVIDENCE.md](../docs/KPR_TEST_EVIDENCE.md), and
 `tools/check_test_evidence.py` validates it. The runner was verified in Windows
-Excel for #39 and #40; the #41 `worksheet-oracle` suite awaits its first
-Excel run.
+Excel for #39, #40, #41 and the #42 `worksheet-registration` suite.
 
 The source expectations and condition identifiers are preserved. Historical KPR
 run counts are not destination certification. The authoritative
@@ -63,6 +62,17 @@ durable runner's `worksheet-oracle` suite (or `KPR_Tests_RunOracle` alone) and
 feeds the evidence record's `cross_oracle` outcome. Its overlap assumptions
 and asserted exclusions are documented in the module header and in
 [KPR_TEST_EVIDENCE.md](../docs/KPR_TEST_EVIDENCE.md).
+
+## MacroOptions registration
+
+The `worksheet-registration` suite (or `KPR_Tests_RunRegistration` alone)
+checks the manifest in `src/modules/KPR_REGISTER_PUBLIC_UDFS.bas` against the
+22 supported functions and their argument lists, then runs register, register,
+clean-up, clean-up and register through `Application.Run`, requiring every step
+to cover all 22 functions with no failure and the caller's workbook, sheet,
+selection, calculation mode and saved state to be unchanged. It feeds the
+evidence record's `macro_options` outcome. MacroOptions metadata cannot be read
+back from Excel, so the Insert Function dialog itself remains a manual check.
 
 The optional [Windows/Excel evidence interface](../docs/EXCEL_EVIDENCE.md)
 records this harness output, source identity and host environment with explicit
