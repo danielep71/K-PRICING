@@ -793,15 +793,16 @@ def _oracle_shape_errors(statement: str) -> list[str]:
 # A Collection counts too: a caller could hand the oracle Excel objects inside one.
 OBJECT_TYPES = frozenset({"collection", "object", "workbook", "worksheet"})
 # The only ways the oracle may touch an Excel object outside Xl; NAME is the object.
+# Open, set-up and close forms are complete statements, so no argument can follow.
 OBJECT_USES = (
-    r"Application\.Workbooks\.Add",
+    r"Application\.Workbooks\.Add\s*(?=$|:)",
     r"Application\.Calculation",
-    r"NAME\.Date1904",
-    r"NAME\.Close",
-    r"NAME\.Worksheets\(\s*\d+\s*\)",
+    r"NAME\.Date1904\s*=\s*False\s*(?=$|:)",
+    r"NAME\.Close\s+SaveChanges:=False\s*(?=$|:)",
+    r"NAME\.Worksheets\(\s*\d+\s*\)\s*(?=$|:)",
     r"NAME\s+Is\s+Nothing",
     r"NAME\.Add(?=\s)",
-    r"NAME\s*=\s*(?:Nothing|Application\.Workbooks\.Add|\w+\.Worksheets\(\s*\d+\s*\))",
+    r"NAME\s*=\s*(?:Nothing|Application\.Workbooks\.Add|\w+\.Worksheets\(\s*\d+\s*\))\s*(?=$|:)",
 )
 
 
@@ -1234,6 +1235,16 @@ def self_test(root: Path) -> None:
             '    Serial = Xl(CStr(Serial))\r\nEnd Sub\r\n\r\nPrivate Function NextInt(',
         ),
     ))
+    scenarios.append((
+        "scratch workbook saved on close",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "Scratch.Close SaveChanges:=False", 'Scratch.Close SaveChanges:=False, Filename:="C:\\x.xlsm"'),
+    ))
+    scenarios.append((
+        "scratch workbook opened from a template",
+        "kpr-oracle-scope",
+        mutate(base, oracle, "Set Scratch = Application.Workbooks.Add", 'Set Scratch = Application.Workbooks.Add ("C:\\payload.xltm")'),
+    ))
     for label, probe in (
         ("implicit ActiveCell formula", 'Application.ActiveCell = "=DATEVALUE(1)"'),
         ("unqualified Selection formula", 'Selection = "=DATEVALUE(1)"'),
@@ -1246,6 +1257,7 @@ def self_test(root: Path) -> None:
         ("object taken from the failure collection", 'Set Boundaries = mFailures(1): Boundaries("A1") = "=DATEVALUE(1)"'),
         ("collection item read without Set", "Tag = mFailures(1)"),
         ("collection member outside the allowlist", "Nth = mFailures.Count"),
+        ("scratch workbook from a template", 'Set Scratch = Application.Workbooks.Add ("C:\\payload.xltm")'),
     ):
         scenarios.append((label, "kpr-oracle-scope", mutate(base, oracle, "D = CDate(Serial)", f"D = CDate(Serial): {probe}")))
     scenarios.append((
