@@ -56,7 +56,16 @@
       "support.microsoft.com": "Office support documentation",
       "www.contributor-covenant.org": "Code of conduct authority"
     },
-    "exceptions": [],
+    "query_domains": {
+      "img.shields.io": "Static badges carry only style, logo and colour parameters"
+    },
+    "exceptions": [
+      {
+        "id": "f65307f3c2821186715d19799cd32d418491797c7955b2ad8e6c6846d30a5387",
+        "reason": "Private vulnerability reporting form; GitHub requires a signed-in user and redirects anonymous requests to login",
+        "expires": "2027-03-28"
+      }
+    ],
     "classifications": []
   }
 }

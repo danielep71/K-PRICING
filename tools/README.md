@@ -492,7 +492,7 @@ python3 tools/test_workflow_validation.py \
 
 The release archive and checksum catalogue are authoritative upstream assets;
 review both the [release notes](https://github.com/rhysd/actionlint/releases/tag/v1.7.12)
-and [published checksums](https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_checksums.txt)
+and the published `actionlint_1.7.12_checksums.txt` asset on that release page
 before changing either pin.
 
 ## Release-integrity gate
