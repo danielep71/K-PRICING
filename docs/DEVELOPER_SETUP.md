@@ -49,6 +49,12 @@ ruff check tools
 mypy
 ```
 
+The **Python tooling coverage** job in `static-checks.yml` runs the
+self-tests and checks under `coverage` and fails below the `fail_under`
+ratchet in `pyproject.toml`. To reproduce it locally, wrap each command as
+`python -m coverage run tools/<checker>.py ...`, then run
+`python -m coverage combine` and `python -m coverage report`.
+
 Portable checks use Python 3.10 or newer and the standard library. On Windows,
 use the corresponding installed Python launcher, such as `py -3.10`, in place
 of `python3`. Node.js is required only for the label scripts; their exact runtime
