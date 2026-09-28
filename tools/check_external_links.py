@@ -143,6 +143,19 @@ def url_status(url: str, policy: dict[str, Any]) -> str | None:
     return None
 
 
+def _redirect_status(url: str, policy: dict[str, Any]) -> str | None:
+    """Apply URL policy to a redirect destination, never admitting a query string."""
+    blocked = url_status(url, policy)
+    if blocked is not None:
+        return blocked
+    try:
+        if urlsplit(url).query:
+            return "ACCESS_RESTRICTED"
+    except ValueError:
+        return "POLICY_BLOCKED"
+    return None
+
+
 class PinnedHTTPS(http.client.HTTPSConnection):
     def __init__(self, host: str, address: str, timeout: int):
         self.tls_context = ssl.create_default_context()
@@ -190,8 +203,10 @@ def request(url: str, timeout: int) -> tuple[int, str | None]:
 
 def attempt(url: str, policy: dict[str, Any], transport=request) -> tuple[str, int | None]:
     seen = set()
-    for _ in range(policy["redirects"] + 1):
-        blocked = url_status(url, policy)
+    for hop in range(policy["redirects"] + 1):
+        # Query-domain approval applies only to the originally discovered URL.
+        # A redirect destination carrying any query is never transmitted.
+        blocked = url_status(url, policy) if hop == 0 else _redirect_status(url, policy)
         if blocked:
             return blocked, None
         if url in seen:
