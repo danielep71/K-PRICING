@@ -79,8 +79,12 @@ original hostname for TLS verification, preventing a second DNS lookup from
 changing the destination. No response body is downloaded intentionally.
 
 There are no authentication headers, cookies, environment proxies, credential
-files or private-site login attempts. URLs with user information or query
-parameters are not sent, including harmless-looking badge query strings.
+files or private-site login attempts. URLs with user information are never
+sent. A query string is sent only to a domain listed in the policy's
+`query_domains` map, each with a rationale, and only when it holds plain
+`name=value` parameters; `img.shields.io` is listed so static badges such as
+`?style=flat-square` are observed. Any other query, including one on a redirect
+destination, is reported as access restricted without a request.
 `mailto`, `tel` and unexpanded template URLs are reported as not applicable.
 HTTP and other unapproved schemes are policy-blocked.
 
@@ -101,7 +105,8 @@ report. An example shape is:
 An exception bypasses the probe with an explicit `EXCEPTED` result, not an
 availability claim. Missing rationale, duplicate identifiers and expired entries
 fail policy validation. Review renewal or remove the exception after correction.
-There are no shipped temporary exceptions. Domain approvals are durable
+One temporary exception is shipped: the private vulnerability-reporting form
+linked from `SECURITY.md`, which requires a signed-in GitHub user. Domain approvals are durable
 public-service decisions; temporary per-link exceptions always expire.
 
 ### Restricted and pre-publication classifications

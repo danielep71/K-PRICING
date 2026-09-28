@@ -209,6 +209,8 @@ class DocumentationTests(unittest.TestCase):
         self.policy["historical_documents"] = {}
         self.policy["network"]["domains"] = {"example.org": "Synthetic documentation service"}
         self.policy["network"]["classifications"] = []
+        self.policy["network"]["query_domains"] = {}
+        self.policy["network"]["exceptions"] = []
         (self.root / "README.md").write_text("# Fixture\n\npython3 tools/fixture.py --root .\n")
         (self.root / "tools/fixture.py").write_text("import argparse\np=argparse.ArgumentParser()\np.add_argument('--root')\n")
         subprocess.run(["git", "init", "-q", str(self.root)], check=True)
@@ -515,6 +517,43 @@ class DocumentationTests(unittest.TestCase):
                 report = links.probe(url, self.policy["network"], transport)
                 transport.assert_not_called()
                 self.assertNotEqual(report["status"], "OK")
+
+    def test_query_sent_only_to_approved_query_domain(self):
+        network = self.policy["network"]
+        network["query_domains"] = {"example.org": "Synthetic static badges"}
+        links.validate_policy(network, TODAY)
+        calls = []
+        def transport(url, timeout):
+            calls.append(url)
+            return 200, None
+        report = links.probe("https://example.org/badge?style=flat-square&logo=x", network, transport)
+        self.assertEqual(report["status"], "OK")
+        self.assertEqual(calls, ["https://example.org/badge?style=flat-square&logo=x"])
+        for url in ("https://example.org/badge?token", "https://example.org/badge?a=b/c",
+                    "https://example.org/badge?a=b;c=d"):
+            with self.subTest(url=url), patch.object(links, "request") as blocked:
+                self.assertEqual(links.probe(url, network, blocked)["status"], "ACCESS_RESTRICTED")
+                blocked.assert_not_called()
+        def redirect(url, timeout):
+            return 302, "https://example.org/login?next=home"
+        network["query_domains"] = {}
+        self.assertEqual(links.probe("https://example.org/badge?style=flat", network, redirect)["status"],
+                         "ACCESS_RESTRICTED")
+
+    def test_query_domain_must_be_approved_with_reason(self):
+        network = self.policy["network"]
+        for value in ({"other.example": "not an approved domain"}, {"example.org": ""}, ["example.org"]):
+            network["query_domains"] = value
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                links.validate_policy(network, TODAY)
+
+    def test_request_sends_admitted_query(self):
+        with patch.object(links.socket, "getaddrinfo", return_value=[(2, 1, 6, "", ("93.184.215.14", 443))]), \
+                patch.object(links, "PinnedHTTPS") as connection:
+            connection.return_value.getresponse.return_value.status = 200
+            links.request("https://example.org/badge?style=flat", 2)
+            connection.return_value.request.assert_called_once()
+            self.assertEqual(connection.return_value.request.call_args.args[1], "/badge?style=flat")
 
     def test_private_dns_never_connects(self):
         with patch.object(links.socket, "getaddrinfo", return_value=[(2, 1, 6, "", ("127.0.0.1", 443))]), \

@@ -180,6 +180,12 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- The weekly external-link observation now probes static badge queries on
+  `img.shields.io`, an approved query domain, instead of reporting all 37
+  styled badges as access restricted. The README CI badge no longer carries a
+  query, the actionlint checksum reference points to its public release page,
+  and the private vulnerability-reporting form is a dated exception. The
+  workflow had failed on every run without finding a broken link.
 - Adapted the date-layer contract's version labels to the K-PRICING milestones:
   the contract targets v0.0.4 and `KPR_Cal_*` is reserved for v0.0.5. Behavior,
   signatures, defaults and errors are unchanged; provenance records the
