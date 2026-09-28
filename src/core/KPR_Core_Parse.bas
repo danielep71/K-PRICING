@@ -45,7 +45,7 @@ Attribute VB_Name = "KPR_Core_Parse"
 '   is still reported through its Boolean return and condition ByRef output.
 '
 ' UPDATED
-'   2026-09-01
+'   2026-09-27
 '
 ' AUTHOR
 '   Daniele Penza
@@ -74,6 +74,9 @@ Attribute VB_Name = "KPR_Core_Parse"
     'Long range, tested before any narrowing conversion
         Private Const KPR_LONG_MIN      As Double = -2147483648#
         Private Const KPR_LONG_MAX      As Double = 2147483647#
+    'Largest distance from a whole number still read as that whole number;
+    'absorbs binary floating-point residue such as 2.9999999999999996
+        Private Const KPR_INTEGER_TOL   As Double = 1# / 1000000000#    '1E-9
 
 '
 '------------------------------------------------------------------------------
@@ -446,11 +449,13 @@ Public Function TryParseLongScalar( _
 '
 ' INPUTS
 '   ScalarIn
-'     Accepted: native numeric that is mathematically integral and inside the
-'     VBA Long range.
+'     Accepted: native numeric inside the VBA Long range that is integral or
+'     within KPR_INTEGER_TOL (1E-9) of an integer; it is read as that
+'     nearest integer.
 '
 '     Rejected:
-'       - fractional numeric              INTEGER_FRACTION
+'       - numeric farther than 1E-9 from an integer
+'                                         INTEGER_FRACTION
 '       - numeric outside the Long range  INTEGER_RANGE
 '       - Boolean, Date, ANY text including numeric-looking text, Null, object
 '                                         INTEGER_TYPE_REJECTED
@@ -469,8 +474,10 @@ Public Function TryParseLongScalar( _
 '   - Range is tested BEFORE integrality, per contract section 3.2: a value
 '     outside the Long range returns INTEGER_RANGE and #NUM! even when it also
 '     has a fractional part.
-'   - CLng is reached only after both tests pass, so its round-half-to-even
-'     behaviour can never be observed.
+'   - The nearest integer is Int(X + 0.5); a value within the tolerance is
+'     never near a half, so no tie rule is involved. CLng is reached only on
+'     that whole number, so its round-half-to-even behaviour is never
+'     observed.
 '
 ' ERROR POLICY
 '   - Does not raise. Every failure path returns FALSE with a condition.
@@ -482,7 +489,7 @@ Public Function TryParseLongScalar( _
 '     rule that numeric-looking text is never reinterpreted.
 '
 ' UPDATED
-'   2026-08-31
+'   2026-09-27
 '==============================================================================
 '
 
@@ -491,6 +498,9 @@ Public Function TryParseLongScalar( _
 '------------------------------------------------------------------------------
     Dim VT              As VbVarType    'Cached VarType of the incoming scalar
     Dim X               As Double       'Numeric working value
+    Dim Nearest         As Double       'Nearest whole number to X
+    Dim DecIn           As Variant      'Decimal payload, compared without a lossy Double step
+    Dim DecNearest      As Variant      'Nearest whole number to DecIn
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -545,17 +555,32 @@ Public Function TryParseLongScalar( _
             Exit Function
         End If
 
-    'No silent truncation and no rounding: a fraction is a rejection
-        If X <> Int(X) Then
-            Condition = KPR_COND_INTEGER_FRACTION
-            Exit Function
+    'No truncation and no rounding of a real fraction: only floating-point
+    'residue within the tolerance is read as the nearest whole number. A
+    'Decimal carries more digits than a Double, so its distance is measured
+    'in Decimal; converting first could push a value just inside the
+    'tolerance outside it.
+        If VT = vbDecimal Then
+            DecIn = CDec(ScalarIn)
+            DecNearest = Int(DecIn + CDec(0.5))
+            If Abs(DecIn - DecNearest) > CDec(1) / CDec(1000000000) Then
+                Condition = KPR_COND_INTEGER_FRACTION
+                Exit Function
+            End If
+            Nearest = CDbl(DecNearest)
+        Else
+            Nearest = Int(X + 0.5)
+            If Abs(X - Nearest) > KPR_INTEGER_TOL Then
+                Condition = KPR_COND_INTEGER_FRACTION
+                Exit Function
+            End If
         End If
 
 '------------------------------------------------------------------------------
 ' ASSIGN RESULT
 '------------------------------------------------------------------------------
-    'Safe: the value is integral and inside the Long range
-        ParsedLong = CLng(X)
+    'Safe: Nearest is whole and inside the Long range, because X is
+        ParsedLong = CLng(Nearest)
         Condition = KPR_COND_NONE
 
     'Contract: TRUE only when ParsedLong was assigned

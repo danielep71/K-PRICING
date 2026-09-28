@@ -483,7 +483,7 @@ Private Sub LoadManifest()
 '------------------------------------------------------------------------------
     'Days, months, quarters and years
         AddRecord "KPR_Dates_DayOfWeek", "DateIn|Opt_WeekBaseMonday", _
-            "Returns the weekday number of DateIn, 1 to 7; by default Monday = 1. Scalar input gives one value; a range or array spills one result per cell (dynamic-array Excel). Invalid input: #VALUE!; date out of range: #NUM!.", _
+            "Returns the weekday number of DateIn, 1 to 7; by default Monday = 1, unlike WEEKDAY. Scalar input gives one value; a range or array spills one result per cell (dynamic-array Excel). Invalid input: #VALUE!; date out of range: #NUM!.", _
             "DateIn: a date, date serial or ISO text yyyy-mm-dd from 1900-03-01 to 9999-12-31. A range or array gives one result per cell (dynamic-array Excel). Other text gives #VALUE!; a date outside the window gives #NUM!.", _
             "Opt_WeekBaseMonday (optional, default TRUE): TRUE numbers Monday=1 to Sunday=7; FALSE numbers Sunday=1 to Saturday=7. Must be a single TRUE or FALSE, otherwise #VALUE!."
         AddRecord "KPR_Dates_DaysInMonth", "DateIn", _

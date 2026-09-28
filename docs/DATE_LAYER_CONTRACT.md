@@ -200,11 +200,20 @@ of `DaysInYear`, `IsLeapYear`, `NthWeekdayOfMonth`, and `LastWeekdayOfMonth`.
 
 | Input | Condition ID | Result |
 | --- | --- | --- |
-| Native numeric value that is mathematically integral and inside the VBA `Long` range | — | Accept as `Long`. |
-| Fractional numeric value inside the VBA `Long` range | `INTEGER_FRACTION` | `#VALUE!`; no truncation, banker's rounding, or other rounding is permitted. |
+| Native numeric value inside the VBA `Long` range that is integral or within `1E-9` of an integer | — | Accept as that nearest integer, as a `Long`. |
+| Numeric value inside the VBA `Long` range that is more than `1E-9` from any integer | `INTEGER_FRACTION` | `#VALUE!`; no truncation, banker's rounding, or other rounding is permitted. |
 | Numeric value outside the VBA `Long` range | `INTEGER_RANGE` | `#NUM!`. |
 | Boolean, `Date`, text (including numeric-looking text), blank, `Empty`, `Null`, or unsupported object | `INTEGER_TYPE_REJECTED` | `#VALUE!`. |
 | Incoming native Excel error | `INPUT_ERROR_PROPAGATED` | Propagate verbatim at that output position. |
+
+The `1E-9` tolerance absorbs binary floating-point residue, so a computed
+tenor such as `2.9999999999999996` (for example `(0.1+0.2)*10`) is read as `3`
+instead of failing. It is an absolute distance, far larger than any residue a
+`Long`-sized value can carry and far smaller than any fraction a user means:
+`3.0000000001` is `3`, while `3.00000001` and `2.5` are `INTEGER_FRACTION`. The
+tolerance never truncates a real fraction and never applies to text, Boolean or
+date inputs. A VBA `Decimal` is measured at its own precision, not after
+conversion to `Double`, so `3.000000000999999999` is inside the tolerance.
 
 After parsing, function-specific domains apply:
 
@@ -272,6 +281,11 @@ case-insensitive ASCII text with this grammar:
 - The optional sign applies to the complete token.
 - `ON` and `O/N` mean `1D`; `TN` and `T/N` mean `2D`. Aliases are matched whole
   and never combined with other components.
+- **These are calendar days in v0.0.4 and stay calendar days in every
+  `KPR_Dates_*` function.** The market meaning of overnight and tom-next is
+  business days; v0.0.6 is planned to deliver that meaning through its
+  calendar-aware functions, so a `KPR_Dates_DateFromPillar` result never
+  changes silently when business days arrive.
 - **An alias never carries a sign.** `-ON` and `+T/N` are rejected under
   `PILLAR_ALIAS_SIGNED`. An alias names a fixed point at the short end of the
   curve rather than a quantity, so there is nothing for a sign to negate. A
@@ -487,7 +501,7 @@ Registry rules:
 | `DATE_WINDOW` | Accepted date or serial outside 1900-03-01 through 9999-12-31, including serial 60 and below | `#NUM!` | Element |
 | `INPUT_BLANK_REQUIRED` | Blank cell or `Empty` at a required value position | `#VALUE!` | Element |
 | `INPUT_ERROR_PROPAGATED` | Incoming native Excel error at a value position, returned verbatim | Incoming error | Element |
-| `INTEGER_FRACTION` | Fractional numeric value inside the VBA `Long` range at an integer position | `#VALUE!` | Element |
+| `INTEGER_FRACTION` | Numeric value inside the VBA `Long` range more than `1E-9` from any integer, at an integer position | `#VALUE!` | Element |
 | `INTEGER_TYPE_REJECTED` | Boolean, `Date`, text including numeric-looking text, `Null`, or object at an integer position | `#VALUE!` | Element |
 | `INTEGER_RANGE` | Numeric value outside the VBA `Long` range, including fractional values | `#NUM!` | Element |
 | `DOMAIN_YEAR` | `YearIn` outside 1900 through 9999 | `#VALUE!` | Element |
@@ -528,6 +542,10 @@ All functions use the parsing, host, array, and error rules above.
 
 - `DayOfWeek` returns 1 through 7. With `Opt_WeekBaseMonday=True`, Monday is 1
   and Sunday is 7. With `False`, Sunday is 1 and Saturday is 7.
+- The Monday = 1 default is deliberate and fixed for v0.0.4: it is the ISO 8601
+  and market convention. It is the reverse of Excel's `WEEKDAY(date)` default
+  (Sunday = 1); pass `Opt_WeekBaseMonday=FALSE` for `WEEKDAY`-compatible
+  numbering. The same default applies to `WdIndex` in the weekday locators.
 - `DaysInMonth` returns the Gregorian length of the containing month.
 - `DaysInYear` returns 366 for a Gregorian leap year and 365 otherwise. A year
   is leap when divisible by 4 except centuries not divisible by 400. It takes a
@@ -720,6 +738,12 @@ algorithms.
 
 `KPR_Cal_*` is reserved for v0.0.5. v0.0.4 creates no calendar placeholder and
 adds no calendar option to a pure `KPR_Dates_*` function.
+
+Performance is not part of this contract and no benchmark is kept in the
+repository; the maintainer measures it with an external VBA performance
+add-in. Every facade call reads the caller and workbook date system through
+Excel, so code that needs speed, such as future pricing routines, calls the
+internal `KPR_Core_*` primitives directly instead of the worksheet facade.
 
 The following are explicitly outside v0.0.4:
 

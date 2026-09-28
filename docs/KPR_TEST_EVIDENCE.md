@@ -190,7 +190,9 @@ events, screen updating, alerts, the active workbook and sheet and the
 selection must be exactly as found. Excel cannot read MacroOptions metadata
 back, so repeatability is shown by identical results rather than by reading
 the registered text. The suite leaves the functions registered. It has 86
-assertions, so an `all` run has 20 suites and 9,263 assertions.
+assertions, so the #42 `all` run had 20 suites and 9,263 assertions. The
+near-integer tolerance added five generated fixtures and eight `integer`
+assertions, so an `all` run now has 20 suites and 9,276 assertions.
 
 Excel has no operation that unregisters a VBA function. Clean-up blanks each
 description and argument description and moves the function to Excel's
