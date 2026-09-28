@@ -215,7 +215,7 @@ Attribute VB_Name = "KPR_DATES_DAYS"
 '   - No dependency on registration, UI, tests or demo code.
 '
 ' UPDATED
-'   2026-09-02
+'   2026-09-27
 '
 ' AUTHOR
 '   Daniele Penza
@@ -5301,7 +5301,7 @@ Private Function TryResolveRounding( _
 '     modules are reachable.
 '
 ' UPDATED
-'   2026-09-01
+'   2026-09-27
 '==============================================================================
 '
 
@@ -5321,7 +5321,10 @@ Private Function TryResolveRounding( _
 '------------------------------------------------------------------------------
 ' RESOLVE OMISSION
 '------------------------------------------------------------------------------
-    'An omitted control selects the documented default
+    'An omitted control selects the documented default. A worksheet call never
+    'arrives here missing, because Opt_Rounding defaults to "NEAREST"; a direct
+    'VBA caller that forwards its own omitted Optional Variant does, since an
+    'explicitly passed Missing value bypasses the default.
         If IsMissing(ControlIn) Then
             Mode = KPR_ROUND_NEAREST
             TryResolveRounding = True
