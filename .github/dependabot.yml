@@ -13,3 +13,9 @@ updates:
     labels:
       - "ci"
       - "tests"
+    groups:
+      # CodeQL refuses to run with init, analyze and upload-sarif at different
+      # versions, so their pins must always move in one pull request
+      codeql-action:
+        patterns:
+          - "github/codeql-action/*"
