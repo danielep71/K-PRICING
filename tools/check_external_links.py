@@ -27,6 +27,9 @@ CLASSIFICATION_STATUSES = {
     "restricted-historical": "RESTRICTED_HISTORICAL",
     "pending-publication": "PENDING_PUBLICATION",
 }
+# A query is sent only to a domain approved for it, and only when it holds
+# plain parameter characters, such as a static badge's style=flat-square
+SAFE_QUERY = re.compile(r"[A-Za-z0-9_.,%-]+=[A-Za-z0-9_.,%-]*(?:&[A-Za-z0-9_.,%-]+=[A-Za-z0-9_.,%-]*)*")
 PASSING_STATUSES = frozenset({"OK", "NOT_APPLICABLE", "EXCEPTED"})
 COUNT_LABELS = {
     "deterministic_public_defects": "Deterministic public defects",
@@ -77,6 +80,13 @@ def validate_policy(policy: Any, as_of: date) -> None:
             "domains require exact names and reasons",
         )
 
+    query_domains = policy.get("query_domains", {})
+    require(
+        isinstance(query_domains, dict)
+        and all(host in domains and nonempty(reason) for host, reason in query_domains.items()),
+        "query domains must be approved domains with reasons",
+    )
+
     exceptions = policy.get("exceptions")
     classifications = policy.get("classifications")
     require(isinstance(exceptions, list), "exceptions must be an array")
@@ -119,7 +129,12 @@ def url_status(url: str, policy: dict[str, Any]) -> str | None:
             return "NOT_APPLICABLE"
         if parsed.scheme != "https" or parsed.port not in (None, 443):
             return "POLICY_BLOCKED"
-        if parsed.username is not None or parsed.password is not None or parsed.query:
+        if parsed.username is not None or parsed.password is not None:
+            return "ACCESS_RESTRICTED"
+        if parsed.query and not (
+            parsed.hostname in policy.get("query_domains", {})
+            and SAFE_QUERY.fullmatch(parsed.query)
+        ):
             return "ACCESS_RESTRICTED"
         if parsed.hostname not in policy["domains"] or any(ord(char) < 32 for char in url):
             return "POLICY_BLOCKED"
@@ -159,6 +174,9 @@ def request(url: str, timeout: int) -> tuple[int, str | None]:
     connection = PinnedHTTPS(parsed.hostname, str(addresses[0][4][0]), timeout)
     try:
         path = quote(parsed.path or "/", safe="/%:@-._~!$&'()*+,;=")
+        if parsed.query:
+            # url_status admitted this query for an approved query domain
+            path += "?" + parsed.query
         connection.request(
             "GET",
             path,
@@ -330,8 +348,9 @@ def build_report(
         "scope_note": (
             "Anonymous HTTP observations only; access restrictions, declared historical "
             "restrictions, pending-publication references and transients remain non-green "
-            "without being counted as deterministic public-page defects. Queries, credentials "
-            "and fragments are not probed; URLs are represented by domain and SHA-256 ID."
+            "without being counted as deterministic public-page defects. Credentials, "
+            "fragments and queries are not probed, except plain parameter queries on "
+            "approved query domains; URLs are represented by domain and SHA-256 ID."
         ),
     }
 

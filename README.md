@@ -15,7 +15,7 @@
 
 <br>
 
-[![Static checks](https://github.com/danielep71/K-PRICING/actions/workflows/static-checks.yml/badge.svg?branch=main)](https://github.com/danielep71/K-PRICING/actions/workflows/static-checks.yml)
+[![Static checks](https://github.com/danielep71/K-PRICING/actions/workflows/static-checks.yml/badge.svg)](https://github.com/danielep71/K-PRICING/actions/workflows/static-checks.yml)
 
 <br>
 
