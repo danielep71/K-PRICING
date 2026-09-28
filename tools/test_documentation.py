@@ -535,10 +535,13 @@ class DocumentationTests(unittest.TestCase):
                 self.assertEqual(links.probe(url, network, blocked)["status"], "ACCESS_RESTRICTED")
                 blocked.assert_not_called()
         def redirect(url, timeout):
+            calls.append(url)
             return 302, "https://example.org/login?next=home"
-        network["query_domains"] = {}
-        self.assertEqual(links.probe("https://example.org/badge?style=flat", network, redirect)["status"],
-                         "ACCESS_RESTRICTED")
+        # Keep the host approved for initial queries: the redirect query must
+        # still be blocked before a second request is sent.
+        report = links.probe("https://example.org/badge?style=flat", network, redirect)
+        self.assertEqual(report["status"], "ACCESS_RESTRICTED")
+        self.assertEqual(calls[-1:], ["https://example.org/badge?style=flat"])
 
     def test_query_domain_must_be_approved_with_reason(self):
         network = self.policy["network"]
