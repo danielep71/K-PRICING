@@ -110,6 +110,9 @@ Import the migrated production dependency set in this order:
    cross-oracle cases that depend on `KPR_DATES_DAYS` alone
 9. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
 10. `examples/modules/KPR_DateExample.bas` — optional consumer example
+11. `examples/modules/KPR_Demo_Dates.bas` — demo builder; optional for users,
+    but required whenever `KPR_REGRESSION_TESTS` is imported, because its
+    `worksheet-demo` suite calls the builder
 
 The four core modules are project-internal; `KPR_DATES_DAYS` owns the supported
 22-function calculation API. `KPR_REGISTER_PUBLIC_UDFS` is unsupported
@@ -195,7 +198,9 @@ fixtures and the worksheet runners, and write structured evidence bound to an
 exact source SHA ([KPR_TEST_EVIDENCE.md](docs/KPR_TEST_EVIDENCE.md)).
 
 Run `KPR_DateExample.RunDateExample` separately for the minimal direct-VBA
-consumer smoke. Historical KPR results are source evidence only. Destination
+consumer smoke. To build the demonstration workbook, run
+`? KPR_Demo_BuildDates("C:\path\kpr-demo.xlsx")` in the Immediate window; it
+returns `TRUE`, and `? KPR_Demo_LastReport()` explains a `FALSE`. Historical KPR results are source evidence only. Destination
 parity for the migrated candidate is recorded in
 [`evidence/migration-2026-09-24`](evidence/migration-2026-09-24/session.txt) (#17);
 record counts, failures/skips, environment and cleanup for any new run against

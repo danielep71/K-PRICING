@@ -104,6 +104,15 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added the deterministic date-demo builder (#46):
+  `examples/modules/KPR_Demo_Dates.bas` builds a five-sheet demonstration
+  workbook (About, Scalar, Arrays, Errors, Pillars) with 58 live examples, each
+  beside the value the independent reference model computes from the contract
+  and a match check. It saves only to a new `.xlsx` path, never overwrites a
+  file, restores the caller's Excel state and commits no Office binary. The new
+  `worksheet-demo` regression suite builds it twice, requires identical files
+  and every example to match, and sets the evidence record's
+  `demo_generation` outcome. Not yet run in Excel.
 - Added MacroOptions registration (#42): the internal
   `KPR_REGISTER_PUBLIC_UDFS` module holds a machine-readable manifest of the 22
   supported functions and registers them under the single **KPR Dates**

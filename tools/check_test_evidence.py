@@ -41,13 +41,20 @@ CERTIFICATION_KEYS = (
 )
 OUTCOME_STATUSES = ("PASS", "FAIL", "NOT_RUN", "NOT_APPLICABLE")
 # Outcomes a certification record may never mark NOT_APPLICABLE.
-ALWAYS_APPLICABLE = ("source_import", "vba_compile", "regression", "cross_oracle", "macro_options")
+ALWAYS_APPLICABLE = (
+    "source_import", "vba_compile", "regression", "cross_oracle", "macro_options", "demo_generation"
+)
 NONDETERMINISTIC_FIELDS = ("/environment", "/timing", "/suites/*/elapsed_ms")
 RUNNER_FAILURE_SUITE = "runner"
 ORACLE_SUITE = "worksheet-oracle"
 REGISTRATION_SUITE = "worksheet-registration"
+DEMO_SUITE = "worksheet-demo"
 # Certification outcomes the runner derives from one registered suite.
-SUITE_OUTCOMES = {"cross_oracle": ORACLE_SUITE, "macro_options": REGISTRATION_SUITE}
+SUITE_OUTCOMES = {
+    "cross_oracle": ORACLE_SUITE,
+    "macro_options": REGISTRATION_SUITE,
+    "demo_generation": DEMO_SUITE,
+}
 REGISTRY_PATTERN = re.compile(
     r"Private Function TestRegistry\(\)[^\n]*\n(?P<body>.*?)\nEnd Function",
     re.DOTALL,
@@ -480,7 +487,7 @@ def synthetic_record(root: Path) -> dict[str, Any]:
             "macro_options": _outcome("PASS", "40 registration assertion(s), 0 failure(s)", None),
             "ribbonx": _outcome("NOT_RUN", None, operator),
             "commandbars": _outcome("NOT_RUN", None, operator),
-            "demo_generation": _outcome("NOT_RUN", None, operator),
+            "demo_generation": _outcome("PASS", "60 demo assertion(s), 0 failure(s)", None),
             "source_round_trip": _outcome("NOT_RUN", None, operator),
         },
         "result": "PASS",
@@ -509,6 +516,8 @@ def _single_suite(record: dict[str, Any]) -> dict[str, Any]:
         "NOT_RUN", None, "The worksheet-oracle suite was not selected in this run.")
     record["certification"]["macro_options"] = _outcome(
         "NOT_RUN", None, "The worksheet-registration suite was not selected in this run.")
+    record["certification"]["demo_generation"] = _outcome(
+        "NOT_RUN", None, "The worksheet-demo suite was not selected in this run.")
     return record
 
 
@@ -646,6 +655,15 @@ def self_test(root: Path) -> int:
         ("registration marked not applicable in certification",
          lambda r: _set("certification/macro_options", _outcome("NOT_APPLICABLE", None, "n/a"))(_certified(r)),
          {"certification": True}, "macro_options"),
+        ("demo outcome disagrees with suite",
+         _set("certification/demo_generation", _outcome("NOT_RUN", None, "skipped")), {},
+         "demo_generation must be PASS to match"),
+        ("demo outcome without the suite",
+         lambda r: _set("certification/demo_generation", _outcome("PASS", "x", None))(_single_suite(r)), {},
+         "demo_generation must be NOT_RUN when"),
+        ("demo marked not applicable in certification",
+         lambda r: _set("certification/demo_generation", _outcome("NOT_APPLICABLE", None, "n/a"))(_certified(r)),
+         {"certification": True}, "demo_generation"),
         ("certification of one suite", lambda r: _certified(_single_suite(r)), {"certification": True},
          "KPR_Test_RunAll record"),
         ("compile marked not applicable",

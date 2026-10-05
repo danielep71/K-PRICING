@@ -74,6 +74,15 @@ selection, calculation mode and saved state to be unchanged. It feeds the
 evidence record's `macro_options` outcome. MacroOptions metadata cannot be read
 back from Excel, so the Insert Function dialog itself remains a manual check.
 
+## Demo generation
+
+The `worksheet-demo` suite (or `KPR_Tests_RunDemo` alone) builds the date
+demo with `examples/modules/KPR_Demo_Dates.bas` twice into a temporary
+folder, checks that the two files are identical and that every example
+matches its expected value, and checks that the builder refuses an existing
+file and restores the caller's state. It feeds the evidence record's
+`demo_generation` outcome and deletes its files afterwards.
+
 The optional [Windows/Excel evidence interface](../docs/EXCEL_EVIDENCE.md)
 records this harness output, source identity and host environment with explicit
 manual/automated execution. Its validator does not execute Excel.

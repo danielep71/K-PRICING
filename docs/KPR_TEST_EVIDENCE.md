@@ -70,6 +70,7 @@ Replace the example SHA with the exact candidate you imported.
 | `worksheet-fixtures` | worksheet | `KPR_Tests_RunFixtureHost`: the generated cases whose context is a 1900 or 1904 worksheet caller |
 | `worksheet-oracle` | worksheet | `KPR_Tests_RunOracle`: the Excel cross-oracle cases in `KPR_Test_Oracle` (#41) |
 | `worksheet-registration` | worksheet | `KPR_Tests_RunRegistration`: the MacroOptions manifest and register / clean-up lifecycle in `KPR_REGISTER_PUBLIC_UDFS` (#42) |
+| `worksheet-demo` | worksheet | `KPR_Tests_RunDemo`: builds the date demo twice with `KPR_Demo_Dates` (#46), requires identical files and every example to match |
 | `worksheet-state` | worksheet | `KPR_Tests_RunStateCheck`: runs the durable runner on `date-type` twice, once with a deliberately injected failure, and proves the caller's state is restored after both |
 
 `KPR_Tests_RunAll("all")`, `KPR_Tests_RunEvidence` and the
@@ -192,12 +193,34 @@ back, so repeatability is shown by identical results rather than by reading
 the registered text. The suite leaves the functions registered. It has 86
 assertions, so the #42 `all` run had 20 suites and 9,263 assertions. The
 near-integer tolerance added five generated fixtures and eight `integer`
-assertions, so an `all` run now has 20 suites and 9,276 assertions.
+assertions, so an `all` run had 20 suites and 9,276 assertions before the
+demo suite below.
 
 Excel has no operation that unregisters a VBA function. Clean-up blanks each
 description and argument description and moves the function to Excel's
 built-in "User Defined" category; the functions stay callable while the
 project is loaded.
+
+## Deterministic demo generation (#46)
+
+`examples/modules/KPR_Demo_Dates.bas` builds the demonstration workbook:
+`KPR_Demo_BuildDates(OutputPath)` creates a new workbook with the sheets
+About, Scalar, Arrays, Errors and Pillars, saves it as `.xlsx` at an explicit
+path that must not exist yet, closes it and restores the caller's state. It
+is example infrastructure (`Option Private Module`, role `example`); no
+generated workbook is committed. Each of its 58 examples shows a live
+formula beside the value `tools/gen_fixtures.py` computes from the contract,
+and a check cell that is `TRUE` when the two match.
+
+The `worksheet-demo` suite builds the demo twice into a temporary folder,
+requires a third build to refuse the existing file without changing it and
+the builder to refuse an empty or non-`.xlsx` path, and requires calculation,
+events, screen updating, alerts, the active workbook and sheet and the
+selection to be unchanged. It then opens both files read-only and requires
+identical sheets, cells, formulas, values, number formats, fonts, widths and
+names, a 1900 date system, 58 examples and every check `TRUE`. It has 79
+assertions, so an `all` run has 21 suites and 9,355 assertions. The suite
+sets the evidence record's `demo_generation` outcome.
 
 ## Caller-state restoration
 
@@ -267,9 +290,9 @@ Each outcome has a `status` of `PASS`, `FAIL`, `NOT_RUN` or `NOT_APPLICABLE`.
 `NOT_APPLICABLE` carry a nonempty `reason` and a null `detail`.
 
 The runner writes `regression` from the run itself, `cross_oracle` from the
-`worksheet-oracle` suite and `macro_options` from the `worksheet-registration`
-suite: `PASS` or `FAIL` when that suite ran, `NOT_RUN` when it was not
-selected. Every other outcome is `NOT_RUN`, because the runner
+`worksheet-oracle` suite, `macro_options` from the `worksheet-registration`
+suite and `demo_generation` from the `worksheet-demo` suite: `PASS` or `FAIL`
+when that suite ran, `NOT_RUN` when it was not selected. Every other outcome is `NOT_RUN`, because the runner
 cannot observe it. The certification operator
 completes those outcomes in the same file after observing them, and never
 edits a field the runner wrote.
@@ -302,15 +325,15 @@ against the schema, then:
 - `result` and the `regression` outcome follow from the suites, failures and
   state restoration;
 - every certification outcome follows the detail and reason rules;
-  `cross_oracle` matches the `worksheet-oracle` suite and `macro_options` the
-  `worksheet-registration` suite, each `NOT_RUN` when its suite was not
-  selected;
+  `cross_oracle` matches the `worksheet-oracle` suite, `macro_options` the
+  `worksheet-registration` suite and `demo_generation` the `worksheet-demo`
+  suite, each `NOT_RUN` when its suite was not selected;
 - with `--compare`, the second record passes the same schema and semantic
   checks, and both records are identical outside the declared
   nondeterministic fields;
 - with `--certification`, the record is a `KPR_Test_RunAll` record and every
-  outcome is `PASS`. `ribbonx`, `commandbars`, `demo_generation` and
-  `source_round_trip` may instead be `NOT_APPLICABLE`.
+  outcome is `PASS`. `ribbonx`, `commandbars` and `source_round_trip` may
+  instead be `NOT_APPLICABLE`.
 
 Exit 0 means a valid record of a passing run. Exit 1 means an invalid record
 or a valid record of a failing run. Exit 2 means a usage or input error.

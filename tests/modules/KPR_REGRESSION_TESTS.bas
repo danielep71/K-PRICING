@@ -45,7 +45,7 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '   KPR_Test_RunAll runs TestRegistry in order: the twelve suites above, then
 '   fixtures, then the macro-only runners as worksheet-host, worksheet-shape,
 '   worksheet-array, worksheet-fixtures, worksheet-oracle,
-'   worksheet-registration and worksheet-state.
+'   worksheet-registration, worksheet-demo and worksheet-state.
 '   KPR_Test_RunSuite runs one of them. tools/check_test_evidence.py reads the registry from this source.
 '
 ' SCOPE
@@ -82,7 +82,7 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '       KPR_Tests_RunAll()            returns a two-column array for a worksheet
 '                                     or for programmatic use
 '
-'   Six stateful entry points are deliberately NOT reachable from the
+'   Eight stateful entry points are deliberately NOT reachable from the
 '   pure dispatcher above; the durable runner orchestrates them:
 '
 '       KPR_Tests_RunHost             creates a scratch workbook, exercises the
@@ -111,6 +111,11 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '       KPR_Tests_RunOracle           compares the date primitives with native
 '                                     Excel functions where the contracts
 '                                     overlap (KPR_Test_Oracle, #41).
+'       KPR_Tests_RunRegistration     runs the MacroOptions lifecycle of
+'                                     KPR_REGISTER_PUBLIC_UDFS (#42).
+'       KPR_Tests_RunDemo             builds the date demo twice with
+'                                     KPR_Demo_Dates (#46), compares the two
+'                                     files and checks every example.
 '       KPR_Tests_RunStateCheck       runs the durable runner on one suite
 '                                     twice, once with a deliberate failure,
 '                                     and proves caller state is restored
@@ -123,8 +128,9 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '   Reports use Debug.Print only and never MsgBox. The pure runners touch no
 '   workbook state. Each stateful runner creates and closes its own scratch
 '   workbook without selecting or activating worksheets and without consulting
-'   ActiveWorkbook. Only the durable runner reads the active workbook, sheet
-'   and selection, and only to restore them.
+'   ActiveWorkbook. The durable runner, the registration runner and the demo
+'   runner read the active workbook, sheet and selection, only to restore
+'   them or to prove they were restored.
 '
 ' CONDITION IDENTIFIERS
 '   Assertions carry the semantic identifier string from the contract registry,
@@ -134,14 +140,15 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 ' ALLOWED DEPENDENCIES
 '   KPR_Core_Parse, KPR_Core_Dates, KPR_Core_Array and KPR_Core_Err, called
 '   directly to assert exact classification, KPR_DATES_DAYS for boundary
-'   behaviour, KPR_Test_Fixtures_Generated for generated expectations, and
-'   KPR_Test_Oracle for the Excel cross-oracle cases.
+'   behaviour, KPR_Test_Fixtures_Generated for generated expectations,
+'   KPR_Test_Oracle for the Excel cross-oracle cases, KPR_REGISTER_PUBLIC_UDFS
+'   for the registration lifecycle and KPR_Demo_Dates for the demo builder.
 '   No other module is reachable from here. The stateful runners also
 '   use Excel.Workbooks.Add and the scratch workbooks they create, always
 '   through exact object references and never through ActiveWorkbook.
 '
 ' UPDATED
-'   2026-09-27
+'   2026-10-05
 '
 ' AUTHOR
 '   Daniele Penza
@@ -816,7 +823,7 @@ Private Function TestRegistry() As Variant
         "boundary", "mapper", "host", "pillar", "surface", "shape", _
         "parity", "fixtures", "worksheet-host", "worksheet-shape", _
         "worksheet-array", "worksheet-fixtures", "worksheet-oracle", "worksheet-registration", _
-        "worksheet-state")
+        "worksheet-demo", "worksheet-state")
 
 End Function
 
@@ -834,7 +841,7 @@ Private Function SuiteKind( _
         Case "fixtures"
             SuiteKind = "fixture"
         Case "worksheet-host", "worksheet-shape", "worksheet-array", "worksheet-fixtures", _
-             "worksheet-oracle", "worksheet-registration", "worksheet-state"
+             "worksheet-oracle", "worksheet-registration", "worksheet-demo", "worksheet-state"
             SuiteKind = "worksheet"
         Case Else
             SuiteKind = "pure"
@@ -860,6 +867,7 @@ Private Sub ExecuteSuite( _
         Case "worksheet-fixtures":  KPR_Tests_RunFixtureHost
         Case "worksheet-oracle":    KPR_Tests_RunOracle
         Case "worksheet-registration": KPR_Tests_RunRegistration
+        Case "worksheet-demo":      KPR_Tests_RunDemo
         Case "worksheet-state":     KPR_Tests_RunStateCheck
         Case Else
             If Not RunSuite(SuiteName) Then
@@ -1617,7 +1625,7 @@ Private Function TryWriteEvidence( _
     Print #FileNo, "    ""macro_options"": " & RegistrationOutcome(Rec) & ","
     Print #FileNo, "    ""ribbonx"": " & OperatorOutcome() & ","
     Print #FileNo, "    ""commandbars"": " & OperatorOutcome() & ","
-    Print #FileNo, "    ""demo_generation"": " & OperatorOutcome() & ","
+    Print #FileNo, "    ""demo_generation"": " & DemoOutcome(Rec) & ","
     Print #FileNo, "    ""source_round_trip"": " & OperatorOutcome()
     Print #FileNo, "  },"
     Print #FileNo, "  ""result"": " & IIf(Rec.Passed, """PASS""", """FAIL""")
@@ -1698,6 +1706,38 @@ Private Function RegistrationOutcome( _
                                                       CStr(Rec.SuiteFails(I)) & " failure(s)", "")
                 Case Else
                     RegistrationOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-registration suite did not run.")
+            End Select
+        End If
+    Next I
+
+End Function
+
+Private Function DemoOutcome( _
+    ByRef Rec As RunRecord) _
+    As String
+'
+' The demo_generation outcome follows the worksheet-demo suite when this run
+' selected it; otherwise the demo builder was not exercised.
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim I               As Long         'Suite cursor
+
+'------------------------------------------------------------------------------
+' MAP
+'------------------------------------------------------------------------------
+    DemoOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-demo suite was not selected in this run.")
+    For I = 0 To Rec.SuiteCount - 1
+        If Rec.SuiteNames(I) = "worksheet-demo" Then
+            Select Case Rec.SuiteStatus(I)
+                Case "PASS", "FAIL"
+                    DemoOutcome = JsonOutcome(Rec.SuiteStatus(I), _
+                                              CStr(Rec.SuiteChecks(I)) & " demo assertion(s), " & _
+                                              CStr(Rec.SuiteFails(I)) & " failure(s)", "")
+                Case Else
+                    DemoOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-demo suite did not run.")
             End Select
         End If
     Next I
@@ -2436,6 +2476,294 @@ Public Sub KPR_Tests_RunRegistration()
     End If
 
 End Sub
+
+Public Sub KPR_Tests_RunDemo()
+'
+'==============================================================================
+'                              KPR_Tests_RunDemo
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Exercises the date-demo builder in KPR_Demo_Dates (#46) and prints the
+'   report to the Immediate window.
+'
+' METHOD
+'   Builds the demo twice into a temporary folder. Requires both builds to
+'   succeed, a third build to refuse the existing file without touching it,
+'   an empty path and a non-.xlsx path to be refused, and calculation,
+'   events, screen updating, alerts, the active workbook and sheet and the
+'   selection to be exactly as found. Then opens both files read-only and
+'   requires identical sheets, cells, formulas, values, formats, widths and
+'   names, a 1900 date system, DEMO_EXAMPLES examples and every example's
+'   check to be TRUE. The files are deleted afterwards.
+'
+' UPDATED
+'   2026-10-05
+'==============================================================================
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const DEMO_EXAMPLES As Long = 58            'Examples the builder lays out
+    Dim Folder          As String               'Temporary output folder
+    Dim PathA           As String               'First build
+    Dim PathB           As String               'Second build
+    Dim SizeA           As Long                 'First build size before the refused overwrite
+    Dim StampA          As Date                 'First build time before the refused overwrite
+    Dim Calc            As XlCalculation        'Calculation mode on entry
+    Dim Events          As Boolean              'EnableEvents on entry
+    Dim Screen          As Boolean              'ScreenUpdating on entry
+    Dim Alerts          As Boolean              'DisplayAlerts on entry
+    Dim BookName        As String               'Active workbook on entry
+    Dim SheetName       As String               'Active sheet on entry
+    Dim SelectionText   As String               'Selection on entry
+    Dim WbA             As Workbook             'First build, reopened
+    Dim WbB             As Workbook             'Second build, reopened
+    Dim PrintA          As String               'Fingerprint of the first build
+    Dim PrintB          As String               'Fingerprint of the second build
+    Dim CheckName       As Variant              'One named check range
+    Dim Cell            As Range                'One check cell
+    Dim Examples        As Long                 'Check cells found
+    Dim Built           As Boolean              'Result of one build call
+    Dim I               As Long                 'Report cursor
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    Set mFailures = New Collection
+    mChecks = 0
+    Folder = Environ$("TEMP")
+    If Len(Folder) = 0 Then Folder = CurDir$
+    Folder = Folder & Application.PathSeparator & "kpr-demo-check"
+    PathA = Folder & Application.PathSeparator & "kpr-demo-a.xlsx"
+    PathB = Folder & Application.PathSeparator & "kpr-demo-b.xlsx"
+    On Error Resume Next
+    If Len(Dir$(Folder, vbDirectory)) = 0 Then MkDir Folder
+    Kill PathA
+    Kill PathB
+    Err.Clear
+    On Error GoTo 0
+    Calc = Application.Calculation
+    Events = Application.EnableEvents
+    Screen = Application.ScreenUpdating
+    Alerts = Application.DisplayAlerts
+    BookName = RegistrationActiveBook()
+    SheetName = RegistrationActiveSheet()
+    SelectionText = RegistrationSelection()
+
+'------------------------------------------------------------------------------
+' BUILD
+'------------------------------------------------------------------------------
+    Built = KPR_Demo_BuildDates(PathA)
+    CheckDemo "demo/build first", Built, KPR_Demo_LastReport()
+    CheckDemo "demo/report first", Len(KPR_Demo_LastReport()) = 0, KPR_Demo_LastReport()
+    Built = KPR_Demo_BuildDates(PathB)
+    CheckDemo "demo/build second", Built, KPR_Demo_LastReport()
+    CheckDemo "demo/report second", Len(KPR_Demo_LastReport()) = 0, KPR_Demo_LastReport()
+
+'------------------------------------------------------------------------------
+' REFUSALS
+'------------------------------------------------------------------------------
+    On Error Resume Next
+    SizeA = FileLen(PathA)
+    StampA = FileDateTime(PathA)
+    Err.Clear
+    On Error GoTo 0
+    Built = KPR_Demo_BuildDates(PathA)
+    CheckDemo "demo/refuse overwrite", Not Built, "an existing file was accepted"
+    CheckDemo "demo/refusal report", InStr(1, KPR_Demo_LastReport(), "never overwritten", vbTextCompare) > 0, _
+              "report was: " & KPR_Demo_LastReport()
+    CheckDemo "demo/existing file untouched", DemoFileMatches(PathA, SizeA, StampA), "the existing file changed"
+    Built = KPR_Demo_BuildDates("")
+    CheckDemo "demo/refuse empty path", Not Built, "an empty path was accepted"
+    Built = KPR_Demo_BuildDates(Folder & Application.PathSeparator & "kpr-demo-c.xlsm")
+    CheckDemo "demo/refuse other extension", Not Built, "a non-.xlsx path was accepted"
+
+'------------------------------------------------------------------------------
+' STATE
+'------------------------------------------------------------------------------
+    CheckDemo "demo/state calculation", Application.Calculation = Calc, "calculation mode changed"
+    CheckDemo "demo/state events", Application.EnableEvents = Events, "EnableEvents changed"
+    CheckDemo "demo/state screen updating", Application.ScreenUpdating = Screen, "ScreenUpdating changed"
+    CheckDemo "demo/state alerts", Application.DisplayAlerts = Alerts, "DisplayAlerts changed"
+    CheckDemo "demo/state active workbook", RegistrationActiveBook() = BookName, "active workbook changed"
+    CheckDemo "demo/state active sheet", RegistrationActiveSheet() = SheetName, "active sheet changed"
+    CheckDemo "demo/state selection", RegistrationSelection() = SelectionText, "selection changed"
+
+'------------------------------------------------------------------------------
+' DETERMINISM AND CONTENT
+'------------------------------------------------------------------------------
+    On Error Resume Next
+    Set WbA = Workbooks.Open(Filename:=PathA, UpdateLinks:=0, ReadOnly:=True)
+    Set WbB = Workbooks.Open(Filename:=PathB, UpdateLinks:=0, ReadOnly:=True)
+    Err.Clear
+    On Error GoTo 0
+    If WbA Is Nothing Or WbB Is Nothing Then
+        CheckDemo "demo/open builds", False, "a built file could not be opened"
+    Else
+        PrintA = DemoFingerprint(WbA)
+        PrintB = DemoFingerprint(WbB)
+        CheckDemo "demo/sheets", DemoSheetList(WbA) = "About,Scalar,Arrays,Errors,Pillars", _
+                  "sheets were " & DemoSheetList(WbA)
+        CheckDemo "demo/deterministic", PrintA = PrintB, DemoFirstDifference(PrintA, PrintB)
+        CheckDemo "demo/date system", CStr(WbA.Names("Demo_HostDateSystem").RefersToRange.Value) = "1900", _
+                  "HostDateSystem shows " & CStr(WbA.Names("Demo_HostDateSystem").RefersToRange.Text)
+        CheckDemo "demo/mismatches", CStr(WbA.Names("Demo_Mismatches").RefersToRange.Value) = "0", _
+                  "mismatch count shows " & CStr(WbA.Names("Demo_Mismatches").RefersToRange.Text)
+        For Each CheckName In Array("Demo_Scalar_Checks", "Demo_Array_Checks", _
+                                    "Demo_Error_Checks", "Demo_Pillar_Checks")
+            For Each Cell In WbA.Names(CStr(CheckName)).RefersToRange.Cells
+                If Not IsEmpty(Cell.Value) Then
+                    Examples = Examples + 1
+                    CheckDemo "demo/example " & Cell.Worksheet.Name & "!" & Cell.Address(False, False), _
+                              DemoIsTrue(Cell.Value), _
+                              "the live result does not match the expected value in row " & CStr(Cell.Row)
+                End If
+            Next Cell
+        Next CheckName
+        CheckDemo "demo/example count", Examples = DEMO_EXAMPLES, _
+                  "expected " & CStr(DEMO_EXAMPLES) & " examples, found " & CStr(Examples)
+    End If
+
+'------------------------------------------------------------------------------
+' CLEAN UP
+'------------------------------------------------------------------------------
+    On Error Resume Next
+    If Not WbA Is Nothing Then WbA.Close SaveChanges:=False
+    If Not WbB Is Nothing Then WbB.Close SaveChanges:=False
+    Kill PathA
+    Kill PathB
+    Err.Clear
+    On Error GoTo 0
+
+'------------------------------------------------------------------------------
+' REPORT
+'------------------------------------------------------------------------------
+    If Not mQuietTrace Then
+        Debug.Print "KPR demo regression  checks: " & CStr(mChecks) & "  failures: " & CStr(mFailures.Count)
+        For I = 1 To mFailures.Count
+            Debug.Print "  FAIL  " & CStr(mFailures(I)(0)) & " : " & CStr(mFailures(I)(1))
+        Next I
+    End If
+
+End Sub
+
+Private Sub CheckDemo( _
+    ByVal Label As String, _
+    ByVal Passed As Boolean, _
+    ByVal Detail As String)
+'
+' Counts one demo assertion and records it when it fails.
+'
+    mChecks = mChecks + 1
+    If Not Passed Then Record Label, Detail
+
+End Sub
+
+Private Function DemoIsTrue(ByVal Value As Variant) As Boolean
+'
+' TRUE only for a Boolean TRUE; an error or any other value is FALSE.
+'
+    If VarType(Value) = vbBoolean Then DemoIsTrue = Value
+
+End Function
+
+Private Function DemoFileMatches( _
+    ByVal Path As String, _
+    ByVal Size As Long, _
+    ByVal Stamp As Date) _
+    As Boolean
+'
+' TRUE when Path still has the size and modification time recorded earlier.
+'
+    On Error Resume Next
+    DemoFileMatches = (FileLen(Path) = Size) And (FileDateTime(Path) = Stamp) And (Size > 0)
+    Err.Clear
+
+End Function
+
+Private Function DemoSheetList(ByVal Wb As Workbook) As String
+'
+' Sheet names in workbook order, joined by commas.
+'
+    Dim Sh As Object    'Sheet cursor
+
+    For Each Sh In Wb.Sheets
+        If Len(DemoSheetList) > 0 Then DemoSheetList = DemoSheetList & ","
+        DemoSheetList = DemoSheetList & Sh.Name
+    Next Sh
+
+End Function
+
+Private Function DemoFingerprint(ByVal Wb As Workbook) As String
+'
+' Every sheet, used range, non-empty cell (formula, value, number format,
+' bold and font size), used column width and workbook name, in order.
+'
+    Dim Parts  As Collection    'Fingerprint lines
+    Dim Sh     As Worksheet     'Sheet cursor
+    Dim Cell   As Range         'Cell cursor
+    Dim Col    As Long          'Column cursor
+    Dim Item   As Variant       'Name or line cursor
+    Dim Text   As String        'Joined result
+
+    Set Parts = New Collection
+    For Each Sh In Wb.Worksheets
+        Parts.Add "sheet|" & Sh.Name & "|" & Sh.UsedRange.Address(False, False)
+        For Each Cell In Sh.UsedRange.Cells
+            If Cell.HasFormula Or Not IsEmpty(Cell.Value) Then
+                Parts.Add Cell.Address(False, False) & "|" & Cell.Formula & "|" & DemoValueText(Cell.Value) & _
+                          "|" & Cell.NumberFormat & "|" & CStr(Cell.Font.Bold) & "|" & CStr(Cell.Font.Size)
+            End If
+        Next Cell
+        For Col = 1 To Sh.UsedRange.Column + Sh.UsedRange.Columns.Count - 1
+            Parts.Add "width|" & CStr(Col) & "|" & CStr(Sh.Columns(Col).ColumnWidth)
+        Next Col
+    Next Sh
+    For Each Item In Wb.Names
+        Parts.Add "name|" & Item.Name & "|" & Item.RefersTo
+    Next Item
+    For Each Item In Parts
+        Text = Text & CStr(Item) & vbLf
+    Next Item
+    DemoFingerprint = Text
+
+End Function
+
+Private Function DemoValueText(ByVal Value As Variant) As String
+'
+' A stable text form of a cell value: dates as serials, errors as their code.
+'
+    Select Case VarType(Value)
+        Case vbDate
+            DemoValueText = "date:" & CStr(CDbl(Value))
+        Case vbError
+            DemoValueText = "error:" & CStr(CLng(Value))
+        Case Else
+            DemoValueText = TypeName(Value) & ":" & CStr(Value)
+    End Select
+
+End Function
+
+Private Function DemoFirstDifference(ByVal A As String, ByVal B As String) As String
+'
+' The first fingerprint line that differs between two builds.
+'
+    Dim LinesA As Variant   'Lines of A
+    Dim LinesB As Variant   'Lines of B
+    Dim K      As Long      'Line cursor
+
+    LinesA = Split(A, vbLf)
+    LinesB = Split(B, vbLf)
+    For K = 0 To Application.WorksheetFunction.Min(UBound(LinesA), UBound(LinesB))
+        If LinesA(K) <> LinesB(K) Then
+            DemoFirstDifference = "first build: " & LinesA(K) & " / second build: " & LinesB(K)
+            Exit Function
+        End If
+    Next K
+    DemoFirstDifference = "the builds have different lengths"
+
+End Function
 
 Private Sub CheckRegistration( _
     ByVal Label As String, _

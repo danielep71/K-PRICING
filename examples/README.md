@@ -21,8 +21,38 @@ an ISO date and writes the result to the Immediate window. Direct VBA follows
 the frozen no-worksheet-host 1900 serial contract; worksheet callers remain
 subject to the caller workbook's date-system rules.
 
-The example is intentionally minimal. The deterministic demo builder is planned
-in v0.0.4 as #46; see the [roadmap](../docs/ROADMAP.md).
+The example is intentionally minimal.
+
+## Demonstration workbook
+
+`modules/KPR_Demo_Dates.bas` builds a demonstration workbook from tracked
+source; the generated workbook is never committed. Import it after the
+production modules and run, in the Immediate window:
+
+```text
+? KPR_Demo_BuildDates("C:\path\kpr-demo.xlsx")
+```
+
+It returns `TRUE` and saves a new `.xlsx` file. It refuses an existing file,
+a missing folder or another extension, and `? KPR_Demo_LastReport()` says
+why. The workbook has five sheets:
+
+| Sheet | Shows |
+| --- | --- |
+| About | Purpose, evidence boundary, future scope, the workbook date system and the number of mismatches |
+| Scalar | One example per supported function, the Monday/Sunday weekday base and the near-integer count rule |
+| Arrays | Column, row and 2-D spills, a scalar broadcast, an element-level error and the 100,000-element capacity policy (dynamic-array Excel only) |
+| Errors | Every native-error category: `#VALUE!`, `#NUM!`, a propagated input error and a shape mismatch, plus a note on 1904 workbooks |
+| Pillars | Aliases, signs, combined units, rounding modes and formatting |
+
+Every example shows its formula, the live result, the value
+`tools/gen_fixtures.py` computes from the contract, and a cell that is `TRUE`
+when they match; About counts the mismatches. The live results need the VBA
+project that built the workbook to be open, because the formulas call its
+functions. Building twice from the same source in the same host gives the
+same workbook, which the regression harness's `worksheet-demo` suite checks.
+The workbook demonstrates documented behaviour; it does not certify accuracy,
+production readiness or any untested environment.
 
 ## Minimal worksheet example
 
