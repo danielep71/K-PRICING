@@ -54,7 +54,11 @@ Attribute VB_Name = "KPR_Demo_Dates"
 '   Calculation, events, screen updating and alerts are restored to the
 '   values found on entry, and the caller's workbook and sheet are made active
 '   again. The demo workbook is closed after it is saved. An existing file is
-'   never overwritten: the build stops before creating anything.
+'   never overwritten: the build stops before creating anything when the path
+'   exists, and the workbook is saved under a unique temporary name in the
+'   same folder and then renamed with the Name statement, which refuses an
+'   existing destination. A file that appears at OutputPath while the demo is
+'   being built is therefore kept, and the temporary file is deleted.
 '
 ' ERROR POLICY
 '   No entry point raises. A failure closes the unsaved demo workbook,
@@ -153,6 +157,8 @@ Public Function KPR_Demo_BuildDates(ByVal OutputPath As String) As Boolean
     Dim OldAlerts       As Boolean      'DisplayAlerts on entry
     Dim Wb              As Workbook     'The demo workbook under construction
     Dim Detail          As String       'Path validation message
+    Dim Folder          As String       'Folder of OutputPath
+    Dim TempPath        As String       'Unique temporary file the workbook is saved to
     Dim Stage           As String       'Build stage, for the failure report
 
 '------------------------------------------------------------------------------
@@ -162,7 +168,7 @@ Public Function KPR_Demo_BuildDates(ByVal OutputPath As String) As Boolean
         KPR_Demo_BuildDates = False
         mLastReport = ""
     'Nothing is created unless the destination is acceptable
-        If Not TryValidatePath(OutputPath, Detail) Then
+        If Not TryValidatePath(OutputPath, Folder, Detail) Then
             mLastReport = Detail
             Exit Function
         End If
@@ -213,10 +219,21 @@ Public Function KPR_Demo_BuildDates(ByVal OutputPath As String) As Boolean
 
         Stage = "save the workbook"
         Wb.Worksheets(SHEET_ABOUT).Activate
-        Wb.SaveAs Filename:=OutputPath, FileFormat:=XL_OPEN_XML_WORKBOOK
+        TempPath = UniqueTempPath(Folder)
+        Wb.SaveAs Filename:=TempPath, FileFormat:=XL_OPEN_XML_WORKBOOK
         Stage = "close the workbook"
         Wb.Close SaveChanges:=False
         Set Wb = Nothing
+
+    'Name refuses an existing destination, so a file that appeared at
+    'OutputPath during the build is never replaced
+        Stage = "publish the workbook"
+        If Len(Dir$(OutputPath)) > 0 Then
+            mLastReport = "The output file appeared during the build and is never overwritten: " & OutputPath
+            GoTo Discard
+        End If
+        Name TempPath As OutputPath
+        TempPath = ""
 
         KPR_Demo_BuildDates = True
         GoTo Restore
@@ -230,10 +247,12 @@ Fail:
         Resume Discard
 
 Discard:
-    'Leave the failed workbook unsaved; an existing file was never touched
+    'Leave the failed workbook unsaved and remove its temporary file; the file
+    'at OutputPath, if any, is never touched
         On Error Resume Next
         If Not Wb Is Nothing Then Wb.Close SaveChanges:=False
         Set Wb = Nothing
+        If Len(TempPath) > 0 Then Kill TempPath
 
 '------------------------------------------------------------------------------
 ' RESTORE
@@ -753,11 +772,15 @@ Private Sub CalculateDemo(ByVal Wb As Workbook)
 
 End Sub
 
-Private Function TryValidatePath(ByVal OutputPath As String, ByRef Detail As String) As Boolean
+Private Function TryValidatePath( _
+    ByVal OutputPath As String, _
+    ByRef Folder As String, _
+    ByRef Detail As String) _
+    As Boolean
 '
-' Accepts only a new .xlsx file in an existing folder.
+' Accepts only a new .xlsx file in an existing folder; Folder receives the
+' parent folder.
 '
-    Dim Folder As String    'Parent folder of OutputPath
     Dim Cut    As Long      'Position of the last path separator
 
     TryValidatePath = False
@@ -792,5 +815,23 @@ Private Function TryValidatePath(ByVal OutputPath As String, ByRef Detail As Str
     On Error GoTo 0
 
     TryValidatePath = True
+
+End Function
+
+Private Function UniqueTempPath(ByVal Folder As String) As String
+'
+' A file name in Folder that does not exist yet, for the save before the
+' final rename.
+'
+    Dim Candidate As String     'Proposed temporary path
+    Dim Attempt   As Long       'Attempt counter
+
+    Randomize
+    Do
+        Attempt = Attempt + 1
+        Candidate = Folder & Application.PathSeparator & "~kpr-demo-" & _
+                    Format$(Now, "yyyymmddhhnnss") & "-" & CStr(Int(Rnd * 1000000)) & ".xlsx"
+    Loop While Len(Dir$(Candidate)) > 0 And Attempt < 100
+    UniqueTempPath = Candidate
 
 End Function

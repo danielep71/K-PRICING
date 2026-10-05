@@ -2698,7 +2698,8 @@ End Function
 Private Function DemoFingerprint(ByVal Wb As Workbook) As String
 '
 ' Every sheet, used range, non-empty cell (formula, value, number format,
-' bold and font size), used column width and workbook name, in order.
+' font name, size and weight, horizontal alignment and bottom border), used
+' column width and workbook name, in order.
 '
     Dim Parts  As Collection    'Fingerprint lines
     Dim Sh     As Worksheet     'Sheet cursor
@@ -2713,7 +2714,9 @@ Private Function DemoFingerprint(ByVal Wb As Workbook) As String
         For Each Cell In Sh.UsedRange.Cells
             If Cell.HasFormula Or Not IsEmpty(Cell.Value) Then
                 Parts.Add Cell.Address(False, False) & "|" & Cell.Formula & "|" & DemoValueText(Cell.Value) & _
-                          "|" & Cell.NumberFormat & "|" & CStr(Cell.Font.Bold) & "|" & CStr(Cell.Font.Size)
+                          "|" & Cell.NumberFormat & "|" & Cell.Font.Name & "|" & CStr(Cell.Font.Size) & _
+                          "|" & CStr(Cell.Font.Bold) & "|" & CStr(Cell.HorizontalAlignment) & _
+                          "|" & CStr(Cell.Borders(xlEdgeBottom).LineStyle)
             End If
         Next Cell
         For Col = 1 To Sh.UsedRange.Column + Sh.UsedRange.Columns.Count - 1
