@@ -117,7 +117,8 @@ Use only the categories needed by a release.
   panel adds native-error cases, dynamic-array spills and the 100,000-element
   limit. The new `worksheet-demo` regression suite checks file and
   active-workbook builds and sets the evidence record's `demo_generation`
-  outcome. Not yet run in Excel.
+  outcome. Verified in Windows Excel (64-bit, build 20326) at `cd0e1a1`: two
+  matching `all` runs with 21 suites, 9,320 assertions and 0 failures.
 - Added MacroOptions registration (#42): the internal
   `KPR_REGISTER_PUBLIC_UDFS` module holds a machine-readable manifest of the 22
   supported functions and registers them under the single **KPR Dates**
