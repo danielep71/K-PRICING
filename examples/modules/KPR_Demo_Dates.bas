@@ -284,9 +284,10 @@ Public Function KPR_Demo_BuildDates(Optional ByVal OutputPath As String = "") As
 '------------------------------------------------------------------------------
 ' DYNAMIC ARRAYS
 '------------------------------------------------------------------------------
+    'EOMONTH refuses a spill or range reference as an array; +0 turns it into values
     Demo_Spill "One formula, many dates", "Date", "=SEQUENCE(30,1,DateIn,25)", 30, DEMO_DATE
-        Demo_SpillColumn "Days in month", "=KPR_Dates_DaysInMonth({SRC})", "DAY(EOMONTH({SRC},0))"
-        Demo_SpillColumn "Begin of month", "=KPR_Dates_BeginOfMonth({SRC})", "EOMONTH({SRC},-1)+1", DEMO_DATE
+        Demo_SpillColumn "Days in month", "=KPR_Dates_DaysInMonth({SRC})", "DAY(EOMONTH({SRC}+0,0))"
+        Demo_SpillColumn "Begin of month", "=KPR_Dates_BeginOfMonth({SRC})", "EOMONTH({SRC}+0,-1)+1", DEMO_DATE
         Demo_SpillColumn "Is leap year", "=KPR_Dates_IsLeapYear(YEAR({SRC}))", _
                          "((MOD(YEAR({SRC}),400)=0)+(MOD(YEAR({SRC}),4)=0)*(MOD(YEAR({SRC}),100)<>0)>0)"
     If Demo_HasDynamicArrays() Then

@@ -2770,7 +2770,8 @@ End Function
 Private Function DemoFailingRows(ByVal Sh As Worksheet) As String
 '
 ' Every status cell of Sh that shows FAIL or NO VBA, with the formula text of
-' its row, or "" when there is none.
+' its row (main column) or the input of its row (side panel), or "" when
+' there is none.
 '
     Dim Cell As Range       'Cell cursor
 
@@ -2778,7 +2779,7 @@ Private Function DemoFailingRows(ByVal Sh As Worksheet) As String
         If VarType(Cell.Value) = vbString Then
             If Cell.Value = "FAIL" Or Cell.Value = "NO VBA" Then
                 DemoFailingRows = DemoFailingRows & "; " & Cell.Address(False, False) & " " & _
-                                  CStr(Cell.Value) & " " & CStr(Sh.Cells(Cell.Row, 3).Text)
+                                  CStr(Cell.Value) & " " & CStr(Sh.Cells(Cell.Row, IIf(Cell.Column > 8, 9, 3)).Text)
             End If
         End If
     Next Cell
