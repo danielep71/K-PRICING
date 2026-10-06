@@ -249,6 +249,13 @@ one, by name. A failed activation or re-selection, or any item that does not
 match, is recorded in `state_restoration` and fails the run. Each worksheet suite closes its own
 scratch workbook with `SaveChanges:=False`.
 
+The status bar goes back to Excel through a literal `False`, retried three
+times after pending messages are processed and then, if Excel still reads
+text, through the XLM command `MESSAGE(FALSE)`. A status bar that still reads
+as text fails the run, and the `state_restoration` detail lists every step
+with what the bar read afterwards (for example `False->String 'FALSE'`), so an
+intermittent failure leaves evidence of what Excel did (#77).
+
 ## Evidence record
 
 The runner writes one ASCII JSON document. Every non-ASCII character is written
