@@ -13,7 +13,7 @@ other environments are not certified.
 | --- | --- | --- |
 | `src/core/` | `KPR_Core_Err.bas`, `KPR_Core_Parse.bas`, `KPR_Core_Dates.bas`, `KPR_Core_Array.bas` | Internal error, parsing, calendar and array/shape implementation |
 | `src/modules/` | `KPR_DATES_DAYS.bas`, `KPR_REGISTER_PUBLIC_UDFS.bas` | Supported 22-function `KPR_Dates_*` worksheet façade; internal MacroOptions registration manifest (#42) |
-| `tests/modules/` | `KPR_REGRESSION_TESTS.bas`, `KPR_Test_Fixtures_Generated.bas`, `KPR_Test_Oracle.bas` | Migrated pure and stateful regression harness and the durable runner (`KPR_Test_RunAll`); generated fixture data from `tools/gen_fixtures.py` (never edit by hand); Excel cross-oracle cases; the `worksheet-registration` suite |
+| `tests/modules/` | `KPR_Dev_Import.bas`, `KPR_REGRESSION_TESTS.bas`, `KPR_Test_Fixtures_Generated.bas`, `KPR_Test_Oracle.bas` | Development loader that imports one commit's modules into a build ([INSTALLATION.md](../INSTALLATION.md#updating-a-development-build)); migrated pure and stateful regression harness and the durable runner (`KPR_Test_RunAll`); generated fixture data from `tools/gen_fixtures.py` (never edit by hand); Excel cross-oracle cases; the `worksheet-registration` suite |
 | `examples/modules/` | `KPR_DateExample.bas`, `KPR_Demo_Builder.bas`, `KPR_Demo_Dates.bas` | Minimal direct-VBA consumer using the supported façade; shared demo-sheet builder and the Date Primitives demo (#46) |
 | Future workbook/add-in/UI | Not implemented | Automatic registration at open, startup/shutdown, configuration, packaging and recovery, separated from calculations |
 
