@@ -21,8 +21,68 @@ an ISO date and writes the result to the Immediate window. Direct VBA follows
 the frozen no-worksheet-host 1900 serial contract; worksheet callers remain
 subject to the caller workbook's date-system rules.
 
-The example is intentionally minimal. The deterministic demo builder is planned
-in v0.0.4 as #46; see the [roadmap](../docs/ROADMAP.md).
+The example is intentionally minimal.
+
+## Demonstration sheets
+
+Demo sheets are built from tracked source by a shared builder; no generated
+workbook is committed.
+
+- `modules/KPR_Demo_Builder.bas` is the shared engine: layout, house style,
+  status rules, the checks summary and the Excel state around a build. It also
+  holds the catalog of demos (`KPR_Demo_Catalog`).
+- `modules/KPR_Demo_Dates.bas` is the Date Primitives demo, a short list of
+  builder calls.
+
+Import both after the production modules and run, in the Immediate window:
+
+```text
+? KPR_Demo_BuildDates()
+```
+
+It returns `TRUE` and adds a **KPR Dates Demo** sheet to the active workbook,
+named `KPR Dates Demo (2)`, `(3)` … when the name is taken. No existing sheet
+is changed, replaced or deleted. When no ordinary workbook is active, or it is
+a 1904 workbook, read-only or structure-protected, the sheet goes into a new
+unsaved workbook instead. Ctrl+Z cannot remove a sheet a macro added: delete
+the sheet to remove the demo. `? KPR_Demo_BuildDates("C:\path\demo.xlsx")`
+builds into a new `.xlsx` file instead and never overwrites an existing file;
+`? KPR_Demo_LastReport()` explains a `FALSE`.
+
+The sheet has editable orange inputs (DateIn, nDays, nWeeks, nMonths, nYears,
+Keep EOM, weekday index, occurrence and weekday base), each a sheet-level name
+the formulas use. Each section row shows the KPR formula as text, its live
+result, a native-Excel reference formula that reproduces the contract for any
+valid input, and a status:
+
+| Status | Meaning |
+| --- | --- |
+| `OK` | The KPR result equals the reference, or both are the same error |
+| `DIFFERS` | A documented difference by design, explained in the row's note |
+| `FAIL` | Any other difference |
+| `NO VBA` | The K-PRICING project is not loaded |
+
+Sections cover day primitives, period boundaries, predicates, date
+arithmetic, the month-end policy against `EDATE` and `EOMONTH`, weekday
+locators and pillars. The side panel holds the checks summary, fixed
+native-error cases, dynamic-array spills and the 100,000-element limit (the
+last two need dynamic-array Excel). At the default inputs the sheet shows one
+`DIFFERS` row and no `FAIL`. The live results need the K-PRICING project to be
+open, because the formulas call its functions; when it is not an add-in the
+formulas carry its workbook name. The regression harness's `worksheet-demo`
+suite rebuilds the demo and checks it. The sheet demonstrates documented
+behaviour; it does not certify accuracy, production readiness or any untested
+environment.
+
+### Adding a demo
+
+Write a content module with one public entry point
+`Function KPR_Demo_Build<Name>(Optional ByVal OutputPath As String = "") As Boolean`
+that calls `Demo_Begin`, the writers (`Demo_Inputs`, `Demo_Input`,
+`Demo_Section`, `Demo_Compare`, `Demo_Note`, `Demo_Cases`, `Demo_Case`,
+`Demo_Spill`, `Demo_SpillColumn`) and `Demo_Finish`, with `Demo_Abort` in its
+error handler, and add one line to `KPR_Demo_Catalog`. A feature moves into
+the builder only when a second demo needs it.
 
 ## Minimal worksheet example
 

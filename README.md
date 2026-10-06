@@ -99,7 +99,8 @@ The migrated date layer contains:
 - [`KPR_DATES_DAYS`](src/modules/KPR_DATES_DAYS.bas) — the supported 22-function worksheet façade;
 - [`KPR_REGRESSION_TESTS`](tests/modules/KPR_REGRESSION_TESTS.bas) — the imported focused regression harness;
 - [`KPR_Test_Fixtures_Generated`](tests/modules/KPR_Test_Fixtures_Generated.bas) — independently generated fixtures (see [`tests/fixtures/`](tests/fixtures/README.md)); and
-- [`KPR_DateExample`](examples/modules/KPR_DateExample.bas) — a minimal direct-VBA consumer example.
+- [`KPR_DateExample`](examples/modules/KPR_DateExample.bas) — a minimal direct-VBA consumer example; and
+- [`KPR_Demo_Builder`](examples/modules/KPR_Demo_Builder.bas) — the shared builder of demonstration sheets, and [`KPR_Demo_Dates`](examples/modules/KPR_Demo_Dates.bas) — the Date Primitives demo built with it.
 
 The source is migrated from the frozen KPR candidate identified in
 [`docs/MIGRATION_PROVENANCE.md`](docs/MIGRATION_PROVENANCE.md). The exact

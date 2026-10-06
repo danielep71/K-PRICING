@@ -104,6 +104,21 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added demo sheets built from tracked source (#46): the shared
+  `examples/modules/KPR_Demo_Builder.bas` owns layout, house style, status
+  rules, the checks summary, the Excel state and the demo catalog, and
+  `examples/modules/KPR_Demo_Dates.bas` describes the Date Primitives sheet
+  through it. `KPR_Demo_BuildDates()` adds a **KPR Dates Demo** sheet to the
+  active workbook (never changing, replacing or deleting an existing sheet, and
+  falling back to a new workbook for a 1904, read-only or protected one), or
+  builds into a new `.xlsx` file that must not exist yet. Each row compares a
+  live KPR formula, driven by editable named inputs, with a native-Excel
+  reference and shows `OK`, `DIFFERS` (by design), `FAIL` or `NO VBA`; the side
+  panel adds native-error cases, dynamic-array spills and the 100,000-element
+  limit. The new `worksheet-demo` regression suite checks file and
+  active-workbook builds and sets the evidence record's `demo_generation`
+  outcome. Verified in Windows Excel (64-bit, build 20326) at `cd0e1a1`: two
+  matching `all` runs with 21 suites, 9,320 assertions and 0 failures.
 - Added MacroOptions registration (#42): the internal
   `KPR_REGISTER_PUBLIC_UDFS` module holds a machine-readable manifest of the 22
   supported functions and registers them under the single **KPR Dates**
