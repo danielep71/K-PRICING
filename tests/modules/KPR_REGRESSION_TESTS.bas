@@ -1478,13 +1478,16 @@ Private Function HandBackStatusBar() As String
 ' Hands the status bar back to Excel and returns the steps taken, each with
 ' what the bar read afterwards, for the failure detail (#77). A literal False
 ' comes first, retried after pending messages are processed, because Excel
-' has been seen to keep the text FALSE instead. If text remains, the XLM
-' command MESSAGE(FALSE), which restores the default status bar, is tried as
-' an independent route. The caller still requires Excel control: a text
-' FALSE is never accepted as restored.
+' has been seen to keep the text FALSE instead. If text remains, two more
+' routes follow, neither of which needs Excel 4.0 macros or any Trust Center
+' change: a different text first, so the hand-back is a real change of
+' value, and then hiding and showing the status bar before the hand-back,
+' with DisplayStatusBar left as found. The caller still requires Excel
+' control: a text FALSE is never accepted as restored.
 '
     Dim Steps   As String   'Steps taken so far
     Dim Attempt As Long     'Retry counter
+    Dim Shown   As Boolean  'DisplayStatusBar on entry
 
     On Error Resume Next
     Application.StatusBar = False
@@ -1496,12 +1499,22 @@ Private Function HandBackStatusBar() As String
         Steps = Steps & ", retry " & CStr(Attempt) & "->" & StatusBarReading()
     Next Attempt
     If VarType(Application.StatusBar) <> vbBoolean Then
+        Application.StatusBar = " "
+        DoEvents
+        Application.StatusBar = False
+        Steps = Steps & ", text then False->" & StatusBarReading()
+    End If
+    If VarType(Application.StatusBar) <> vbBoolean Then
         Err.Clear
-        Application.ExecuteExcel4Macro "MESSAGE(FALSE)"
+        Shown = Application.DisplayStatusBar
+        Application.DisplayStatusBar = Not Shown
+        DoEvents
+        Application.DisplayStatusBar = Shown
+        Application.StatusBar = False
         If Err.Number <> 0 Then
-            Steps = Steps & ", MESSAGE(FALSE) error " & CStr(Err.Number)
+            Steps = Steps & ", hide and show error " & CStr(Err.Number)
         Else
-            Steps = Steps & ", MESSAGE(FALSE)->" & StatusBarReading()
+            Steps = Steps & ", hide and show then False->" & StatusBarReading()
         End If
     End If
     Err.Clear
