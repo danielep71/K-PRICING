@@ -1377,7 +1377,7 @@ Private Function RestoreCallerState( _
 '------------------------------------------------------------------------------
     Dim Problems        As String       'Items that did not restore
     Dim CurrentType     As String       'TypeName of the restored selection
-    Dim Attempt         As Long         'Status-bar hand-back attempt
+    Dim BarTrace        As String       'Status-bar hand-back steps, for the failure detail
 
 '------------------------------------------------------------------------------
 ' RESTORE
@@ -1405,14 +1405,7 @@ Private Function RestoreCallerState( _
     Application.ScreenUpdating = State.ScreenUpdating
     Application.DisplayAlerts = State.DisplayAlerts
     If VarType(State.StatusBar) = vbBoolean Then
-        'Hand the bar back with a literal False: Excel can store a Variant
-        'Boolean as the text FALSE. Retry after pending messages are processed
-        Application.StatusBar = False
-        For Attempt = 1 To 3
-            If VarType(Application.StatusBar) = vbBoolean Then Exit For
-            DoEvents
-            Application.StatusBar = False
-        Next Attempt
+        BarTrace = HandBackStatusBar()
     Else
         Application.StatusBar = State.StatusBar
     End If
@@ -1430,7 +1423,7 @@ Private Function RestoreCallerState( _
     If VarType(State.StatusBar) = vbBoolean Then
         If VarType(Application.StatusBar) <> vbBoolean Then
             Problems = Problems & "; status bar (expected Excel control, read '" & _
-                       CStr(Application.StatusBar) & "')"
+                       CStr(Application.StatusBar) & "'; steps: " & BarTrace & ")"
         End If
     ElseIf CStr(Application.StatusBar) <> CStr(State.StatusBar) Then
         Problems = Problems & "; status bar (read '" & CStr(Application.StatusBar) & "')"
@@ -1477,6 +1470,73 @@ Private Function RestoreCallerState( _
     Else
         Detail = "not restored: " & Mid$(Problems, 3)
     End If
+
+End Function
+
+Private Function HandBackStatusBar() As String
+'
+' Hands the status bar back to Excel and returns the steps taken, each with
+' what the bar read afterwards, for the failure detail (#77). A literal False
+' comes first, retried after pending messages are processed, because Excel
+' has been seen to keep the text FALSE instead. If text remains, two more
+' routes follow, neither of which needs Excel 4.0 macros or any Trust Center
+' change: a different text first, so the hand-back is a real change of
+' value, and then hiding and showing the status bar before the hand-back,
+' with DisplayStatusBar left as found. The caller still requires Excel
+' control: a text FALSE is never accepted as restored.
+'
+    Dim Steps   As String   'Steps taken so far
+    Dim Attempt As Long     'Retry counter
+    Dim Shown   As Boolean  'DisplayStatusBar on entry
+
+    On Error Resume Next
+    Application.StatusBar = False
+    Steps = "False->" & StatusBarReading()
+    For Attempt = 1 To 3
+        If VarType(Application.StatusBar) = vbBoolean Then Exit For
+        DoEvents
+        Application.StatusBar = False
+        Steps = Steps & ", retry " & CStr(Attempt) & "->" & StatusBarReading()
+    Next Attempt
+    If VarType(Application.StatusBar) <> vbBoolean Then
+        Application.StatusBar = " "
+        DoEvents
+        Application.StatusBar = False
+        Steps = Steps & ", text then False->" & StatusBarReading()
+    End If
+    If VarType(Application.StatusBar) <> vbBoolean Then
+        Err.Clear
+        Shown = Application.DisplayStatusBar
+        Application.DisplayStatusBar = Not Shown
+        DoEvents
+        Application.DisplayStatusBar = Shown
+        Application.StatusBar = False
+        If Err.Number <> 0 Then
+            Steps = Steps & ", hide and show error " & CStr(Err.Number)
+        Else
+            Steps = Steps & ", hide and show then False->" & StatusBarReading()
+        End If
+    End If
+    Err.Clear
+    HandBackStatusBar = Steps
+
+End Function
+
+Private Function StatusBarReading() As String
+'
+' What the status bar reads: its type and value, e.g. Boolean False or
+' String 'FALSE'.
+'
+    Dim Value As Variant    'Current status bar
+
+    On Error Resume Next
+    Value = Application.StatusBar
+    If Err.Number <> 0 Then
+        StatusBarReading = "unreadable (error " & CStr(Err.Number) & ")"
+    Else
+        StatusBarReading = TypeName(Value) & " '" & CStr(Value) & "'"
+    End If
+    Err.Clear
 
 End Function
 

@@ -243,6 +243,11 @@ Use only the categories needed by a release.
 
 ### Fixed
 
+- The durable runner's status-bar hand-back now records each step and what
+  the bar read afterwards in the state-restoration detail and, when Excel keeps the text `FALSE`
+  after the retries, tries two more hand-backs that need no Excel 4.0 macros
+  or Trust Center change (#77). A text `FALSE` still fails the run. Verified in
+  Windows Excel at `732db13`: two matching `all` runs, 0 failures, state restored.
 - Corrected the Function Wizard error text of `KPR_Dates_DaysInYear` and
   `KPR_Dates_IsLeapYear`: a year outside 1900-9999 returns `#VALUE!`
   (`DOMAIN_YEAR`), and only a year beyond the `Long` range returns `#NUM!`.
