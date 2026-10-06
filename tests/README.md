@@ -78,7 +78,7 @@ back from Excel, so the Insert Function dialog itself remains a manual check.
 
 The `worksheet-demo` suite (or `KPR_Tests_RunDemo` alone) builds the Date
 Primitives demo (`examples/modules/KPR_Demo_Dates.bas` through
-`KPR__Demo_Builder.bas`) twice into a temporary folder and checks that the two
+`KPR_Demo__Builder.bas`) twice into a temporary folder and checks that the two
 files are identical, that no row fails and that the builder refuses an
 existing file and restores the caller's state. It then builds into a scratch
 workbook twice, requiring a new sheet each time and every existing sheet

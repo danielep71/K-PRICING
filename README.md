@@ -100,7 +100,7 @@ The migrated date layer contains:
 - [`KPR_REGRESSION_TESTS`](tests/modules/KPR_REGRESSION_TESTS.bas) — the imported focused regression harness;
 - [`KPR_Test_Fixtures_Generated`](tests/modules/KPR_Test_Fixtures_Generated.bas) — independently generated fixtures (see [`tests/fixtures/`](tests/fixtures/README.md)); and
 - [`KPR_Demo_DirectVBA`](examples/modules/KPR_Demo_DirectVBA.bas) — a minimal direct-VBA consumer example; and
-- [`KPR__Demo_Builder`](examples/modules/KPR__Demo_Builder.bas) — the shared builder of demonstration sheets, and [`KPR_Demo_Dates`](examples/modules/KPR_Demo_Dates.bas) — the Date Primitives demo built with it.
+- [`KPR_Demo__Builder`](examples/modules/KPR_Demo__Builder.bas) — the shared builder of demonstration sheets, and [`KPR_Demo_Dates`](examples/modules/KPR_Demo_Dates.bas) — the Date Primitives demo built with it.
 
 The source is migrated from the frozen KPR candidate identified in
 [`docs/MIGRATION_PROVENANCE.md`](docs/MIGRATION_PROVENANCE.md). The exact

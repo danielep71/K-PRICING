@@ -1,6 +1,6 @@
-Attribute VB_Name = "KPR__Demo_Builder"
+Attribute VB_Name = "KPR_Demo__Builder"
 '==============================================================================
-' MODULE: KPR__Demo_Builder
+' MODULE: KPR_Demo__Builder
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Shared engine for K-PRICING demonstration sheets. A demo content module
@@ -853,7 +853,7 @@ Private Sub RequireBuild()
 '
 ' Stops a writer that runs outside Demo_Begin ... Demo_Finish.
 '
-    If Not mBuilding Then Err.Raise 5, "KPR__Demo_Builder", "No demo build is in progress."
+    If Not mBuilding Then Err.Raise 5, "KPR_Demo__Builder", "No demo build is in progress."
 
 End Sub
 

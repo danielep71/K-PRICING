@@ -353,7 +353,7 @@
       "tests"
     ],
     "components": {
-      "examples/modules/KPR__Demo_Builder.bas": "example",
+      "examples/modules/KPR_Demo__Builder.bas": "example",
       "examples/modules/KPR_Demo_Dates.bas": "example",
       "examples/modules/KPR_Demo_DirectVBA.bas": "example",
       "src/core/KPR_Core_Array.bas": "internal",

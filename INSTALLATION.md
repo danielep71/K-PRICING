@@ -110,10 +110,10 @@ Import the migrated production dependency set in this order:
    cross-oracle cases that depend on `KPR_DATES_DAYS` alone
 9. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
 10. `examples/modules/KPR_Demo_DirectVBA.bas` — optional consumer example
-11. `examples/modules/KPR__Demo_Builder.bas` — shared demo builder; no module
+11. `examples/modules/KPR_Demo__Builder.bas` — shared demo builder; no module
     dependencies
 12. `examples/modules/KPR_Demo_Dates.bas` — Date Primitives demo; depends on
-    `KPR__Demo_Builder`. Both demo modules are optional for users, but required
+    `KPR_Demo__Builder`. Both demo modules are optional for users, but required
     whenever `KPR_REGRESSION_TESTS` is imported, because its `worksheet-demo`
     suite builds the demo
 

@@ -28,7 +28,7 @@ The example is intentionally minimal.
 Demo sheets are built from tracked source by a shared builder; no generated
 workbook is committed.
 
-- `modules/KPR__Demo_Builder.bas` is the shared engine: layout, house style,
+- `modules/KPR_Demo__Builder.bas` is the shared engine: layout, house style,
   status rules, the checks summary and the Excel state around a build. It also
   holds the catalog of demos (`KPR_Demo_Catalog`).
 - `modules/KPR_Demo_Dates.bas` is the Date Primitives demo, a short list of
