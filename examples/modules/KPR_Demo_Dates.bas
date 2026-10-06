@@ -73,7 +73,7 @@ Attribute VB_Name = "KPR_Demo_Dates"
 '   No KPR module: function names appear only inside formula text.
 '
 ' UPDATED
-'   2026-10-05
+'   2026-10-06
 '
 ' AUTHOR
 '   Daniele Penza
@@ -580,7 +580,7 @@ Private Sub WriteRow( _
 '
     Sh.Cells(R, 2).Value = Label
     WriteFormulaText Sh.Cells(R, 3), Formula
-    ApplyValueFormat Sh.Cells(R, 4), Expected
+    ApplyValueFormat Sh.Cells(R, 4), Expected, True
     SetFormula Sh.Cells(R, 4), Formula
     ApplyValueFormat Sh.Cells(R, 5), Expected
     Sh.Cells(R, 5).Value = Expected
@@ -631,7 +631,7 @@ Private Function WriteArrayExample( _
 
     For I = 1 To RowCount
         For J = 1 To ColCount
-            ApplyValueFormat Sh.Cells(Top + I, 5 + J), Expected(I, J)
+            ApplyValueFormat Sh.Cells(Top + I, 5 + J), Expected(I, J), True
             ApplyValueFormat Sh.Cells(Top + I, 9 + J), Expected(I, J)
             Sh.Cells(Top + I, 9 + J).Value = Expected(I, J)
             Sh.Cells(Top + I, 13 + J).Formula = _
@@ -723,15 +723,24 @@ Private Function MatchFormula(ByVal Actual As String, ByVal Expected As String) 
 
 End Function
 
-Private Sub ApplyValueFormat(ByVal Target As Range, ByVal Value As Variant)
+Private Sub ApplyValueFormat( _
+    ByVal Target As Range, _
+    ByVal Value As Variant, _
+    Optional ByVal HoldsFormula As Boolean = False)
 '
-' Dates show as YYYY-MM-DD, text stays text, everything else is General.
+' Dates show as YYYY-MM-DD, text stays text, everything else is General. A
+' cell that will hold a formula never gets the text format: Excel would store
+' the formula as literal text instead of evaluating it.
 '
     Select Case VarType(Value)
         Case vbDate
             Target.NumberFormat = DATE_FORMAT
         Case vbString
-            Target.NumberFormat = "@"
+            If HoldsFormula Then
+                Target.NumberFormat = "General"
+            Else
+                Target.NumberFormat = "@"
+            End If
         Case Else
             Target.NumberFormat = "General"
     End Select
