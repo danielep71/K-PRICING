@@ -76,12 +76,15 @@ back from Excel, so the Insert Function dialog itself remains a manual check.
 
 ## Demo generation
 
-The `worksheet-demo` suite (or `KPR_Tests_RunDemo` alone) builds the date
-demo with `examples/modules/KPR_Demo_Dates.bas` twice into a temporary
-folder, checks that the two files are identical and that every example
-matches its expected value, and checks that the builder refuses an existing
-file and restores the caller's state. It feeds the evidence record's
-`demo_generation` outcome and deletes its files afterwards.
+The `worksheet-demo` suite (or `KPR_Tests_RunDemo` alone) builds the Date
+Primitives demo (`examples/modules/KPR_Demo_Dates.bas` through
+`KPR_Demo_Builder.bas`) twice into a temporary folder and checks that the two
+files are identical, that no row fails and that the builder refuses an
+existing file and restores the caller's state. It then builds into a scratch
+workbook twice, requiring a new sheet each time and every existing sheet
+unchanged, and into a 1904 scratch workbook, requiring a new workbook instead.
+It feeds the evidence record's `demo_generation` outcome and removes its files
+and scratch workbooks afterwards.
 
 The optional [Windows/Excel evidence interface](../docs/EXCEL_EVIDENCE.md)
 records this harness output, source identity and host environment with explicit

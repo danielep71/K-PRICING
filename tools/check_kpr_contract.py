@@ -50,6 +50,7 @@ ALLOWED_DEPENDENCIES = {
             "kpr_register_public_udfs",
             "kpr_test_fixtures_generated",
             "kpr_test_oracle",
+            "kpr_demo_builder",
             "kpr_demo_dates",
         }
     ),
@@ -59,8 +60,11 @@ ALLOWED_DEPENDENCIES = {
     "kpr_test_fixtures_generated": frozenset(),
     # The Excel cross-oracle compares the public facade only.
     "kpr_test_oracle": frozenset({"kpr_dates_days"}),
-    # The demo builder names functions only inside formula text.
-    "kpr_demo_dates": frozenset(),
+    # The shared demo builder names functions only inside formula text and
+    # runs catalog entries by name.
+    "kpr_demo_builder": frozenset(),
+    # A demo content module describes its sheet through the builder only.
+    "kpr_demo_dates": frozenset({"kpr_demo_builder"}),
 }
 REQUIRED_MEMBERS = {
     "kpr_core_err": frozenset({"ErrValue", "ErrNum", "ErrNA", "ErrForCondition"}),
@@ -113,7 +117,17 @@ REQUIRED_MEMBERS = {
         {"KPR_Fixtures_Count", "KPR_Fixtures_Case", "KPR_Fixtures_SourceHash"}
     ),
     "kpr_test_oracle": frozenset({"KPR_Oracle_RunCases"}),
-    "kpr_demo_dates": frozenset({"KPR_Demo_BuildDates", "KPR_Demo_LastReport"}),
+    "kpr_demo_builder": frozenset(
+        {
+            "KPR_Demo_Catalog",
+            "KPR_Demo_Build",
+            "KPR_Demo_LastReport",
+            "Demo_Begin",
+            "Demo_Finish",
+            "Demo_Abort",
+        }
+    ),
+    "kpr_demo_dates": frozenset({"KPR_Demo_BuildDates"}),
     "kpr_regression_tests": frozenset({
         "KPR_Tests_Run",
         "KPR_Tests_RunSuite",

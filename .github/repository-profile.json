@@ -354,6 +354,7 @@
     ],
     "components": {
       "examples/modules/KPR_DateExample.bas": "example",
+      "examples/modules/KPR_Demo_Builder.bas": "example",
       "examples/modules/KPR_Demo_Dates.bas": "example",
       "src/core/KPR_Core_Array.bas": "internal",
       "src/core/KPR_Core_Dates.bas": "internal",

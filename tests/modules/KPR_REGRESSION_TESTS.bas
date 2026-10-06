@@ -2483,28 +2483,37 @@ Public Sub KPR_Tests_RunDemo()
 '                              KPR_Tests_RunDemo
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Exercises the date-demo builder in KPR_Demo_Dates (#46) and prints the
-'   report to the Immediate window.
+'   Exercises the shared demo builder (KPR_Demo_Builder) through the Date
+'   Primitives demo (KPR_Demo_Dates, #46) and prints the report to the
+'   Immediate window.
 '
 ' METHOD
-'   Builds the demo twice into a temporary folder. Requires both builds to
-'   succeed, a third build to refuse the existing file without touching it,
-'   an empty path and a non-.xlsx path to be refused, and calculation,
-'   events, screen updating, alerts, the active workbook and sheet and the
-'   selection to be exactly as found. Then opens both files read-only and
-'   requires identical sheets, cells, formulas, values, formats, widths and
-'   names, a 1900 date system, DEMO_EXAMPLES examples and every example's
-'   check to be TRUE. The files are deleted afterwards.
+'   Files: builds the demo twice into a temporary folder, once directly and
+'   once through the catalog, and requires a third build to refuse the
+'   existing file without touching it, a non-.xlsx path and an unknown demo
+'   to be refused, and calculation, events, screen updating, alerts, the
+'   active workbook and sheet and the selection to be exactly as found.
+'   Opens both files read-only and requires one demo sheet, identical
+'   cells, formulas, values, formats, widths and names, DEMO_CHECKS status
+'   cells, DEMO_DIFFERS documented differences and no failing row.
+'   Active workbook: builds twice into a scratch workbook and requires a new
+'   sheet each time, the second named with " (2)", the scratch sheet and the
+'   first demo unchanged, and no failing row. A 1904 scratch workbook must be
+'   left alone and the demo built into a new workbook instead. Every file and
+'   scratch workbook is removed afterwards.
 '
 ' UPDATED
-'   2026-10-05
+'   2026-10-06
 '==============================================================================
 '
 
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const DEMO_EXAMPLES As Long = 58            'Examples the builder lays out
+    Const DEMO_SHEET    As String = "KPR Dates Demo"    'Sheet name the demo asks for
+    Const DEMO_CHECKS   As Long = 57                    'Status cells with dynamic arrays
+    Const DEMO_DIFFERS  As Long = 1                     'Documented differences at the defaults
+    Const MARKER        As String = "kpr-demo-marker"   'Content of the scratch sheet
     Dim Folder          As String               'Temporary output folder
     Dim PathA           As String               'First build
     Dim PathB           As String               'Second build
@@ -2517,13 +2526,19 @@ Public Sub KPR_Tests_RunDemo()
     Dim BookName        As String               'Active workbook on entry
     Dim SheetName       As String               'Active sheet on entry
     Dim SelectionText   As String               'Selection on entry
+    Dim CallerBook      As Workbook             'Active workbook on entry
+    Dim CallerSheet     As Object               'Active sheet on entry
     Dim WbA             As Workbook             'First build, reopened
     Dim WbB             As Workbook             'Second build, reopened
+    Dim Scratch         As Workbook             'Ordinary workbook the demo is added to
+    Dim Old1904         As Workbook             'Workbook the demo must not be added to
+    Dim Fallback        As Workbook             'New workbook the 1904 case builds into
     Dim PrintA          As String               'Fingerprint of the first build
     Dim PrintB          As String               'Fingerprint of the second build
-    Dim CheckName       As Variant              'One named check range
-    Dim Cell            As Range                'One check cell
-    Dim Examples        As Long                 'Check cells found
+    Dim PrintFirst      As String               'First scratch demo before the second build
+    Dim Books           As Long                 'Open workbooks before the 1904 build
+    Dim Listed          As Boolean              'The catalog lists the date demo
+    Dim Entry           As Variant              'Catalog cursor
     Dim Built           As Boolean              'Result of one build call
     Dim I               As Long                 'Report cursor
 
@@ -2550,15 +2565,28 @@ Public Sub KPR_Tests_RunDemo()
     BookName = RegistrationActiveBook()
     SheetName = RegistrationActiveSheet()
     SelectionText = RegistrationSelection()
+    On Error Resume Next
+    Set CallerBook = ActiveWorkbook
+    Set CallerSheet = ActiveSheet
+    Err.Clear
+    On Error GoTo 0
 
 '------------------------------------------------------------------------------
-' BUILD
+' CATALOG
+'------------------------------------------------------------------------------
+    For Each Entry In KPR_Demo_Catalog()
+        If Left$(CStr(Entry), Len("KPR_Demo_BuildDates|")) = "KPR_Demo_BuildDates|" Then Listed = True
+    Next Entry
+    CheckDemo "demo/catalog lists the date demo", Listed, "KPR_Demo_BuildDates is not in KPR_Demo_Catalog"
+
+'------------------------------------------------------------------------------
+' BUILD TO FILES
 '------------------------------------------------------------------------------
     Built = KPR_Demo_BuildDates(PathA)
     CheckDemo "demo/build first", Built, KPR_Demo_LastReport()
     CheckDemo "demo/report first", Len(KPR_Demo_LastReport()) = 0, KPR_Demo_LastReport()
-    Built = KPR_Demo_BuildDates(PathB)
-    CheckDemo "demo/build second", Built, KPR_Demo_LastReport()
+    Built = KPR_Demo_Build("KPR_Demo_BuildDates", PathB)
+    CheckDemo "demo/build second through the catalog", Built, KPR_Demo_LastReport()
     CheckDemo "demo/report second", Len(KPR_Demo_LastReport()) = 0, KPR_Demo_LastReport()
 
 '------------------------------------------------------------------------------
@@ -2574,13 +2602,13 @@ Public Sub KPR_Tests_RunDemo()
     CheckDemo "demo/refusal report", InStr(1, KPR_Demo_LastReport(), "never overwritten", vbTextCompare) > 0, _
               "report was: " & KPR_Demo_LastReport()
     CheckDemo "demo/existing file untouched", DemoFileMatches(PathA, SizeA, StampA), "the existing file changed"
-    Built = KPR_Demo_BuildDates("")
-    CheckDemo "demo/refuse empty path", Not Built, "an empty path was accepted"
     Built = KPR_Demo_BuildDates(Folder & Application.PathSeparator & "kpr-demo-c.xlsm")
     CheckDemo "demo/refuse other extension", Not Built, "a non-.xlsx path was accepted"
+    Built = KPR_Demo_Build("KPR_Demo_NoSuchDemo")
+    CheckDemo "demo/refuse unknown demo", Not Built, "an entry point outside the catalog was run"
 
 '------------------------------------------------------------------------------
-' STATE
+' STATE AFTER FILE BUILDS
 '------------------------------------------------------------------------------
     CheckDemo "demo/state calculation", Application.Calculation = Calc, "calculation mode changed"
     CheckDemo "demo/state events", Application.EnableEvents = Events, "EnableEvents changed"
@@ -2603,36 +2631,100 @@ Public Sub KPR_Tests_RunDemo()
     Else
         PrintA = DemoFingerprint(WbA)
         PrintB = DemoFingerprint(WbB)
-        CheckDemo "demo/sheets", DemoSheetList(WbA) = "About,Scalar,Arrays,Errors,Pillars", _
-                  "sheets were " & DemoSheetList(WbA)
+        CheckDemo "demo/sheets", DemoSheetList(WbA) = DEMO_SHEET, "sheets were " & DemoSheetList(WbA)
         CheckDemo "demo/deterministic", PrintA = PrintB, DemoFirstDifference(PrintA, PrintB)
-        CheckDemo "demo/date system", CStr(WbA.Names("Demo_HostDateSystem").RefersToRange.Value) = "1900", _
-                  "HostDateSystem shows " & CStr(WbA.Names("Demo_HostDateSystem").RefersToRange.Text)
-        CheckDemo "demo/mismatches", CStr(WbA.Names("Demo_Mismatches").RefersToRange.Value) = "0", _
-                  "mismatch count shows " & CStr(WbA.Names("Demo_Mismatches").RefersToRange.Text)
-        For Each CheckName In Array("Demo_Scalar_Checks", "Demo_Array_Checks", _
-                                    "Demo_Error_Checks", "Demo_Pillar_Checks")
-            For Each Cell In WbA.Names(CStr(CheckName)).RefersToRange.Cells
-                If Not IsEmpty(Cell.Value) Then
-                    Examples = Examples + 1
-                    CheckDemo "demo/example " & Cell.Worksheet.Name & "!" & Cell.Address(False, False), _
-                              DemoIsTrue(Cell.Value), _
-                              "the live result does not match the expected value in row " & CStr(Cell.Row)
-                End If
-            Next Cell
-        Next CheckName
-        CheckDemo "demo/example count", Examples = DEMO_EXAMPLES, _
-                  "expected " & CStr(DEMO_EXAMPLES) & " examples, found " & CStr(Examples)
+        CheckDemo "demo/check count", DemoCount(WbA.Worksheets(1), "Demo_Checks") = DEMO_CHECKS, _
+                  "expected " & CStr(DEMO_CHECKS) & " status cells, found " & _
+                  CStr(DemoCount(WbA.Worksheets(1), "Demo_Checks"))
+        CheckDemo "demo/differs count", DemoCount(WbA.Worksheets(1), "Demo_Differs") = DEMO_DIFFERS, _
+                  "expected " & CStr(DEMO_DIFFERS) & " documented difference(s), found " & _
+                  CStr(DemoCount(WbA.Worksheets(1), "Demo_Differs"))
+        CheckDemo "demo/fail count", DemoCount(WbA.Worksheets(1), "Demo_Fails") = 0, _
+                  "the summary shows " & CStr(DemoCount(WbA.Worksheets(1), "Demo_Fails")) & " failure(s)"
+        CheckDemo "demo/no failing row", Len(DemoFailingRows(WbA.Worksheets(1))) = 0, _
+                  DemoFailingRows(WbA.Worksheets(1))
+    End If
+    On Error Resume Next
+    If Not WbA Is Nothing Then WbA.Close SaveChanges:=False
+    If Not WbB Is Nothing Then WbB.Close SaveChanges:=False
+    Kill PathA
+    Kill PathB
+    Err.Clear
+    On Error GoTo 0
+
+'------------------------------------------------------------------------------
+' BUILD INTO THE ACTIVE WORKBOOK
+'------------------------------------------------------------------------------
+    Set Scratch = Workbooks.Add(xlWBATWorksheet)
+    Scratch.Worksheets(1).Name = "Mine"
+    Scratch.Worksheets(1).Range("A1").Value = MARKER
+    Scratch.Activate
+    Built = KPR_Demo_BuildDates()
+    CheckDemo "demo/host build", Built, KPR_Demo_LastReport()
+    CheckDemo "demo/host adds one sheet", Scratch.Sheets.Count = 2, _
+              "the workbook has " & CStr(Scratch.Sheets.Count) & " sheet(s)"
+    If Scratch.Sheets.Count >= 2 Then
+        CheckDemo "demo/host sheet name", Scratch.Sheets(2).Name = DEMO_SHEET, "sheet was " & Scratch.Sheets(2).Name
+        CheckDemo "demo/host sheet shown", RegistrationActiveBook() = Scratch.Name And _
+                  RegistrationActiveSheet() = DEMO_SHEET, "the demo sheet is not active"
+        CheckDemo "demo/host no failing row", Len(DemoFailingRows(Scratch.Sheets(2))) = 0, _
+                  DemoFailingRows(Scratch.Sheets(2))
+        CheckDemo "demo/host fail count", DemoCount(Scratch.Sheets(2), "Demo_Fails") = 0, _
+                  "the summary shows " & CStr(DemoCount(Scratch.Sheets(2), "Demo_Fails")) & " failure(s)"
+        PrintFirst = DemoSheetPrint(Scratch.Sheets(2))
+    End If
+    Built = KPR_Demo_BuildDates()
+    CheckDemo "demo/host second build", Built, KPR_Demo_LastReport()
+    CheckDemo "demo/host second sheet", Scratch.Sheets.Count = 3, _
+              "the workbook has " & CStr(Scratch.Sheets.Count) & " sheet(s)"
+    If Scratch.Sheets.Count >= 3 Then
+        CheckDemo "demo/host second name", Scratch.Sheets(3).Name = DEMO_SHEET & " (2)", _
+                  "sheet was " & Scratch.Sheets(3).Name
+        CheckDemo "demo/host first demo unchanged", DemoSheetPrint(Scratch.Sheets(2)) = PrintFirst, _
+                  "the first demo sheet changed"
+        CheckDemo "demo/host second no failing row", Len(DemoFailingRows(Scratch.Sheets(3))) = 0, _
+                  DemoFailingRows(Scratch.Sheets(3))
+    End If
+    CheckDemo "demo/host own sheet untouched", CStr(Scratch.Worksheets("Mine").Range("A1").Value) = MARKER And _
+              Scratch.Worksheets("Mine").UsedRange.Address(False, False) = "A1", "the scratch sheet changed"
+    CheckDemo "demo/host state calculation", Application.Calculation = Calc, "calculation mode changed"
+    CheckDemo "demo/host state events", Application.EnableEvents = Events, "EnableEvents changed"
+    CheckDemo "demo/host state screen updating", Application.ScreenUpdating = Screen, "ScreenUpdating changed"
+    CheckDemo "demo/host state alerts", Application.DisplayAlerts = Alerts, "DisplayAlerts changed"
+
+'------------------------------------------------------------------------------
+' 1904 WORKBOOK FALLBACK
+'------------------------------------------------------------------------------
+    Set Old1904 = Workbooks.Add(xlWBATWorksheet)
+    Old1904.Date1904 = True
+    Old1904.Activate
+    Books = Workbooks.Count
+    Built = KPR_Demo_BuildDates()
+    CheckDemo "demo/1904 build", Built, KPR_Demo_LastReport()
+    CheckDemo "demo/1904 workbook untouched", Old1904.Sheets.Count = 1, "a sheet was added to the 1904 workbook"
+    CheckDemo "demo/1904 new workbook", Workbooks.Count = Books + 1, _
+              "expected one new workbook, found " & CStr(Workbooks.Count - Books)
+    If Workbooks.Count = Books + 1 And Not ActiveWorkbook Is Old1904 Then
+        Set Fallback = ActiveWorkbook
+        CheckDemo "demo/1904 demo sheet", RegistrationActiveSheet() = DEMO_SHEET, _
+                  "active sheet was " & RegistrationActiveSheet()
+        CheckDemo "demo/1904 no failing row", Len(DemoFailingRows(Fallback.Worksheets(1))) = 0, _
+                  DemoFailingRows(Fallback.Worksheets(1))
+    Else
+        CheckDemo "demo/1904 demo sheet", False, "the new workbook is not active"
     End If
 
 '------------------------------------------------------------------------------
 ' CLEAN UP
 '------------------------------------------------------------------------------
     On Error Resume Next
-    If Not WbA Is Nothing Then WbA.Close SaveChanges:=False
-    If Not WbB Is Nothing Then WbB.Close SaveChanges:=False
-    Kill PathA
-    Kill PathB
+    Application.DisplayAlerts = False
+    If Not Fallback Is Nothing Then Fallback.Close SaveChanges:=False
+    If Not Old1904 Is Nothing Then Old1904.Close SaveChanges:=False
+    If Not Scratch Is Nothing Then Scratch.Close SaveChanges:=False
+    Application.DisplayAlerts = Alerts
+    If Not CallerBook Is Nothing Then CallerBook.Activate
+    If Not CallerSheet Is Nothing Then CallerSheet.Activate
     Err.Clear
     On Error GoTo 0
 
@@ -2660,11 +2752,37 @@ Private Sub CheckDemo( _
 
 End Sub
 
-Private Function DemoIsTrue(ByVal Value As Variant) As Boolean
+Private Function DemoCount(ByVal Sh As Worksheet, ByVal CellName As String) As Long
 '
-' TRUE only for a Boolean TRUE; an error or any other value is FALSE.
+' The whole number in the sheet-level named cell CellName, or -1 when the
+' name is missing or the cell holds anything else.
 '
-    If VarType(Value) = vbBoolean Then DemoIsTrue = Value
+    Dim Value As Variant    'Cell value
+
+    DemoCount = -1
+    On Error Resume Next
+    Value = Sh.Range(CellName).Value
+    If Err.Number = 0 And (VarType(Value) = vbDouble Or VarType(Value) = vbLong) Then DemoCount = CLng(Value)
+    Err.Clear
+
+End Function
+
+Private Function DemoFailingRows(ByVal Sh As Worksheet) As String
+'
+' Every status cell of Sh that shows FAIL or NO VBA, with the formula text of
+' its row, or "" when there is none.
+'
+    Dim Cell As Range       'Cell cursor
+
+    For Each Cell In Sh.UsedRange.Cells
+        If VarType(Cell.Value) = vbString Then
+            If Cell.Value = "FAIL" Or Cell.Value = "NO VBA" Then
+                DemoFailingRows = DemoFailingRows & "; " & Cell.Address(False, False) & " " & _
+                                  CStr(Cell.Value) & " " & CStr(Sh.Cells(Cell.Row, 3).Text)
+            End If
+        End If
+    Next Cell
+    If Len(DemoFailingRows) > 0 Then DemoFailingRows = Mid$(DemoFailingRows, 3)
 
 End Function
 
@@ -2697,39 +2815,51 @@ End Function
 
 Private Function DemoFingerprint(ByVal Wb As Workbook) As String
 '
-' Every sheet, used range, non-empty cell (formula, value, number format,
-' font name, size and weight, horizontal alignment and bottom border), used
-' column width and workbook name, in order.
+' Every worksheet's fingerprint and every workbook name, in order.
 '
-    Dim Parts  As Collection    'Fingerprint lines
-    Dim Sh     As Worksheet     'Sheet cursor
-    Dim Cell   As Range         'Cell cursor
-    Dim Col    As Long          'Column cursor
-    Dim Item   As Variant       'Name or line cursor
-    Dim Text   As String        'Joined result
+    Dim Sh   As Worksheet   'Sheet cursor
+    Dim Item As Variant     'Name cursor
+    Dim Text As String      'Joined result
 
-    Set Parts = New Collection
     For Each Sh In Wb.Worksheets
-        Parts.Add "sheet|" & Sh.Name & "|" & Sh.UsedRange.Address(False, False)
-        For Each Cell In Sh.UsedRange.Cells
-            If Cell.HasFormula Or Not IsEmpty(Cell.Value) Then
-                Parts.Add Cell.Address(False, False) & "|" & Cell.Formula & "|" & DemoValueText(Cell.Value) & _
-                          "|" & Cell.NumberFormat & "|" & Cell.Font.Name & "|" & CStr(Cell.Font.Size) & _
-                          "|" & CStr(Cell.Font.Bold) & "|" & CStr(Cell.HorizontalAlignment) & _
-                          "|" & CStr(Cell.Borders(xlEdgeBottom).LineStyle)
-            End If
-        Next Cell
-        For Col = 1 To Sh.UsedRange.Column + Sh.UsedRange.Columns.Count - 1
-            Parts.Add "width|" & CStr(Col) & "|" & CStr(Sh.Columns(Col).ColumnWidth)
-        Next Col
+        Text = Text & DemoSheetPrint(Sh)
     Next Sh
     For Each Item In Wb.Names
-        Parts.Add "name|" & Item.Name & "|" & Item.RefersTo
+        Text = Text & "name|" & Item.Name & "|" & Item.RefersTo & vbLf
     Next Item
+    DemoFingerprint = Text
+
+End Function
+
+Private Function DemoSheetPrint(ByVal Sh As Worksheet) As String
+'
+' The sheet's used range, every non-empty cell (formula, value, number format,
+' font name, size and weight, horizontal alignment, fill and bottom border)
+' and every used column width, in order.
+'
+    Dim Parts As Collection     'Fingerprint lines
+    Dim Cell  As Range          'Cell cursor
+    Dim Col   As Long           'Column cursor
+    Dim Item  As Variant        'Line cursor
+    Dim Text  As String         'Joined result
+
+    Set Parts = New Collection
+    Parts.Add "sheet|" & Sh.Name & "|" & Sh.UsedRange.Address(False, False)
+    For Each Cell In Sh.UsedRange.Cells
+        If Cell.HasFormula Or Not IsEmpty(Cell.Value) Then
+            Parts.Add Cell.Address(False, False) & "|" & Cell.Formula & "|" & DemoValueText(Cell.Value) & _
+                      "|" & Cell.NumberFormat & "|" & Cell.Font.Name & "|" & CStr(Cell.Font.Size) & _
+                      "|" & CStr(Cell.Font.Bold) & "|" & CStr(Cell.HorizontalAlignment) & _
+                      "|" & CStr(Cell.Interior.Color) & "|" & CStr(Cell.Borders(xlEdgeBottom).LineStyle)
+        End If
+    Next Cell
+    For Col = 1 To Sh.UsedRange.Column + Sh.UsedRange.Columns.Count - 1
+        Parts.Add "width|" & CStr(Col) & "|" & CStr(Sh.Columns(Col).ColumnWidth)
+    Next Col
     For Each Item In Parts
         Text = Text & CStr(Item) & vbLf
     Next Item
-    DemoFingerprint = Text
+    DemoSheetPrint = Text
 
 End Function
 

@@ -70,7 +70,7 @@ Replace the example SHA with the exact candidate you imported.
 | `worksheet-fixtures` | worksheet | `KPR_Tests_RunFixtureHost`: the generated cases whose context is a 1900 or 1904 worksheet caller |
 | `worksheet-oracle` | worksheet | `KPR_Tests_RunOracle`: the Excel cross-oracle cases in `KPR_Test_Oracle` (#41) |
 | `worksheet-registration` | worksheet | `KPR_Tests_RunRegistration`: the MacroOptions manifest and register / clean-up lifecycle in `KPR_REGISTER_PUBLIC_UDFS` (#42) |
-| `worksheet-demo` | worksheet | `KPR_Tests_RunDemo`: builds the date demo twice with `KPR_Demo_Dates` (#46), requires identical files and every example to match |
+| `worksheet-demo` | worksheet | `KPR_Tests_RunDemo`: builds the Date Primitives demo (#46) into files and into scratch workbooks, requires identical builds, no failing row and no existing sheet changed |
 | `worksheet-state` | worksheet | `KPR_Tests_RunStateCheck`: runs the durable runner on `date-type` twice, once with a deliberately injected failure, and proves the caller's state is restored after both |
 
 `KPR_Tests_RunAll("all")`, `KPR_Tests_RunEvidence` and the
@@ -203,24 +203,38 @@ project is loaded.
 
 ## Deterministic demo generation (#46)
 
-`examples/modules/KPR_Demo_Dates.bas` builds the demonstration workbook:
-`KPR_Demo_BuildDates(OutputPath)` creates a new workbook with the sheets
-About, Scalar, Arrays, Errors and Pillars, saves it as `.xlsx` at an explicit
-path that must not exist yet, closes it and restores the caller's state. It
-is example infrastructure (`Option Private Module`, role `example`); no
-generated workbook is committed. Each of its 58 examples shows a live
-formula beside the value `tools/gen_fixtures.py` computes from the contract,
-and a check cell that is `TRUE` when the two match.
+Demo sheets are built from tracked source; no generated workbook is
+committed. `examples/modules/KPR_Demo_Builder.bas` is the shared engine
+(layout, style, status rules, checks summary, Excel state and the demo
+catalog) and `examples/modules/KPR_Demo_Dates.bas` describes the Date
+Primitives sheet through it. Both are example infrastructure
+(`Option Private Module`, role `example`).
 
-The `worksheet-demo` suite builds the demo twice into a temporary folder,
-requires a third build to refuse the existing file without changing it and
-the builder to refuse an empty or non-`.xlsx` path, and requires calculation,
-events, screen updating, alerts, the active workbook and sheet and the
-selection to be unchanged. It then opens both files read-only and requires
-identical sheets, cells, formulas, values, number formats, fonts, widths and
-names, a 1900 date system, 58 examples and every check `TRUE`. It has 79
-assertions, so an `all` run has 21 suites and 9,355 assertions. The suite
-sets the evidence record's `demo_generation` outcome.
+`KPR_Demo_BuildDates()` adds one sheet to the active workbook without
+changing, replacing or deleting any existing sheet, or builds into a new
+unsaved workbook when the active one is missing, 1904-based, read-only or
+structure-protected. `KPR_Demo_BuildDates(OutputPath)` builds into a new
+workbook saved as an `.xlsx` file that must not exist yet. Every row compares
+a live KPR formula with a native-Excel reference and shows `OK`, `DIFFERS`
+(a documented difference by design), `FAIL` or `NO VBA`; the sheet-level
+names `Demo_Checks`, `Demo_OK`, `Demo_Differs` and `Demo_Fails` hold the
+counts. At the default inputs the sheet has 57 status cells (on
+dynamic-array Excel), one `DIFFERS` and no `FAIL`. The fixed native-error
+cases were computed by `tools/gen_fixtures.py`.
+
+The `worksheet-demo` suite builds the demo twice into files, once directly
+and once through `KPR_Demo_Build`, requires a third build to refuse the
+existing file without changing it, a non-`.xlsx` path and an unknown demo to
+be refused, and calculation, events, screen updating, alerts, the active
+workbook and sheet and the selection to be unchanged. It opens both files
+read-only and requires one demo sheet, identical cells, formulas, values,
+number formats, fonts, fills, widths and names, 57 checks, one `DIFFERS` and
+no failing row. It then builds twice into a scratch workbook, requiring a new
+sheet each time (the second named `KPR Dates Demo (2)`), the scratch sheet
+and the first demo unchanged and no failing row, and once with a 1904 scratch
+workbook active, requiring that workbook untouched and a new workbook built
+instead. It has 44 assertions, so an `all` run has 21 suites and 9,320
+assertions. The suite sets the evidence record's `demo_generation` outcome.
 
 ## Caller-state restoration
 

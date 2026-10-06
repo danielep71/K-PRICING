@@ -183,7 +183,7 @@ Relevant entry points:
 - `KPR_Test_RunAll`, `KPR_Test_RunSuite` — durable runner; writes `kpr-test-evidence.json` for an exact source SHA
 - `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, `KPR_Tests_RunArray`, `KPR_Tests_RunFixtureHost`, `KPR_Tests_RunOracle`, `KPR_Tests_RunRegistration`, `KPR_Tests_RunDemo`, `KPR_Tests_RunStateCheck` — focused host/shape/dynamic-array/worksheet-fixture/cross-oracle/registration/demo/state runners
 - `KPR_DateExample.RunDateExample` — minimal direct-VBA consumer smoke
-- `KPR_Demo_BuildDates` — deterministic demo-workbook builder
+- `KPR_Demo_BuildDates` — Date Primitives demo sheet, built by the shared `KPR_Demo_Builder`
 
 | Evidence | Result |
 | --- | --- |
