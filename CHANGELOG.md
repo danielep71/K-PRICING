@@ -108,8 +108,9 @@ Use only the categories needed by a release.
   `KPR_Dev_ImportModules(Source, TargetWorkbook)` replaces the K-PRICING
   modules of an open workbook or add-in with those of one commit, downloaded
   from GitHub or read from a local clone, using the commit's repository
-  profile as the module list. Other modules of the target are left alone and
-  the target is not saved. Not yet run in Excel.
+  profile as the module list. Repository modules the commit does not list
+  are removed, so an older commit's set is restored; other modules of the
+  target are left alone and the target is not saved. Not yet run in Excel.
 - Added demo sheets built from tracked source (#46): the shared
   `examples/modules/KPR_Demo_Builder.bas` owns layout, house style, status
   rules, the checks summary, the Excel state and the demo catalog, and

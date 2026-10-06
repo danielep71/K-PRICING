@@ -259,8 +259,12 @@ Trust Center Settings > Macro Settings) and an unlocked target project.
 The first form downloads the commit from GitHub; the second reads a local
 clone. The module list comes from that commit's
 `.github/repository-profile.json`, so new and renamed modules follow
-automatically, and retired module names are removed. Modules the repository
-does not list, such as private ribbon or menu modules, are left alone. Every
+automatically. A repository module that commit does not list in any role is
+removed: one the loader imported before (it records each import as a hidden
+workbook name `KPRDEV_<module>` in the target) or one the repository has
+tracked under any name. Loading an older commit therefore restores that
+commit's module set. Every other module, such as private ribbon or menu
+modules, is left alone. Every
 file is fetched and checked before the target changes. The call returns the
 number of modules imported, or `-1` with the reason in the Immediate window.
 The target is not saved: compile it, then save it.

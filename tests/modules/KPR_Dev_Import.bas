@@ -29,11 +29,17 @@ Attribute VB_Name = "KPR_Dev_Import"
 '   - A local folder: the root of a clone of the repository.
 '
 ' WHAT IT CHANGES
-'   Only standard modules named in the profile, of the selected roles, plus
-'   the retired names listed below. Every other module of the target (for
-'   example private ribbon or menu modules) is left alone. All files are
-'   fetched and checked before the target is touched, so a failed download
-'   changes nothing. The target is not saved: compile it, then save it.
+'   - Replaces every standard module the profile lists in the selected roles.
+'   - Removes repository modules the selected commit no longer has: a module
+'     the loader imported before (it records each import as a hidden name
+'     KPRDEV_<module> in the target) or one the repository has tracked at any
+'     time (KNOWN_MODULES), when the commit's profile does not list it in any
+'     role. Loading an older commit therefore restores that commit's set.
+'   - Leaves every other module alone, such as private ribbon or menu
+'     modules, and modules of roles not selected.
+'   All files are fetched and checked before the target is touched, so a
+'   failed download changes nothing. The target is not saved: compile it,
+'   then save it.
 '
 ' REQUIREMENTS
 '   Excel option "Trust access to the VBA project object model" (File >
@@ -75,9 +81,16 @@ Attribute VB_Name = "KPR_Dev_Import"
     'Profile that lists every module with its role
         Private Const PROFILE_PATH As String = ".github/repository-profile.json"
 
-    'Module names the repository no longer uses; removed from the target when
-    'the selected commit does not import a module of the same name
-        Private Const RETIRED_MODULES As String = "KPR_Demo_Builder,KPR__Demo_Builder,KPR_DateExample"
+    'Every standard module the repository has tracked, under any name. One the
+    'selected commit's profile does not list is removed from the target
+        Private Const KNOWN_MODULES As String = _
+            "KPR_Core_Array,KPR_Core_Dates,KPR_Core_Err,KPR_Core_Parse,KPR_DATES_DAYS," & _
+            "KPR_REGISTER_PUBLIC_UDFS,KPR_REGRESSION_TESTS,KPR_Test_Fixtures_Generated," & _
+            "KPR_Test_Oracle,KPR_DateExample,KPR_Demo_Builder,KPR__Demo_Builder," & _
+            "KPR_Demo__Builder,KPR_Demo_Dates,KPR_Demo_DirectVBA"
+
+    'Prefix of the hidden workbook names that record what the loader imported
+        Private Const RECORD_PREFIX As String = "KPRDEV_"
 
     'Default roles to import
         Private Const DEFAULT_ROLES As String = "public,internal,test,example"
@@ -133,6 +146,7 @@ Public Function KPR_Dev_ImportModules( _
     Dim Folder      As String       'Staging folder for the fetched files
     Dim Profile     As String       'Text of the repository profile
     Dim Paths       As Collection   'Repository paths of the modules to import
+    Dim Listed      As Collection   'Every module the profile lists, in any role
     Dim Names       As Collection   'Module names, in the same order
     Dim Files       As Collection   'Staged files, in the same order
     Dim Detail      As String       'Reason a step failed
@@ -159,7 +173,7 @@ Public Function KPR_Dev_ImportModules( _
     Stage = "read the repository profile"
     If Not TryFetch(Source, PROFILE_PATH, Folder & Application.PathSeparator & "profile.json", Detail) Then GoTo Refuse
     Profile = ReadText(Folder & Application.PathSeparator & "profile.json")
-    If Not TrySelect(Profile, Roles, Paths, Detail) Then GoTo Refuse
+    If Not TrySelect(Profile, Roles, Paths, Listed, Detail) Then GoTo Refuse
 
     Stage = "fetch the modules"
     Set Names = New Collection
@@ -175,13 +189,14 @@ Public Function KPR_Dev_ImportModules( _
 '------------------------------------------------------------------------------
 ' REPLACE
 '------------------------------------------------------------------------------
-    Stage = "remove retired modules"
-    For Each Item In Split(RETIRED_MODULES, ",")
-        If Not Contains(Names, CStr(Item)) Then
+    Stage = "remove modules the commit does not have"
+    For Each Item In Candidates(Target)
+        If Not Contains(Listed, CStr(Item)) Then
             If RemoveModule(Project, CStr(Item)) Then
                 Removed = Removed + 1
-                Debug.Print "  removed  " & CStr(Item) & " (retired)"
+                Debug.Print "  removed  " & CStr(Item) & " (not in this commit)"
             End If
+            Forget Target, CStr(Item)
         End If
     Next Item
 
@@ -193,6 +208,7 @@ Public Function KPR_Dev_ImportModules( _
             Detail = Names(K) & " was imported as " & Imported.Name & "; rename or remove it by hand."
             GoTo Refuse
         End If
+        Remember Target, Names(K)
         Debug.Print "  imported " & Names(K) & "  (" & Paths(K) & ")"
     Next K
 
@@ -200,7 +216,7 @@ Public Function KPR_Dev_ImportModules( _
 ' REPORT
 '------------------------------------------------------------------------------
     Debug.Print "KPR_Dev_ImportModules: " & CStr(Names.Count) & " module(s) imported and " & _
-                CStr(Removed) & " retired module(s) removed in " & Target.Name & " from " & Source & "."
+                CStr(Removed) & " module(s) removed in " & Target.Name & " from " & Source & "."
     Debug.Print "Next: Debug > Compile VBAProject, then save " & Target.Name & "."
     KPR_Dev_ImportModules = Names.Count
     CleanUp Folder
@@ -272,11 +288,13 @@ Private Function TrySelect( _
     ByVal Profile As String, _
     ByVal Roles As String, _
     ByRef Paths As Collection, _
+    ByRef Listed As Collection, _
     ByRef Detail As String) _
     As Boolean
 '
-' The .bas paths of the profile's "components" block whose role is in Roles,
-' skipping this loader itself.
+' Paths receives the .bas paths of the profile's "components" block whose
+' role is in Roles, skipping this loader itself; Listed receives the module
+' name of every .bas the block lists, in any role.
 '
     Dim Start  As Long      'Start of the components block
     Dim Finish As Long      'End of the components block
@@ -287,6 +305,7 @@ Private Function TrySelect( _
 
     TrySelect = False
     Set Paths = New Collection
+    Set Listed = New Collection
     Start = InStr(1, Profile, """components"": {", vbBinaryCompare)
     If Start = 0 Then
         Detail = "the repository profile has no components list."
@@ -298,8 +317,10 @@ Private Function TrySelect( _
     For Each Row In Lines
         Parts = Split(CStr(Row), """")
         If UBound(Parts) >= 3 Then
-            If LCase$(Right$(Parts(1), 4)) = ".bas" And InStr(1, Wanted, "," & LCase$(Parts(3)) & ",") > 0 Then
-                If StrComp(FileStem(Parts(1)), "KPR_Dev_Import", vbTextCompare) <> 0 Then Paths.Add Parts(1)
+            If LCase$(Right$(Parts(1), 4)) = ".bas" Then
+                Listed.Add FileStem(Parts(1))
+                If InStr(1, Wanted, "," & LCase$(Parts(3)) & ",") > 0 And _
+                   StrComp(FileStem(Parts(1)), "KPR_Dev_Import", vbTextCompare) <> 0 Then Paths.Add Parts(1)
             End If
         End If
     Next Row
@@ -377,6 +398,51 @@ Private Function TryModuleName( _
     End If
 
 End Function
+
+Private Function Candidates(ByVal Target As Workbook) As Collection
+'
+' Repository modules that may need removing: KNOWN_MODULES plus every module
+' this loader recorded in Target, without duplicates.
+'
+    Dim Result As Collection    'Names found
+    Dim Item   As Variant       'Known-name cursor
+    Dim Entry  As Object        'Workbook-name cursor
+    Dim Recorded As String      'Recorded module name
+
+    Set Result = New Collection
+    For Each Item In Split(KNOWN_MODULES, ",")
+        If Not Contains(Result, CStr(Item)) Then Result.Add CStr(Item)
+    Next Item
+    For Each Entry In Target.Names
+        If StrComp(Left$(Entry.Name, Len(RECORD_PREFIX)), RECORD_PREFIX, vbTextCompare) = 0 Then
+            Recorded = Mid$(Entry.Name, Len(RECORD_PREFIX) + 1)
+            If Not Contains(Result, Recorded) Then Result.Add Recorded
+        End If
+    Next Entry
+    Set Candidates = Result
+
+End Function
+
+Private Sub Remember(ByVal Target As Workbook, ByVal ModuleName As String)
+'
+' Records in Target, as a hidden workbook name, that this loader imported
+' ModuleName. Never raises.
+'
+    On Error Resume Next
+    Target.Names.Add Name:=RECORD_PREFIX & ModuleName, RefersTo:="=TRUE", Visible:=False
+    Err.Clear
+
+End Sub
+
+Private Sub Forget(ByVal Target As Workbook, ByVal ModuleName As String)
+'
+' Deletes the record of ModuleName from Target, if present. Never raises.
+'
+    On Error Resume Next
+    Target.Names(RECORD_PREFIX & ModuleName).Delete
+    Err.Clear
+
+End Sub
 
 Private Function RemoveModule(ByVal Project As Object, ByVal ModuleName As String) As Boolean
 '
