@@ -3,7 +3,7 @@ Attribute VB_Name = "KPR_Demo_Dates"
 ' MODULE: KPR_Demo_Dates
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Content of the Date Primitives demo sheet, built by KPR_Demo_Builder: the
+'   Content of the Date Primitives demo sheet, built by KPR__Demo_Builder: the
 '   22 KPR_Dates_* functions beside native-Excel reference formulas, driven
 '   by editable inputs, plus fixed native-error cases and dynamic-array
 '   spills.
@@ -11,7 +11,7 @@ Attribute VB_Name = "KPR_Demo_Dates"
 ' WHY THIS EXISTS
 '   The sheet is rebuilt from this tracked source rather than stored in a
 '   workbook, so it can be reviewed, versioned and checked by
-'   KPR_Tests_RunDemo. Layout and style live in KPR_Demo_Builder; this module
+'   KPR_Tests_RunDemo. Layout and style live in KPR__Demo_Builder; this module
 '   only says what the sheet shows.
 '
 ' SCOPE
@@ -36,7 +36,7 @@ Attribute VB_Name = "KPR_Demo_Dates"
 '   and Application.Run.
 '
 ' ALLOWED DEPENDENCIES
-'   KPR_Demo_Builder. KPR_Dates_* names appear only inside formula text.
+'   KPR__Demo_Builder. KPR_Dates_* names appear only inside formula text.
 '
 ' UPDATED
 '   2026-10-06

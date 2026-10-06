@@ -204,7 +204,7 @@ project is loaded.
 ## Deterministic demo generation (#46)
 
 Demo sheets are built from tracked source; no generated workbook is
-committed. `examples/modules/KPR_Demo_Builder.bas` is the shared engine
+committed. `examples/modules/KPR__Demo_Builder.bas` is the shared engine
 (layout, style, status rules, checks summary, Excel state and the demo
 catalog) and `examples/modules/KPR_Demo_Dates.bas` describes the Date
 Primitives sheet through it. Both are example infrastructure
