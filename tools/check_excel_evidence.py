@@ -30,11 +30,17 @@ def environment_summary(record: dict[str, Any]) -> str:
             + json.dumps(record["environment"], sort_keys=True, separators=(",", ":")))
 
 
-def source_inventory(root: Path, sha: str, config: dict[str, Any]) -> list[dict[str, str]]:
+def source_inventory(root: Path, sha: str, config: dict[str, Any], *,
+                     include_examples: bool = False) -> list[dict[str, str]]:
+    """Hash committed components; preserve the historical host-evidence default.
+
+    Developer/demo comparison opts into examples because the current demo
+    modules live there. This does not expand existing host evidence records.
+    """
     vba = config["vba"]
     components = vba["components"]
     require(isinstance(components, dict), "candidate must declare VBA components")
-    paths = {path for path, role in components.items() if role != "example"}
+    paths = {path for path, role in components.items() if include_examples or role != "example"}
     # Companion form resources are part of the import even though not VBA modules.
     for path in tuple(paths):
         if path.endswith(".frm"):

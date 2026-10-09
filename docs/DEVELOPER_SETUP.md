@@ -90,6 +90,10 @@ artifacts retain the validator reports and actual quality-tool versions for
 
 ## Windows Excel validation
 
+The optional [native developer commands](NATIVE_DEVELOPER_TOOLS.md) coordinate
+source checks and compare saved workbook content and candidate source exports.
+They do not launch Excel or replace the host-validation steps below.
+
 The intended initial host is **Microsoft 365 Excel desktop on Windows**, with
 32-bit and 64-bit Office treated as separate targets. The accepted neutral-starter
 run in [the completion record](SETUP_COMPLETION.md) is setup history only; it does

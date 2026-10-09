@@ -104,6 +104,13 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Portable native developer commands for logical demo-workbook snapshots and
+  cell/property differences, clean-candidate source inventories, supplied VBE
+  export round trips and read-only diagnostics (#46, #50, #52). Existing source
+  validators remain authoritative. The candidate inventory includes the current
+  demo modules; the historical host-evidence inventory is unchanged. Formula
+  caches are explicitly unverified; automated host builds and final release
+  certification remain outstanding.
 - Added demo sheets built from tracked source (#46): the shared
   `examples/modules/KPR_Demo__Builder.bas` owns layout, house style, status
   rules, the checks summary, the Excel state and the demo catalog, and
