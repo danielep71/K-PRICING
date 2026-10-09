@@ -275,10 +275,12 @@ restricted material. Suspected vulnerabilities must be reported privately using
 ## 📄 License and maintainer
 
 Copyright (c) 2026 Daniele Penza. Distributed under the
-[Mozilla Public License 2.0](LICENSE) (MPL-2.0): you may use K-PRICING in any
-workbook or product, including a closed one, but if you distribute modified
-K-PRICING source files you must make those files available under the same
-licence. Commits before the
+[Mozilla Public License 2.0](LICENSE) (MPL-2.0). You may combine K-PRICING
+with your own code in any workbook or product, including a closed one, and
+your own files keep your terms. Whenever you distribute K-PRICING's files,
+modified or not and whether as source or inside a workbook or add-in, you must
+make their source available under MPL 2.0 and keep their notices. This summary
+does not replace the licence text. Commits before the
 licence change remain available under the MIT License they were published
 with. Maintained by **Daniele Penza**.
 
