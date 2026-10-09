@@ -195,6 +195,10 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- Relicensed K-PRICING from the MIT License to the Mozilla Public License
+  2.0 (MPL-2.0). `LICENSE` holds the unmodified MPL 2.0 text; the copyright
+  notice is in the README. Commits published before the change remain
+  available under MIT.
 - Integer arguments now accept a number within `1E-9` of a whole number as
   that whole number, so binary floating-point residue such as
   `2.9999999999999996` no longer returns `#VALUE!`; a real fraction such as

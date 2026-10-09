@@ -22,8 +22,9 @@ attributes, encoding and line endings. A form and its resource companion are one
 component; Ribbon XML and callbacks must be reviewed together when introduced.
 Keep generated workbooks/add-ins, credentials, local environments and client data
 out of source control. The [repository structure](REPOSITORY_STRUCTURE.md) owns
-the full layout and export rules. Preserve existing MIT attribution in
-[`LICENSE`](../LICENSE); migration must retain applicable source attribution.
+the full layout and export rules. Keep [`LICENSE`](../LICENSE) as the
+unmodified Mozilla Public License 2.0 text; migration must retain applicable
+source attribution.
 
 ## Clean checkout and tools
 

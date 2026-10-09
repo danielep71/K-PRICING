@@ -189,7 +189,7 @@
       },
       "COPYRIGHT_YEAR": {
         "category": "required",
-        "description": "Four-digit first-publication or current copyright year used by the MIT licence."
+        "description": "Four-digit first-publication or current copyright year shown in the README licence notice."
       },
       "KNOWN_LIMITATION": {
         "category": "repeatable",

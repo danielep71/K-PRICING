@@ -11,7 +11,7 @@
 [![Excel VBA](https://img.shields.io/badge/Excel_VBA-source--first-217346?style=for-the-badge&logo=microsoft-excel&logoColor=white)](#requirements)
 [![Profile](https://img.shields.io/badge/Profile-application-6f42c1?style=for-the-badge)](#application-profile)
 [![Version](https://img.shields.io/badge/Version-VERSION_file-0969da?style=for-the-badge)](VERSION)
-[![License](https://img.shields.io/badge/License-MIT-2ea44f?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/License-MPL--2.0-2ea44f?style=for-the-badge)](LICENSE)
 
 <br>
 
@@ -274,8 +274,15 @@ restricted material. Suspected vulnerabilities must be reported privately using
 
 ## 📄 License and maintainer
 
-Distributed under the [MIT License](LICENSE). Maintained by
-**Daniele Penza**.
+Copyright (c) 2026 Daniele Penza. Distributed under the
+[Mozilla Public License 2.0](LICENSE) (MPL-2.0). You may combine K-PRICING
+with your own code in any workbook or product, including a closed one, and
+your own files keep your terms. Whenever you distribute K-PRICING's files,
+modified or not and whether as source or inside a workbook or add-in, you must
+make their source available under MPL 2.0 and keep their notices. This summary
+does not replace the licence text. Commits before the
+licence change remain available under the MIT License they were published
+with. Maintained by **Daniele Penza**.
 
 ---
 
