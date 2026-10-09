@@ -2543,7 +2543,7 @@ Public Sub KPR_Tests_RunDemo()
 '                              KPR_Tests_RunDemo
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Exercises the shared demo builder (KPR_Demo_Builder) through the Date
+'   Exercises the shared demo builder (KPR_Demo__Builder) through the Date
 '   Primitives demo (KPR_Demo_Dates, #46) and prints the report to the
 '   Immediate window.
 '

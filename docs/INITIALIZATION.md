@@ -66,7 +66,7 @@ exists.
 | `REPOSITORY_PATH` | Required | GitHub `owner/name` used by clone commands, badges, and links |
 | `MAINTAINER_NAME` | Required | Person or organization responsible for maintained decisions |
 | `SUPPORT_CONTACT` | Required | Private-reporting email address or maintained HTTPS URL |
-| `COPYRIGHT_YEAR` | Required | Four-digit MIT-license copyright year |
+| `COPYRIGHT_YEAR` | Required | Four-digit copyright year shown in the README licence notice |
 | `SOCIAL_PREVIEW_PATH` | Optional | Tracked repository-relative banner image |
 | `PROFILE_NAME` | Profile-specific | Human-readable selected profile |
 | `PROFILE_PURPOSE` | Profile-specific | Selected profile's ownership boundary |

@@ -189,7 +189,7 @@
       },
       "COPYRIGHT_YEAR": {
         "category": "required",
-        "description": "Four-digit first-publication or current copyright year used by the MIT licence."
+        "description": "Four-digit first-publication or current copyright year shown in the README licence notice."
       },
       "KNOWN_LIMITATION": {
         "category": "repeatable",
@@ -353,9 +353,9 @@
       "tests"
     ],
     "components": {
-      "examples/modules/KPR_DateExample.bas": "example",
-      "examples/modules/KPR_Demo_Builder.bas": "example",
+      "examples/modules/KPR_Demo__Builder.bas": "example",
       "examples/modules/KPR_Demo_Dates.bas": "example",
+      "examples/modules/KPR_Demo_DirectVBA.bas": "example",
       "src/core/KPR_Core_Array.bas": "internal",
       "src/core/KPR_Core_Dates.bas": "internal",
       "src/core/KPR_Core_Err.bas": "internal",
