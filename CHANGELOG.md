@@ -105,7 +105,7 @@ Use only the categories needed by a release.
 ### Added
 
 - Added demo sheets built from tracked source (#46): the shared
-  `examples/modules/KPR_Demo_Builder.bas` owns layout, house style, status
+  `examples/modules/KPR_Demo__Builder.bas` owns layout, house style, status
   rules, the checks summary, the Excel state and the demo catalog, and
   `examples/modules/KPR_Demo_Dates.bas` describes the Date Primitives sheet
   through it. `KPR_Demo_BuildDates()` adds a **KPR Dates Demo** sheet to the
@@ -199,6 +199,11 @@ Use only the categories needed by a release.
   2.0 (MPL-2.0). `LICENSE` holds the unmodified MPL 2.0 text; the copyright
   notice is in the README. Commits published before the change remain
   available under MIT.
+- Demo modules share one naming rule: every demo module is named
+  `KPR_Demo_*`, and the shared builder is `KPR_Demo__Builder` (double
+  underscore) so it sorts first. `KPR_Demo_Builder` became `KPR_Demo__Builder`
+  and the direct-VBA example `KPR_DateExample` became `KPR_Demo_DirectVBA`;
+  its macro is still `RunDateExample`.
 - Integer arguments now accept a number within `1E-9` of a whole number as
   that whole number, so binary floating-point residue such as
   `2.9999999999999996` no longer returns `#VALUE!`; a real fraction such as

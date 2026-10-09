@@ -109,11 +109,11 @@ Import the migrated production dependency set in this order:
 8. `tests/modules/KPR_Test_Oracle.bas` — development/regression only; Excel
    cross-oracle cases that depend on `KPR_DATES_DAYS` alone
 9. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
-10. `examples/modules/KPR_DateExample.bas` — optional consumer example
-11. `examples/modules/KPR_Demo_Builder.bas` — shared demo builder; no module
+10. `examples/modules/KPR_Demo_DirectVBA.bas` — optional consumer example
+11. `examples/modules/KPR_Demo__Builder.bas` — shared demo builder; no module
     dependencies
 12. `examples/modules/KPR_Demo_Dates.bas` — Date Primitives demo; depends on
-    `KPR_Demo_Builder`. Both demo modules are optional for users, but required
+    `KPR_Demo__Builder`. Both demo modules are optional for users, but required
     whenever `KPR_REGRESSION_TESTS` is imported, because its `worksheet-demo`
     suite builds the demo
 
@@ -200,7 +200,7 @@ retained for the historical #17 parity run. `KPR_Test_RunAll` and
 fixtures and the worksheet runners, and write structured evidence bound to an
 exact source SHA ([KPR_TEST_EVIDENCE.md](docs/KPR_TEST_EVIDENCE.md)).
 
-Run `KPR_DateExample.RunDateExample` separately for the minimal direct-VBA
+Run `KPR_Demo_DirectVBA.RunDateExample` separately for the minimal direct-VBA
 consumer smoke. To add the Date Primitives demo sheet to the active workbook,
 run `? KPR_Demo_BuildDates()` in the Immediate window; it returns `TRUE`, and
 `? KPR_Demo_LastReport()` explains a `FALSE` ([examples/README.md](examples/README.md)). Historical KPR results are source evidence only. Destination
