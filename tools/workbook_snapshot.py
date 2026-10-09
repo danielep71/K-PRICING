@@ -78,7 +78,8 @@ def value(cell: ET.Element, strings: list[ET.Element]) -> dict[str, Any]:
         assert inline is not None
         return {"type": "string", "content": tree(inline)}
     if kind == "e":
-        return {"type": "error", "token": text, "native_code": ERROR_CODES.get(str(text))}
+        return {"type": "error", "token": text, "native_code": ERROR_CODES.get(str(text)),
+                "cache_present": raw is not None}
     return {"type": kind, "value": text, "cache_present": raw is not None}
 
 

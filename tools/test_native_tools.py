@@ -21,7 +21,7 @@ def workbook(path: Path, *, formula: str = "1+1", result: str = "2",
              input_value: str = "7", date1904: str = "0", hidden: str = "visible",
              number_format: str = "0.00", defined_name: str = "Demo!$A$1",
              result_type: str = "n", array_ref: str = "B1:B2", reverse: bool = False,
-             created: str = "first", shared: bool = False) -> None:
+             created: str = "first", shared: bool = False, cache_present: bool = True) -> None:
     sheets = [('Demo', '1'), ('Notes', '2')]
     if reverse:
         sheets.reverse()
@@ -30,6 +30,7 @@ def workbook(path: Path, *, formula: str = "1+1", result: str = "2",
     label = '<c r="C1" t="inlineStr"><is><t>Label</t></is></c>'
     if shared:
         label = '<c r="C1" t="s"><v>0</v></c>'
+    cache = f'<v>{result}</v>' if cache_present else ''
     parts = {
         '[Content_Types].xml': '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>',
         'xl/workbook.xml': f'<workbook xmlns="{NS[1:-1]}" xmlns:r="{REL[1:-1]}">'
@@ -43,7 +44,7 @@ def workbook(path: Path, *, formula: str = "1+1", result: str = "2",
         'xl/worksheets/sheet1.xml': f'<worksheet xmlns="{NS[1:-1]}"><cols><col min="1" max="3" width="20"/></cols>'
                                   f'<sheetData><row r="1"><c r="A1"><v>{input_value}</v></c>'
                                   f'<c r="B1" t="{result_type}"><f t="array" ref="{array_ref}">{formula}</f>'
-                                  f'<v>{result}</v></c>{label}</row>'
+                                  f'{cache}</c>{label}</row>'
                                   '<row r="2"><c r="B2"><v>3</v></c></row></sheetData></worksheet>',
         'xl/worksheets/sheet2.xml': f'<worksheet xmlns="{NS[1:-1]}"><sheetData/></worksheet>',
         'xl/styles.xml': f'<styleSheet xmlns="{NS[1:-1]}"><numFmts><numFmt numFmtId="164" formatCode="{number_format}"/></numFmts></styleSheet>',
@@ -98,7 +99,8 @@ class WorkbookTests(unittest.TestCase):
         workbook(self.right, result="#N/A", result_type="e")
         report = snapshot(self.right)
         self.assertEqual(report["cached_results"]["Demo"]["B1"],
-                         {"type": "error", "token": "#N/A", "native_code": 2042})
+                         {"type": "error", "token": "#N/A", "native_code": 2042,
+                          "cache_present": True})
         self.assertEqual(report["structure"]["sheets"]["Demo"]["cells"]["B1"]
                          ["formula"]["attributes"]["ref"], "B1:B2")
         self.assertNotIn("input", report["structure"]["sheets"]["Demo"]["cells"]["B2"])
@@ -106,6 +108,16 @@ class WorkbookTests(unittest.TestCase):
     def test_unknown_error_keeps_token(self) -> None:
         workbook(self.right, result="#FUTURE!", result_type="e")
         self.assertEqual(snapshot(self.right)["cached_results"]["Demo"]["B1"]["token"], "#FUTURE!")
+
+    def test_empty_and_missing_error_caches_remain_distinct(self) -> None:
+        workbook(self.left, result="", result_type="e")
+        workbook(self.right, result="", result_type="e", cache_present=False)
+        report = compare(self.left, self.right)
+        self.assertEqual(report["status"], "fail")
+        self.assertTrue(report["structural_match"])
+        self.assertEqual(report["cached_result_differences"], [{
+            "path": "/cached_results/Demo/B1/cache_present", "left": True, "right": False}])
+        self.assertEqual(report["calculated_result_comparison"], "NOT_RUN")
 
     def test_malformed_unsafe_and_duplicate_package_refused(self) -> None:
         for contents in ('<!DOCTYPE x [<!ENTITY y "a">]><x>&y;</x>', '<broken>'):
