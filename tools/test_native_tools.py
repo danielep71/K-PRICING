@@ -70,6 +70,18 @@ class WorkbookTests(unittest.TestCase):
         self.assertEqual(compare(self.left, self.right)["status"], "pass")
         self.assertNotEqual(self.left.read_bytes(), self.right.read_bytes())
 
+    def test_mixed_content_whitespace_is_not_indentation(self) -> None:
+        for leading, trailing in ((" value", "value"), ("value ", "value"),
+                                  ("\n  ", "")):
+            with self.subTest(left=leading, right=trailing):
+                for path, content in ((self.left, leading), (self.right, trailing)):
+                    workbook(path)
+                    with ZipFile(path, "a") as package:
+                        package.writestr("customXml/item1.xml", f"<root>{content}<child/></root>")
+                report = compare(self.left, self.right)
+                self.assertEqual(report["structural_match"], not leading.strip())
+                self.assertTrue(report["cached_results_match"])
+
     def test_changed_formula_points_to_sheet_cell(self) -> None:
         workbook(self.right, formula="1+2")
         report = compare(self.left, self.right)

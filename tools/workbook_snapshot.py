@@ -36,7 +36,7 @@ def xml(zip_file: ZipFile, name: str) -> ET.Element:
 def tree(node: ET.Element) -> dict[str, Any]:
     """Ignore XML indentation, prefixes and attribute order; keep leaf text exact."""
     return {"tag": node.tag, "attributes": dict(sorted(node.attrib.items())),
-            "text": node.text if not len(node) else (node.text or "").strip(),
+            "text": node.text if not len(node) or (node.text or "").strip() else "",
             "tail": node.tail if (node.tail or "").strip() else None,
             "children": [tree(child) for child in node]}
 
