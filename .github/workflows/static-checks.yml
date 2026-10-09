@@ -179,6 +179,9 @@ jobs:
           python3 tools/test_documentation.py -v
           python3 tools/check_documentation.py --root .
 
+      - name: Check native developer operations with synthetic fixtures
+        run: python3 tools/test_native_tools.py -v
+
       - name: Exercise strict release-semantics fixtures
         id: release-semantics-self-test
         continue-on-error: true
@@ -543,6 +546,7 @@ jobs:
           tools/test_excel_evidence.py
           tools/test_verification_depth.py
           tools/test_documentation.py
+          tools/test_native_tools.py
           tools/check_documentation.py --root .
           tools/check_release_semantics.py --root . --self-test
           tools/initialize_repository.py --root . --self-test

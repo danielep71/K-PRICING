@@ -104,6 +104,12 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Portable native developer commands for logical demo-workbook snapshots and
+  cell/property differences, clean-candidate source inventories, supplied VBE
+  export round trips and read-only diagnostics (#46, #50, #52). Existing source
+  validators remain authoritative. Formula caches are explicitly unverified;
+  Excel demo/build automation and host certification remain outstanding.
+
 - Added MacroOptions registration (#42): the internal
   `KPR_REGISTER_PUBLIC_UDFS` module holds a machine-readable manifest of the 22
   supported functions and registers them under the single **KPR Dates**
