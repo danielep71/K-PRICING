@@ -195,6 +195,10 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- Relicensed K-PRICING from the MIT License to the Mozilla Public License
+  2.0 (MPL-2.0). `LICENSE` holds the unmodified MPL 2.0 text; the copyright
+  notice is in the README. Commits published before the change remain
+  available under MIT.
 - Demo modules share one naming rule: every demo module is named
   `KPR_Demo_*`, and the shared builder is `KPR_Demo__Builder` (double
   underscore) so it sorts first. `KPR_Demo_Builder` became `KPR_Demo__Builder`
