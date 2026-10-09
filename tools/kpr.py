@@ -54,7 +54,7 @@ def normalize_source(raw: bytes, suffix: str) -> bytes:
 
 def inventory(root: Path, sha: str) -> dict[str, Any]:
     config = candidate(root, sha)
-    entries = source_inventory(root, sha, config)
+    entries = source_inventory(root, sha, config, include_examples=True)
     identities: set[str] = set()
     for entry in entries:
         path = entry["path"]
@@ -77,6 +77,7 @@ def inventory(root: Path, sha: str) -> dict[str, Any]:
     candidate(root, sha)
     return {"schema": "kpr-source-inventory", "schema_version": 1, "status": "pass",
             "repository": config["repository"], "candidate_sha": sha, "sources": entries,
+            "scope": "all-configured-components-including-examples",
             "import": "NOT_RUN", "compile": "NOT_RUN",
             "tool_environment": {"python": platform.python_version(),
                                  "git": git(root, "--version"), "os": platform.platform()}}

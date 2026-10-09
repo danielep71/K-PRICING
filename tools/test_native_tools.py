@@ -196,6 +196,51 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(report["workbook_alignment"], "NOT_OBSERVED")
         self.assertEqual(report["inventory"]["sources"][0]["component"], "Example")
 
+    def test_demo_inventory_complete_without_changing_host_default(self) -> None:
+        profile = json.loads((self.root / kpr.PROFILE).read_text())
+        demo_names = ("KPR_Demo__Builder", "KPR_Demo_Dates", "KPR_Demo_DirectVBA")
+        demo_directory = self.root / "examples" / "modules"
+        demo_directory.mkdir(parents=True)
+        for name in demo_names:
+            profile["vba"]["components"][f"examples/modules/{name}.bas"] = "example"
+            (demo_directory / f"{name}.bas").write_bytes(
+                self.source.replace(b"Example", name.encode("ascii")))
+        (self.root / kpr.PROFILE).write_text(json.dumps(profile))
+        kpr.git(self.root, "add", ".")
+        kpr.git(self.root, "commit", "-qm", "Synthetic current demo inventory")
+        sha = kpr.git(self.root, "rev-parse", "HEAD")
+        self.assertEqual([entry["path"] for entry in kpr.source_inventory(self.root, sha, profile)],
+                         ["Example.bas"])
+        report = kpr.inventory(self.root, sha)
+        self.assertEqual(report["scope"], "all-configured-components-including-examples")
+        self.assertEqual({entry["component"] for entry in report["sources"]},
+                         {"Example", *demo_names})
+        missing = kpr.round_trip(self.root, sha, self.exports)
+        self.assertEqual(missing["status"], "fail")
+        self.assertEqual({finding["path"] for finding in missing["findings"]},
+                         {f"{name}.bas" for name in demo_names})
+        for name in demo_names:
+            (self.exports / f"{name}.bas").write_bytes((demo_directory / f"{name}.bas").read_bytes())
+        self.assertEqual(kpr.round_trip(self.root, sha, self.exports)["status"], "pass")
+        (self.exports / "KPR_Demo_Dates.bas").write_bytes(
+            (demo_directory / "KPR_Demo_Dates.bas").read_bytes() + b"' stale demo\n")
+        self.assertEqual(kpr.round_trip(self.root, sha, self.exports)["status"], "fail")
+
+    def test_example_form_resources_use_shared_inventory_rules(self) -> None:
+        profile = json.loads((self.root / kpr.PROFILE).read_text())
+        profile["vba"]["components"]["DemoForm.frm"] = "example"
+        (self.root / "DemoForm.frm").write_bytes(self.source.replace(b"Example", b"DemoForm"))
+        (self.root / "DemoForm.frx").write_bytes(b"\xff\r\n")
+        (self.root / kpr.PROFILE).write_text(json.dumps(profile))
+        kpr.git(self.root, "add", ".")
+        kpr.git(self.root, "commit", "-qm", "Synthetic form companion")
+        sha = kpr.git(self.root, "rev-parse", "HEAD")
+        entries = kpr.inventory(self.root, sha)["sources"]
+        self.assertEqual([entry["path"] for entry in entries],
+                         ["DemoForm.frm", "DemoForm.frx", "Example.bas"])
+        self.assertEqual(entries[1]["role"], "resource")
+        self.assertEqual(len(kpr.source_inventory(self.root, sha, profile)), 1)
+
     def test_missing_extra_stale_and_wrong_identity(self) -> None:
         path = self.exports / "Example.bas"
         path.unlink()

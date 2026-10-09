@@ -9,24 +9,35 @@ and contracts here are independent and deliberately smaller.
 
 ## Current scope and delivery order
 
-The baseline reviewed on 1 October 2026 was `b415175` on `main`. Live issues
-#46–#52 were all open. The authoritative
-[roadmap](ROADMAP.md) and their dependency order are unchanged.
+The initial portable implementation was prepared against `b415175` on 1 October
+2026 and reconciled with `dab4e5c` on 9 October. The demo builder (#46, PR #75)
+is now complete; PR #78 hardened the runner's status-bar restoration, PR #79
+renamed the demo modules and PR #81 adopted MPL-2.0. Those changes are preserved.
+The authoritative [roadmap](ROADMAP.md) and remaining dependency order are unchanged.
 
 | Capability | Existing authority | This increment / remaining work |
 | --- | --- | --- |
-| Deterministic demo (#46) | Builder acceptance criteria; no builder yet | Saved-content snapshots and comparison delivered; generation twice and explicit Excel calculation still required |
+| Deterministic demo (#46, complete) | `KPR_Demo__Builder`, `KPR_Demo_Dates` and the `worksheet-demo` suite | Add saved-content comparison to the existing builder/fingerprint tests; a fresh final-candidate host run is still required by #52 |
 | Staged build (#47, #52) | Host inventory, release provenance, package gates | Reuse candidate inventory and compare supplied VBE exports; Excel staging, Ribbon injection, save/reopen, smoke and promotion remain unimplemented |
 | Command interface (#50) | Existing focused validators | Thin `check`, `doctor`, `inventory`, `round-trip`, `snapshot`, `compare` commands |
 | Diagnostics | Host evidence environment contract | Read-only Git/OS/output-path observations; Excel, references, VBProject, locks and live state remain unknown |
 | Recovery | Existing host failure outcomes | No execution adapter in this increment; recovery procedure below is a requirement for its future implementation |
-| Scriptable actions (#46–#49) | Explicit-path demo and thin UI acceptance criteria | Remain open; preserve the current runner and 22-function calculation API |
+| Scriptable actions (#46–#49) | Existing `KPR_Demo_BuildDates(OutputPath)` and `KPR_Demo_LastReport`; remaining UI acceptance criteria | Reuse the existing explicit-path operation; Ribbon/CommandBars and final classification remain open |
 
-These tools support #46, #50 and #52; they complete none of those issues. #47,
+These tools complement the completed #46 and support #50 and #52 without
+closing either release issue. #47,
 #48 and #49 remain prerequisites for the final release inventory. #51 still
 owns candidate assembly; `VERSION` is unchanged. Optional automation does not
 become an additional dependency for the current functional release: manual
 exact-source certification remains available.
+
+The separate `tools/dev-module-import` branch was reviewed at `576e72c` during
+reconciliation. Its `KPR_Dev_ImportModules` loader mutates a selected open VBA
+project and does not save it; these portable tools only inspect committed
+source and supplied exports. This change neither merges that branch nor adds
+a second importer. A later host adapter may reuse reviewed import tooling,
+but must independently establish the owned staging workbook, exact-source
+alignment, compilation, save/reopen, promotion and recovery controls below.
 
 ## Commands and outcomes
 
@@ -137,8 +148,12 @@ suited to repeated output of the same builder, not arbitrary equivalent files.
 `inventory` requires HEAD equal to the supplied SHA and a clean checkout,
 including nonignored untracked files. It calls the existing
 `check_excel_evidence.source_inventory` against the **committed** repository
-profile. That authority excludes examples and includes configured components
-and applicable `.frx` companions. It adds component identity, role and normalized
+profile with the explicit `include_examples=True` option. The native commands
+include **all** configured components and applicable `.frx` companions, including
+`KPR_Demo__Builder`, `KPR_Demo_Dates` and `KPR_Demo_DirectVBA` (12 components at
+the reconciliation baseline). The same helper's default still excludes examples
+for the historical host-evidence contract; existing records and validators do
+not change. The report identifies its all-components scope. It adds component identity, role and normalized
 hashes, and records Python/Git/OS versions. Missing candidate components,
 incorrect `VB_Name` and duplicate case-insensitive identities are errors.
 
@@ -177,9 +192,12 @@ claiming a complete deterministic build workflow, implement and validate:
    results. Inject a compile defect and a failed assertion into disposable
    fixtures: they must retain `COMPILE_FAILED` and `TEST_FAILED` host outcomes,
    respectively, and prevent artifact promotion.
-3. **Demo twice.** Implement #46 with an explicit absolute output path, an
-   observable result and no mandatory file dialog. Generate two fresh workbooks
-   in that controlled host. Explicitly calculate, wait for calculation completion,
+3. **Demo twice.** Reuse the existing `KPR_Demo_BuildDates(OutputPath)` with two
+   explicit absolute `.xlsx` paths in the controlled host. It returns a Boolean
+   and exposes diagnostics through `KPR_Demo_LastReport`; do not call the empty-path
+   interactive/active-workbook mode for automation. Its existing
+   `worksheet-demo` suite remains authoritative for builder behavior. For the
+   final-candidate comparison, explicitly calculate, wait for calculation completion,
    record Excel version/build/bitness, locale/date system and reference inventory,
    then save and snapshot both. Bind each saved file's digest to its observed
    calculation and candidate. Check formula/input structure separately from

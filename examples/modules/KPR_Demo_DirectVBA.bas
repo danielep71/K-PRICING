@@ -1,6 +1,6 @@
-Attribute VB_Name = "KPR_DateExample"
+Attribute VB_Name = "KPR_Demo_DirectVBA"
 '==============================================================================
-' MODULE: KPR_DateExample
+' MODULE: KPR_Demo_DirectVBA
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Demonstrate one supported KPR date-layer call from direct VBA.

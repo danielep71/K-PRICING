@@ -96,7 +96,10 @@ above.
 
 Source is MIT, copyright (c) 2026 Daniele Penza. Source LICENSE blob
 `51f4dbcee64abe24d6f607a9a7a8f491e11b5c57` is byte-identical to the destination
-[LICENSE](../LICENSE); its copyright, permission and warranty text are retained.
+[LICENSE](../LICENSE) as migrated; its copyright, permission and warranty text
+were retained. The project was later relicensed under the Mozilla Public
+License 2.0 by its sole copyright holder; this record and the migrated
+commits keep the MIT terms they were published with.
 Each imported document's notice identifies its frozen source commit; the
 source blob IDs above identify the original documents.
 

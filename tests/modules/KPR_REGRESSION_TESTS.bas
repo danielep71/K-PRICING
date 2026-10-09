@@ -45,7 +45,7 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '   KPR_Test_RunAll runs TestRegistry in order: the twelve suites above, then
 '   fixtures, then the macro-only runners as worksheet-host, worksheet-shape,
 '   worksheet-array, worksheet-fixtures, worksheet-oracle,
-'   worksheet-registration and worksheet-state.
+'   worksheet-registration, worksheet-demo and worksheet-state.
 '   KPR_Test_RunSuite runs one of them. tools/check_test_evidence.py reads the registry from this source.
 '
 ' SCOPE
@@ -82,7 +82,7 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '       KPR_Tests_RunAll()            returns a two-column array for a worksheet
 '                                     or for programmatic use
 '
-'   Six stateful entry points are deliberately NOT reachable from the
+'   Eight stateful entry points are deliberately NOT reachable from the
 '   pure dispatcher above; the durable runner orchestrates them:
 '
 '       KPR_Tests_RunHost             creates a scratch workbook, exercises the
@@ -111,6 +111,11 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '       KPR_Tests_RunOracle           compares the date primitives with native
 '                                     Excel functions where the contracts
 '                                     overlap (KPR_Test_Oracle, #41).
+'       KPR_Tests_RunRegistration     runs the MacroOptions lifecycle of
+'                                     KPR_REGISTER_PUBLIC_UDFS (#42).
+'       KPR_Tests_RunDemo             builds the date demo twice with
+'                                     KPR_Demo_Dates (#46), compares the two
+'                                     files and checks every example.
 '       KPR_Tests_RunStateCheck       runs the durable runner on one suite
 '                                     twice, once with a deliberate failure,
 '                                     and proves caller state is restored
@@ -123,8 +128,9 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '   Reports use Debug.Print only and never MsgBox. The pure runners touch no
 '   workbook state. Each stateful runner creates and closes its own scratch
 '   workbook without selecting or activating worksheets and without consulting
-'   ActiveWorkbook. Only the durable runner reads the active workbook, sheet
-'   and selection, and only to restore them.
+'   ActiveWorkbook. The durable runner, the registration runner and the demo
+'   runner read the active workbook, sheet and selection, only to restore
+'   them or to prove they were restored.
 '
 ' CONDITION IDENTIFIERS
 '   Assertions carry the semantic identifier string from the contract registry,
@@ -134,14 +140,15 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 ' ALLOWED DEPENDENCIES
 '   KPR_Core_Parse, KPR_Core_Dates, KPR_Core_Array and KPR_Core_Err, called
 '   directly to assert exact classification, KPR_DATES_DAYS for boundary
-'   behaviour, KPR_Test_Fixtures_Generated for generated expectations, and
-'   KPR_Test_Oracle for the Excel cross-oracle cases.
+'   behaviour, KPR_Test_Fixtures_Generated for generated expectations,
+'   KPR_Test_Oracle for the Excel cross-oracle cases, KPR_REGISTER_PUBLIC_UDFS
+'   for the registration lifecycle and KPR_Demo_Dates for the demo builder.
 '   No other module is reachable from here. The stateful runners also
 '   use Excel.Workbooks.Add and the scratch workbooks they create, always
 '   through exact object references and never through ActiveWorkbook.
 '
 ' UPDATED
-'   2026-09-27
+'   2026-10-05
 '
 ' AUTHOR
 '   Daniele Penza
@@ -816,7 +823,7 @@ Private Function TestRegistry() As Variant
         "boundary", "mapper", "host", "pillar", "surface", "shape", _
         "parity", "fixtures", "worksheet-host", "worksheet-shape", _
         "worksheet-array", "worksheet-fixtures", "worksheet-oracle", "worksheet-registration", _
-        "worksheet-state")
+        "worksheet-demo", "worksheet-state")
 
 End Function
 
@@ -834,7 +841,7 @@ Private Function SuiteKind( _
         Case "fixtures"
             SuiteKind = "fixture"
         Case "worksheet-host", "worksheet-shape", "worksheet-array", "worksheet-fixtures", _
-             "worksheet-oracle", "worksheet-registration", "worksheet-state"
+             "worksheet-oracle", "worksheet-registration", "worksheet-demo", "worksheet-state"
             SuiteKind = "worksheet"
         Case Else
             SuiteKind = "pure"
@@ -860,6 +867,7 @@ Private Sub ExecuteSuite( _
         Case "worksheet-fixtures":  KPR_Tests_RunFixtureHost
         Case "worksheet-oracle":    KPR_Tests_RunOracle
         Case "worksheet-registration": KPR_Tests_RunRegistration
+        Case "worksheet-demo":      KPR_Tests_RunDemo
         Case "worksheet-state":     KPR_Tests_RunStateCheck
         Case Else
             If Not RunSuite(SuiteName) Then
@@ -1369,7 +1377,7 @@ Private Function RestoreCallerState( _
 '------------------------------------------------------------------------------
     Dim Problems        As String       'Items that did not restore
     Dim CurrentType     As String       'TypeName of the restored selection
-    Dim Attempt         As Long         'Status-bar hand-back attempt
+    Dim BarTrace        As String       'Status-bar hand-back steps, for the failure detail
 
 '------------------------------------------------------------------------------
 ' RESTORE
@@ -1397,14 +1405,7 @@ Private Function RestoreCallerState( _
     Application.ScreenUpdating = State.ScreenUpdating
     Application.DisplayAlerts = State.DisplayAlerts
     If VarType(State.StatusBar) = vbBoolean Then
-        'Hand the bar back with a literal False: Excel can store a Variant
-        'Boolean as the text FALSE. Retry after pending messages are processed
-        Application.StatusBar = False
-        For Attempt = 1 To 3
-            If VarType(Application.StatusBar) = vbBoolean Then Exit For
-            DoEvents
-            Application.StatusBar = False
-        Next Attempt
+        BarTrace = HandBackStatusBar()
     Else
         Application.StatusBar = State.StatusBar
     End If
@@ -1422,7 +1423,7 @@ Private Function RestoreCallerState( _
     If VarType(State.StatusBar) = vbBoolean Then
         If VarType(Application.StatusBar) <> vbBoolean Then
             Problems = Problems & "; status bar (expected Excel control, read '" & _
-                       CStr(Application.StatusBar) & "')"
+                       CStr(Application.StatusBar) & "'; steps: " & BarTrace & ")"
         End If
     ElseIf CStr(Application.StatusBar) <> CStr(State.StatusBar) Then
         Problems = Problems & "; status bar (read '" & CStr(Application.StatusBar) & "')"
@@ -1469,6 +1470,73 @@ Private Function RestoreCallerState( _
     Else
         Detail = "not restored: " & Mid$(Problems, 3)
     End If
+
+End Function
+
+Private Function HandBackStatusBar() As String
+'
+' Hands the status bar back to Excel and returns the steps taken, each with
+' what the bar read afterwards, for the failure detail (#77). A literal False
+' comes first, retried after pending messages are processed, because Excel
+' has been seen to keep the text FALSE instead. If text remains, two more
+' routes follow, neither of which needs Excel 4.0 macros or any Trust Center
+' change: a different text first, so the hand-back is a real change of
+' value, and then hiding and showing the status bar before the hand-back,
+' with DisplayStatusBar left as found. The caller still requires Excel
+' control: a text FALSE is never accepted as restored.
+'
+    Dim Steps   As String   'Steps taken so far
+    Dim Attempt As Long     'Retry counter
+    Dim Shown   As Boolean  'DisplayStatusBar on entry
+
+    On Error Resume Next
+    Application.StatusBar = False
+    Steps = "False->" & StatusBarReading()
+    For Attempt = 1 To 3
+        If VarType(Application.StatusBar) = vbBoolean Then Exit For
+        DoEvents
+        Application.StatusBar = False
+        Steps = Steps & ", retry " & CStr(Attempt) & "->" & StatusBarReading()
+    Next Attempt
+    If VarType(Application.StatusBar) <> vbBoolean Then
+        Application.StatusBar = " "
+        DoEvents
+        Application.StatusBar = False
+        Steps = Steps & ", text then False->" & StatusBarReading()
+    End If
+    If VarType(Application.StatusBar) <> vbBoolean Then
+        Err.Clear
+        Shown = Application.DisplayStatusBar
+        Application.DisplayStatusBar = Not Shown
+        DoEvents
+        Application.DisplayStatusBar = Shown
+        Application.StatusBar = False
+        If Err.Number <> 0 Then
+            Steps = Steps & ", hide and show error " & CStr(Err.Number)
+        Else
+            Steps = Steps & ", hide and show then False->" & StatusBarReading()
+        End If
+    End If
+    Err.Clear
+    HandBackStatusBar = Steps
+
+End Function
+
+Private Function StatusBarReading() As String
+'
+' What the status bar reads: its type and value, e.g. Boolean False or
+' String 'FALSE'.
+'
+    Dim Value As Variant    'Current status bar
+
+    On Error Resume Next
+    Value = Application.StatusBar
+    If Err.Number <> 0 Then
+        StatusBarReading = "unreadable (error " & CStr(Err.Number) & ")"
+    Else
+        StatusBarReading = TypeName(Value) & " '" & CStr(Value) & "'"
+    End If
+    Err.Clear
 
 End Function
 
@@ -1617,7 +1685,7 @@ Private Function TryWriteEvidence( _
     Print #FileNo, "    ""macro_options"": " & RegistrationOutcome(Rec) & ","
     Print #FileNo, "    ""ribbonx"": " & OperatorOutcome() & ","
     Print #FileNo, "    ""commandbars"": " & OperatorOutcome() & ","
-    Print #FileNo, "    ""demo_generation"": " & OperatorOutcome() & ","
+    Print #FileNo, "    ""demo_generation"": " & DemoOutcome(Rec) & ","
     Print #FileNo, "    ""source_round_trip"": " & OperatorOutcome()
     Print #FileNo, "  },"
     Print #FileNo, "  ""result"": " & IIf(Rec.Passed, """PASS""", """FAIL""")
@@ -1698,6 +1766,38 @@ Private Function RegistrationOutcome( _
                                                       CStr(Rec.SuiteFails(I)) & " failure(s)", "")
                 Case Else
                     RegistrationOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-registration suite did not run.")
+            End Select
+        End If
+    Next I
+
+End Function
+
+Private Function DemoOutcome( _
+    ByRef Rec As RunRecord) _
+    As String
+'
+' The demo_generation outcome follows the worksheet-demo suite when this run
+' selected it; otherwise the demo builder was not exercised.
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim I               As Long         'Suite cursor
+
+'------------------------------------------------------------------------------
+' MAP
+'------------------------------------------------------------------------------
+    DemoOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-demo suite was not selected in this run.")
+    For I = 0 To Rec.SuiteCount - 1
+        If Rec.SuiteNames(I) = "worksheet-demo" Then
+            Select Case Rec.SuiteStatus(I)
+                Case "PASS", "FAIL"
+                    DemoOutcome = JsonOutcome(Rec.SuiteStatus(I), _
+                                              CStr(Rec.SuiteChecks(I)) & " demo assertion(s), " & _
+                                              CStr(Rec.SuiteFails(I)) & " failure(s)", "")
+                Case Else
+                    DemoOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-demo suite did not run.")
             End Select
         End If
     Next I
@@ -2436,6 +2536,428 @@ Public Sub KPR_Tests_RunRegistration()
     End If
 
 End Sub
+
+Public Sub KPR_Tests_RunDemo()
+'
+'==============================================================================
+'                              KPR_Tests_RunDemo
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Exercises the shared demo builder (KPR_Demo__Builder) through the Date
+'   Primitives demo (KPR_Demo_Dates, #46) and prints the report to the
+'   Immediate window.
+'
+' METHOD
+'   Files: builds the demo twice into a temporary folder, once directly and
+'   once through the catalog, and requires a third build to refuse the
+'   existing file without touching it, a non-.xlsx path and an unknown demo
+'   to be refused, and calculation, events, screen updating, alerts, the
+'   active workbook and sheet and the selection to be exactly as found.
+'   Opens both files read-only and requires one demo sheet, identical
+'   cells, formulas, values, formats, widths and names, DEMO_CHECKS status
+'   cells, DEMO_DIFFERS documented differences and no failing row.
+'   Active workbook: builds twice into a scratch workbook and requires a new
+'   sheet each time, the second named with " (2)", the scratch sheet and the
+'   first demo unchanged, and no failing row. A 1904 scratch workbook must be
+'   left alone and the demo built into a new workbook instead. Every file and
+'   scratch workbook is removed afterwards.
+'
+' UPDATED
+'   2026-10-06
+'==============================================================================
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const DEMO_SHEET    As String = "KPR Dates Demo"    'Sheet name the demo asks for
+    Const DEMO_CHECKS   As Long = 57                    'Status cells with dynamic arrays
+    Const DEMO_DIFFERS  As Long = 1                     'Documented differences at the defaults
+    Const MARKER        As String = "kpr-demo-marker"   'Content of the scratch sheet
+    Dim Folder          As String               'Temporary output folder
+    Dim PathA           As String               'First build
+    Dim PathB           As String               'Second build
+    Dim SizeA           As Long                 'First build size before the refused overwrite
+    Dim StampA          As Date                 'First build time before the refused overwrite
+    Dim Calc            As XlCalculation        'Calculation mode on entry
+    Dim Events          As Boolean              'EnableEvents on entry
+    Dim Screen          As Boolean              'ScreenUpdating on entry
+    Dim Alerts          As Boolean              'DisplayAlerts on entry
+    Dim BookName        As String               'Active workbook on entry
+    Dim SheetName       As String               'Active sheet on entry
+    Dim SelectionText   As String               'Selection on entry
+    Dim CallerBook      As Workbook             'Active workbook on entry
+    Dim CallerSheet     As Object               'Active sheet on entry
+    Dim WbA             As Workbook             'First build, reopened
+    Dim WbB             As Workbook             'Second build, reopened
+    Dim Scratch         As Workbook             'Ordinary workbook the demo is added to
+    Dim Old1904         As Workbook             'Workbook the demo must not be added to
+    Dim Fallback        As Workbook             'New workbook the 1904 case builds into
+    Dim PrintA          As String               'Fingerprint of the first build
+    Dim PrintB          As String               'Fingerprint of the second build
+    Dim PrintFirst      As String               'First scratch demo before the second build
+    Dim Books           As Long                 'Open workbooks before the 1904 build
+    Dim Listed          As Boolean              'The catalog lists the date demo
+    Dim Entry           As Variant              'Catalog cursor
+    Dim Built           As Boolean              'Result of one build call
+    Dim I               As Long                 'Report cursor
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    Set mFailures = New Collection
+    mChecks = 0
+    Folder = Environ$("TEMP")
+    If Len(Folder) = 0 Then Folder = CurDir$
+    Folder = Folder & Application.PathSeparator & "kpr-demo-check"
+    PathA = Folder & Application.PathSeparator & "kpr-demo-a.xlsx"
+    PathB = Folder & Application.PathSeparator & "kpr-demo-b.xlsx"
+    On Error Resume Next
+    If Len(Dir$(Folder, vbDirectory)) = 0 Then MkDir Folder
+    Kill PathA
+    Kill PathB
+    Err.Clear
+    On Error GoTo 0
+    Calc = Application.Calculation
+    Events = Application.EnableEvents
+    Screen = Application.ScreenUpdating
+    Alerts = Application.DisplayAlerts
+    BookName = RegistrationActiveBook()
+    SheetName = RegistrationActiveSheet()
+    SelectionText = RegistrationSelection()
+    On Error Resume Next
+    Set CallerBook = ActiveWorkbook
+    Set CallerSheet = ActiveSheet
+    Err.Clear
+    On Error GoTo 0
+
+'------------------------------------------------------------------------------
+' CATALOG
+'------------------------------------------------------------------------------
+    For Each Entry In KPR_Demo_Catalog()
+        If Left$(CStr(Entry), Len("KPR_Demo_BuildDates|")) = "KPR_Demo_BuildDates|" Then Listed = True
+    Next Entry
+    CheckDemo "demo/catalog lists the date demo", Listed, "KPR_Demo_BuildDates is not in KPR_Demo_Catalog"
+
+'------------------------------------------------------------------------------
+' BUILD TO FILES
+'------------------------------------------------------------------------------
+    Built = KPR_Demo_BuildDates(PathA)
+    CheckDemo "demo/build first", Built, KPR_Demo_LastReport()
+    CheckDemo "demo/report first", Len(KPR_Demo_LastReport()) = 0, KPR_Demo_LastReport()
+    Built = KPR_Demo_Build("KPR_Demo_BuildDates", PathB)
+    CheckDemo "demo/build second through the catalog", Built, KPR_Demo_LastReport()
+    CheckDemo "demo/report second", Len(KPR_Demo_LastReport()) = 0, KPR_Demo_LastReport()
+
+'------------------------------------------------------------------------------
+' REFUSALS
+'------------------------------------------------------------------------------
+    On Error Resume Next
+    SizeA = FileLen(PathA)
+    StampA = FileDateTime(PathA)
+    Err.Clear
+    On Error GoTo 0
+    Built = KPR_Demo_BuildDates(PathA)
+    CheckDemo "demo/refuse overwrite", Not Built, "an existing file was accepted"
+    CheckDemo "demo/refusal report", InStr(1, KPR_Demo_LastReport(), "never overwritten", vbTextCompare) > 0, _
+              "report was: " & KPR_Demo_LastReport()
+    CheckDemo "demo/existing file untouched", DemoFileMatches(PathA, SizeA, StampA), "the existing file changed"
+    Built = KPR_Demo_BuildDates(Folder & Application.PathSeparator & "kpr-demo-c.xlsm")
+    CheckDemo "demo/refuse other extension", Not Built, "a non-.xlsx path was accepted"
+    Built = KPR_Demo_Build("KPR_Demo_NoSuchDemo")
+    CheckDemo "demo/refuse unknown demo", Not Built, "an entry point outside the catalog was run"
+
+'------------------------------------------------------------------------------
+' STATE AFTER FILE BUILDS
+'------------------------------------------------------------------------------
+    CheckDemo "demo/state calculation", Application.Calculation = Calc, "calculation mode changed"
+    CheckDemo "demo/state events", Application.EnableEvents = Events, "EnableEvents changed"
+    CheckDemo "demo/state screen updating", Application.ScreenUpdating = Screen, "ScreenUpdating changed"
+    CheckDemo "demo/state alerts", Application.DisplayAlerts = Alerts, "DisplayAlerts changed"
+    CheckDemo "demo/state active workbook", RegistrationActiveBook() = BookName, "active workbook changed"
+    CheckDemo "demo/state active sheet", RegistrationActiveSheet() = SheetName, "active sheet changed"
+    CheckDemo "demo/state selection", RegistrationSelection() = SelectionText, "selection changed"
+
+'------------------------------------------------------------------------------
+' DETERMINISM AND CONTENT
+'------------------------------------------------------------------------------
+    On Error Resume Next
+    Set WbA = Workbooks.Open(Filename:=PathA, UpdateLinks:=0, ReadOnly:=True)
+    Set WbB = Workbooks.Open(Filename:=PathB, UpdateLinks:=0, ReadOnly:=True)
+    Err.Clear
+    On Error GoTo 0
+    If WbA Is Nothing Or WbB Is Nothing Then
+        CheckDemo "demo/open builds", False, "a built file could not be opened"
+    Else
+        PrintA = DemoFingerprint(WbA)
+        PrintB = DemoFingerprint(WbB)
+        CheckDemo "demo/sheets", DemoSheetList(WbA) = DEMO_SHEET, "sheets were " & DemoSheetList(WbA)
+        CheckDemo "demo/deterministic", PrintA = PrintB, DemoFirstDifference(PrintA, PrintB)
+        CheckDemo "demo/check count", DemoCount(WbA.Worksheets(1), "Demo_Checks") = DEMO_CHECKS, _
+                  "expected " & CStr(DEMO_CHECKS) & " status cells, found " & _
+                  CStr(DemoCount(WbA.Worksheets(1), "Demo_Checks"))
+        CheckDemo "demo/differs count", DemoCount(WbA.Worksheets(1), "Demo_Differs") = DEMO_DIFFERS, _
+                  "expected " & CStr(DEMO_DIFFERS) & " documented difference(s), found " & _
+                  CStr(DemoCount(WbA.Worksheets(1), "Demo_Differs"))
+        CheckDemo "demo/fail count", DemoCount(WbA.Worksheets(1), "Demo_Fails") = 0, _
+                  "the summary shows " & CStr(DemoCount(WbA.Worksheets(1), "Demo_Fails")) & " failure(s)"
+        CheckDemo "demo/no failing row", Len(DemoFailingRows(WbA.Worksheets(1))) = 0, _
+                  DemoFailingRows(WbA.Worksheets(1))
+    End If
+    On Error Resume Next
+    If Not WbA Is Nothing Then WbA.Close SaveChanges:=False
+    If Not WbB Is Nothing Then WbB.Close SaveChanges:=False
+    Kill PathA
+    Kill PathB
+    Err.Clear
+    On Error GoTo 0
+
+'------------------------------------------------------------------------------
+' BUILD INTO THE ACTIVE WORKBOOK
+'------------------------------------------------------------------------------
+    Set Scratch = Workbooks.Add(xlWBATWorksheet)
+    Scratch.Worksheets(1).Name = "Mine"
+    Scratch.Worksheets(1).Range("A1").Value = MARKER
+    Scratch.Activate
+    Built = KPR_Demo_BuildDates()
+    CheckDemo "demo/host build", Built, KPR_Demo_LastReport()
+    CheckDemo "demo/host adds one sheet", Scratch.Sheets.Count = 2, _
+              "the workbook has " & CStr(Scratch.Sheets.Count) & " sheet(s)"
+    If Scratch.Sheets.Count >= 2 Then
+        CheckDemo "demo/host sheet name", Scratch.Sheets(2).Name = DEMO_SHEET, "sheet was " & Scratch.Sheets(2).Name
+        CheckDemo "demo/host sheet shown", RegistrationActiveBook() = Scratch.Name And _
+                  RegistrationActiveSheet() = DEMO_SHEET, "the demo sheet is not active"
+        CheckDemo "demo/host no failing row", Len(DemoFailingRows(Scratch.Sheets(2))) = 0, _
+                  DemoFailingRows(Scratch.Sheets(2))
+        CheckDemo "demo/host fail count", DemoCount(Scratch.Sheets(2), "Demo_Fails") = 0, _
+                  "the summary shows " & CStr(DemoCount(Scratch.Sheets(2), "Demo_Fails")) & " failure(s)"
+        PrintFirst = DemoSheetPrint(Scratch.Sheets(2))
+    End If
+    Built = KPR_Demo_BuildDates()
+    CheckDemo "demo/host second build", Built, KPR_Demo_LastReport()
+    CheckDemo "demo/host second sheet", Scratch.Sheets.Count = 3, _
+              "the workbook has " & CStr(Scratch.Sheets.Count) & " sheet(s)"
+    If Scratch.Sheets.Count >= 3 Then
+        CheckDemo "demo/host second name", Scratch.Sheets(3).Name = DEMO_SHEET & " (2)", _
+                  "sheet was " & Scratch.Sheets(3).Name
+        CheckDemo "demo/host first demo unchanged", DemoSheetPrint(Scratch.Sheets(2)) = PrintFirst, _
+                  "the first demo sheet changed"
+        CheckDemo "demo/host second no failing row", Len(DemoFailingRows(Scratch.Sheets(3))) = 0, _
+                  DemoFailingRows(Scratch.Sheets(3))
+    End If
+    CheckDemo "demo/host own sheet untouched", CStr(Scratch.Worksheets("Mine").Range("A1").Value) = MARKER And _
+              Scratch.Worksheets("Mine").UsedRange.Address(False, False) = "A1", "the scratch sheet changed"
+    CheckDemo "demo/host state calculation", Application.Calculation = Calc, "calculation mode changed"
+    CheckDemo "demo/host state events", Application.EnableEvents = Events, "EnableEvents changed"
+    CheckDemo "demo/host state screen updating", Application.ScreenUpdating = Screen, "ScreenUpdating changed"
+    CheckDemo "demo/host state alerts", Application.DisplayAlerts = Alerts, "DisplayAlerts changed"
+
+'------------------------------------------------------------------------------
+' 1904 WORKBOOK FALLBACK
+'------------------------------------------------------------------------------
+    Set Old1904 = Workbooks.Add(xlWBATWorksheet)
+    Old1904.Date1904 = True
+    Old1904.Activate
+    Books = Workbooks.Count
+    Built = KPR_Demo_BuildDates()
+    CheckDemo "demo/1904 build", Built, KPR_Demo_LastReport()
+    CheckDemo "demo/1904 workbook untouched", Old1904.Sheets.Count = 1, "a sheet was added to the 1904 workbook"
+    CheckDemo "demo/1904 new workbook", Workbooks.Count = Books + 1, _
+              "expected one new workbook, found " & CStr(Workbooks.Count - Books)
+    If Workbooks.Count = Books + 1 And Not ActiveWorkbook Is Old1904 Then
+        Set Fallback = ActiveWorkbook
+        CheckDemo "demo/1904 demo sheet", RegistrationActiveSheet() = DEMO_SHEET, _
+                  "active sheet was " & RegistrationActiveSheet()
+        CheckDemo "demo/1904 no failing row", Len(DemoFailingRows(Fallback.Worksheets(1))) = 0, _
+                  DemoFailingRows(Fallback.Worksheets(1))
+    Else
+        CheckDemo "demo/1904 demo sheet", False, "the new workbook is not active"
+    End If
+
+'------------------------------------------------------------------------------
+' CLEAN UP
+'------------------------------------------------------------------------------
+    On Error Resume Next
+    Application.DisplayAlerts = False
+    If Not Fallback Is Nothing Then Fallback.Close SaveChanges:=False
+    If Not Old1904 Is Nothing Then Old1904.Close SaveChanges:=False
+    If Not Scratch Is Nothing Then Scratch.Close SaveChanges:=False
+    Application.DisplayAlerts = Alerts
+    If Not CallerBook Is Nothing Then CallerBook.Activate
+    If Not CallerSheet Is Nothing Then CallerSheet.Activate
+    Err.Clear
+    On Error GoTo 0
+
+'------------------------------------------------------------------------------
+' REPORT
+'------------------------------------------------------------------------------
+    If Not mQuietTrace Then
+        Debug.Print "KPR demo regression  checks: " & CStr(mChecks) & "  failures: " & CStr(mFailures.Count)
+        For I = 1 To mFailures.Count
+            Debug.Print "  FAIL  " & CStr(mFailures(I)(0)) & " : " & CStr(mFailures(I)(1))
+        Next I
+    End If
+
+End Sub
+
+Private Sub CheckDemo( _
+    ByVal Label As String, _
+    ByVal Passed As Boolean, _
+    ByVal Detail As String)
+'
+' Counts one demo assertion and records it when it fails.
+'
+    mChecks = mChecks + 1
+    If Not Passed Then Record Label, Detail
+
+End Sub
+
+Private Function DemoCount(ByVal Sh As Worksheet, ByVal CellName As String) As Long
+'
+' The whole number in the sheet-level named cell CellName, or -1 when the
+' name is missing or the cell holds anything else.
+'
+    Dim Value As Variant    'Cell value
+
+    DemoCount = -1
+    On Error Resume Next
+    Value = Sh.Range(CellName).Value
+    If Err.Number = 0 And (VarType(Value) = vbDouble Or VarType(Value) = vbLong) Then DemoCount = CLng(Value)
+    Err.Clear
+
+End Function
+
+Private Function DemoFailingRows(ByVal Sh As Worksheet) As String
+'
+' Every status cell of Sh that shows FAIL or NO VBA, with the formula text of
+' its row (main column) or the input of its row (side panel), or "" when
+' there is none.
+'
+    Dim Cell As Range       'Cell cursor
+
+    For Each Cell In Sh.UsedRange.Cells
+        If VarType(Cell.Value) = vbString Then
+            If Cell.Value = "FAIL" Or Cell.Value = "NO VBA" Then
+                DemoFailingRows = DemoFailingRows & "; " & Cell.Address(False, False) & " " & _
+                                  CStr(Cell.Value) & " " & CStr(Sh.Cells(Cell.Row, IIf(Cell.Column > 8, 9, 3)).Text)
+            End If
+        End If
+    Next Cell
+    If Len(DemoFailingRows) > 0 Then DemoFailingRows = Mid$(DemoFailingRows, 3)
+
+End Function
+
+Private Function DemoFileMatches( _
+    ByVal Path As String, _
+    ByVal Size As Long, _
+    ByVal Stamp As Date) _
+    As Boolean
+'
+' TRUE when Path still has the size and modification time recorded earlier.
+'
+    On Error Resume Next
+    DemoFileMatches = (FileLen(Path) = Size) And (FileDateTime(Path) = Stamp) And (Size > 0)
+    Err.Clear
+
+End Function
+
+Private Function DemoSheetList(ByVal Wb As Workbook) As String
+'
+' Sheet names in workbook order, joined by commas.
+'
+    Dim Sh As Object    'Sheet cursor
+
+    For Each Sh In Wb.Sheets
+        If Len(DemoSheetList) > 0 Then DemoSheetList = DemoSheetList & ","
+        DemoSheetList = DemoSheetList & Sh.Name
+    Next Sh
+
+End Function
+
+Private Function DemoFingerprint(ByVal Wb As Workbook) As String
+'
+' Every worksheet's fingerprint and every workbook name, in order.
+'
+    Dim Sh   As Worksheet   'Sheet cursor
+    Dim Item As Variant     'Name cursor
+    Dim Text As String      'Joined result
+
+    For Each Sh In Wb.Worksheets
+        Text = Text & DemoSheetPrint(Sh)
+    Next Sh
+    For Each Item In Wb.Names
+        Text = Text & "name|" & Item.Name & "|" & Item.RefersTo & vbLf
+    Next Item
+    DemoFingerprint = Text
+
+End Function
+
+Private Function DemoSheetPrint(ByVal Sh As Worksheet) As String
+'
+' The sheet's used range, every non-empty cell (formula, value, number format,
+' font name, size and weight, horizontal alignment, fill and bottom border)
+' and every used column width, in order.
+'
+    Dim Parts As Collection     'Fingerprint lines
+    Dim Cell  As Range          'Cell cursor
+    Dim Col   As Long           'Column cursor
+    Dim Item  As Variant        'Line cursor
+    Dim Text  As String         'Joined result
+
+    Set Parts = New Collection
+    Parts.Add "sheet|" & Sh.Name & "|" & Sh.UsedRange.Address(False, False)
+    For Each Cell In Sh.UsedRange.Cells
+        If Cell.HasFormula Or Not IsEmpty(Cell.Value) Then
+            Parts.Add Cell.Address(False, False) & "|" & Cell.Formula & "|" & DemoValueText(Cell.Value) & _
+                      "|" & Cell.NumberFormat & "|" & Cell.Font.Name & "|" & CStr(Cell.Font.Size) & _
+                      "|" & CStr(Cell.Font.Bold) & "|" & CStr(Cell.HorizontalAlignment) & _
+                      "|" & CStr(Cell.Interior.Color) & "|" & CStr(Cell.Borders(xlEdgeBottom).LineStyle)
+        End If
+    Next Cell
+    For Col = 1 To Sh.UsedRange.Column + Sh.UsedRange.Columns.Count - 1
+        Parts.Add "width|" & CStr(Col) & "|" & CStr(Sh.Columns(Col).ColumnWidth)
+    Next Col
+    For Each Item In Parts
+        Text = Text & CStr(Item) & vbLf
+    Next Item
+    DemoSheetPrint = Text
+
+End Function
+
+Private Function DemoValueText(ByVal Value As Variant) As String
+'
+' A stable text form of a cell value: dates as serials, errors as their code.
+'
+    Select Case VarType(Value)
+        Case vbDate
+            DemoValueText = "date:" & CStr(CDbl(Value))
+        Case vbError
+            DemoValueText = "error:" & CStr(CLng(Value))
+        Case Else
+            DemoValueText = TypeName(Value) & ":" & CStr(Value)
+    End Select
+
+End Function
+
+Private Function DemoFirstDifference(ByVal A As String, ByVal B As String) As String
+'
+' The first fingerprint line that differs between two builds.
+'
+    Dim LinesA As Variant   'Lines of A
+    Dim LinesB As Variant   'Lines of B
+    Dim K      As Long      'Line cursor
+
+    LinesA = Split(A, vbLf)
+    LinesB = Split(B, vbLf)
+    For K = 0 To Application.WorksheetFunction.Min(UBound(LinesA), UBound(LinesB))
+        If LinesA(K) <> LinesB(K) Then
+            DemoFirstDifference = "first build: " & LinesA(K) & " / second build: " & LinesB(K)
+            Exit Function
+        End If
+    Next K
+    DemoFirstDifference = "the builds have different lengths"
+
+End Function
 
 Private Sub CheckRegistration( _
     ByVal Label As String, _

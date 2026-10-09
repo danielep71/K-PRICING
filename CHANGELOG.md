@@ -107,9 +107,25 @@ Use only the categories needed by a release.
 - Portable native developer commands for logical demo-workbook snapshots and
   cell/property differences, clean-candidate source inventories, supplied VBE
   export round trips and read-only diagnostics (#46, #50, #52). Existing source
-  validators remain authoritative. Formula caches are explicitly unverified;
-  Excel demo/build automation and host certification remain outstanding.
-
+  validators remain authoritative. The candidate inventory includes the current
+  demo modules; the historical host-evidence inventory is unchanged. Formula
+  caches are explicitly unverified; automated host builds and final release
+  certification remain outstanding.
+- Added demo sheets built from tracked source (#46): the shared
+  `examples/modules/KPR_Demo__Builder.bas` owns layout, house style, status
+  rules, the checks summary, the Excel state and the demo catalog, and
+  `examples/modules/KPR_Demo_Dates.bas` describes the Date Primitives sheet
+  through it. `KPR_Demo_BuildDates()` adds a **KPR Dates Demo** sheet to the
+  active workbook (never changing, replacing or deleting an existing sheet, and
+  falling back to a new workbook for a 1904, read-only or protected one), or
+  builds into a new `.xlsx` file that must not exist yet. Each row compares a
+  live KPR formula, driven by editable named inputs, with a native-Excel
+  reference and shows `OK`, `DIFFERS` (by design), `FAIL` or `NO VBA`; the side
+  panel adds native-error cases, dynamic-array spills and the 100,000-element
+  limit. The new `worksheet-demo` regression suite checks file and
+  active-workbook builds and sets the evidence record's `demo_generation`
+  outcome. Verified in Windows Excel (64-bit, build 20326) at `cd0e1a1`: two
+  matching `all` runs with 21 suites, 9,320 assertions and 0 failures.
 - Added MacroOptions registration (#42): the internal
   `KPR_REGISTER_PUBLIC_UDFS` module holds a machine-readable manifest of the 22
   supported functions and registers them under the single **KPR Dates**
@@ -186,6 +202,15 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- Relicensed K-PRICING from the MIT License to the Mozilla Public License
+  2.0 (MPL-2.0). `LICENSE` holds the unmodified MPL 2.0 text; the copyright
+  notice is in the README. Commits published before the change remain
+  available under MIT.
+- Demo modules share one naming rule: every demo module is named
+  `KPR_Demo_*`, and the shared builder is `KPR_Demo__Builder` (double
+  underscore) so it sorts first. `KPR_Demo_Builder` became `KPR_Demo__Builder`
+  and the direct-VBA example `KPR_DateExample` became `KPR_Demo_DirectVBA`;
+  its macro is still `RunDateExample`.
 - Integer arguments now accept a number within `1E-9` of a whole number as
   that whole number, so binary floating-point residue such as
   `2.9999999999999996` no longer returns `#VALUE!`; a real fraction such as
@@ -234,6 +259,11 @@ Use only the categories needed by a release.
 
 ### Fixed
 
+- The durable runner's status-bar hand-back now records each step and what
+  the bar read afterwards in the state-restoration detail and, when Excel keeps the text `FALSE`
+  after the retries, tries two more hand-backs that need no Excel 4.0 macros
+  or Trust Center change (#77). A text `FALSE` still fails the run. Verified in
+  Windows Excel at `732db13`: two matching `all` runs, 0 failures, state restored.
 - Corrected the Function Wizard error text of `KPR_Dates_DaysInYear` and
   `KPR_Dates_IsLeapYear`: a year outside 1900-9999 returns `#VALUE!`
   (`DOMAIN_YEAR`), and only a year beyond the `Long` range returns `#NUM!`.
