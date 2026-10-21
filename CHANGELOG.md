@@ -202,6 +202,12 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- Corrected stale, inaccurate and template-inherited comments across the VBA
+  modules, Python tooling and configuration (no behaviour change). Issue
+  numbers carried over from the migrated source repository now point to this
+  repository's issues, the issue forms ask for the affected area instead of a
+  template profile, and the demo summary no longer refers to a menu that does
+  not exist yet.
 - Relicensed K-PRICING from the MIT License to the Mozilla Public License
   2.0 (MPL-2.0). `LICENSE` holds the unmodified MPL 2.0 text; the copyright
   notice is in the README. Commits published before the change remain

@@ -1,4 +1,4 @@
-"""Read saved OOXML demo content; never execute Excel or trust formula caches.
+"""Read saved OOXML workbook content; never execute Excel or trust formula caches.
 
 This is a conservative comparison, not a general Excel equivalence engine.
 See docs/NATIVE_DEVELOPER_TOOLS.md for the versioned normalization boundary.

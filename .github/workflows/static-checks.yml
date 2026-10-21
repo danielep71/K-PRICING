@@ -524,8 +524,8 @@ jobs:
             -r tools/requirements-quality-ci.txt
           python -m coverage --version
 
-      # The same self-tests and checks the Repository integrity job runs, under
-      # coverage. Thresholds and scope live in pyproject.toml.
+      # The self-tests and a subset of the checks the Repository integrity job
+      # runs, under coverage. Thresholds and scope live in pyproject.toml.
       - name: Measure maintained Python tooling under coverage
         env:
           # Under coverage on Python 3.10 the script directory is not put on

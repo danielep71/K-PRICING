@@ -1,5 +1,5 @@
 # Python tooling quality contract for the repository-maintenance scripts.
-# The distributed VBA starter remains dependency-free; Ruff, mypy and coverage.py are CI/development tools only.
+# The distributed VBA source remains dependency-free; Ruff, mypy and coverage.py are CI/development tools only.
 
 [tool.ruff]
 target-version = "py310"
@@ -38,11 +38,12 @@ strict_equality = true
 extra_checks = true
 
 # Statement coverage of the maintained Python tooling, measured by the "Python
-# tooling coverage" job in .github/workflows/static-checks.yml over the same
-# self-tests and checks the Repository integrity job runs. The subprocess patch
-# measures Python child processes started by the fixtures. fail_under is a
-# ratchet at the measured baseline (81% at introduction): raise it as coverage
-# improves and never lower it to make a change pass.
+# tooling coverage" job in .github/workflows/static-checks.yml over the
+# self-tests and a subset of the checks the Repository integrity job runs. The
+# subprocess patch measures Python child processes started by the fixtures.
+# fail_under is a ratchet set just below the measured baseline (81% at
+# introduction): raise it as coverage improves and never lower it to make a
+# change pass.
 [tool.coverage.run]
 source = ["tools"]
 parallel = true

@@ -412,7 +412,8 @@ def parse_control(kind: str, value: Val) -> bool | str | Fail:
 
 
 def add_months(start: dt.date, months: int, keep_eom: bool) -> dt.date | None:
-    """Clip-mode month shift; None when the result leaves the supported window."""
+    """Calendar-month shift: clip mode, or EOM-preserving mode when keep_eom is set
+    and the start is a month end; None when the result leaves the supported window."""
     total = start.year * 12 + (start.month - 1) + months
     year, month = divmod(total, 12)
     month += 1
@@ -1352,7 +1353,8 @@ MATRIX_ARGUMENT_LABELS = ("edge-low", "edge-high", "invalid-a", "invalid-b", "pr
 
 
 def author_matrix(book: Book) -> None:
-    """Section 8.2: positive, edge, invalid-domain, propagated and shaped cases per argument."""
+    """Regression matrix (#40): positive, edge, invalid-domain, propagated and shaped
+    cases per value argument of every value-taking function."""
     suite = "matrix"
     for name, base in MATRIX_BASE.items():
         fn = F + name

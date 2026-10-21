@@ -18,10 +18,10 @@ Attribute VB_Name = "KPR_Demo_Dates"
 '   - KPR_Demo_BuildDates       build the Date Primitives demo sheet
 '
 ' REFERENCE FORMULAS
-'   Each reference is plain Excel that reproduces the documented behaviour of
-'   docs/DATE_LAYER_CONTRACT.md for any valid input, including Opt_KeepEOM
-'   and the Monday/Sunday weekday base, so every row shows OK for any valid
-'   input. Leap years use the Gregorian rule rather than DATE arithmetic,
+'   Each reference, except the two month-end policy rows below, is plain Excel
+'   that reproduces the documented behaviour of docs/DATE_LAYER_CONTRACT.md
+'   for any valid input, including Opt_KeepEOM and the Monday/Sunday weekday
+'   base, so those rows show OK for any valid input. Leap years use the Gregorian rule rather than DATE arithmetic,
 '   because Excel's DATE counts a 29 February 1900 that never existed. The
 '   two month-end policy rows compare against EDATE and EOMONTH on purpose:
 '   they show DIFFERS when Keep EOM changes the result.
