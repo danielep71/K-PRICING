@@ -104,6 +104,13 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added the development loader `tests/modules/KPR_Dev_Import.bas`:
+  `KPR_Dev_ImportModules(Source, TargetWorkbook)` replaces the K-PRICING
+  modules of an open workbook or add-in with those of one commit, downloaded
+  from GitHub or read from a local clone, using the commit's repository
+  profile as the module list. Repository modules the commit does not list
+  are removed, so an older commit's set is restored; other modules of the
+  target are left alone and the target is not saved. Not yet run in Excel.
 - Portable native developer commands for logical demo-workbook snapshots and
   cell/property differences, clean-candidate source inventories, supplied VBE
   export round trips and read-only diagnostics (#46, #50, #52). Existing source
