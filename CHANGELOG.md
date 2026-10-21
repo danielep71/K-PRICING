@@ -259,6 +259,10 @@ Use only the categories needed by a release.
 
 ### Fixed
 
+- `KPR_Dates_DateFromPillar` now records `PILLAR_AGGREGATE_RANGE`, as the
+  contract and fixtures specify, when a valid pillar shifts the result outside
+  the supported window; it recorded `RESULT_WINDOW` (#87). The result is
+  `#NUM!` either way, so no worksheet or VBA value changes.
 - The durable runner's status-bar hand-back now records each step and what
   the bar read afterwards in the state-restoration detail and, when Excel keeps the text `FALSE`
   after the retries, tries two more hand-backs that need no Excel 4.0 macros
