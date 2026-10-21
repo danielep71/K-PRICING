@@ -155,8 +155,12 @@ def parser() -> argparse.ArgumentParser:
     commands.add_parser("check", help="coordinate existing portable source validators")
     diagnostic = commands.add_parser("doctor", help="read-only source and host availability observations")
     diagnostic.add_argument("--output-path", type=Path, help="inspect a prospective output without writing it")
-    for name in ("inventory", "round-trip"):
-        operation = commands.add_parser(name, help="exact-candidate inventory or supplied export comparison")
+    operation_help = {
+        "inventory": "exact-candidate source inventory (no import or compile)",
+        "round-trip": "compare supplied VBE exports with the exact candidate",
+    }
+    for name, text in operation_help.items():
+        operation = commands.add_parser(name, help=text)
         operation.add_argument("--candidate-sha", required=True)
         if name == "round-trip":
             operation.add_argument("--exports", type=Path, required=True)

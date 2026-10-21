@@ -14,14 +14,15 @@ body:
   - type: dropdown
     id: profile
     attributes:
-      label: Applicable repository profile
-      description: Select the narrowest profile that should own this capability.
+      label: Applicable area
+      description: Select the narrowest area that should own this capability.
       options:
-        - Library
-        - UI component
-        - Application
-        - Template or repository tooling
-        - All supported profiles
+        - Date library (src/)
+        - Examples and demo sheets
+        - Tests and fixtures
+        - Repository tooling and CI
+        - Documentation
+        - Several areas
     validations:
       required: true
 

@@ -2,7 +2,8 @@
 # Canonical Excel/VBA .gitattributes
 #------------------------------------------------------------------------------
 # PURPOSE
-#   Define the canonical Git behavior for new Excel/VBA repositories created from this template.
+#   Define the canonical Git behavior for this Excel/VBA repository, as inherited
+#   from the template contract it was generated from.
 #
 # POLICY
 #   - Exported VBA source is normalized in Git and checked out as CRLF.

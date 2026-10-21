@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Validate the migrated KPR date-layer contract inside K-PRICING.
 
-This is a project-specific additive gate. The generic K-PRICING repository,
-VBA-structure, conditional-compilation and public-API validators remain
-authoritative for repository-wide policy.
+This is a project-specific additive gate. The generic repository
+(check_repo.py), procedure-jump (check_vba_jumps.py), conditional-compilation
+(check_vba_conditionals.py) and public-API (check_vba_public_api.py) validators
+remain authoritative for repository-wide policy.
 """
 
 from __future__ import annotations

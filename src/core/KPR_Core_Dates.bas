@@ -38,10 +38,12 @@ Attribute VB_Name = "KPR_Core_Dates"
 '   region where worksheet serials and VBA dates disagree because of the
 '   fictitious 29-Feb-1900. At and above serial 61 the two systems agree.
 '
-'   The baseline applied this gate inside its combined parser. The gate is now
-'   applied by the facade immediately after parsing, using the predicate below.
-'   It remains a single gate on every accepted path; only its location moved,
-'   so that KPR_Core_Parse need not depend on this module.
+'   The baseline applied this gate inside its combined parser. The input gate
+'   still runs once, in KPR_Core_Parse after date-only normalization, using
+'   serial and year bounds restated from the two Date constants below because
+'   that module may not depend on this one; tools/check_kpr_contract.py
+'   (kpr-date-window) pins both representations. The predicate below serves the
+'   result gates.
 '
 '   The derived index constants below restate the window in absolute months.
 '   They exist to keep per-call arithmetic off the hot paths and MUST be
@@ -102,7 +104,7 @@ Attribute VB_Name = "KPR_Core_Dates"
 '------------------------------------------------------------------------------
 ' MODULE CONSTANTS
 '------------------------------------------------------------------------------
-    'Supported date window (single source of truth for every parse / result gate)
+    'Supported date window (its owner; KPR_Core_Parse restates it as serials, pinned by the static gate)
         Public Const KPR_MIN_DATE   As Date = #3/1/1900#     'Serial 61; excludes the Excel 1900 leap-bug region
         Public Const KPR_MAX_DATE   As Date = #12/31/9999#   'Serial 2958465; upper bound of the Excel date system
 
@@ -715,8 +717,9 @@ Public Function TryPillar_Parse( _
 '     would return a plausible number for input the caller did not intend;
 '     contract section 3.4 therefore rejects duplicate units.
 '   - Finite quantities are not bounded here. A token such as "999999999999M"
-'     parses and the magnitude is left for the shift layer to reject at its
-'     month-index gate. A digits-only component that cannot be represented as
+'     parses; the facade rejects a month aggregate outside the Long range as
+'     PILLAR_AGGREGATE_RANGE, and TryAddMonths' month-index gate rejects any
+'     remaining out-of-window shift. A digits-only component that cannot be represented as
 '     Double, or an aggregate that overflows Double, is PILLAR_AGGREGATE_RANGE.
 '   - CDbl is applied to a digits-only substring, so no locale decimal
 '     separator is involved. Replacing it with Val or CLng would change the

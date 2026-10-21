@@ -14,14 +14,15 @@ body:
   - type: dropdown
     id: profile
     attributes:
-      label: Affected repository profile
-      description: Select the narrowest profile whose supported behavior is affected.
+      label: Affected area
+      description: Select the narrowest area whose behavior is affected.
       options:
-        - Library
-        - UI component
-        - Application
-        - Template or repository tooling
-        - Not profile-specific
+        - Date library (src/)
+        - Examples and demo sheets
+        - Tests and fixtures
+        - Repository tooling and CI
+        - Documentation
+        - Not area-specific
     validations:
       required: true
 

@@ -2417,7 +2417,8 @@ def check_vba_visibility(
 def check_generated_vba_contract(
     repo: Repository, config: dict[str, Any]
 ) -> dict[str, Any]:
-    """Require substantive facade, core, and test assets for each profile."""
+    """Require substantive facade, core, and test assets for the selected profile
+    (for every profile in template mode)."""
 
     profiles = config["profiles"]
     components = config["vba"]["components"]
