@@ -1,4 +1,4 @@
-"""Contract 1.2.0 release provenance; called only by the release gate.
+"""Contract 1.2.0 release provenance; ``validate`` is called only by the release gate.
 
 Checks assertions and optionally authenticates their signer, not the builder.
 Trust policy is read from the candidate Git object, never from release inputs.

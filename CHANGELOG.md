@@ -111,6 +111,13 @@ Use only the categories needed by a release.
   profile as the module list. Repository modules the commit does not list
   are removed, so an older commit's set is restored; other modules of the
   target are left alone and the target is not saved. Not yet run in Excel.
+- Portable native developer commands for logical demo-workbook snapshots and
+  cell/property differences, clean-candidate source inventories, supplied VBE
+  export round trips and read-only diagnostics (#46, #50, #52). Existing source
+  validators remain authoritative. The candidate inventory includes the current
+  demo modules; the historical host-evidence inventory is unchanged. Formula
+  caches are explicitly unverified; automated host builds and final release
+  certification remain outstanding.
 - Added demo sheets built from tracked source (#46): the shared
   `examples/modules/KPR_Demo__Builder.bas` owns layout, house style, status
   rules, the checks summary, the Excel state and the demo catalog, and
@@ -202,6 +209,12 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- Corrected stale, inaccurate and template-inherited comments across the VBA
+  modules, Python tooling and configuration (no behaviour change). Issue
+  numbers carried over from the migrated source repository now point to this
+  repository's issues, the issue forms ask for the affected area instead of a
+  template profile, and the demo summary no longer refers to a menu that does
+  not exist yet.
 - Relicensed K-PRICING from the MIT License to the Mozilla Public License
   2.0 (MPL-2.0). `LICENSE` holds the unmodified MPL 2.0 text; the copyright
   notice is in the README. Commits published before the change remain
@@ -259,6 +272,10 @@ Use only the categories needed by a release.
 
 ### Fixed
 
+- `KPR_Dates_DateFromPillar` now records `PILLAR_AGGREGATE_RANGE`, as the
+  contract and fixtures specify, when a valid pillar shifts the result outside
+  the supported window; it recorded `RESULT_WINDOW` (#87). The result is
+  `#NUM!` either way, so no worksheet or VBA value changes.
 - The durable runner's status-bar hand-back now records each step and what
   the bar read afterwards in the state-restoration detail and, when Excel keeps the text `FALSE`
   after the retries, tries two more hand-backs that need no Excel 4.0 macros

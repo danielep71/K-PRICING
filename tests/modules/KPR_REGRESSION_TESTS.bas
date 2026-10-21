@@ -5,8 +5,9 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 ' PURPOSE
 '   Deterministic regression suites for the KPR date layer, launched from one
 '   dispatcher, plus separate macro-only runners for host, Range-shape,
-'   dynamic-array and worksheet-fixture behavior, and the durable runner that
-'   drives all of them and writes structured evidence.
+'   dynamic-array, worksheet-fixture, cross-oracle, registration, demo and
+'   state-restoration behavior, and the durable runner that drives all of them
+'   and writes structured evidence.
 '
 ' SUITE REGISTRY
 '   KPR_Tests_RunAll dispatches to the suites below. Passing a suite name runs
@@ -75,7 +76,8 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '
 '   Three interactive entry points reach the pure dispatcher:
 '
-'       KPR_Tests_Run                 every pure suite; appears in the Alt+F8
+'       KPR_Tests_Run                 the twelve pure suites of "all" (not
+'                                     fixtures); appears in the Alt+F8
 '                                     macro list and prints its report to the
 '                                     Immediate window
 '       KPR_Tests_RunSuite "integer"  one pure suite, printed the same way
@@ -113,9 +115,11 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '                                     overlap (KPR_Test_Oracle, #41).
 '       KPR_Tests_RunRegistration     runs the MacroOptions lifecycle of
 '                                     KPR_REGISTER_PUBLIC_UDFS (#42).
-'       KPR_Tests_RunDemo             builds the date demo twice with
-'                                     KPR_Demo_Dates (#46), compares the two
-'                                     files and checks every example.
+'       KPR_Tests_RunDemo             builds the date demo (#46) through
+'                                     KPR_Demo__Builder to two files, into a
+'                                     scratch workbook and as a 1904 fallback,
+'                                     compares the files, and checks every
+'                                     example, the refusals and caller state.
 '       KPR_Tests_RunStateCheck       runs the durable runner on one suite
 '                                     twice, once with a deliberate failure,
 '                                     and proves caller state is restored
@@ -128,9 +132,11 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '   Reports use Debug.Print only and never MsgBox. The pure runners touch no
 '   workbook state. Each stateful runner creates and closes its own scratch
 '   workbook without selecting or activating worksheets and without consulting
-'   ActiveWorkbook. The durable runner, the registration runner and the demo
-'   runner read the active workbook, sheet and selection, only to restore
-'   them or to prove they were restored.
+'   ActiveWorkbook, except the demo runner, which activates its scratch
+'   workbooks and reads ActiveWorkbook to find the fallback workbook a build
+'   creates. The durable runner, the registration runner and the demo runner
+'   read the active workbook, sheet and selection to restore them or to prove
+'   they were restored.
 '
 ' CONDITION IDENTIFIERS
 '   Assertions carry the semantic identifier string from the contract registry,
@@ -142,13 +148,14 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '   directly to assert exact classification, KPR_DATES_DAYS for boundary
 '   behaviour, KPR_Test_Fixtures_Generated for generated expectations,
 '   KPR_Test_Oracle for the Excel cross-oracle cases, KPR_REGISTER_PUBLIC_UDFS
-'   for the registration lifecycle and KPR_Demo_Dates for the demo builder.
-'   No other module is reachable from here. The stateful runners also
-'   use Excel.Workbooks.Add and the scratch workbooks they create, always
-'   through exact object references and never through ActiveWorkbook.
+'   for the registration lifecycle and KPR_Demo__Builder and KPR_Demo_Dates
+'   for the demo. No other module is reachable from here. The stateful runners
+'   also use Excel.Workbooks.Add and the scratch workbooks they create, through
+'   exact object references; only the demo runner also reads ActiveWorkbook,
+'   as described above.
 '
 ' UPDATED
-'   2026-10-05
+'   2026-10-21
 '
 ' AUTHOR
 '   Daniele Penza
@@ -250,7 +257,8 @@ Public Sub KPR_Tests_Run()
 '                                 KPR_Tests_Run
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Runs every suite and writes the report to the Immediate window.
+'   Runs the twelve pure suites of "all" (not fixtures) and writes the report
+'   to the Immediate window.
 '
 '   This is the entry point to use from the Alt+F8 macro list or by typing
 '   KPR_Tests_Run in the Immediate window. It takes no arguments and returns
@@ -309,9 +317,9 @@ Public Sub KPR_Tests_RunEvidence()
 '                            KPR_Tests_RunEvidence
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Runs the complete pure regression suite through KPR_Tests_RunAll and emits
+'   Runs the twelve pure suites of "all" through KPR_Tests_RunAll and emits
 '   the stable machine-readable lines required by K-PRICING retained Excel
-'   evidence. This is a destination evidence adapter; it does not change test
+'   evidence. This is a retained-evidence adapter; it does not change test
 '   cases, expectations, production code or the native KPR_Tests_Run report.
 '
 ' OUTPUT
@@ -430,17 +438,19 @@ Public Sub KPR_Tests_RunMigrationEvidence()
 '                       KPR_Tests_RunMigrationEvidence
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Emits deterministic source-versus-destination observations for migration
-'   issue #17. The same candidate regression module is used as instrumentation
-'   against frozen-source production modules and destination production modules.
+'   Emits the deterministic source-versus-destination observations used by
+'   migration issue #17 (complete; evidence/migration-2026-09-24). During that
+'   migration the same regression module instrumented both the frozen-source
+'   and the migrated production modules; it is kept so that evidence can be
+'   reproduced.
 '
 ' OUTPUT
 '   OBS<TAB>id<TAB>payload
 '   CLEANUP<TAB>runner<TAB>PASS|failure-detail
 '
 ' NOTES
-'   - This adapter does not call the pure-suite dispatcher. Frozen-source and
-'     destination pure runs are retained separately because test counts and
+'   - This adapter does not call the pure-suite dispatcher. The #17 frozen-source
+'     and migrated pure runs were retained separately because test counts and
 '     known correctness fixes differ legitimately between the two baselines.
 '   - No observation is part of the supported 22-function production API.
 '
@@ -537,11 +547,11 @@ Public Function KPR_Tests_RunAll( _
 '                                KPR_Tests_RunAll
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Runs one suite or every suite and returns the result.
+'   Runs one suite or the twelve pure suites of "all" and returns the result.
 '
 ' INPUTS
 '   Opt_Suite
-'     Omitted or Empty runs every suite. Otherwise a suite name from the
+'     Omitted or Empty runs "all" (not fixtures). Otherwise a suite name from the
 '     registry in the module header, compared case-insensitively.
 '
 ' RETURNS
@@ -558,8 +568,9 @@ Public Function KPR_Tests_RunAll( _
 '     defensive handler is itself a defect.
 '
 ' NOTES
-'   - The suite list is duplicated in neither direction: RunSuite owns dispatch
-'     and the header documents it. Adding a suite touches one Case line.
+'   - RunSuite owns pure dispatch and the module header documents it. Adding a
+'     suite needs a Case line (and a line in "all" if it joins the baseline),
+'     plus a TestRegistry entry when the durable runner should select it.
 '
 ' UPDATED
 '   2026-08-31
@@ -668,7 +679,7 @@ Private Function RunSuite( _
 '------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
-    'Unrecognized until proven otherwise, so a typo cannot pass silently
+    'Recognized unless Case Else below refuses it, so a typo cannot pass silently
         RunSuite = True
 
 '------------------------------------------------------------------------------
@@ -3072,7 +3083,8 @@ Public Sub KPR_Tests_RunStateCheck()
 ' STATE
 '   The nested runs write throwaway evidence to %TEMP%\kpr-state-check. The
 '   state this runner changes for the probe is restored on every exit path.
-'   Macro-only: the nested runs add and close workbooks.
+'   Macro-only: the nested runs write evidence files and change and restore
+'   Excel state.
 '
 ' UPDATED
 '   2026-09-26
@@ -4416,7 +4428,7 @@ Private Sub Run_ParityCases()
         mChecks = mChecks + 1
         If R(1, 1) <> 29 Or R(2, 2) <> 29 Or R(1, 2) <> 28 Then Record "facade/2x2 values", "positions do not match their inputs"
 
-    'Scalar expands against an array; two matching arrays broadcast
+    'Scalar expands against an array; a 3x1 against a 1x3 is a call-level mismatch
         R = KPR_Dates_AddDays(Col, 1)
         AssertOutShape "facade/scalar expands", R, 3, 1
         R = KPR_Dates_AddDays(Col, Array(1, 2, 3))
@@ -4611,7 +4623,7 @@ Private Function MigrationValuePayload( _
     ByVal V As Variant) _
     As String
 '
-' Deterministic scalar rendering for source/destination observation parity.
+' Deterministic scalar rendering for the #17 source/destination observations.
 '
     If VarType(V) = vbError Then
         MigrationValuePayload = "ERROR:" & CStr(CLng(V))
@@ -4715,7 +4727,7 @@ End Sub
 '
 '------------------------------------------------------------------------------
 '
-'                    STATEFUL HOST RUNNER (MACRO ONLY, NOT DISPATCHED)
+'              STATEFUL HOST RUNNER (MACRO ONLY, NOT IN THE PURE DISPATCHER)
 '
 '------------------------------------------------------------------------------
 '
@@ -4734,7 +4746,8 @@ Public Sub KPR_Tests_RunHost()
 '   KPR_Tests_RunAll is callable from a worksheet cell. Adding a workbook,
 '   writing formulas and closing a workbook cannot legally happen inside a
 '   worksheet function call, so this runner is a macro and is deliberately
-'   not part of the dispatcher. It never joins "all".
+'   not part of the pure dispatcher or its "all"; the durable runner runs it
+'   as worksheet-host.
 '
 ' WHAT IT PROVES
 '   - HostDateSystem reports 1900 in a 1900 workbook, 1904 after the same
@@ -4746,7 +4759,7 @@ Public Sub KPR_Tests_RunHost()
 ' WHAT IT DOES NOT PROVE
 '   This runner does not automate the Immediate-window probe or non-Range host
 '   contexts. Their exact-source Windows Excel evidence belongs to the
-'   certification record tracked by #29.
+'   certification record tracked by #52.
 '
 ' STATE
 '   - Creates one workbook through Workbooks.Add and holds the exact object.
@@ -4956,7 +4969,7 @@ End Sub
 '
 '------------------------------------------------------------------------------
 '
-'                    STATEFUL SHAPE RUNNER (MACRO ONLY, NOT DISPATCHED)
+'              STATEFUL SHAPE RUNNER (MACRO ONLY, NOT IN THE PURE DISPATCHER)
 '
 '------------------------------------------------------------------------------
 '
@@ -5152,7 +5165,7 @@ End Sub
 '
 '------------------------------------------------------------------------------
 '
-'                    STATEFUL ARRAY RUNNER (MACRO ONLY, NOT DISPATCHED)
+'              STATEFUL ARRAY RUNNER (MACRO ONLY, NOT IN THE PURE DISPATCHER)
 '
 '------------------------------------------------------------------------------
 '
@@ -5687,13 +5700,17 @@ Private Sub Run_DateTextCases()
         AssertDateCondition "iso/month 00", "2026-00-10", False, "DATE_TEXT_IMPOSSIBLE"
         AssertDateCondition "iso/day 00", "2026-03-00", False, "DATE_TEXT_IMPOSSIBLE"
 
-    'Century leap rule: 1900 is not a leap year, 2000 is
+    'Century leap rule: 1900 is not a leap year (2000, below, is)
         AssertDateCondition "iso/1900-02-29", "1900-02-29", False, "DATE_TEXT_IMPOSSIBLE"
+
+    'Numeric-looking and punctuated text shapes
         AssertDateCondition "text/dotted numeric shape", "31.12", False, "DATE_TEXT_NUMERIC"
         AssertDateCondition "text/two decimal points", "1.2.3", False, "DATE_TEXT_LOCALE"
         AssertDateCondition "text/sign only", "-", False, "DATE_TEXT_FORMAT"
         AssertDateCondition "text/signed serial", "-61", False, "DATE_TEXT_NUMERIC"
         AssertDateCondition "text/thousands separator", "46,096", False, "DATE_TEXT_FORMAT"
+
+    'Century leap rule: 2000 is a leap year
         AssertDateValue "iso/2000-02-29", "2000-02-29", DateSerial(2000, 2, 29)
 
 End Sub

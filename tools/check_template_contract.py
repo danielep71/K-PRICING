@@ -7,10 +7,10 @@ template release that changes no required control ships without a contract bump,
 and a project may release any number of its own versions while its adopted
 contract stays fixed.
 
-This gate owns the contract's semantics. ``check_repo.py`` only requires the
-``template_contract`` key to exist in the canonical configuration; every rule
-about its content lives here, so the portable checker's policy-branch inventory
-is unchanged.
+This gate owns the contract's semantics. ``check_repo.py`` requires the
+``template_contract`` key and uses only its ``source`` to mask pinned upstream
+workflow references during identity scanning; every rule about the contract's
+content lives here.
 """
 
 from __future__ import annotations
@@ -472,8 +472,8 @@ def run_self_test() -> int:
                 if expected not in text:
                     failures.append(f"{name}: no finding mentioning {expected!r}")
 
-        # Independence: the project VERSION differs from the contract version in
-        # every fixture, and changing it must not alter the resolved contract.
+        # Independence: changing the project VERSION must not alter the resolved
+        # contract.
         root = _fixture(base / "independence", _generated_config(), record=_generated_record())
         before = run_check(root)
         write_text(root / VERSION_PATH, "42.0.0\n")

@@ -5,6 +5,13 @@
 
 `tools/` contains repository validators, evidence collectors and setup tooling.
 
+`kpr.py` provides a thin portable command interface for source checks, read-only
+diagnostics, candidate inventories, supplied VBE export comparison and saved
+workbook snapshots/diffs. See [native developer operations](../docs/NATIVE_DEVELOPER_TOOLS.md)
+for commands, normalization rules and the remaining Windows host work. Run
+`python3 tools/test_native_tools.py -v` for synthetic failure tests; these do not
+execute Excel or certify a build.
+
 The [local Action contract](LOCAL_ACTIONS.md) owns repository-local Action and
 reusable-workflow containment checks. `test_verification_depth.py` exercises
 retained validator failure paths and is required by `Repository integrity`:

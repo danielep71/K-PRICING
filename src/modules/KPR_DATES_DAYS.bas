@@ -12,8 +12,9 @@ Attribute VB_Name = "KPR_DATES_DAYS"
 '
 ' WHY THE NAME
 '   Facade components are named in upper case to mark them as worksheet-facing
-'   rather than internal, and this one is suffixed _DAYS because
-'   KPR_DATES_CALENDARS and KPR_DATES_BUSINESSDAYS follow in later milestones.
+'   rather than internal, and this one is suffixed _DAYS because calendar
+'   (KPR_Cal_*, v0.0.5) and business-day (v0.0.6) components follow in later
+'   milestones.
 '   Internal modules keep mixed-case KPR_Core_* names. The convention is
 '   documented rather than enforced by a static casing rule.
 '
@@ -60,8 +61,8 @@ Attribute VB_Name = "KPR_DATES_DAYS"
 '
 '   The static gate pins this inventory exactly: a missing name, an extra
 '   KPR_Dates_* name, the legacy plural DatesFromPillar or any _Spill twin
-'   fails the build. That control is temporary and is replaced by the #26
-'   manifest.
+'   fails the build (kpr-public-surface, which checks this facade against
+'   contract section 2 and the docs/PUBLIC_API.txt manifest).
 '
 ' ARCHITECTURE
 '   This module is the only place a supported KPR_Dates_* function is declared.
@@ -99,8 +100,9 @@ Attribute VB_Name = "KPR_DATES_DAYS"
 '   direct VBA. Direct VBA, the Immediate window, Application.Run and the
 '   regression harness are the certified uses of that path. Other non-Range
 '   callers exist (shape macros, data validation, chart series, conditional
-'   formatting, defined names) and v0.0.2 makes no claim for them; they are
-'   #29 probe targets. See TryResolveHostDateSystem for the full list.
+'   formatting, defined names); they are outside the v0.0.4 compatibility
+'   claim and are probed during Windows certification (contract section 4).
+'   See TryResolveHostDateSystem for the full list.
 '
 '   Library-produced #N/A and a propagated incoming #N/A are the same Excel
 '   value. KPR_Dates_HostDateSystem is the discriminator: 1904 identifies host
@@ -261,7 +263,7 @@ Public Function KPR_Dates_DayOfWeek( _
 ' ERROR POLICY (USER FACING)
 '   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
-'            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text; an optional control of the wrong type or an unknown token
+'            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text; an optional control of the wrong type
 '   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE
 '   #N/A     an identified 1904 worksheet caller, or an identified caller
 '            whose date system cannot be read
@@ -285,7 +287,7 @@ Public Function KPR_Dates_DayOfWeek( _
 '   - Elem_DayOfWeek
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '   - TryResolveBool (KPR_Core_Array, KPR_Core_Parse)
 '
 ' NOTES
@@ -403,7 +405,7 @@ Public Function KPR_Dates_DaysInMonth( _
 '     Long on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text
 '   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE
@@ -429,7 +431,7 @@ Public Function KPR_Dates_DaysInMonth( _
 '   - Elem_DaysInMonth
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - None.
@@ -542,7 +544,7 @@ Public Function KPR_Dates_DaysInYear( _
 '     Long on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; an integer argument that is fractional, Boolean, text, or outside its domain
 '   #NUM!    an output of 100,001 or more elements; an integer outside the Long range
@@ -568,7 +570,7 @@ Public Function KPR_Dates_DaysInYear( _
 '   - Elem_DaysInYear
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - Takes a calendar year, not a date. No date is constructed, so no window gate applies and year 1900 is fully in the domain.
@@ -689,10 +691,10 @@ Public Function KPR_Dates_BeginOfMonth( _
 '     Date on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text
-'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; a result outside the supported window
+'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE
 '   #N/A     an identified 1904 worksheet caller, or an identified caller
 '            whose date system cannot be read
 '   Incoming native errors are returned unchanged.
@@ -715,7 +717,7 @@ Public Function KPR_Dates_BeginOfMonth( _
 '   - Elem_BeginOfMonth
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - None.
@@ -828,10 +830,10 @@ Public Function KPR_Dates_EndOfMonth( _
 '     Date on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text
-'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; a result outside the supported window
+'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE
 '   #N/A     an identified 1904 worksheet caller, or an identified caller
 '            whose date system cannot be read
 '   Incoming native errors are returned unchanged.
@@ -854,7 +856,7 @@ Public Function KPR_Dates_EndOfMonth( _
 '   - Elem_EndOfMonth
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - None.
@@ -967,7 +969,7 @@ Public Function KPR_Dates_BeginOfQuarter( _
 '     Date on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text
 '   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; a result outside the supported window
@@ -993,7 +995,7 @@ Public Function KPR_Dates_BeginOfQuarter( _
 '   - Elem_BeginOfQuarter
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - A Q1-1900 input names 1900-01-01, which is outside the supported window: RESULT_WINDOW, not a date.
@@ -1106,10 +1108,10 @@ Public Function KPR_Dates_EndOfQuarter( _
 '     Date on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text
-'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; a result outside the supported window
+'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE
 '   #N/A     an identified 1904 worksheet caller, or an identified caller
 '            whose date system cannot be read
 '   Incoming native errors are returned unchanged.
@@ -1132,7 +1134,7 @@ Public Function KPR_Dates_EndOfQuarter( _
 '   - Elem_EndOfQuarter
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - Always inside the window for an in-window input: the quarter end is never earlier than the input.
@@ -1245,7 +1247,7 @@ Public Function KPR_Dates_BeginOfYear( _
 '     Date on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text
 '   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; a result outside the supported window
@@ -1271,7 +1273,7 @@ Public Function KPR_Dates_BeginOfYear( _
 '   - Elem_BeginOfYear
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - Any 1900 input names 1900-01-01, which is outside the supported window: RESULT_WINDOW, not a date.
@@ -1384,10 +1386,10 @@ Public Function KPR_Dates_EndOfYear( _
 '     Date on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text
-'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; a result outside the supported window
+'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE
 '   #N/A     an identified 1904 worksheet caller, or an identified caller
 '            whose date system cannot be read
 '   Incoming native errors are returned unchanged.
@@ -1410,7 +1412,7 @@ Public Function KPR_Dates_EndOfYear( _
 '   - Elem_EndOfYear
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - None.
@@ -1531,7 +1533,7 @@ Public Function KPR_Dates_IsMonthEnd( _
 '     Boolean on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text
 '   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE
@@ -1557,7 +1559,7 @@ Public Function KPR_Dates_IsMonthEnd( _
 '   - Elem_IsMonthEnd
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - None.
@@ -1670,7 +1672,7 @@ Public Function KPR_Dates_IsQuarterEnd( _
 '     Boolean on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text
 '   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE
@@ -1696,7 +1698,7 @@ Public Function KPR_Dates_IsQuarterEnd( _
 '   - Elem_IsQuarterEnd
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - None.
@@ -1809,7 +1811,7 @@ Public Function KPR_Dates_IsYearEnd( _
 '     Boolean on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text
 '   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE
@@ -1835,7 +1837,7 @@ Public Function KPR_Dates_IsYearEnd( _
 '   - Elem_IsYearEnd
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - None.
@@ -1948,7 +1950,7 @@ Public Function KPR_Dates_IsLeapYear( _
 '     Boolean on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; an integer argument that is fractional, Boolean, text, or outside its domain
 '   #NUM!    an output of 100,001 or more elements; an integer outside the Long range
@@ -1974,7 +1976,7 @@ Public Function KPR_Dates_IsLeapYear( _
 '   - Elem_IsLeapYear
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - Takes a calendar year, not a date. IsLeapYear(1900) is False; no window gate applies.
@@ -2098,7 +2100,7 @@ Public Function KPR_Dates_AddDays( _
 '     Date on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text; an integer argument that is fractional, Boolean, text, or outside its domain
 '   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; an integer outside the Long range; a result outside the supported window
@@ -2124,7 +2126,7 @@ Public Function KPR_Dates_AddDays( _
 '   - Elem_AddDays
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - The shift is computed in Double and gated before coercion back to Date, so an overflow can never reach CDate.
@@ -2247,7 +2249,7 @@ Public Function KPR_Dates_AddWeeks( _
 '     Date on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text; an integer argument that is fractional, Boolean, text, or outside its domain
 '   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; an integer outside the Long range; a result outside the supported window
@@ -2273,7 +2275,7 @@ Public Function KPR_Dates_AddWeeks( _
 '   - Elem_AddWeeks
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - None.
@@ -2401,7 +2403,7 @@ Public Function KPR_Dates_AddMonths( _
 ' ERROR POLICY (USER FACING)
 '   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
-'            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text; an integer argument that is fractional, Boolean, text, or outside its domain; an optional control of the wrong type or an unknown token
+'            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text; an integer argument that is fractional, Boolean, text, or outside its domain; an optional control of the wrong type
 '   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; an integer outside the Long range; a result outside the supported window
 '   #N/A     an identified 1904 worksheet caller, or an identified caller
 '            whose date system cannot be read
@@ -2425,7 +2427,7 @@ Public Function KPR_Dates_AddMonths( _
 '   - Elem_AddMonths
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '   - TryResolveBool (KPR_Core_Array, KPR_Core_Parse)
 '
 ' NOTES
@@ -2558,7 +2560,7 @@ Public Function KPR_Dates_AddYears( _
 ' ERROR POLICY (USER FACING)
 '   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
-'            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text; an integer argument that is fractional, Boolean, text, or outside its domain; an optional control of the wrong type or an unknown token
+'            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text; an integer argument that is fractional, Boolean, text, or outside its domain; an optional control of the wrong type
 '   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; an integer outside the Long range; a result outside the supported window
 '   #N/A     an identified 1904 worksheet caller, or an identified caller
 '            whose date system cannot be read
@@ -2582,7 +2584,7 @@ Public Function KPR_Dates_AddYears( _
 '   - Elem_AddYears
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '   - TryResolveBool (KPR_Core_Array, KPR_Core_Parse)
 '
 ' NOTES
@@ -2729,8 +2731,8 @@ Public Function KPR_Dates_NthWeekdayOfMonth( _
 ' ERROR POLICY (USER FACING)
 '   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
-'            two non-scalar arguments of different shapes; an integer argument that is fractional, Boolean, text, or outside its domain; an optional control of the wrong type or an unknown token
-'   #NUM!    an output of 100,001 or more elements; an integer outside the Long range; a result outside the supported window
+'            two non-scalar arguments of different shapes; an integer argument that is fractional, Boolean, text, or outside its domain; an optional control of the wrong type
+'   #NUM!    an output of 100,001 or more elements; an integer outside the Long range; a result outside the supported window; an nth occurrence the month does not contain
 '   #N/A     an identified 1904 worksheet caller, or an identified caller
 '            whose date system cannot be read
 '   Incoming native errors are returned unchanged.
@@ -2753,7 +2755,7 @@ Public Function KPR_Dates_NthWeekdayOfMonth( _
 '   - Elem_NthWeekdayOfMonth
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '   - TryResolveBool (KPR_Core_Array, KPR_Core_Parse)
 '
 ' NOTES
@@ -2903,7 +2905,7 @@ Public Function KPR_Dates_LastWeekdayOfMonth( _
 ' ERROR POLICY (USER FACING)
 '   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
-'            two non-scalar arguments of different shapes; an integer argument that is fractional, Boolean, text, or outside its domain; an optional control of the wrong type or an unknown token
+'            two non-scalar arguments of different shapes; an integer argument that is fractional, Boolean, text, or outside its domain; an optional control of the wrong type
 '   #NUM!    an output of 100,001 or more elements; an integer outside the Long range; a result outside the supported window
 '   #N/A     an identified 1904 worksheet caller, or an identified caller
 '            whose date system cannot be read
@@ -2927,7 +2929,7 @@ Public Function KPR_Dates_LastWeekdayOfMonth( _
 '   - Elem_LastWeekdayOfMonth
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '   - TryResolveBool (KPR_Core_Array, KPR_Core_Parse)
 '
 ' NOTES
@@ -3076,7 +3078,7 @@ Public Function KPR_Dates_PillarFromDates( _
 '   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text; an optional control of the wrong type or an unknown token
-'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE
+'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; under CEILING, no in-window anchor reaches EndDate
 '   #N/A     an identified 1904 worksheet caller, or an identified caller
 '            whose date system cannot be read
 '   Incoming native errors are returned unchanged.
@@ -3099,7 +3101,7 @@ Public Function KPR_Dates_PillarFromDates( _
 '   - Elem_PillarFromDates
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '   - TryResolveRounding (KPR_Core_Array, KPR_Core_Parse)
 '
 ' NOTES
@@ -3227,10 +3229,10 @@ Public Function KPR_Dates_DateFromPillar( _
 '     Date on success, or a native Excel error value.
 '
 ' ERROR POLICY (USER FACING)
-'   #VALUE!  a multi-cell optional control; a shape that is not a scalar,
+'   #VALUE!  a shape that is not a scalar,
 '            Range or array, or a multi-area, empty, jagged or rank-3+ input;
 '            two non-scalar arguments of different shapes; a date argument that is not scalar, not a date, or malformed text; a pillar token outside the accepted grammar
-'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; a result outside the supported window
+'   #NUM!    an output of 100,001 or more elements; a date outside KPR_MIN_DATE .. KPR_MAX_DATE; a result outside the supported window; a valid pillar whose aggregate is outside the numeric range
 '   #N/A     an identified 1904 worksheet caller, or an identified caller
 '            whose date system cannot be read
 '   Incoming native errors are returned unchanged.
@@ -3253,7 +3255,7 @@ Public Function KPR_Dates_DateFromPillar( _
 '   - Elem_DateFromPillar
 '   - KPR_Core_Array: TryClassifyShape, AccumulateShape, CheckCapacity,
 '     TryMaterialize, TryAllocateOutput, ElementAt
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - Months first with clip semantics, then exact days, matching the parser's grammar. The name is singular because the function returns exactly one date per element.
@@ -4862,6 +4864,8 @@ Private Function Elem_DateFromPillar( _
 '
 ' NOTES
 '   - Months first with clip semantics, then exact days, matching the parser's grammar. The name is singular because the function returns exactly one date per element.
+'   - A valid pillar whose month or day shift leaves the supported window is
+'     PILLAR_AGGREGATE_RANGE (contract section 3.4), not RESULT_WINDOW.
 '
 ' UPDATED
 '   2026-09-02
@@ -4901,12 +4905,12 @@ Private Function Elem_DateFromPillar( _
                 Elem_DateFromPillar = ErrForCondition(KPR_COND_PILLAR_AGGREGATE_RANGE): Exit Function
             End If
             If Not TryAddMonths(WorkDate, CLng(PMonths), False, WorkDate) Then
-                Elem_DateFromPillar = ErrForCondition(KPR_COND_RESULT_WINDOW): Exit Function
+                Elem_DateFromPillar = ErrForCondition(KPR_COND_PILLAR_AGGREGATE_RANGE): Exit Function
             End If
         End If
         ResultD = CDbl(WorkDate) + PDays
         If (ResultD < CDbl(KPR_MIN_DATE)) Or (ResultD > CDbl(KPR_MAX_DATE)) Then
-            Elem_DateFromPillar = ErrForCondition(KPR_COND_RESULT_WINDOW): Exit Function
+            Elem_DateFromPillar = ErrForCondition(KPR_COND_PILLAR_AGGREGATE_RANGE): Exit Function
         End If
         Elem_DateFromPillar = CDate(ResultD)
         Exit Function
@@ -4974,7 +4978,7 @@ Public Function KPR_Dates_HostDateSystem() As Variant
 '
 ' DEPENDENCIES
 '   - TryResolveHostDateSystem
-'   - KPR_Core_Err.ErrForCondition
+'   - KPR_Core_Err: ErrForCondition, ErrValue
 '
 ' NOTES
 '   - This function calls the classifier directly rather than PassHostGuard,
@@ -5505,14 +5509,15 @@ Private Function TryResolveHostDateSystem( _
 ' WHAT "NO WORKSHEET HOST" DOES NOT MEAN
 '   It does not mean the caller is proven direct VBA. Direct VBA, the
 '   Immediate window, Application.Run and the regression harness are the
-'   CERTIFIED uses of this path. Excel also exposes non-Range callers in other
-'   contexts, and v0.0.2 makes no compatibility claim for any of them:
+'   CERTIFIED uses of this path; they present an Error caller. Excel also
+'   exposes non-Range callers in other contexts, and the v0.0.4 compatibility
+'   claim covers none of them:
 '       - a String naming a macro-attached shape
-'       - an Error value from the Immediate window and from Application.Run
 '       - Error or other non-Range forms in data-validation, chart-series,
 '         conditional-formatting and defined-name evaluation
-'   Their caller forms and observed behaviour are #29 probe targets, as is the
-'   case where Application.Caller raises rather than returning a value.
+'   Their caller forms and observed behaviour are Windows certification probe
+'   targets (contract section 4), as is the case where Application.Caller
+'   raises rather than returning a value.
 '
 ' ERROR POLICY
 '   - Does not raise. Every failure while reading the caller is absorbed into
