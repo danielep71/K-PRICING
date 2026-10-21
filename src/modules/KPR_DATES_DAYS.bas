@@ -4864,6 +4864,8 @@ Private Function Elem_DateFromPillar( _
 '
 ' NOTES
 '   - Months first with clip semantics, then exact days, matching the parser's grammar. The name is singular because the function returns exactly one date per element.
+'   - A valid pillar whose month or day shift leaves the supported window is
+'     PILLAR_AGGREGATE_RANGE (contract section 3.4), not RESULT_WINDOW.
 '
 ' UPDATED
 '   2026-09-02
@@ -4903,12 +4905,12 @@ Private Function Elem_DateFromPillar( _
                 Elem_DateFromPillar = ErrForCondition(KPR_COND_PILLAR_AGGREGATE_RANGE): Exit Function
             End If
             If Not TryAddMonths(WorkDate, CLng(PMonths), False, WorkDate) Then
-                Elem_DateFromPillar = ErrForCondition(KPR_COND_RESULT_WINDOW): Exit Function
+                Elem_DateFromPillar = ErrForCondition(KPR_COND_PILLAR_AGGREGATE_RANGE): Exit Function
             End If
         End If
         ResultD = CDbl(WorkDate) + PDays
         If (ResultD < CDbl(KPR_MIN_DATE)) Or (ResultD > CDbl(KPR_MAX_DATE)) Then
-            Elem_DateFromPillar = ErrForCondition(KPR_COND_RESULT_WINDOW): Exit Function
+            Elem_DateFromPillar = ErrForCondition(KPR_COND_PILLAR_AGGREGATE_RANGE): Exit Function
         End If
         Elem_DateFromPillar = CDate(ResultD)
         Exit Function
