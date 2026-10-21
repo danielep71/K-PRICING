@@ -50,8 +50,6 @@
       "img.shields.io": "Documentation badges",
       "keepachangelog.com": "Changelog format authority",
       "man.openbsd.org": "OpenSSH reference manual",
-      "pypi.org": "Python dependency metadata",
-      "pyyaml.org": "YAML parser project documentation",
       "semver.org": "Versioning specification",
       "support.microsoft.com": "Office support documentation",
       "www.contributor-covenant.org": "Code of conduct authority"

@@ -177,8 +177,8 @@ Public Function KPR_Demo_Catalog() As Variant
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   The demos this project can build, one "EntryPoint|Caption" text per demo.
-'   A new demo adds one line here; the menu and the regression suite read
-'   this list.
+'   A new demo adds one line here; KPR_Demo_Build and the regression suite
+'   read this list, as the Ribbon and CommandBars menus (#47, #48) will.
 '
 ' RETURNS
 '   A zero-based array of "EntryPoint|Caption" texts.
@@ -1037,7 +1037,7 @@ Private Sub WriteSummary()
     SummaryLine R + 4, "Checks", "=" & CStr(mStatus.Count), "Demo_Checks", _
                 "Every status cell on this sheet."
     With mSh.Cells(R + 5, COL_S_INPUT)
-        .Value = "Built by K-PRICING. Ctrl+Z cannot remove it: delete this sheet instead, and rebuild it from the menu."
+        .Value = "Built by K-PRICING. Ctrl+Z cannot remove it: delete this sheet instead, and run the demo again to rebuild it."
         .Font.Italic = True
     End With
 

@@ -100,9 +100,8 @@ def run_gate(
     and a console rendering distinct from its Markdown summary),
     ``test_workflow_validation.py`` (text-only report, no JSON output) and
     ``check_repo.py`` (a self-contained distributable that must not import this
-    module) -- keep their own ``main``. The template's complete focused-tool
-    consumer/exclusion registry lives in ``checker_development.py``; the
-    canonical checker is independently excluded by its single-file contract.
+    module) -- keep their own ``main``; the canonical checker is excluded by its
+    single-file contract.
     """
     if self_test is not None and options.self_test:
         try:

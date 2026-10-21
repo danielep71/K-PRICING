@@ -720,7 +720,8 @@ Public Function TryParseRoundingControl( _
 ' BEHAVIOR
 '   - Case folding is ASCII-only: a-z map to A-Z and nothing else changes.
 '     UCase$ is deliberately not used, because it consults the host locale and
-'     under Turkish casing the dotless i in CEILING would not fold to I.
+'     under Turkish casing the i of "ceiling" would fold to the dotted capital
+'     I (U+0130) rather than to I.
 '   - Trimming removes leading and trailing ASCII spaces and tabs only.
 '   - An incoming Excel error is NOT classified here; the boundary propagates
 '     it before this routine is called.

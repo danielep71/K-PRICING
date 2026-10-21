@@ -2,8 +2,7 @@
 # .editorconfig
 #------------------------------------------------------------------------------
 # PURPOSE
-#   Provide a portable editing baseline for Excel/VBA projects created from
-#   this template.
+#   Provide a portable editing baseline for this Excel/VBA repository.
 #
 # POLICY
 #   - Exported VBA source uses CRLF and 4-space indentation.
