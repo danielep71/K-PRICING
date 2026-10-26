@@ -92,7 +92,7 @@ Set and then read back:
 | Discussions | Disabled unless a maintained support/community process is documented |
 | Wiki | Disabled unless it has an owner and version-drift control |
 | Projects | Disabled unless a maintained board is part of project governance |
-| Sponsorships | Disabled unless deliberately configured by the owner |
+| Sponsorships | Disabled unless deliberately configured |
 
 Never publish a private reporting address as an issue-form assignee or public
 issue body. The issue chooser points to `SECURITY.md`, which owns the reporting
