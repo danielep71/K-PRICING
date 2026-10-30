@@ -242,6 +242,33 @@ Replace one coherent release, compile again and repeat the full installation
 validation. Do not infer backward compatibility merely from successful VBA
 compilation.
 
+### Updating a development build
+
+`tests/modules/KPR_Dev_Import.bas` replaces the K-PRICING modules of an open
+workbook or add-in with those of one commit in a single call. Import it once
+into the Personal Macro Workbook (`PERSONAL.XLSB`) or another development
+workbook, never into the build it updates. It needs the Excel option **Trust
+access to the VBA project object model** (File > Options > Trust Center >
+Trust Center Settings > Macro Settings) and an unlocked target project.
+
+```text
+? KPR_Dev_ImportModules("<full commit SHA>", "KPR.xlam")
+? KPR_Dev_ImportModules("C:\path\to\K-PRICING", "KPR.xlam")
+```
+
+The first form downloads the commit from GitHub; the second reads a local
+clone. The module list comes from that commit's
+`.github/repository-profile.json`, so new and renamed modules follow
+automatically. A repository module that commit does not list in any role is
+removed: one the loader imported before (it records each import as a hidden
+workbook name `KPRDEV_<module>` in the target) or one the repository has
+tracked under any name. Loading an older commit therefore restores that
+commit's module set. Every other module, such as private ribbon or menu
+modules, is left alone. Every
+file is fetched and checked before the target changes. The call returns the
+number of modules imported, or `-1` with the reason in the Immediate window.
+The target is not saved: compile it, then save it.
+
 ### Local modifications
 
 Treat a locally modified copy as a fork. Diff it against the old and new exported
