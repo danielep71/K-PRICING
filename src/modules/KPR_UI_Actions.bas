@@ -106,7 +106,7 @@ Attribute VB_Name = "KPR_UI_Actions"
         HadFormula      As Boolean      'The cell held a formula
         Formula         As String       'That formula's text
         Dynamic         As Boolean      'Formula was read through Formula2
-        Value           As Variant      'A constant's value, error values included
+        Value           As Variant      'A constant's Value2, error values included
         Prefix          As String       'PrefixCharacter: "'" marks text entered as text
     End Type
 
@@ -135,7 +135,9 @@ Public Sub KPR_UI_InsertFunction( _
 ' BEHAVIOR
 '   A function without arguments is entered directly. Otherwise the cell gets
 '   "=<name>()" and the dialog opens; when the user cancels, the cell gets
-'   back the content it had before. When this project is not an add-in and
+'   back the content it had before. The formula is written through Formula2
+'   when the running Excel provides it, so a vectorized call can spill;
+'   Formula would apply implicit intersection. When this project is not an add-in and
 '   the cell is in another workbook, the name is qualified with this
 '   workbook's name, as Excel requires.
 '
@@ -184,7 +186,7 @@ Public Sub KPR_UI_InsertFunction( _
     'Keep the old content so a cancelled dialog leaves the cell as it was
         SaveCell Target, Saved
         Inserted = "=" & FormulaQualifier(Target.Worksheet.Parent) & FunctionName & "()"
-        Target.Formula = Inserted
+        WriteFormula Target, Inserted
         If KPR_Register_ManifestArgCount(Index) = 0 Then Exit Sub
 
     'Compare with Excel's own spelling of the inserted formula: a cancel leaves
@@ -867,19 +869,41 @@ Private Function FormulaQualifier( _
 End Function
 
 
+Private Sub WriteFormula( _
+    ByVal Cell As Range, _
+    ByVal Formula As String)
+'
+' Writes a formula through Formula2 when the running Excel provides it, so it
+' can spill, and through Formula otherwise.
+'
+    Dim Probe           As Object       'Late-bound view of Cell for Formula2
+
+    Set Probe = Cell
+    On Error Resume Next
+    Probe.Formula2 = Formula
+    If Err.Number = 0 Then Exit Sub
+    Err.Clear
+    On Error GoTo 0
+    Cell.Formula = Formula
+
+End Sub
+
+
 Private Sub SaveCell( _
     ByVal Cell As Range, _
     ByRef Saved As CellContent)
 '
 ' Records what RestoreCell needs to give the cell back exactly: a formula as
 ' its text (through Formula2 when the running Excel provides it, so a
-' dynamic-array formula keeps its form), a constant as its Variant value and
-' prefix character, so an error stays an error and text stays text.
+' dynamic-array formula keeps its form), a constant as its Value2 and prefix
+' character, so an error stays an error, text stays text and a number keeps
+' every digit (Value would round a Currency-formatted number to four
+' decimals).
 '
     Dim Probe           As Object       'Late-bound view of Cell for Formula2
 
     Saved.HadFormula = Cell.HasFormula
-    Saved.Value = Cell.Value
+    Saved.Value = Cell.Value2
     Saved.Prefix = CStr(Cell.PrefixCharacter)
     If Not Saved.HadFormula Then Exit Sub
     Set Probe = Cell
@@ -913,9 +937,9 @@ Private Sub RestoreCell( _
     ElseIf IsEmpty(Saved.Value) Then
         Cell.ClearContents
     ElseIf VarType(Saved.Value) = vbString And Saved.Prefix = "'" Then
-        Cell.Value = "'" & Saved.Value
+        Cell.Value2 = "'" & Saved.Value
     Else
-        Cell.Value = Saved.Value
+        Cell.Value2 = Saved.Value
     End If
 
 End Sub
