@@ -14,6 +14,10 @@ Attribute VB_Name = "KPR_Dev_Import"
 '   modules follow the repository without editing the loader.
 '
 ' SCOPE
+'   - KPR_Dev_CheckLatest       the one macro to run (Alt+F8): checks the
+'                               latest main in KPR.xlam
+'   - KPR_Dev_CheckBuild        import, compile, save, two regression runs
+'                               and a Ribbon load check of one commit
 '   - KPR_Dev_ImportModules     import one commit's modules into a target
 '
 ' WHERE IT LIVES
@@ -53,8 +57,8 @@ Attribute VB_Name = "KPR_Dev_Import"
 '   discard.
 '
 ' VISIBILITY
-'   Option Private Module. Development infrastructure, called from the
-'   Immediate window.
+'   No Option Private Module, so KPR_Dev_CheckLatest appears in the macro
+'   list (Alt+F8). Development infrastructure, never imported into a build.
 '
 ' ALLOWED DEPENDENCIES
 '   None.
@@ -70,7 +74,6 @@ Attribute VB_Name = "KPR_Dev_Import"
 ' MODULE SETTINGS
 '------------------------------------------------------------------------------
     Option Explicit         'Force explicit variable declarations
-    Option Private Module   'Development infrastructure: invisible outside this project
 
 '------------------------------------------------------------------------------
 ' CONSTANTS
@@ -98,6 +101,13 @@ Attribute VB_Name = "KPR_Dev_Import"
 
     'VBComponent type of a standard module
         Private Const STANDARD_MODULE As Long = 1
+
+    'Build KPR_Dev_CheckLatest checks, and where a branch is resolved to a SHA
+        Private Const DEFAULT_TARGET As String = "KPR.xlam"
+        Private Const API_COMMITS As String = "https://api.github.com/repos/danielep71/K-PRICING/commits/"
+
+    'Control id of Debug > Compile in the VBA editor
+        Private Const COMPILE_COMMAND As Long = 578
 
 '
 '------------------------------------------------------------------------------
@@ -235,6 +245,411 @@ Fail:
     CleanUp Folder
 
 End Function
+
+'
+'------------------------------------------------------------------------------
+'
+'                              ONE-CLICK EXCEL CHECK
+'
+'------------------------------------------------------------------------------
+'
+
+Public Sub KPR_Dev_CheckLatest()
+'
+'==============================================================================
+'                             KPR_Dev_CheckLatest
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The one macro to run (Alt+F8) to check the latest main in Excel: runs
+'   KPR_Dev_CheckBuild on the current main for KPR.xlam and shows the
+'   outcome. Send the files of the folder it opens.
+'
+' UPDATED
+'   2026-11-03
+'==============================================================================
+'
+    KPR_Dev_CheckBuild "main", DEFAULT_TARGET
+
+End Sub
+
+
+Public Function KPR_Dev_CheckBuild( _
+    ByVal Source As String, _
+    ByVal TargetWorkbook As String) _
+    As Boolean
+'
+'==============================================================================
+'                              KPR_Dev_CheckBuild
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Does every step of an Excel check of one commit, unattended:
+'     1. resolves Source to its exact 40-character commit SHA;
+'     2. imports that commit's modules into TargetWorkbook;
+'     3. compiles its VBA project and saves it;
+'     4. runs KPR_Test_RunAll twice, into run-1 and run-2;
+'     5. loads the commit's Ribbon into a copy of the target and checks that
+'        Excel loaded it (Windows only);
+'   then writes summary.txt, opens the folder and shows the outcome.
+'
+' INPUTS
+'   Source
+'     A branch name such as "main", or a full commit SHA.
+'   TargetWorkbook
+'     The open workbook or add-in to update, e.g. "KPR.xlam".
+'
+' RETURNS
+'   TRUE when every step passed.
+'
+' OUTPUT
+'   A new folder Documents\KPR-evidence\<date>-<SHA prefix> holding
+'   run-1\kpr-test-evidence.json, run-2\kpr-test-evidence.json and
+'   summary.txt. The Ribbon copy is deleted after the check.
+'
+' ERROR POLICY
+'   Never raises. A failed step is reported in summary.txt and the message;
+'   the steps after a failed import or compile are skipped, because they
+'   would test the wrong code.
+'
+' UPDATED
+'   2026-11-03
+'==============================================================================
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Sha         As String       'Exact commit checked
+    Dim Folder      As String       'Output folder
+    Dim Report      As String       'summary.txt text
+    Dim Detail      As String       'Reason a step failed
+    Dim Target      As Workbook     'The updated workbook or add-in
+    Dim Imported    As Long         'Result of KPR_Dev_ImportModules
+    Dim Run1        As Boolean      'First regression run passed
+    Dim Run2        As Boolean      'Second regression run passed
+    Dim Ribbon      As String       'PASS, FAIL or NOT RUN
+    Dim Passed      As Boolean      'Every step passed
+
+'------------------------------------------------------------------------------
+' RESOLVE, IMPORT, COMPILE AND SAVE
+'------------------------------------------------------------------------------
+    'Stop at the first failure: later steps would test the wrong code
+        On Error GoTo Fail
+        Application.StatusBar = "K-PRICING check: resolving " & Source & "..."
+        If Not TryResolveSha(Source, Sha, Detail) Then GoTo Finish
+        Report = "Source:  " & Source & vbCrLf & "Commit:  " & Sha & vbCrLf & _
+                 "Target:  " & TargetWorkbook & vbCrLf & "Started: " & Format$(Now, "yyyy-mm-dd hh:nn:ss") & vbCrLf
+        Application.StatusBar = "K-PRICING check: importing " & Left$(Sha, 8) & "..."
+        Imported = KPR_Dev_ImportModules(Sha, TargetWorkbook)
+        If Imported < 0 Then
+            Detail = "Import failed; the Immediate window (Ctrl+G in the VBA editor) says why."
+            GoTo Finish
+        End If
+        Report = Report & "Import:  PASS (" & CStr(Imported) & " modules)" & vbCrLf
+        Set Target = Workbooks(TargetWorkbook)
+        Application.StatusBar = "K-PRICING check: compiling..."
+        If Not TryCompile(Target.VBProject, Detail) Then GoTo Finish
+        Report = Report & "Compile: PASS" & vbCrLf
+        Target.Save
+        Report = Report & "Save:    PASS" & vbCrLf
+
+'------------------------------------------------------------------------------
+' REGRESSION RUNS
+'------------------------------------------------------------------------------
+    'Two runs, so the evidence can be compared for determinism
+        Folder = EvidenceFolder(Sha)
+        Application.StatusBar = "K-PRICING check: regression run 1 of 2..."
+        Run1 = CBool(Application.Run(QualifiedIn(Target, "KPR_Test_RunAll"), Sha, _
+                                     Folder & Application.PathSeparator & "run-1"))
+        Report = Report & "Run 1:   " & IIf(Run1, "PASS", "FAIL") & vbCrLf
+        Application.StatusBar = "K-PRICING check: regression run 2 of 2..."
+        Run2 = CBool(Application.Run(QualifiedIn(Target, "KPR_Test_RunAll"), Sha, _
+                                     Folder & Application.PathSeparator & "run-2"))
+        Report = Report & "Run 2:   " & IIf(Run2, "PASS", "FAIL") & vbCrLf
+
+'------------------------------------------------------------------------------
+' RIBBON
+'------------------------------------------------------------------------------
+    'A copy carries the tab, so the user's own add-in is never rewritten
+        Application.StatusBar = "K-PRICING check: loading the Ribbon in a copy..."
+        Ribbon = RibbonCheck(Target, Sha, Folder, Detail)
+        Report = Report & "Ribbon:  " & Ribbon & IIf(Len(Detail) > 0, " (" & Detail & ")", "") & vbCrLf
+        Detail = vbNullString
+        Passed = Run1 And Run2 And Ribbon = "PASS"
+
+'------------------------------------------------------------------------------
+' REPORT
+'------------------------------------------------------------------------------
+Finish:
+    'Every path ends here: write what is known, show it, open the folder
+        On Error Resume Next
+        Application.StatusBar = False
+        If Len(Detail) > 0 Then Report = Report & "STOPPED: " & Detail & vbCrLf
+        Report = Report & "Result:  " & IIf(Passed, "PASS", "FAIL") & vbCrLf
+        If Len(Folder) = 0 And Len(Sha) > 0 Then Folder = EvidenceFolder(Sha)
+        If Len(Folder) > 0 Then
+            WriteText Folder & Application.PathSeparator & "summary.txt", Report
+            Shell "explorer.exe """ & Folder & """", vbNormalFocus
+            Report = Report & vbCrLf & "Send the files of this folder:" & vbCrLf & Folder
+        End If
+        Debug.Print Report
+        MsgBox Report, IIf(Passed, vbInformation, vbExclamation), "K-PRICING check"
+        KPR_Dev_CheckBuild = Passed
+        Exit Function
+
+Fail:
+    'An unexpected error still reaches the report
+        Detail = "error " & CStr(Err.Number) & " (" & Err.Description & ")"
+        Resume Finish
+
+End Function
+
+
+Private Function TryResolveSha( _
+    ByVal Source As String, _
+    ByRef Sha As String, _
+    ByRef Detail As String) _
+    As Boolean
+'
+' A full SHA as given, or the commit a branch points to now, from the GitHub
+' API, so the evidence is bound to an exact commit.
+'
+    Dim Http    As Object       'MSXML2.XMLHTTP request
+
+    If IsSha(Source) Then
+        Sha = LCase$(Source)
+        TryResolveSha = True
+        Exit Function
+    End If
+    On Error GoTo Failed
+    Set Http = CreateObject("MSXML2.XMLHTTP.6.0")
+    Http.Open "GET", API_COMMITS & Source, False
+    Http.setRequestHeader "Accept", "application/vnd.github.sha"
+    Http.send
+    Sha = LCase$(Trim$(Replace(Replace(CStr(Http.responseText), vbCr, ""), vbLf, "")))
+    If Http.Status = 200 And IsSha(Sha) Then
+        TryResolveSha = True
+    Else
+        Detail = "GitHub returned " & CStr(Http.Status) & " for the branch " & Source & "."
+    End If
+    Exit Function
+
+Failed:
+    Detail = "could not ask GitHub for " & Source & ": error " & CStr(Err.Number) & " (" & Err.Description & ")"
+
+End Function
+
+
+Private Function TryCompile( _
+    ByVal Project As Object, _
+    ByRef Detail As String) _
+    As Boolean
+'
+' Compiles Project with the VBA editor's own Debug > Compile command. The
+' command is disabled once the project is compiled, so it still being
+' enabled afterwards means a compile error, which the editor shows.
+'
+    Dim CompileCmd  As Object       'Debug > Compile in the VBA editor
+
+    On Error GoTo Failed
+    Set Application.VBE.ActiveVBProject = Project
+    Set CompileCmd = Application.VBE.CommandBars.FindControl(Type:=1, Id:=COMPILE_COMMAND)
+    If CompileCmd Is Nothing Then
+        Detail = "the VBA editor has no Debug > Compile command."
+        Exit Function
+    End If
+    If CompileCmd.Enabled Then CompileCmd.Execute
+    DoEvents
+    TryCompile = Not CompileCmd.Enabled
+    If Not TryCompile Then Detail = "compile error; the VBA editor shows the line."
+    Exit Function
+
+Failed:
+    Detail = "could not compile: error " & CStr(Err.Number) & " (" & Err.Description & ")"
+
+End Function
+
+
+Private Function RibbonCheck( _
+    ByVal Target As Workbook, _
+    ByVal Sha As String, _
+    ByVal Folder As String, _
+    ByRef Detail As String) _
+    As String
+'
+' Writes the commit's src/ribbon/customUI14.xml into a copy of Target with
+' PowerShell, opens the copy with its events off and returns PASS when
+' Excel loaded the tab (KPR_UI_RibbonLoaded) and its Functions menu builds,
+' FAIL otherwise, or NOT RUN where PowerShell is unavailable. The copy is
+' closed and deleted.
+'
+    Dim Work        As String       'Ribbon working folder
+    Dim CopyPath    As String       'The copy that receives the tab
+    Dim Script      As String       'PowerShell injector
+    Dim ExitCode    As Long         'Its exit code
+    Dim Copy        As Workbook     'The opened copy
+    Dim Events      As Boolean      'EnableEvents on entry
+    Dim Loaded      As Boolean      'onLoad ran in the copy
+    Dim Started     As Single       'Wait start
+    Dim Menu        As String       'Functions menu XML from the copy
+
+    RibbonCheck = "FAIL"
+    If Application.OperatingSystem Like "*Mac*" Then
+        RibbonCheck = "NOT RUN"
+        Detail = "needs Windows PowerShell"
+        Exit Function
+    End If
+    On Error GoTo Failed
+    Work = Folder & Application.PathSeparator & "ribbon"
+    MkDir Work
+    If Not TryFetch(Sha, "src/ribbon/customUI14.xml", Work & "\customUI14.xml", Detail) Then GoTo CleanUp
+    CopyPath = Work & "\KPR-ribbon-check." & LCase$(Mid$(Target.Name, InStrRev(Target.Name, ".") + 1))
+    Target.SaveCopyAs CopyPath
+    Script = Work & "\inject.ps1"
+    WriteText Script, InjectorScript()
+    ExitCode = CreateObject("WScript.Shell").Run("powershell.exe -NoProfile -ExecutionPolicy Bypass -File """ & _
+                                              Script & """ -Package """ & CopyPath & """ -CustomUI """ & _
+                                              Work & "\customUI14.xml""", 0, True)
+    If ExitCode <> 0 Then
+        Detail = "PowerShell could not write the tab (exit " & CStr(ExitCode) & ")"
+        GoTo CleanUp
+    End If
+    Events = Application.EnableEvents
+    Application.EnableEvents = False
+    Set Copy = Workbooks.Open(CopyPath)
+    Application.EnableEvents = Events
+    Started = Timer
+    Do
+        DoEvents
+        Loaded = CBool(Application.Run(QualifiedIn(Copy, "KPR_UI_RibbonLoaded")))
+    Loop Until Loaded Or Timer - Started > 10 Or Timer < Started
+    Menu = CStr(Application.Run(QualifiedIn(Copy, "KPR_UI_RibbonMenuXml"), "functions", "Date primitives"))
+    If Not Loaded Then
+        Detail = "Excel did not load the tab (onLoad never ran)"
+    ElseIf InStr(1, Menu, "KPR_Fn_", vbBinaryCompare) = 0 Then
+        Detail = "the tab loaded but its Functions menu is empty"
+    Else
+        RibbonCheck = "PASS"
+    End If
+
+CleanUp:
+    'Never leave the copy open or on disk
+        On Error Resume Next
+        Application.EnableEvents = True
+        If Not Copy Is Nothing Then Copy.Close SaveChanges:=False
+        Kill CopyPath
+        Kill Script
+        Kill Work & "\customUI14.xml"
+        RmDir Work
+        Err.Clear
+        Exit Function
+
+Failed:
+    Detail = "error " & CStr(Err.Number) & " (" & Err.Description & ")"
+    Resume CleanUp
+
+End Function
+
+
+Private Function InjectorScript() As String
+'
+' The PowerShell script RibbonCheck runs on the copy: it replaces
+' customUI/customUI14.xml, keeps exactly one Office 2010 ribbon relationship
+' and makes sure .xml parts have a content type. It is the minimal Windows
+' equivalent of tools/inject_ribbon.py, for a throwaway copy only.
+'
+    Dim S As String     'Script text
+
+    S = "param([string]$Package, [string]$CustomUI)" & vbCrLf
+    S = S & "$ErrorActionPreference = 'Stop'" & vbCrLf
+    S = S & "Add-Type -AssemblyName System.IO.Compression" & vbCrLf
+    S = S & "Add-Type -AssemblyName System.IO.Compression.FileSystem" & vbCrLf
+    S = S & "$type = 'http://schemas.microsoft.com/office/2007/relationships/ui/extensibility'" & vbCrLf
+    S = S & "$utf8 = New-Object System.Text.UTF8Encoding($false)" & vbCrLf
+    S = S & "function ReadEntry($zip, $name) { $r = New-Object System.IO.StreamReader($zip.GetEntry($name).Open()); " & _
+            "$t = $r.ReadToEnd(); $r.Close(); return $t }" & vbCrLf
+    S = S & "function WriteEntry($zip, $name, $text) { $old = $zip.GetEntry($name); if ($old) { $old.Delete() }; " & _
+            "$w = New-Object System.IO.StreamWriter($zip.CreateEntry($name).Open(), $utf8); $w.Write($text); $w.Close() }" & vbCrLf
+    S = S & "$zip = [System.IO.Compression.ZipFile]::Open($Package, 'Update')" & vbCrLf
+    S = S & "try {" & vbCrLf
+    S = S & "  WriteEntry $zip 'customUI/customUI14.xml' ([System.IO.File]::ReadAllText($CustomUI, $utf8))" & vbCrLf
+    S = S & "  $rels = ReadEntry $zip '_rels/.rels'" & vbCrLf
+    S = S & "  $rels = [regex]::Replace($rels, '<Relationship[^>]*' + [regex]::Escape($type) + '[^>]*/>', '')" & vbCrLf
+    S = S & "  $rels = $rels.Replace('</Relationships>', '<Relationship Id=""rIdKprRibbon"" Type=""' + $type + " & _
+            "'"" Target=""customUI/customUI14.xml""/></Relationships>')" & vbCrLf
+    S = S & "  WriteEntry $zip '_rels/.rels' $rels" & vbCrLf
+    S = S & "  $types = ReadEntry $zip '[Content_Types].xml'" & vbCrLf
+    S = S & "  if ($types -notmatch 'Extension=""xml""') { $types = $types.Replace('</Types>', " & _
+            "'<Default Extension=""xml"" ContentType=""application/xml""/></Types>'); WriteEntry $zip '[Content_Types].xml' $types }" & vbCrLf
+    S = S & "} finally { $zip.Dispose() }" & vbCrLf
+    InjectorScript = S
+
+End Function
+
+
+Private Function EvidenceFolder( _
+    ByVal Sha As String) _
+    As String
+'
+' Creates and returns Documents\KPR-evidence\<date-time>-<SHA prefix>.
+'
+    Dim Base        As String       'Documents\KPR-evidence
+
+    On Error Resume Next
+    Base = CStr(CreateObject("WScript.Shell").SpecialFolders("MyDocuments"))
+    If Len(Base) = 0 Then Base = Environ$("USERPROFILE")
+    Base = Base & Application.PathSeparator & "KPR-evidence"
+    MkDir Base
+    EvidenceFolder = Base & Application.PathSeparator & Format$(Now, "yyyymmdd-hhnnss") & "-" & Left$(Sha, 8)
+    MkDir EvidenceFolder
+    Err.Clear
+
+End Function
+
+
+Private Function QualifiedIn( _
+    ByVal Wb As Workbook, _
+    ByVal ProcedureName As String) _
+    As String
+'
+' The workbook-qualified name Application.Run needs for a procedure of Wb.
+'
+    QualifiedIn = "'" & Replace(Wb.Name, "'", "''") & "'!" & ProcedureName
+
+End Function
+
+
+Private Sub WriteText( _
+    ByVal File As String, _
+    ByVal Text As String)
+'
+' Writes Text to File, replacing it.
+'
+    Dim FileNo      As Integer      'Output file
+
+    FileNo = FreeFile
+    Open File For Output As #FileNo
+    Print #FileNo, Text;
+    Close #FileNo
+
+End Sub
+
+
+Private Function IsSha( _
+    ByVal Text As String) _
+    As Boolean
+'
+' TRUE for exactly 40 hexadecimal characters.
+'
+    Dim I           As Long         'Character cursor
+
+    If Len(Text) <> 40 Then Exit Function
+    For I = 1 To 40
+        If InStr(1, "0123456789abcdef", LCase$(Mid$(Text, I, 1)), vbBinaryCompare) = 0 Then Exit Function
+    Next I
+    IsSha = True
+
+End Function
+
 
 '
 '------------------------------------------------------------------------------

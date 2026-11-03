@@ -187,6 +187,7 @@ REQUIRED_MEMBERS = {
         "KPR_UI_Ribbon_GetDevelopmentVisible",
         "KPR_UI_RibbonRefresh",
         "KPR_UI_RibbonMenuXml",
+        "KPR_UI_RibbonLoaded",
     }),
 }
 FORBIDDEN_PARSE_CALLS = ("IsDate", "DateValue", "CVDate", "IsNumeric")
