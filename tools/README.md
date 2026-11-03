@@ -1,6 +1,6 @@
 # 🛠️ Tools and Validation Guide
 
-[![Runtime: Python 3.10](https://img.shields.io/badge/runtime-Python%203.10-1D76DB)](#python-presentation-and-lint-policy)
+[![Runtime: Python 3.13](https://img.shields.io/badge/runtime-Python%203.13-1D76DB)](#python-presentation-and-lint-policy)
 [![Evidence: bounded](https://img.shields.io/badge/evidence-explicit%20scope-217346)](#canonical-repository-quality-gate)
 
 `tools/` contains repository validators, evidence collectors and setup tooling.
@@ -30,7 +30,7 @@ have separately documented observation, credential and mutation boundaries.
 
 ## 📐 Python presentation and lint policy
 
-[`pyproject.toml`](../pyproject.toml) sets Python 3.10 as the compatibility target
+[`pyproject.toml`](../pyproject.toml) sets Python 3.13 as the compatibility target
 and 100 columns as a formatting target. CI runs `ruff check tools` with exactly
 `E4`, `E7`, `E9`, `F`, `I001`, `C90`, and `S314`; `I001` rejects unsorted or
 unformatted import blocks, and `C90` uses a McCabe ceiling of 15. CI also runs

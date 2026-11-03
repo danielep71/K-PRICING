@@ -27,7 +27,7 @@ explicit maintainer review cadence.
 | Security analyzers | `.github/workflows/codeql.yml`, `.github/workflows/scorecard.yml`, and [SUPPLY_CHAIN_ASSURANCE.md](SUPPLY_CHAIN_ASSURANCE.md) | Reviewed Action pin, query/analyzer behavior, permissions, triggers, and publication boundary |
 | Reusable workflows | Caller job-level `uses:`, [published interface pin](REUSABLE_WORKFLOWS.md), template source and its compatibility notes | Full provider SHA plus interface revision; review coupled caller-local scripts separately |
 | actionlint | `ACTIONLINT_VERSION` and archive digest in the static workflow; `EXPECTED_ACTIONLINT_VERSION` in `tools/test_workflow_validation.py`; official `rhysd/actionlint` releases | Version, platform-specific archive SHA-256 and expected validator version together |
-| Python quality tools | `RUFF_VERSION` and `MYPY_VERSION` in the static workflow; `tools/requirements-quality-ci.txt`; official PyPI distribution metadata and upstream release notes | Exact direct/transitive versions plus reviewed wheel SHA-256 hashes for hosted CPython 3.10/Ubuntu x64; local installation follows the retained developer setup; no separate cross-platform lock is retained |
+| Python quality tools | `RUFF_VERSION` and `MYPY_VERSION` in the static workflow; `tools/requirements-quality-ci.txt`; official PyPI distribution metadata and upstream release notes | Exact direct/transitive versions plus reviewed wheel SHA-256 hashes for hosted CPython 3.13/Ubuntu x64; local installation follows the retained developer setup; no separate cross-platform lock is retained |
 | Runtime and execution environment | `PYTHON_VERSION` and the other `python-version` and `node-version` pins, `runs-on`, Action `runs.using`, `pyproject.toml` target/lint/type configuration and workflow install commands | Explicit compatibility change, not an incidental pin refresh |
 | Local validation code and fixtures | Retained `tools/` scripts and their operational fixtures; canonical template-only maintenance tools are absent here | Reviewed source commit; not a separately fetched package |
 
@@ -36,10 +36,10 @@ generators, not just the static workflow. Record deliberately unchanged
 occurrences and historical evidence. Never rewrite published provenance to make
 an old release appear to use the new dependency.
 
-Python `3.10.22` and Node.js `24.22.2` are exact patch pins, so the interpreters
+Python `3.13.18` and Node.js `24.22.2` are exact patch pins, so the interpreters
 change only with a reviewed diff; `ubuntu-24.04` selects a hosted image family
 and does not freeze every preinstalled utility. Hosted Python tool
-installs are additionally constrained by reviewed CPython-3.10/Linux-x64 wheel
+installs are additionally constrained by reviewed CPython-3.13/Linux-x64 wheel
 hashes in `tools/requirements-quality-ci.txt`, installed with
 `--only-binary=:all: --require-hashes`. That materially narrows package
 substitution risk but still does not make the runner image or network path

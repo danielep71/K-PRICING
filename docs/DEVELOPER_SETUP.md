@@ -39,12 +39,12 @@ git status --short
 git rev-parse HEAD
 ```
 
-The hosted baseline is Ubuntu 24.04 and Python 3.10. The hash-pinned quality-tool
+The hosted baseline is Ubuntu 24.04 and Python 3.13. The hash-pinned quality-tool
 lock is for that CI environment; do not remove hashes to force a Windows install.
 On a matching Linux environment:
 
 ```bash
-python3.10 -m venv .venv
+python3.13 -m venv .venv
 . .venv/bin/activate
 python -m pip install --disable-pip-version-check --only-binary=:all: --require-hashes -r tools/requirements-quality-ci.txt
 ruff check tools
@@ -57,8 +57,8 @@ ratchet in `pyproject.toml`. To reproduce it locally, wrap each command as
 `python -m coverage run tools/<checker>.py ...`, then run
 `python -m coverage combine` and `python -m coverage report`.
 
-Portable checks use Python 3.10 or newer and the standard library. On Windows,
-use the corresponding installed Python launcher, such as `py -3.10`, in place
+Portable checks use Python 3.13 or newer and the standard library. On Windows,
+use the corresponding installed Python launcher, such as `py -3.13`, in place
 of `python3`. Node.js is required only for the label scripts; the workflows pin
 Node.js 24.22.2 with `actions/setup-node`. The workflow installs and verifies
 the pinned actionlint binary itself.

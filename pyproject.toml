@@ -3,7 +3,7 @@
 # mypy runs in strict mode over every module under tools/; Ruff caps McCabe complexity at 15.
 
 [tool.ruff]
-target-version = "py310"
+target-version = "py313"
 # Formatting target only: E501 is not selected and CI does not run ruff format.
 line-length = 100
 
@@ -14,7 +14,7 @@ select = ["E4", "E7", "E9", "F", "I001", "C90", "S314"]
 max-complexity = 15
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.13"
 files = ["tools"]
 pretty = true
 show_error_codes = true

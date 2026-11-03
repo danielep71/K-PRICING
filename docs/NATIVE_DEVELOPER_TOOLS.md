@@ -1,7 +1,7 @@
 # Native developer operations
 
 `tools/kpr.py` coordinates existing checks and supplies portable workbook and
-source comparisons. It uses Python 3.10+ and the standard library. No xlflow
+source comparisons. It uses Python 3.13+ and the standard library. No xlflow
 code, package, formatter, assertion framework or runtime dependency is used.
 The workflow inspiration is its CLI, inspection and diff concepts, described
 in the [xlflow README](https://github.com/harumiWeb/xlflow); the implementation
