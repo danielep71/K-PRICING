@@ -105,7 +105,7 @@ inputs. No publishing token is supplied to source validation.
 
 | Workflow | Trigger and execution boundary | Permissions / evidence |
 | --- | --- | --- |
-| Static repository checks | PR, main/release push, version tag, manual, reusable caller; applicable | Contents read; exact SHA, Python 3.13.18, Ruff 0.16.6, mypy 2.3.1, actionlint 1.7.12; reports 30 days |
+| Static repository checks | PR, main/release push, version tag, manual, reusable caller; applicable | Contents read; exact SHA, Python 3.13.18, Ruff and mypy from the hash lock in `tools/requirements-quality-ci.txt`, actionlint 1.7.12; reports 30 days |
 | Sync issue labels | Relevant PRs run offline fixtures; relevant trusted main push or manual dispatch of the default branch reconciles; a dispatch of any other ref skips reconciliation | PR contents read; trusted issues write; Node 24.22.2; exact post-read verification |
 | Issue triage | Issue and milestone events on the default branch; manual | Contents/issues/pull-requests read; read-only audit; reports 30 days |
 | Keep milestones issue-only | Daily scan, manual run of the default branch, and changes to its workflow on main; no `pull_request_target` | Issues read, pull-requests write; no checkout; read-back after each removal |
