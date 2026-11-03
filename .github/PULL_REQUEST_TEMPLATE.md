@@ -150,6 +150,19 @@ Explain decisions a future reviewer cannot safely infer from the diff.
 
 Evidence from another commit does not certify this candidate.
 
+### Final-head review
+
+A review covers only the commit it read. Any later push, a branch update
+included, makes it stale: request a new review of the new head and update this
+table before merging.
+
+| Evidence | Result |
+| --- | --- |
+| Reviewed head SHA | <!-- Full 40-character SHA; must equal the exact PR HEAD above --> |
+| Review type | <!-- Human / Codex / other bot; one row per review that counts --> |
+| Review link and outcome | <!-- Link; completed with findings resolved / approved / unavailable --> |
+| Exceptions | <!-- None, or a reviewed same-tree update / bot PR, with the reason and who accepted it --> |
+
 ### Static and repository checks
 
 Use `docs/DEVELOPER_SETUP.md` for the complete local setup and `.github/workflows/static-checks.yml` for the hosted command inventory.
@@ -343,6 +356,7 @@ Unresolved question or accepted trade-off:
 - [ ] Linked issue acceptance criteria are met or remaining work is explicit.
 - [ ] Compatibility and release impact are assessed.
 - [ ] Evidence belongs to the exact candidate claimed.
+- [ ] A completed review covers the final head SHA, renewed after the last relevant push.
 - [ ] Required checks are terminal and passing; incomplete work is not presented as PASS.
 - [ ] Executable VBA was compiled and tested when required.
 - [ ] Failure, cleanup, and recovery behavior were reviewed.

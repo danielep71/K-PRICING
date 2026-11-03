@@ -1,13 +1,13 @@
 name: "📖 Documentation request"
 description: "Report incorrect, stale, missing, inaccessible, or unclear maintained documentation."
 title: "[Docs]: "
-labels: ["documentation"]
-assignees: []
+labels: ["documentation", "P3"]
+assignees: ["danielep71"]
 body:
   - type: markdown
     attributes:
       value: |
-        Documentation must match supported behavior and reproducible evidence.
+        Documentation must match supported behavior and reproducible evidence. Triage sets the milestone and confirms the priority, `P3` by default.
 
         Do not disclose vulnerabilities, credentials, private workbooks, or restricted data. Follow `SECURITY.md` for private security reporting.
 
@@ -63,6 +63,34 @@ body:
     attributes:
       label: Verification
       description: Explain how to verify commands, links, examples, rendering, counts, and cross-document consistency.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Checkable conditions that show the documentation is corrected.
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true
+
+  - type: input
+    id: target_end_date
+    attributes:
+      label: Target end date (Europe/Rome)
+      description: ISO calendar date YYYY-MM-DD, earlier than the due date of the milestone. Triage sets the milestone and checks the date against it.
+      placeholder: "YYYY-MM-DD"
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and blocking status
+      description: Name each prerequisite this work depends on as an issue link (#12), or on a line starting "External condition:". Do not list issues that depend on this one. Write "None" if nothing blocks this work. Triage adds `blocked` only while a named prerequisite is unresolved.
+      placeholder: None
     validations:
       required: true
 

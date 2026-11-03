@@ -1,13 +1,13 @@
 name: "🐛 Bug report"
 description: "Report reproducible incorrect behavior in supported source, tooling, or documentation."
 title: "[Bug]: "
-labels: ["bug"]
-assignees: []
+labels: ["bug", "P2"]
+assignees: ["danielep71"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thank you for reporting a reproducible defect.
+        Thank you for reporting a reproducible defect. Triage sets the milestone and confirms the priority: `P2` by default, `P1` only for a confirmed calculation bug.
 
         Do not disclose suspected vulnerabilities, credentials, private workbooks, or restricted data here. Follow `SECURITY.md` and use the private security-reporting channel.
 
@@ -92,6 +92,24 @@ body:
     attributes:
       label: Evidence, workaround, and recovery
       description: Add sanitized diagnostics, test output, screenshots, independent references, workarounds, and recovery details. State when none exist.
+    validations:
+      required: true
+
+  - type: input
+    id: target_end_date
+    attributes:
+      label: Target end date (Europe/Rome)
+      description: ISO calendar date YYYY-MM-DD, earlier than the due date of the milestone. Triage sets the milestone and checks the date against it.
+      placeholder: "YYYY-MM-DD"
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and blocking status
+      description: Name each prerequisite this work depends on as an issue link (#12), or on a line starting "External condition:". Do not list issues that depend on this one. Write "None" if nothing blocks this work. Triage adds `blocked` only while a named prerequisite is unresolved.
+      placeholder: None
     validations:
       required: true
 
