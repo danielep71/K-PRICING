@@ -24,6 +24,7 @@ may summarize it, but must link here rather than restating a competing rule.
 | VBA banners, procedure contracts, indentation and formatting review | [`VBA_HOUSE_STYLE.md`](VBA_HOUSE_STYLE.md) | A link to the source presentation rules |
 | Installation, import, export, upgrade, recovery and removal | [`../INSTALLATION.md`](../INSTALLATION.md) | Links and release prerequisites |
 | Contribution workflow, review discipline and PR evidence | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Contributor links only |
+| Issue priorities, milestones, target end dates, dependencies and the triage audit | [`ISSUE_TRIAGE.md`](ISSUE_TRIAGE.md) | A link and a one-line summary |
 | Participant conduct and enforcement | [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) | Conduct link only |
 | Vulnerability scope, private reporting, disclosure and safe harbor | [`../SECURITY.md`](../SECURITY.md) | Private-reporting link and brief warning |
 | Release sequence and maintainer decision points | [`../RELEASING.md`](../RELEASING.md) | Release navigation only |

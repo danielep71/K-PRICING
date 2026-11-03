@@ -49,9 +49,12 @@ and narrowly obvious fixes may go directly to a focused pull request.
 ## 🌿 Development workflow
 
 For prerequisites and commands, use [developer setup](docs/DEVELOPER_SETUP.md).
-Every issue and PR must have a milestone, exactly one priority (`P1`, `P2` or
-`P3`), and assignee `danielep71`. Active branch/tag rulesets supplement manual
-review; see
+Every open issue needs assignee `danielep71`, exactly one priority (`P1`, `P2`
+or `P3`, with `P1` reserved for confirmed calculation bugs), an open milestone,
+a target end date and a dependency section; the
+[issue triage guide](docs/ISSUE_TRIAGE.md) owns these rules and the audit that
+reports them. Milestones belong to issues only; a pull request links its issue.
+Active branch/tag rulesets supplement manual review; see
 [setup verification](docs/SETUP_VERIFICATION.md).
 
 1. Start from the current reviewed `main` development baseline and create one focused

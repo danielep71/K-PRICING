@@ -107,6 +107,8 @@ inputs. No publishing token is supplied to source validation.
 | --- | --- | --- |
 | Static repository checks | PR, main/release push, version tag, manual, reusable caller; applicable | Contents read; exact SHA, Python 3.10.22, Ruff 0.16.6, mypy 2.3.1, actionlint 1.7.12; reports 30 days |
 | Sync issue labels | Relevant PRs run offline fixtures; relevant trusted main push or manual dispatch of the default branch reconciles; a dispatch of any other ref skips reconciliation | PR contents read; trusted issues write; Node 24.22.2; exact post-read verification |
+| Issue triage | Issue and milestone events on the default branch; manual | Contents/issues/pull-requests read; read-only audit; reports 30 days |
+| Keep milestones issue-only | Daily scan, manual run of the default branch, and changes to its workflow on main; no `pull_request_target` | Issues read, pull-requests write; no checkout; read-back after each removal |
 | Detect issue-label drift | Relevant PR fixtures; daily 05:17 UTC, manual and changes to its workflow on main run live | Contents/ issues read only; Node 24.22.2; no mutation; reports 30 days |
 | External documentation links | Monday 06:17 UTC, manual and checker/policy/workflow changes on main | Anonymous probes, contents read; reports 14 days; restricted/transient observations remain non-green |
 | CodeQL | Existing PR/push/schedule/manual paths gated by visibility/explicit private opt-in | Public jobs active; tooling-language scans cover Actions, JavaScript and Python, not VBA; PR analysis is read-only without SARIF upload; trusted upload uses security-events write |

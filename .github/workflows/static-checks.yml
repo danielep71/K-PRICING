@@ -183,6 +183,11 @@ jobs:
       - name: Check native developer operations with synthetic fixtures
         run: python3 tools/test_native_tools.py -v
 
+      - name: Check the issue triage rules and the forms they rely on
+        run: |
+          python3 tools/test_check_issues.py -v
+          python3 tools/check_issues.py --check-config
+
       - name: Exercise strict release-semantics fixtures
         id: release-semantics-self-test
         continue-on-error: true
@@ -548,6 +553,8 @@ jobs:
           tools/test_verification_depth.py
           tools/test_documentation.py
           tools/test_native_tools.py
+          tools/test_check_issues.py
+          tools/check_issues.py --check-config
           tools/check_documentation.py --root .
           tools/check_release_semantics.py --root . --self-test
           tools/initialize_repository.py --root . --self-test

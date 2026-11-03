@@ -209,6 +209,17 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- Issue governance now follows the reference template ([issue triage
+  guide](docs/ISSUE_TRIAGE.md)). The issue forms set a default priority (`P2`
+  for bugs, `P3` for features and documentation), assign the maintainer and ask
+  for a target end date and dependencies; the documentation form also asks for
+  acceptance criteria. `P1` is reserved for confirmed calculation bugs (#52
+  moved to `P2`). A read-only **Issue triage** workflow audits every open issue
+  on issue and milestone events with `tools/check_issues.py`, and a daily
+  **Keep milestones issue-only** scan removes milestones from pull requests.
+  The pull request template records the reviewed head SHA and requires a new
+  review after each relevant push.
+
 - Corrected stale, inaccurate and template-inherited comments across the VBA
   modules, Python tooling and configuration (no behaviour change). Issue
   numbers carried over from the migrated source repository now point to this

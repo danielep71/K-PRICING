@@ -1603,32 +1603,41 @@ def check_label_manifest(
     return result
 
 
+# Each form sets its type label and default priority, assigns the maintainer and
+# asks for the planning fields that tools/check_issues.py audits after triage.
 ISSUE_FORM_SPECS: dict[str, dict[str, Any]] = {
     "bug.yml": {
         "label": "bug",
+        "priority": "P2",
         "title": "[Bug]: ",
         "required_ids": {
             "profile", "summary", "source", "reproduction", "expected",
-            "actual", "environment", "evidence", "acknowledgements",
+            "actual", "environment", "evidence", "target_end_date",
+            "dependencies", "acknowledgements",
         },
     },
     "documentation.yml": {
         "label": "documentation",
+        "priority": "P3",
         "title": "[Docs]: ",
         "required_ids": {
             "location", "problem_type", "problem", "correction", "source",
-            "verification", "acknowledgements",
+            "verification", "acceptance", "target_end_date", "dependencies",
+            "acknowledgements",
         },
     },
     "feature.yml": {
         "label": "enhancement",
+        "priority": "P3",
         "title": "[Feature]: ",
         "required_ids": {
             "profile", "problem", "outcome", "acceptance", "non_goals",
-            "compatibility", "alternatives", "validation", "acknowledgements",
+            "compatibility", "alternatives", "validation", "target_end_date",
+            "dependencies", "acknowledgements",
         },
     },
 }
+ISSUE_FORM_MAX_ELEMENTS = 13
 
 
 def _yaml_header_scalar(text: str, key: str) -> str | None:
@@ -1690,14 +1699,10 @@ def _validate_issue_form_header(
             failures.append(finding(path, f"Top-level {key} must be non-empty."))
     if _yaml_header_scalar(text, "title") != specification["title"]:
         failures.append(finding(path, f"Top-level title must be {specification['title']!r}."))
-    labels = _yaml_flow_array(text, "labels")
-    expected_label = specification["label"]
-    if labels != [expected_label]:
-        failures.append(finding(path, f"Top-level labels must be the JSON flow array [{expected_label!r}]."))
-    elif expected_label not in label_names:
-        failures.append(finding(path, f"Issue form label is absent from {LABEL_MANIFEST_PATH}: {expected_label}"))
-    if _yaml_flow_array(text, "assignees") != []:
-        failures.append(finding(path, "Top-level assignees must be an empty JSON flow array."))
+    _validate_issue_form_labels(path, text, specification, label_names, failures)
+    assignees = _yaml_flow_array(text, "assignees")
+    if assignees is None or len(assignees) != 1:
+        failures.append(finding(path, "Top-level assignees must be a JSON flow array naming one maintainer."))
 
 
 def _validate_issue_form(
@@ -1715,8 +1720,10 @@ def _validate_issue_form(
         return
     _validate_issue_form_header(path, text, specification, label_names, failures)
     blocks = _issue_form_blocks(text)
-    if not blocks or len(blocks) > 10:
-        failures.append(finding(path, "Issue form body must contain between 1 and 10 elements."))
+    if not blocks or len(blocks) > ISSUE_FORM_MAX_ELEMENTS:
+        failures.append(
+            finding(path, f"Issue form body must contain between 1 and {ISSUE_FORM_MAX_ELEMENTS} elements.")
+        )
     invalid_types = sorted({kind for kind, _ in blocks} - {"checkboxes", "dropdown", "input", "markdown", "textarea"})
     if invalid_types:
         failures.append(finding(path, "Unsupported issue-form element types: " + ", ".join(invalid_types)))
@@ -1735,6 +1742,37 @@ def _validate_issue_form(
         match = re.search(pattern, text)
         if match and not re.search(r"(?m)^      required:\s*true\s*$", match.group(0)):
             failures.append(finding(path, f"Required evidence field {identifier!r} must be mandatory."))
+
+
+def _validate_issue_form_labels(
+    path: str,
+    text: str,
+    specification: dict[str, Any],
+    label_names: set[object],
+    failures: list[dict[str, Any]],
+) -> None:
+    expected = [specification["label"], specification["priority"]]
+    if _yaml_flow_array(text, "labels") != expected:
+        failures.append(finding(path, f"Top-level labels must be the JSON flow array {expected!r}."))
+        return
+    for label in expected:
+        if label not in label_names:
+            failures.append(finding(path, f"Issue form label is absent from {LABEL_MANIFEST_PATH}: {label}"))
+
+
+def _validate_issue_form_assignees(repo: Repository, failures: list[dict[str, Any]]) -> None:
+    """Every form assigns the same maintainer, whom triage expects on each issue."""
+    found: dict[str, tuple[str, ...]] = {}
+    for filename in ISSUE_FORM_SPECS:
+        try:
+            assignees = _yaml_flow_array(repo.text(f"{ISSUE_TEMPLATE_DIRECTORY}/{filename}"), "assignees")
+        except (OSError, UnicodeError):
+            continue
+        found[filename] = tuple(assignees or ())
+    if len(set(found.values())) > 1:
+        failures.append(
+            finding(ISSUE_TEMPLATE_DIRECTORY, "Issue forms must all assign the same maintainer.")
+        )
 
 
 def _validate_issue_intake_config(
@@ -1764,6 +1802,7 @@ def check_issue_forms(
     label_names = _issue_label_names(repo)
     for filename, specification in ISSUE_FORM_SPECS.items():
         _validate_issue_form(repo, filename, specification, label_names, failures)
+    _validate_issue_form_assignees(repo, failures)
     _validate_issue_intake_config(repo, config["repository"], failures)
     return rule_result(
         "issue-forms",
@@ -3008,6 +3047,16 @@ def _fixture_labels() -> dict[str, Any]:
                 "name": "enhancement",
                 "color": "A2EEEF",
                 "description": "New capability",
+            },
+            {
+                "name": "P2",
+                "color": "D93F0B",
+                "description": "Material defect",
+            },
+            {
+                "name": "P3",
+                "color": "FBCA04",
+                "description": "Non-blocking improvement",
             }
         ],
         "overlays": {
@@ -3080,27 +3129,20 @@ test-results/
         root / LABEL_MANIFEST_PATH,
         json.dumps(_fixture_labels(), indent=2, ensure_ascii=False) + "\n",
     )
-    fixture_forms = {
-        "bug.yml": ("Bug report", "[Bug]: ", "bug", [
-            "profile", "summary", "source", "reproduction", "expected",
-            "actual", "environment", "evidence", "acknowledgements",
-        ]),
-        "documentation.yml": ("Documentation request", "[Docs]: ", "documentation", [
-            "location", "problem_type", "problem", "correction", "source",
-            "verification", "acknowledgements",
-        ]),
-        "feature.yml": ("Feature request", "[Feature]: ", "enhancement", [
-            "profile", "problem", "outcome", "acceptance", "non_goals",
-            "compatibility", "alternatives", "validation", "acknowledgements",
-        ]),
+    fixture_names = {
+        "bug.yml": "Bug report",
+        "documentation.yml": "Documentation request",
+        "feature.yml": "Feature request",
     }
-    for filename, (name, title, label, identifiers) in fixture_forms.items():
+    for filename, specification in ISSUE_FORM_SPECS.items():
+        identifiers = sorted(specification["required_ids"] - {"acknowledgements"})
+        identifiers.append("acknowledgements")
         body = [
-            f'name: "{name}"',
+            f'name: "{fixture_names[filename]}"',
             'description: "Canonical fixture form."',
-            f'title: "{title}"',
-            f'labels: ["{label}"]',
-            "assignees: []",
+            f'title: "{specification["title"]}"',
+            f'labels: ["{specification["label"]}", "{specification["priority"]}"]',
+            'assignees: ["owner"]',
             "body:",
             "  - type: markdown",
             "    attributes:",
@@ -3327,7 +3369,7 @@ def _degrade_label_manifest(root: Path) -> None:
 def _degrade_issue_forms(root: Path) -> None:
     path = root / ISSUE_TEMPLATE_DIRECTORY / "bug.yml"
     text = path.read_text(encoding="utf-8")
-    _write_fixture(path, text.replace("assignees: []", 'assignees: ["owner"]'))
+    _write_fixture(path, text.replace('assignees: ["owner"]', "assignees: []"))
 
 
 def _degrade_workflow_actions(root: Path) -> None:
