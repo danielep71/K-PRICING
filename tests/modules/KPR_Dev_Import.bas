@@ -477,7 +477,8 @@ Private Function RibbonCheck( _
     As String
 '
 ' Writes the commit's src/ribbon/customUI14.xml into a copy of Target with
-' PowerShell, opens the copy with its events off and returns PASS when
+' PowerShell, opens and closes the copy with events off (the caller's setting
+' is restored on every exit) and returns PASS when
 ' Excel loaded the tab (KPR_UI_RibbonLoaded) and its Functions menu builds,
 ' FAIL otherwise, or NOT RUN where PowerShell is unavailable. The copy is
 ' closed and deleted.
@@ -493,6 +494,7 @@ Private Function RibbonCheck( _
     Dim Menu        As String       'Functions menu XML from the copy
 
     RibbonCheck = "FAIL"
+    Events = Application.EnableEvents
     If Application.OperatingSystem Like "*Mac*" Then
         RibbonCheck = "NOT RUN"
         Detail = "needs Windows PowerShell"
@@ -513,10 +515,8 @@ Private Function RibbonCheck( _
         Detail = "PowerShell could not write the tab (exit " & CStr(ExitCode) & ")"
         GoTo CleanUp
     End If
-    Events = Application.EnableEvents
     Application.EnableEvents = False
     Set Copy = Workbooks.Open(CopyPath)
-    Application.EnableEvents = Events
     Started = Timer
     Do
         DoEvents
@@ -532,10 +532,12 @@ Private Function RibbonCheck( _
     End If
 
 CleanUp:
-    'Never leave the copy open or on disk
+    'Close the copy with its events still off, so none of its handlers run,
+    'then give back the caller's setting; never leave the copy on disk
         On Error Resume Next
-        Application.EnableEvents = True
+        Application.EnableEvents = False
         If Not Copy Is Nothing Then Copy.Close SaveChanges:=False
+        Application.EnableEvents = Events
         Kill CopyPath
         Kill Script
         Kill Work & "\customUI14.xml"
