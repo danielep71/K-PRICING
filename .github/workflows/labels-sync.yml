@@ -1,7 +1,9 @@
 name: Sync issue labels
 
 # Pull requests validate without write permission. Only a trusted push to main
-# or an explicit manual dispatch can reconcile the live repository taxonomy.
+# or a manual dispatch of the default branch can reconcile the live repository
+# taxonomy: a dispatch of any other ref skips reconciliation, so an unmerged
+# manifest or script never changes the live labels.
 # The workflow self-tests the script, and the script validates the manifest
 # before the first API mutation, then verifies an exact post-run match.
 
@@ -43,6 +45,14 @@ jobs:
     steps:
       - name: Check out the exact SHA under review
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.22.2"
+          package-manager-cache: false
 
       - name: Exercise validation, overlays, and reconciliation paths
         run: node .github/scripts/labels-sync.mjs --self-test
@@ -52,7 +62,7 @@ jobs:
 
   reconcile:
     name: Reconcile live labels
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -61,6 +71,14 @@ jobs:
     steps:
       - name: Check out the exact SHA to apply
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.22.2"
+          package-manager-cache: false
 
       - name: Exercise validation, overlays, and reconciliation paths
         run: node .github/scripts/labels-sync.mjs --self-test

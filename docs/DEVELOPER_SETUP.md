@@ -58,8 +58,8 @@ ratchet in `pyproject.toml`. To reproduce it locally, wrap each command as
 
 Portable checks use Python 3.10 or newer and the standard library. On Windows,
 use the corresponding installed Python launcher, such as `py -3.10`, in place
-of `python3`. Node.js is required only for the label scripts; their exact runtime
-is the GitHub runner's Node installation. The workflow installs and verifies
+of `python3`. Node.js is required only for the label scripts; the workflows pin
+Node.js 24.22.2 with `actions/setup-node`. The workflow installs and verifies
 the pinned actionlint binary itself.
 
 ```bash
