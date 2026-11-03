@@ -51,8 +51,8 @@ jobs:
       PYTHONUTF8: "1"
       PYTHONDONTWRITEBYTECODE: "1"
       # Exact patch, so the runtime changes only with a reviewed diff; keep it
-      # in the 3.10 series that pyproject.toml targets.
-      PYTHON_VERSION: "3.10.22"
+      # in the 3.13 series that pyproject.toml targets.
+      PYTHON_VERSION: "3.13.18"
       RUFF_VERSION: "0.16.6"
       MYPY_VERSION: "2.3.1"
       ACTIONLINT_VERSION: "1.7.12"
@@ -512,7 +512,7 @@ jobs:
     env:
       PYTHONUTF8: "1"
       PYTHONDONTWRITEBYTECODE: "1"
-      PYTHON_VERSION: "3.10.22"
+      PYTHON_VERSION: "3.13.18"
 
     steps:
       - name: Check out the exact SHA under review
@@ -539,7 +539,7 @@ jobs:
       # runs, under coverage. Thresholds and scope live in pyproject.toml.
       - name: Measure maintained Python tooling under coverage
         env:
-          # Under coverage on Python 3.10 the script directory is not put on
+          # Under coverage the script directory is not put on
           # sys.path, so the checkers' sibling imports need it explicitly.
           PYTHONPATH: tools
         run: |

@@ -242,6 +242,15 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- The repository's Python tooling moves from Python 3.10, which reached end of
+  life in October 2026 and no longer receives security fixes, to 3.13: CI pins
+  3.13.18, `pyproject.toml` targets 3.13 for Ruff and mypy, and the hash lock in
+  `tools/requirements-quality-ci.txt` now holds the CPython 3.13 wheels of the
+  same tool versions (`tomli`, needed only before 3.11, is dropped). Running the
+  tools locally needs Python 3.13 or newer. This unblocks Dependabot's tool
+  updates, starting with coverage 7.17, which requires Python 3.11 or newer.
+  The VBA source and the Excel requirements are unchanged.
+
 - Issue governance now follows the reference template ([issue triage
   guide](docs/ISSUE_TRIAGE.md)). The issue forms set a default priority (`P2`
   for bugs, `P3` for features and documentation), assign the maintainer and ask

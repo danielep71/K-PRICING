@@ -84,7 +84,7 @@ issue when it belongs to planned work.
 
 ## 🖥️ Local audit
 
-The audit needs Python 3.10+ and Node.js, because it resolves the label
+The audit needs Python 3.13+ and Node.js, because it resolves the label
 catalogue with the synchronization script. To audit the live issues with a
 GitHub CLI login:
 
