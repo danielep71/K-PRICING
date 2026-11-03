@@ -152,10 +152,12 @@ Ribbon's **Add-ins** tab:
 | Setup | **Register function help** and **Clear function help**, the two registration entry points |
 | Development | Only when the regression modules are loaded: **Run the pure regression suites** (report in the Immediate window) and **Durable evidence run...**, which asks for the source SHA and an output folder |
 
-To show it, run `KPR_UI_InstallCommandBar` from the macro list (**Alt+F8**) or
-the Immediate window; to remove it, run `KPR_UI_RemoveCommandBar`. Both can be
-run again at any time, in any order: install never duplicates the toolbar, and
-removal deletes only K-PRICING's own controls. The toolbar is temporary, so it
+To show it, run `KPR_UI_ToolbarInstall` from the macro list (**Alt+F8**); to
+remove it, run `KPR_UI_ToolbarRemove`. Both tell you when they fail. In code
+and in the Immediate window, call `KPR_UI_InstallCommandBar` and
+`KPR_UI_RemoveCommandBar` instead: they return TRUE on success and are what the
+two macros run. All can be run again at any time, in any order: install never
+duplicates the toolbar, and removal deletes only K-PRICING's own controls. The toolbar is temporary, so it
 disappears when Excel closes. To have it every session, call both from the
 `ThisWorkbook` module of the workbook or add-in:
 

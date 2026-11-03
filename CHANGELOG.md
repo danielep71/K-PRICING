@@ -112,7 +112,9 @@ Use only the categories needed by a release.
   regression runs. `src/modules/KPR_UI_CommandBars.bas` adds
   `KPR_UI_InstallCommandBar` and `KPR_UI_RemoveCommandBar`, which are safe to
   run repeatedly in any order, create temporary controls only and remove only
-  K-PRICING's own. Demo catalog entries gain a group, so the menus show one
+  K-PRICING's own; the macro list (Alt+F8) offers them as
+  `KPR_UI_ToolbarInstall` and `KPR_UI_ToolbarRemove`. Cancelling the Function
+  Arguments dialog gives the cell back its exact previous content. Demo catalog entries gain a group, so the menus show one
   submenu per functional module. The new `worksheet-commandbars` regression
   suite sets the evidence record's `commandbars` outcome; an `all` run now has
   22 suites. Not yet run in Excel.

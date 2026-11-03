@@ -8,6 +8,8 @@ Attribute VB_Name = "KPR_UI_CommandBars"
 '   it appears on the Ribbon's Add-ins tab.
 '
 ' SCOPE
+'   - KPR_UI_ToolbarInstall           macro-list command: install the toolbar
+'   - KPR_UI_ToolbarRemove            macro-list command: remove the toolbar
 '   - KPR_UI_InstallCommandBar        build the toolbar (repeatable)
 '   - KPR_UI_RemoveCommandBar         remove every KPR-owned bar and control
 '   - KPR_UI_CommandBarClick          OnAction target of every button
@@ -36,13 +38,15 @@ Attribute VB_Name = "KPR_UI_CommandBars"
 '
 ' INTEGRATION
 '   Call KPR_UI_InstallCommandBar from Workbook_Open (or the add-in's
-'   startup) and KPR_UI_RemoveCommandBar from Workbook_BeforeClose. Both are
-'   also in the macro list (Alt+F8).
+'   startup) and KPR_UI_RemoveCommandBar from Workbook_BeforeClose. Excel's
+'   macro list (Alt+F8) shows only Subs without arguments, so it offers the
+'   two wrappers KPR_UI_ToolbarInstall and KPR_UI_ToolbarRemove, which also
+'   tell the user when they fail.
 '
 ' VISIBILITY
-'   No Option Private Module: the install and remove entry points are meant
-'   for the macro list, and every button reaches KPR_UI_CommandBarClick by
-'   its workbook-qualified name. Unsupported infrastructure, not supported
+'   No Option Private Module: the two wrappers are meant for the macro list,
+'   and every button reaches KPR_UI_CommandBarClick by its workbook-qualified
+'   name. Unsupported infrastructure, not supported
 '   API (docs/PUBLIC_API.txt lists the API).
 '
 ' ERROR POLICY
@@ -91,6 +95,46 @@ Attribute VB_Name = "KPR_UI_CommandBars"
 '
 '------------------------------------------------------------------------------
 '
+
+Public Sub KPR_UI_ToolbarInstall()
+'
+'==============================================================================
+'                            KPR_UI_ToolbarInstall
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The macro-list (Alt+F8) command that shows the toolbar: runs
+'   KPR_UI_InstallCommandBar and says why when it fails.
+'
+' UPDATED
+'   2026-11-03
+'==============================================================================
+'
+    If Not KPR_UI_InstallCommandBar() Then
+        MsgBox "The KPR Dates toolbar was not installed. " & mLastReport, vbExclamation, "K-PRICING"
+    End If
+
+End Sub
+
+
+Public Sub KPR_UI_ToolbarRemove()
+'
+'==============================================================================
+'                             KPR_UI_ToolbarRemove
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The macro-list (Alt+F8) command that removes the toolbar: runs
+'   KPR_UI_RemoveCommandBar and says so when a KPR control remains.
+'
+' UPDATED
+'   2026-11-03
+'==============================================================================
+'
+    If Not KPR_UI_RemoveCommandBar() Then
+        MsgBox "Some K-PRICING toolbar controls could not be removed.", vbExclamation, "K-PRICING"
+    End If
+
+End Sub
+
 
 Public Function KPR_UI_InstallCommandBar() As Boolean
 '
