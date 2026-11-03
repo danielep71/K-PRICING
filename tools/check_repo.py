@@ -1890,6 +1890,59 @@ DEFAULT_BRANCH_GUARD = (
 )
 
 
+ISSUE_WRITE_FLOW_RE = re.compile(
+    rf"(?:^|,)\s*(?:issues|'issues'|\"issues\")\s*:\s*{WORKFLOW_WRITE_VALUE}\s*(?=,|$)"
+)
+
+
+def _permission_lines_grant_issue_write(lines: list[str], indent: int) -> bool:
+    """Read one permissions declaration at ``indent``: block, flow map or write-all."""
+    key = re.compile(rf"^{' ' * indent}permissions:\s*(.*)$")
+    for index, line in enumerate(lines):
+        match = key.match(line)
+        if not match:
+            continue
+        value = _strip_yaml_comment(match.group(1)).strip()
+        if value in {"write-all", "'write-all'", '"write-all"'}:
+            return True
+        mapping = re.fullmatch(r"\{(.*)\}", value)
+        if mapping:
+            return ISSUE_WRITE_FLOW_RE.search(mapping.group(1)) is not None
+        for entry in lines[index + 1:]:
+            if entry.strip() and len(entry) - len(entry.lstrip(" ")) <= indent:
+                break
+            if re.fullmatch(
+                rf"(?:issues|'issues'|\"issues\"):\s*{WORKFLOW_WRITE_VALUE}",
+                _strip_yaml_comment(entry).strip(),
+            ):
+                return True
+        return False
+    return False
+
+
+def _job_declares_permissions(block: list[str]) -> bool:
+    return any(re.match(r"^    permissions:", line) for line in block)
+
+
+def _condition_requires_default_branch(block: list[str]) -> bool:
+    """The job condition must be a conjunction with the exact guard as one term.
+
+    A guard inside a comment, or one alternative of an ||, does not restrict
+    the job, so only top-level && terms count.
+    """
+    for line in block:
+        match = re.match(r"^    if:\s*(.*)$", line)
+        if not match:
+            continue
+        condition = _strip_yaml_comment(match.group(1)).strip()
+        if condition.startswith("${{") and condition.endswith("}}"):
+            condition = condition[3:-2].strip()
+        if "||" in condition:
+            return False
+        return any(term.strip() == DEFAULT_BRANCH_GUARD for term in condition.split("&&"))
+    return False
+
+
 def _check_issue_write_default_branch(
     path: str,
     lines: list[str],
@@ -1899,23 +1952,22 @@ def _check_issue_write_default_branch(
 
     The event filters cover push, but a manual dispatch can name any ref, and an
     unmerged label manifest or script must never mutate the live repository.
+    Jobs without their own permissions inherit the workflow-level grant.
     """
-    issue_write = re.compile(
-        rf"issues:\s*{WORKFLOW_WRITE_VALUE}(?:\s*#.*)?|"
-        rf"permissions:\s*\{{[^}}]*\bissues\s*:\s*{WORKFLOW_WRITE_VALUE}"
-    )
-    for start, block in _workflow_job_blocks(lines):
-        if not any(issue_write.fullmatch(line.strip()) for line in block[1:]):
-            continue
-        guarded = any(
-            line.startswith("    if:") and DEFAULT_BRANCH_GUARD in line for line in block
-        )
-        if not guarded:
+    jobs = _workflow_job_blocks(lines)
+    top_level = lines[: jobs[0][0]] if jobs else lines
+    inherited = _permission_lines_grant_issue_write(top_level, 0)
+    for start, block in jobs:
+        if _job_declares_permissions(block):
+            grants = _permission_lines_grant_issue_write(block, 4)
+        else:
+            grants = inherited
+        if grants and not _condition_requires_default_branch(block):
             failures.append(
                 finding(
                     path,
-                    "Job with issues write permission must be gated to the default branch "
-                    f"with `{DEFAULT_BRANCH_GUARD}`.",
+                    "Job with issues write permission must be gated to the default branch: "
+                    f"its if: must be a conjunction including `{DEFAULT_BRANCH_GUARD}`.",
                     start + 1,
                 )
             )
@@ -3315,31 +3367,65 @@ _ISSUE_WRITE_JOB = (
     "  labels:\n"
     "    if: {condition}\n"
     "    runs-on: ubuntu-latest\n"
-    "    permissions:\n"
-    "      issues: write\n"
+    "    permissions:{permissions}\n"
     "    steps:\n"
     "      - run: echo fixture\n"
 )
+_ISSUE_WRITE_BLOCK = "\n      issues: write"
 
 
-def _degrade_workflow_issue_write_any_ref(root: Path) -> None:
+def _append_issue_write_job(
+    root: Path, condition: str, permissions: str = _ISSUE_WRITE_BLOCK
+) -> None:
     path = root / ".github/workflows/static-checks.yml"
     text = path.read_text(encoding="utf-8")
     _write_fixture(
-        path,
-        text + _ISSUE_WRITE_JOB.format(condition="github.event_name != 'pull_request'"),
+        path, text + _ISSUE_WRITE_JOB.format(condition=condition, permissions=permissions)
+    )
+
+
+def _write_dispatch_workflow(root: Path, header: str, job: str) -> None:
+    _write_fixture(
+        root / ".github/workflows/labels.yml",
+        "name: Labels\n\non:\n  workflow_dispatch:\n\n" + header + "jobs:\n" + job,
+    )
+    # The gate reads tracked files only.
+    _run_git(root, "add", ".github/workflows/labels.yml")
+
+
+def _degrade_workflow_issue_write_any_ref(root: Path) -> None:
+    _append_issue_write_job(root, "github.event_name != 'pull_request'")
+
+
+def _degrade_workflow_issue_write_commented_guard(root: Path) -> None:
+    _append_issue_write_job(
+        root, f"github.event_name != 'pull_request' # {DEFAULT_BRANCH_GUARD}"
+    )
+
+
+def _degrade_workflow_issue_write_flow_map(root: Path) -> None:
+    _append_issue_write_job(
+        root, "github.event_name != 'pull_request'", " {contents: read, issues: write}"
     )
 
 
 def _degrade_workflow_issue_write_or_condition(root: Path) -> None:
-    path = root / ".github/workflows/static-checks.yml"
-    text = path.read_text(encoding="utf-8")
-    _write_fixture(
-        path,
-        text
-        + _ISSUE_WRITE_JOB.format(
-            condition=f"github.event_name != 'pull_request' || {DEFAULT_BRANCH_GUARD}"
+    # Dispatch-only, so only the default-branch rule can reject it.
+    _write_dispatch_workflow(
+        root,
+        "permissions:\n  contents: read\n\n",
+        _ISSUE_WRITE_JOB.format(
+            condition=f"github.event_name == 'workflow_dispatch' || {DEFAULT_BRANCH_GUARD}",
+            permissions=_ISSUE_WRITE_BLOCK,
         ),
+    )
+
+
+def _degrade_workflow_issue_write_inherited(root: Path) -> None:
+    _write_dispatch_workflow(
+        root,
+        "permissions: write-all\n\n",
+        "  labels:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo fixture\n",
     )
 
 
@@ -3461,9 +3547,24 @@ BRANCH_SELF_TEST_CASES: tuple[
         _degrade_workflow_issue_write_any_ref,
     ),
     (
+        "workflow-issue-write-commented-guard",
+        "workflow-actions",
+        _degrade_workflow_issue_write_commented_guard,
+    ),
+    (
+        "workflow-issue-write-flow-map",
+        "workflow-actions",
+        _degrade_workflow_issue_write_flow_map,
+    ),
+    (
         "workflow-issue-write-or-condition",
         "workflow-actions",
         _degrade_workflow_issue_write_or_condition,
+    ),
+    (
+        "workflow-issue-write-inherited",
+        "workflow-actions",
+        _degrade_workflow_issue_write_inherited,
     ),
 )
 
