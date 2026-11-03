@@ -53,8 +53,9 @@ jobs:
       # Exact patch, so the runtime changes only with a reviewed diff; keep it
       # in the 3.13 series that pyproject.toml targets.
       PYTHON_VERSION: "3.13.18"
-      RUFF_VERSION: "0.16.6"
-      MYPY_VERSION: "2.3.1"
+      # Ruff, mypy and coverage versions come only from the hash lock in
+      # tools/requirements-quality-ci.txt, which Dependabot updates; the install
+      # step records the versions it installed.
       ACTIONLINT_VERSION: "1.7.12"
       ACTIONLINT_LINUX_AMD64_SHA256: "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
 
