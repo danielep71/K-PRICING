@@ -1877,10 +1877,48 @@ def _workflow_job_blocks(lines: list[str]) -> list[tuple[int, list[str]]]:
 
 
 def _job_excludes_pull_request(block: list[str]) -> bool:
+    # Further conditions may be joined with &&; an || could readmit pull requests.
     exclusion = re.compile(
-        r"^    if:\s*github\.event_name\s*!=\s*(['\"])pull_request\1\s*(?:#.*)?$"
+        r"^    if:\s*github\.event_name\s*!=\s*(['\"])pull_request\1"
+        r"(?:\s*&&\s*[^|#]+?)?\s*(?:#.*)?$"
     )
     return any(exclusion.match(line) for line in block)
+
+
+DEFAULT_BRANCH_GUARD = (
+    "github.ref == format('refs/heads/{0}', github.event.repository.default_branch)"
+)
+
+
+def _check_issue_write_default_branch(
+    path: str,
+    lines: list[str],
+    failures: list[dict[str, Any]],
+) -> None:
+    """A job that can write issues or labels runs only on the default branch.
+
+    The event filters cover push, but a manual dispatch can name any ref, and an
+    unmerged label manifest or script must never mutate the live repository.
+    """
+    issue_write = re.compile(
+        rf"issues:\s*{WORKFLOW_WRITE_VALUE}(?:\s*#.*)?|"
+        rf"permissions:\s*\{{[^}}]*\bissues\s*:\s*{WORKFLOW_WRITE_VALUE}"
+    )
+    for start, block in _workflow_job_blocks(lines):
+        if not any(issue_write.fullmatch(line.strip()) for line in block[1:]):
+            continue
+        guarded = any(
+            line.startswith("    if:") and DEFAULT_BRANCH_GUARD in line for line in block
+        )
+        if not guarded:
+            failures.append(
+                finding(
+                    path,
+                    "Job with issues write permission must be gated to the default branch "
+                    f"with `{DEFAULT_BRANCH_GUARD}`.",
+                    start + 1,
+                )
+            )
 
 
 def _check_job_pr_permissions(
@@ -2006,6 +2044,7 @@ def check_workflow_actions(
         except (OSError, UnicodeError):
             continue
         _check_pr_workflow_permissions(path, lines, failures)
+        _check_issue_write_default_branch(path, lines, failures)
         checked += _check_external_action_references(path, lines, failures)
     return rule_result(
         "workflow-actions",
@@ -3272,6 +3311,38 @@ def _degrade_workflow_pr_flow_map_job_write(root: Path) -> None:
     )
 
 
+_ISSUE_WRITE_JOB = (
+    "  labels:\n"
+    "    if: {condition}\n"
+    "    runs-on: ubuntu-latest\n"
+    "    permissions:\n"
+    "      issues: write\n"
+    "    steps:\n"
+    "      - run: echo fixture\n"
+)
+
+
+def _degrade_workflow_issue_write_any_ref(root: Path) -> None:
+    path = root / ".github/workflows/static-checks.yml"
+    text = path.read_text(encoding="utf-8")
+    _write_fixture(
+        path,
+        text + _ISSUE_WRITE_JOB.format(condition="github.event_name != 'pull_request'"),
+    )
+
+
+def _degrade_workflow_issue_write_or_condition(root: Path) -> None:
+    path = root / ".github/workflows/static-checks.yml"
+    text = path.read_text(encoding="utf-8")
+    _write_fixture(
+        path,
+        text
+        + _ISSUE_WRITE_JOB.format(
+            condition=f"github.event_name != 'pull_request' || {DEFAULT_BRANCH_GUARD}"
+        ),
+    )
+
+
 def _degrade_version_changelog(root: Path) -> None:
     _write_fixture(root / "VERSION", "version-one\n")
 
@@ -3383,6 +3454,16 @@ BRANCH_SELF_TEST_CASES: tuple[
         "workflow-pr-flow-map-job-write",
         "workflow-actions",
         _degrade_workflow_pr_flow_map_job_write,
+    ),
+    (
+        "workflow-issue-write-any-ref",
+        "workflow-actions",
+        _degrade_workflow_issue_write_any_ref,
+    ),
+    (
+        "workflow-issue-write-or-condition",
+        "workflow-actions",
+        _degrade_workflow_issue_write_or_condition,
     ),
 )
 

@@ -50,8 +50,9 @@ jobs:
     env:
       PYTHONUTF8: "1"
       PYTHONDONTWRITEBYTECODE: "1"
-      # Select a compatible series; setup-python resolves its available patch.
-      PYTHON_VERSION: "3.10"
+      # Exact patch, so the runtime changes only with a reviewed diff; keep it
+      # in the 3.10 series that pyproject.toml targets.
+      PYTHON_VERSION: "3.10.22"
       RUFF_VERSION: "0.16.6"
       MYPY_VERSION: "2.3.1"
       ACTIONLINT_VERSION: "1.7.12"
@@ -86,7 +87,7 @@ jobs:
           PY
           printf 'sha=%s\n' "$CANDIDATE_SHA" >> "$GITHUB_OUTPUT"
 
-      - name: Set up the declared Python runtime series
+      - name: Set up the pinned Python runtime
         id: python-runtime
         continue-on-error: true
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -501,7 +502,7 @@ jobs:
     env:
       PYTHONUTF8: "1"
       PYTHONDONTWRITEBYTECODE: "1"
-      PYTHON_VERSION: "3.10"
+      PYTHON_VERSION: "3.10.22"
 
     steps:
       - name: Check out the exact SHA under review
@@ -510,7 +511,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Set up the declared Python runtime series
+      - name: Set up the pinned Python runtime
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
