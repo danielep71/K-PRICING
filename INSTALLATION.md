@@ -198,8 +198,10 @@ tool, not through the VBA editor:
    The tool checks the file and the RibbonX first, keeps a backup next to it
    (`KPR.xlam.bak`), then replaces the file in one step. It writes
    `customUI/customUI14.xml` and its relationship, and running it again
-   replaces the same part instead of adding another. It refuses a file
-   tracked by Git.
+   replaces the same part instead of adding another; when nothing changed it
+   writes nothing. It never overwrites a different existing backup: before
+   injecting a newer tab, move the old `.bak` away or name a new one with
+   `--backup "C:/path/to/KPR.xlam.bak2"`. It refuses a file tracked by Git.
 4. Open the file in Excel. The **K-PRICING** tab appears.
 
 The tab replaces any other `customUI14.xml` in the file, such as an earlier

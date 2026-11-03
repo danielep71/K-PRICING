@@ -372,6 +372,65 @@ or registry condition has no fixture. Hosted Repository integrity runs
 `--self-test` and `--check`. The schema, encoding and contract interpretation
 notes are in [`tests/fixtures/README.md`](../tests/fixtures/README.md).
 
+## RibbonX package injection and callback check
+
+`inject_ribbon.py` is the standard-library-only helper for the Excel Ribbon
+(issue #47). It has two modes and never searches for workbooks or runs Excel.
+
+```bash
+python3 tools/inject_ribbon.py --check
+python3 tools/inject_ribbon.py --check --customui src/ribbon/customUI14.xml --callbacks src/modules/KPR_UI_Ribbon.bas
+python3 tools/inject_ribbon.py --target ../build/K-PRICING.xlam --backup ../build/K-PRICING.original.xlam
+python3 tools/test_inject_ribbon.py -v
+```
+
+`--check` is offline. It requires a well-formed `customUI` root in the Office
+2010 namespace, unique control ids matching `^KPR_[A-Za-z0-9_]+$` and built-in
+`imageMso` icons only (no `image` or `loadImage`). Every `onLoad`, `onAction`,
+`onChange` and `get*` callback must be a `Public Sub` in the callback module
+(cp1252; comments, strings and ` _` continuations handled; names compared
+case-insensitively) with the Office 2010 shape: `onLoad(IRibbonUI)`,
+button `onAction(IRibbonControl)`, toggleButton/checkBox
+`onAction(IRibbonControl, Boolean)`, dropDown/gallery
+`onAction(IRibbonControl, String, Integer)`, and getters
+`(IRibbonControl, ByRef returnedVal)` with a `Variant` or untyped returned value
+that is not `ByVal`; `getItemLabel`, `getItemID` and the other item getters
+take an `Integer`/`Long` index before it. A `Public Sub` that takes an
+`IRibbonControl` or `IRibbonUI` but is not named by the XML is reported as a
+dead callback. The default inputs are `src/ribbon/customUI14.xml` and
+`src/modules/KPR_UI_Ribbon.bas`; Repository integrity runs `--check` on them
+after the synthetic unit tests.
+
+`--target` rewrites one explicitly named `.xlsm` or `.xlam` and refuses any
+other extension, a symlink, or a file git tracks (`git ls-files
+--error-unmatch`; a path outside any repository counts as untracked). Before
+changing anything it checks that the target is a ZIP package without
+encryption or ZIP64, that every entry passes its CRC, that
+`[Content_Types].xml`, `_rels/.rels` and the officeDocument workbook part exist
+and parse with DTD/entity declarations rejected and sizes bounded, and that the
+workbook content type matches the extension. It then writes
+`customUI/customUI14.xml`, keeps exactly one package relationship of type
+`http://schemas.microsoft.com/office/2007/relationships/ui/extensibility` to it
+(reusing an existing Id, otherwise `rIdKprRibbon`, and removing duplicates),
+and adds an `xml` → `application/xml` Default only when none exists. Other
+relationships keep their attributes and order. Every other ZIP entry is copied
+verbatim (local header, compressed bytes and data descriptor), in its original
+order and compression method. Written entries use a fixed 1980-01-01
+timestamp, so injecting the same XML into the same input gives identical
+bytes, and a second run reports `nothing written`.
+
+Replacement is atomic and recoverable. The new package is built as a hidden
+temporary file beside the target, read back, re-opened and re-validated
+(injection must converge and every preserved entry must match). Only then is
+the original copied to the backup (`<target>.bak` unless `--backup PATH` is
+given), and `os.replace` puts the new package in place. The backup is created
+exclusively: an existing backup is reused only when byte-identical to the
+current target, and otherwise the run is refused, so an earlier backup is
+never overwritten. On any failure the target is unchanged and the temporary
+file is removed. Exit status `0` means success, `1` a validation failure
+reported on stderr, and `2` a usage error. Restore by copying the backup over
+the target.
+
 ## Structured test evidence
 
 `check_test_evidence.py` validates the `kpr-test-evidence.json` record written

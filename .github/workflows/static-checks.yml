@@ -188,6 +188,11 @@ jobs:
           python3 tools/test_check_issues.py -v
           python3 tools/check_issues.py --check-config
 
+      - name: Check the RibbonX injector, then the tracked Ribbon against its callbacks
+        run: |
+          python3 tools/test_inject_ribbon.py -v
+          python3 tools/inject_ribbon.py --check
+
       - name: Exercise strict release-semantics fixtures
         id: release-semantics-self-test
         continue-on-error: true
@@ -555,6 +560,8 @@ jobs:
           tools/test_native_tools.py
           tools/test_check_issues.py
           tools/check_issues.py --check-config
+          tools/test_inject_ribbon.py
+          tools/inject_ribbon.py --check
           tools/check_documentation.py --root .
           tools/check_release_semantics.py --root . --self-test
           tools/initialize_repository.py --root . --self-test
