@@ -161,6 +161,178 @@ def record(
         )
 
 
+def _record_procedure(
+    path: str,
+    component: str,
+    supported: bool,
+    line: int,
+    code: str,
+    match: re.Match[str],
+    declarations: list[dict[str, Any]],
+    findings: list[dict[str, Any]],
+) -> None:
+    visibility = (match.group("vis") or "").casefold()
+    if not visibility:
+        findings.append(
+            {
+                "path": path,
+                "line": line,
+                "message": (
+                    "Implicit public procedure is prohibited: "
+                    f"{match.group('name')}."
+                ),
+            }
+        )
+    if visibility == "public":
+        kind = " ".join(item.capitalize() for item in match.group("kind").split())
+        record(
+            declarations,
+            supported,
+            component,
+            kind,
+            match.group("name"),
+            norm(code),
+            path,
+            line,
+        )
+
+
+def _record_block(
+    path: str,
+    component: str,
+    supported: bool,
+    statements: list[tuple[int, int, str]],
+    index: int,
+    match: re.Match[str],
+    declarations: list[dict[str, Any]],
+    findings: list[dict[str, Any]],
+) -> int:
+    line, _, code = statements[index]
+    kind = match.group("kind").capitalize()
+    name = match.group("name")
+    body = [norm(code)]
+    close = END_BLOCK[kind.casefold()]
+    end_index = index + 1
+    while end_index < len(statements) and not close.match(statements[end_index][2]):
+        if statements[end_index][2].strip():
+            body.append(norm(statements[end_index][2]))
+        end_index += 1
+    if end_index >= len(statements):
+        findings.append(
+            {
+                "path": path,
+                "line": line,
+                "message": f"Public {kind} {name} is not closed.",
+            }
+        )
+        return index + 1
+    body.append(norm(statements[end_index][2]))
+    record(
+        declarations,
+        supported,
+        component,
+        kind,
+        name,
+        " | ".join(body),
+        path,
+        line,
+    )
+    return end_index + 1
+
+
+def _record_statement(
+    path: str,
+    component: str,
+    supported: bool,
+    line: int,
+    code: str,
+    declarations: list[dict[str, Any]],
+    findings: list[dict[str, Any]],
+) -> None:
+    match = DECLARE.match(code)
+    if match:
+        kind = (
+            "Declare Function"
+            if match.group("kind").casefold() == "function"
+            else "Declare Sub"
+        )
+        record(
+            declarations,
+            supported,
+            component,
+            kind,
+            match.group("name"),
+            norm(code),
+            path,
+            line,
+        )
+        return
+
+    match = EVENT.match(code)
+    if match:
+        record(
+            declarations,
+            supported,
+            component,
+            "Event",
+            match.group("name"),
+            norm(code),
+            path,
+            line,
+        )
+        return
+
+    match = CONST.match(code)
+    if match:
+        if top_comma(match.group("rest")):
+            findings.append(
+                {
+                    "path": path,
+                    "line": line,
+                    "message": (
+                        "Public Const declarations must contain one identifier per statement."
+                    ),
+                }
+            )
+        else:
+            record(
+                declarations,
+                supported,
+                component,
+                "Const",
+                match.group("name"),
+                norm(code),
+                path,
+                line,
+            )
+        return
+
+    match = VARIABLE.match(code)
+    if match:
+        if top_comma(match.group("rest")):
+            findings.append(
+                {
+                    "path": path,
+                    "line": line,
+                    "message": (
+                        "Public variable declarations must contain one identifier per statement."
+                    ),
+                }
+            )
+        else:
+            kind = "WithEvents Variable" if match.group("withevents") else "Variable"
+            record(
+                declarations,
+                supported,
+                component,
+                kind,
+                match.group("name"),
+                norm(code),
+                path,
+                line,
+            )
+
+
 def _parse_active_component(
     path: str, text: str, supported: bool
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
@@ -179,30 +351,9 @@ def _parse_active_component(
 
         match = PROC.match(code)
         if match and " declare " not in f" {code.casefold()} ":
-            visibility = (match.group("vis") or "").casefold()
-            if not visibility:
-                findings.append(
-                    {
-                        "path": path,
-                        "line": line,
-                        "message": (
-                            "Implicit public procedure is prohibited: "
-                            f"{match.group('name')}."
-                        ),
-                    }
-                )
-            if visibility == "public":
-                kind = " ".join(item.capitalize() for item in match.group("kind").split())
-                record(
-                    declarations,
-                    supported,
-                    component,
-                    kind,
-                    match.group("name"),
-                    norm(code),
-                    path,
-                    line,
-                )
+            _record_procedure(
+                path, component, supported, line, code, match, declarations, findings
+            )
             inside_procedure = True
             index += 1
             continue
@@ -230,127 +381,14 @@ def _parse_active_component(
 
         match = BLOCK.match(code)
         if match:
-            kind = match.group("kind").capitalize()
-            name = match.group("name")
-            body = [norm(code)]
-            close = END_BLOCK[kind.casefold()]
-            end_index = index + 1
-            while end_index < len(statements) and not close.match(statements[end_index][2]):
-                if statements[end_index][2].strip():
-                    body.append(norm(statements[end_index][2]))
-                end_index += 1
-            if end_index >= len(statements):
-                findings.append(
-                    {
-                        "path": path,
-                        "line": line,
-                        "message": f"Public {kind} {name} is not closed.",
-                    }
-                )
-                index += 1
-                continue
-            body.append(norm(statements[end_index][2]))
-            record(
-                declarations,
-                supported,
-                component,
-                kind,
-                name,
-                " | ".join(body),
-                path,
-                line,
+            index = _record_block(
+                path, component, supported, statements, index, match, declarations, findings
             )
-            index = end_index + 1
             continue
 
-        match = DECLARE.match(code)
-        if match:
-            kind = (
-                "Declare Function"
-                if match.group("kind").casefold() == "function"
-                else "Declare Sub"
-            )
-            record(
-                declarations,
-                supported,
-                component,
-                kind,
-                match.group("name"),
-                norm(code),
-                path,
-                line,
-            )
-            index += 1
-            continue
-
-        match = EVENT.match(code)
-        if match:
-            record(
-                declarations,
-                supported,
-                component,
-                "Event",
-                match.group("name"),
-                norm(code),
-                path,
-                line,
-            )
-            index += 1
-            continue
-
-        match = CONST.match(code)
-        if match:
-            if top_comma(match.group("rest")):
-                findings.append(
-                    {
-                        "path": path,
-                        "line": line,
-                        "message": (
-                            "Public Const declarations must contain one identifier per statement."
-                        ),
-                    }
-                )
-            else:
-                record(
-                    declarations,
-                    supported,
-                    component,
-                    "Const",
-                    match.group("name"),
-                    norm(code),
-                    path,
-                    line,
-                )
-            index += 1
-            continue
-
-        match = VARIABLE.match(code)
-        if match:
-            if top_comma(match.group("rest")):
-                findings.append(
-                    {
-                        "path": path,
-                        "line": line,
-                        "message": (
-                            "Public variable declarations must contain one identifier per statement."
-                        ),
-                    }
-                )
-            else:
-                kind = "WithEvents Variable" if match.group("withevents") else "Variable"
-                record(
-                    declarations,
-                    supported,
-                    component,
-                    kind,
-                    match.group("name"),
-                    norm(code),
-                    path,
-                    line,
-                )
-            index += 1
-            continue
-
+        _record_statement(
+            path, component, supported, line, code, declarations, findings
+        )
         index += 1
     return declarations, findings
 
@@ -443,46 +481,9 @@ def property_pair(first: dict[str, Any], second: dict[str, Any]) -> bool:
     )
 
 
-def run_check(root: Path) -> dict[str, Any]:
-    config = json.loads((root / CONFIG_PATH).read_text(encoding="utf-8"))
-    vba = config["vba"]
-    components: dict[str, str] = vba["components"]
-    manifest = vba["public_api_manifest"]
-    findings: list[dict[str, Any]] = []
-
-    if manifest not in config["required_paths"]:
-        findings.append(
-            {
-                "path": CONFIG_PATH,
-                "message": (
-                    "public_api_manifest must be a global required_path for every profile."
-                ),
-            }
-        )
-    for profile, entry in config["profiles"].items():
-        if entry["vba_contract"]["minimum_roles"].get("public", 0) < 1:
-            findings.append(
-                {
-                    "path": CONFIG_PATH,
-                    "message": (
-                        f"Profile {profile!r} must require at least one public-role component."
-                    ),
-                }
-            )
-
-    declarations: list[dict[str, Any]] = []
-    tracked = set(tracked_vba(root))
-    for path, role in sorted(components.items()):
-        if path not in tracked or not (root / path).is_file():
-            continue
-        parsed, errors = parse_component(
-            path,
-            (root / path).read_bytes().decode("cp1252"),
-            role == "public",
-        )
-        declarations.extend(parsed)
-        findings.extend(errors)
-
+def _index_declarations(
+    declarations: list[dict[str, Any]], findings: list[dict[str, Any]]
+) -> dict[str, list[dict[str, Any]]]:
     keys: dict[str, list[dict[str, Any]]] = {}
     names: dict[str, list[dict[str, Any]]] = {}
     for declaration in declarations:
@@ -520,9 +521,16 @@ def run_check(root: Path) -> dict[str, Any]:
                         }
                     )
             prior.append(declaration)
+    return keys
 
-    rows, signatures, errors = read_manifest(root, manifest)
-    findings.extend(errors)
+
+def _manifest_findings(
+    manifest: str,
+    keys: dict[str, list[dict[str, Any]]],
+    rows: set[str],
+    signatures: dict[str, set[str]],
+) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
     actual = {item.casefold(): item for item in keys}
     row_map = {item.casefold(): item for item in rows}
     signature_map = {item.casefold(): item for item in signatures}
@@ -575,6 +583,54 @@ def run_check(root: Path) -> dict[str, Any]:
                     "message": f"Stale signature record: {declaration_key}",
                 }
             )
+    return findings
+
+
+def run_check(root: Path) -> dict[str, Any]:
+    config = json.loads((root / CONFIG_PATH).read_text(encoding="utf-8"))
+    vba = config["vba"]
+    components: dict[str, str] = vba["components"]
+    manifest = vba["public_api_manifest"]
+    findings: list[dict[str, Any]] = []
+
+    if manifest not in config["required_paths"]:
+        findings.append(
+            {
+                "path": CONFIG_PATH,
+                "message": (
+                    "public_api_manifest must be a global required_path for every profile."
+                ),
+            }
+        )
+    for profile, entry in config["profiles"].items():
+        if entry["vba_contract"]["minimum_roles"].get("public", 0) < 1:
+            findings.append(
+                {
+                    "path": CONFIG_PATH,
+                    "message": (
+                        f"Profile {profile!r} must require at least one public-role component."
+                    ),
+                }
+            )
+
+    declarations: list[dict[str, Any]] = []
+    tracked = set(tracked_vba(root))
+    for path, role in sorted(components.items()):
+        if path not in tracked or not (root / path).is_file():
+            continue
+        parsed, errors = parse_component(
+            path,
+            (root / path).read_bytes().decode("cp1252"),
+            role == "public",
+        )
+        declarations.extend(parsed)
+        findings.extend(errors)
+
+    keys = _index_declarations(declarations, findings)
+
+    rows, signatures, errors = read_manifest(root, manifest)
+    findings.extend(errors)
+    findings.extend(_manifest_findings(manifest, keys, rows, signatures))
 
     evidence = sorted(
         declarations,

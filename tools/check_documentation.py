@@ -17,7 +17,7 @@ POLICY = ".github/documentation-policy.json"
 
 
 def load_policy(root: Path) -> dict[str, Any]:
-    policy = decode((root / POLICY).read_bytes())
+    policy: dict[str, Any] = decode((root / POLICY).read_bytes())
     require(isinstance(policy, dict) and policy.get("schema_version") == 1,
             "unsupported documentation policy")
     history = policy.get("historical_documents")
@@ -119,8 +119,9 @@ def build_report(root: Path) -> dict[str, Any]:
 
 
 def markdown(report: dict[str, Any]) -> str:
+    scope_note: str = report["scope_note"]
     return (f"# Documentation drift\n\nResult: {report['status'].upper()}; commands checked: {report['commands']}\n\n"
-            + "\n".join(f"- {item}" for item in report["findings"]) + "\n\n" + report["scope_note"] + "\n")
+            + "\n".join(f"- {item}" for item in report["findings"]) + "\n\n" + scope_note + "\n")
 
 
 def main() -> int:

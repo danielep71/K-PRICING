@@ -166,6 +166,89 @@ def validate_entrypoint(
     return []
 
 
+def validate_docker_action(
+    root: Path,
+    files: set[str],
+    metadata: str,
+    action_relative: str,
+    entrypoints: dict[str, str],
+) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    image = entrypoints.get("image")
+    if not image:
+        findings.append(
+            finding(metadata, "Docker local action requires runs.image.")
+        )
+    elif image.casefold() != "dockerfile":
+        findings.append(
+            finding(
+                metadata,
+                "Reusable baseline supports local Docker actions only with "
+                "runs.image: Dockerfile.",
+            )
+        )
+    else:
+        dockerfile = f"{action_relative}/Dockerfile"
+        if not (root / dockerfile).is_file():
+            findings.append(
+                finding(
+                    metadata,
+                    f"Dockerfile does not exist: {dockerfile}",
+                )
+            )
+        elif dockerfile not in files:
+            findings.append(
+                finding(
+                    metadata,
+                    f"Dockerfile is not tracked: {dockerfile}",
+                )
+            )
+    return findings
+
+
+def validate_runs(
+    root: Path,
+    files: set[str],
+    metadata: str,
+    relative: str,
+    using: str,
+    entrypoints: dict[str, str],
+    has_steps: bool,
+) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    normalized = using.casefold()
+    if normalized == "composite":
+        if not has_steps:
+            findings.append(
+                finding(metadata, "Composite local action requires runs.steps.")
+            )
+    elif normalized in {"node20", "node24"}:
+        if not entrypoints.get("main"):
+            findings.append(
+                finding(metadata, f"{using} local action requires runs.main.")
+            )
+        for key in ("main", "pre", "post"):
+            value = entrypoints.get(key)
+            if value is not None:
+                findings.extend(
+                    validate_entrypoint(
+                        root, files, metadata, relative, key, value
+                    )
+                )
+    elif normalized == "docker":
+        findings.extend(
+            validate_docker_action(root, files, metadata, relative, entrypoints)
+        )
+    else:
+        findings.append(
+            finding(
+                metadata,
+                f"Unsupported local action runs.using value: {using}",
+            )
+        )
+    return findings
+
+
 def validate_action(
     root: Path,
     files: set[str],
@@ -244,62 +327,11 @@ def validate_action(
         )
         return findings
 
-    normalized = using.casefold()
-    if normalized == "composite":
-        if not has_steps:
-            findings.append(
-                finding(metadata, "Composite local action requires runs.steps.")
-            )
-    elif normalized in {"node20", "node24"}:
-        if not entrypoints.get("main"):
-            findings.append(
-                finding(metadata, f"{using} local action requires runs.main.")
-            )
-        for key in ("main", "pre", "post"):
-            value = entrypoints.get(key)
-            if value is not None:
-                findings.extend(
-                    validate_entrypoint(
-                        root, files, metadata, relative, key, value
-                    )
-                )
-    elif normalized == "docker":
-        image = entrypoints.get("image")
-        if not image:
-            findings.append(
-                finding(metadata, "Docker local action requires runs.image.")
-            )
-        elif image.casefold() != "dockerfile":
-            findings.append(
-                finding(
-                    metadata,
-                    "Reusable baseline supports local Docker actions only with "
-                    "runs.image: Dockerfile.",
-                )
-            )
-        else:
-            dockerfile = f"{relative}/Dockerfile"
-            if not (root / dockerfile).is_file():
-                findings.append(
-                    finding(
-                        metadata,
-                        f"Dockerfile does not exist: {dockerfile}",
-                    )
-                )
-            elif dockerfile not in files:
-                findings.append(
-                    finding(
-                        metadata,
-                        f"Dockerfile is not tracked: {dockerfile}",
-                    )
-                )
-    else:
-        findings.append(
-            finding(
-                metadata,
-                f"Unsupported local action runs.using value: {using}",
-            )
+    findings.extend(
+        validate_runs(
+            root, files, metadata, relative, using, entrypoints, has_steps
         )
+    )
     return findings
 
 
