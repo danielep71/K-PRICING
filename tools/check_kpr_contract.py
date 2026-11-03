@@ -171,6 +171,8 @@ REQUIRED_MEMBERS = {
         "KPR_UI_InstallCommandBar",
         "KPR_UI_RemoveCommandBar",
         "KPR_UI_CommandBarClick",
+        "KPR_UI_ToolbarInstall",
+        "KPR_UI_ToolbarRemove",
     }),
 }
 FORBIDDEN_PARSE_CALLS = ("IsDate", "DateValue", "CVDate", "IsNumeric")

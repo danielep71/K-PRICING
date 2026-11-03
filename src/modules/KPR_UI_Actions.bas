@@ -101,6 +101,15 @@ Attribute VB_Name = "KPR_UI_Actions"
         Selected        As Object       'Selection, or Nothing
     End Type
 
+    'Content of a cell a command writes into, so a cancel can restore it
+    Private Type CellContent
+        HadFormula      As Boolean      'The cell held a formula
+        Formula         As String       'That formula's text
+        Dynamic         As Boolean      'Formula was read through Formula2
+        Value           As Variant      'A constant's value, error values included
+        Prefix          As String       'PrefixCharacter: "'" marks text entered as text
+    End Type
+
 '
 '------------------------------------------------------------------------------
 '
@@ -146,8 +155,7 @@ Public Sub KPR_UI_InsertFunction( _
     Dim Index           As Long         'Manifest record of FunctionName
     Dim Target          As Range        'Cell that receives the formula
     Dim Inserted        As String       'Formula this command wrote
-    Dim OldContent      As String       'Formula or value of Target on entry
-    Dim OldDynamic      As Boolean      'OldContent was read through Formula2
+    Dim Saved           As CellContent  'Content of Target on entry
 
 '------------------------------------------------------------------------------
 ' GUARD ENTRY
@@ -174,7 +182,7 @@ Public Sub KPR_UI_InsertFunction( _
 ' INSERT
 '------------------------------------------------------------------------------
     'Keep the old content so a cancelled dialog leaves the cell as it was
-        OldDynamic = ReadFormula(Target, OldContent)
+        SaveCell Target, Saved
         Inserted = "=" & FormulaQualifier(Target.Worksheet.Parent) & FunctionName & "()"
         Target.Formula = Inserted
         If KPR_Register_ManifestArgCount(Index) = 0 Then Exit Sub
@@ -184,7 +192,7 @@ Public Sub KPR_UI_InsertFunction( _
         Inserted = CStr(Target.Formula)
         Target.FunctionWizard
         If StrComp(CStr(Target.Formula), Inserted, vbTextCompare) = 0 Then
-            WriteFormula Target, OldContent, OldDynamic
+            RestoreCell Target, Saved
         End If
         Exit Sub
 
@@ -196,7 +204,7 @@ Fail:
         Notify "Could not insert " & FunctionName & ": error " & CStr(Err.Number) & _
                " (" & Err.Description & ")", vbExclamation
         On Error Resume Next
-        If Not Target Is Nothing And Len(Inserted) > 0 Then WriteFormula Target, OldContent, OldDynamic
+        If Not Target Is Nothing And Len(Inserted) > 0 Then RestoreCell Target, Saved
         RestoreState State
 
 End Sub
@@ -859,39 +867,55 @@ Private Function FormulaQualifier( _
 End Function
 
 
-Private Function ReadFormula( _
-    ByVal Cell As Object, _
-    ByRef Content As String) _
-    As Boolean
+Private Sub SaveCell( _
+    ByVal Cell As Range, _
+    ByRef Saved As CellContent)
 '
-' Reads the cell's formula or constant into Content, through Formula2 when
-' the running Excel provides it (so a dynamic-array formula keeps its form).
-' Returns TRUE when Formula2 was used.
+' Records what RestoreCell needs to give the cell back exactly: a formula as
+' its text (through Formula2 when the running Excel provides it, so a
+' dynamic-array formula keeps its form), a constant as its Variant value and
+' prefix character, so an error stays an error and text stays text.
 '
+    Dim Probe           As Object       'Late-bound view of Cell for Formula2
+
+    Saved.HadFormula = Cell.HasFormula
+    Saved.Value = Cell.Value
+    Saved.Prefix = CStr(Cell.PrefixCharacter)
+    If Not Saved.HadFormula Then Exit Sub
+    Set Probe = Cell
     On Error Resume Next
-    Content = CStr(Cell.Formula2)
-    If Err.Number = 0 Then
-        ReadFormula = True
-        Exit Function
-    End If
+    Saved.Formula = CStr(Probe.Formula2)
+    Saved.Dynamic = (Err.Number = 0)
     Err.Clear
     On Error GoTo 0
-    Content = CStr(Cell.Formula)
+    If Not Saved.Dynamic Then Saved.Formula = CStr(Cell.Formula)
 
-End Function
+End Sub
 
 
-Private Sub WriteFormula( _
-    ByVal Cell As Object, _
-    ByVal Content As String, _
-    ByVal Dynamic As Boolean)
+Private Sub RestoreCell( _
+    ByVal Cell As Range, _
+    ByRef Saved As CellContent)
 '
-' Writes back what ReadFormula read, through the same property.
+' Gives the cell back what SaveCell recorded. A constant is written as its
+' Variant value, never as text Excel would parse again; text that carried an
+' apostrophe prefix gets it back, so text such as =1+1 stays text.
 '
-    If Dynamic Then
-        Cell.Formula2 = Content
+    Dim Probe           As Object       'Late-bound view of Cell for Formula2
+
+    If Saved.HadFormula Then
+        If Saved.Dynamic Then
+            Set Probe = Cell
+            Probe.Formula2 = Saved.Formula
+        Else
+            Cell.Formula = Saved.Formula
+        End If
+    ElseIf IsEmpty(Saved.Value) Then
+        Cell.ClearContents
+    ElseIf VarType(Saved.Value) = vbString And Saved.Prefix = "'" Then
+        Cell.Value = "'" & Saved.Value
     Else
-        Cell.Formula = Content
+        Cell.Value = Saved.Value
     End If
 
 End Sub
