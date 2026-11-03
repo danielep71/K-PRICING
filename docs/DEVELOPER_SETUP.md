@@ -12,10 +12,11 @@ other environments are not certified.
 | Layer | Current content | Intended responsibility |
 | --- | --- | --- |
 | `src/core/` | `KPR_Core_Err.bas`, `KPR_Core_Parse.bas`, `KPR_Core_Dates.bas`, `KPR_Core_Array.bas` | Internal error, parsing, calendar and array/shape implementation |
-| `src/modules/` | `KPR_DATES_DAYS.bas`, `KPR_REGISTER_PUBLIC_UDFS.bas`, `KPR_UI_Actions.bas`, `KPR_UI_CommandBars.bas` | Supported 22-function `KPR_Dates_*` worksheet façade; internal MacroOptions registration manifest (#42); the commands behind every menu and the classic **KPR Dates** toolbar (#48) |
+| `src/modules/` | `KPR_DATES_DAYS.bas`, `KPR_REGISTER_PUBLIC_UDFS.bas`, `KPR_UI_Actions.bas`, `KPR_UI_CommandBars.bas`, `KPR_UI_Ribbon.bas` | Supported 22-function `KPR_Dates_*` worksheet façade; internal MacroOptions registration manifest (#42); the commands behind every menu, the classic **KPR Dates** toolbar (#48) and the Ribbon callbacks (#47) |
+| `src/ribbon/` | `customUI14.xml` | The **K-PRICING** Ribbon tab (#47), written into a build by `tools/inject_ribbon.py` |
 | `tests/modules/` | `KPR_Dev_Import.bas`, `KPR_REGRESSION_TESTS.bas`, `KPR_Test_Fixtures_Generated.bas`, `KPR_Test_Oracle.bas` | Development loader that imports one commit's modules into a build ([INSTALLATION.md](../INSTALLATION.md#updating-a-development-build)); migrated pure and stateful regression harness and the durable runner (`KPR_Test_RunAll`); generated fixture data from `tools/gen_fixtures.py` (never edit by hand); Excel cross-oracle cases; the `worksheet-registration` suite |
 | `examples/modules/` | `KPR_Demo__Builder.bas`, `KPR_Demo_Dates.bas`, `KPR_Demo_DirectVBA.bas` | Shared demo-sheet builder; the Date Primitives demo (#46); a minimal direct-VBA consumer using the supported façade. Every demo module is named `KPR_Demo_*`; the builder has a double underscore so it sorts first |
-| Future workbook/add-in/UI | Ribbon in progress (#47) | Ribbon, automatic registration at open, startup/shutdown, configuration, packaging and recovery, separated from calculations |
+| Future workbook/add-in | Not implemented | Automatic registration at open, startup/shutdown, configuration, packaging and recovery, separated from calculations |
 
 Exported text in Git is authoritative. Preserve component names, export
 attributes, encoding and line endings. A form and its resource companion are one
@@ -72,6 +73,7 @@ python3 tools/gen_fixtures.py --root . --check
 python3 tools/check_test_evidence.py --root . --self-test
 python3 tools/test_documentation.py -v
 python3 tools/test_verification_depth.py -v
+python3 tools/test_inject_ribbon.py -v
 python3 tools/check_documentation.py --root .
 python3 tools/check_release.py --root . --self-test
 python3 tools/check_release_semantics.py --root . --self-test

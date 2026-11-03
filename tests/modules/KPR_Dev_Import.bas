@@ -88,7 +88,7 @@ Attribute VB_Name = "KPR_Dev_Import"
             "KPR_REGISTER_PUBLIC_UDFS,KPR_REGRESSION_TESTS,KPR_Test_Fixtures_Generated," & _
             "KPR_Test_Oracle,KPR_DateExample,KPR_Demo_Builder,KPR__Demo_Builder," & _
             "KPR_Demo__Builder,KPR_Demo_Dates,KPR_Demo_DirectVBA,KPR_UI_Actions," & _
-            "KPR_UI_CommandBars"
+            "KPR_UI_CommandBars,KPR_UI_Ribbon"
 
     'Prefix of the hidden workbook names that record what the loader imported
         Private Const RECORD_PREFIX As String = "KPRDEV_"

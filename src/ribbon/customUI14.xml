@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  K-PRICING Ribbon (issue #47). Office 2010 and later (customUI/2009/07).
+  tools/inject_ribbon.py writes this file into an .xlsm or .xlam as
+  customUI/customUI14.xml; every callback lives in
+  src/modules/KPR_UI_Ribbon.bas and only delegates to KPR_UI_Actions.
+  One group per functional module, each with a Functions and a Demo sheets
+  menu whose tag is the module's caption in KPR_UI_FunctionGroups and in
+  the demo catalog. The menus are built on every open from the registration
+  manifest and the demo catalog. Development is shown only when the
+  regression modules are loaded.
+-->
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui"
+          onLoad="KPR_UI_Ribbon_OnLoad">
+  <ribbon>
+    <tabs>
+      <tab id="KPR_Tab" label="K-PRICING" keytip="KP">
+        <group id="KPR_GroupDates" label="Date primitives">
+          <dynamicMenu id="KPR_DatesFunctions"
+                       label="Functions"
+                       imageMso="FunctionWizard"
+                       size="large"
+                       tag="Date primitives"
+                       screentip="Date functions"
+                       supertip="Insert a K-PRICING date function into the active cell and open Excel's Function Arguments dialog for it."
+                       invalidateContentOnDrop="true"
+                       getContent="KPR_UI_Ribbon_GetFunctions"/>
+          <dynamicMenu id="KPR_DatesDemos"
+                       label="Demo sheets"
+                       imageMso="SheetInsert"
+                       size="large"
+                       tag="Date primitives"
+                       screentip="Date demo sheets"
+                       supertip="Build a demo sheet in the active workbook. Each row compares a K-PRICING formula with Excel's own function."
+                       invalidateContentOnDrop="true"
+                       getEnabled="KPR_UI_Ribbon_GetDemosEnabled"
+                       getContent="KPR_UI_Ribbon_GetDemos"/>
+        </group>
+        <group id="KPR_GroupSetup" label="Setup">
+          <button id="KPR_RegisterHelp"
+                  label="Register function help"
+                  imageMso="Refresh"
+                  size="large"
+                  tag="setup:register"
+                  screentip="Register function help"
+                  supertip="Show the supported functions in the Insert Function dialog under the KPR Dates category, with argument help."
+                  onAction="KPR_UI_Ribbon_OnAction"/>
+          <button id="KPR_ClearHelp"
+                  label="Clear function help"
+                  imageMso="Delete"
+                  size="large"
+                  tag="setup:clear"
+                  screentip="Clear function help"
+                  supertip="Remove the descriptions and argument help and return the functions to User Defined. The functions stay callable."
+                  onAction="KPR_UI_Ribbon_OnAction"/>
+        </group>
+        <group id="KPR_GroupDevelopment" label="Development"
+               getVisible="KPR_UI_Ribbon_GetDevelopmentVisible">
+          <button id="KPR_RunTests"
+                  label="Run tests"
+                  imageMso="MacroPlay"
+                  size="large"
+                  tag="dev:tests"
+                  screentip="Run the pure regression suites"
+                  supertip="Development only. The report goes to the Immediate window of the VBA editor."
+                  onAction="KPR_UI_Ribbon_OnAction"/>
+          <button id="KPR_RunEvidence"
+                  label="Evidence run..."
+                  imageMso="FileSave"
+                  size="large"
+                  tag="dev:evidence"
+                  screentip="Durable evidence run"
+                  supertip="Development only. Runs every durable suite and writes the evidence file for the source SHA you give."
+                  onAction="KPR_UI_Ribbon_OnAction"/>
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>

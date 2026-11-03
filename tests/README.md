@@ -96,6 +96,12 @@ every button and the caller's state unchanged. It runs no command, so no dialog
 opens. It feeds the evidence record's `commandbars` outcome and reinstalls a
 toolbar that was present on entry.
 
+The `worksheet-ribbon` suite (or `KPR_Tests_RunRibbon` alone) parses the menu
+XML the Ribbon callbacks in `src/modules/KPR_UI_Ribbon.bas` return. Loading the
+tab itself needs Excel and is recorded by the certification operator as the
+`ribbonx` outcome; `tools/inject_ribbon.py` checks the RibbonX file and its
+callbacks offline.
+
 The optional [Windows/Excel evidence interface](../docs/EXCEL_EVIDENCE.md)
 records this harness output, source identity and host environment with explicit
 manual/automated execution. Its validator does not execute Excel.

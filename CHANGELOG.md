@@ -118,8 +118,25 @@ Use only the categories needed by a release.
   and cancelling the Function Arguments dialog gives the cell back its exact
   previous content. Demo catalog entries gain a group, so the menus show one
   submenu per functional module. The new `worksheet-commandbars` regression
-  suite sets the evidence record's `commandbars` outcome; an `all` run now has
-  22 suites. Not yet run in Excel.
+  suite sets the evidence record's `commandbars` outcome. Not yet run in
+  Excel.
+- Added the **K-PRICING** Ribbon tab (#47). `src/ribbon/customUI14.xml` (Office
+  2010 schema, stable `KPR_` ids, built-in icons) has a **Date primitives**
+  group whose Functions and Demo sheets menus are rebuilt every time they open
+  from the registration manifest and the demo catalog, a **Setup** group, and
+  a **Development** group shown only when the regression modules are loaded.
+  The callbacks in `src/modules/KPR_UI_Ribbon.bas` only hand the control's tag
+  to the shared commands or build a menu; `onLoad` keeps the Ribbon object for
+  `KPR_UI_RibbonRefresh`, the only invalidation. `tools/inject_ribbon.py
+  --target` writes the tab into one explicitly named, untracked `.xlsm` or
+  `.xlam` after validating the package: every other entry is copied
+  byte-for-byte, exactly one ribbon relationship is kept, repeated runs give
+  identical bytes, and the file is replaced atomically after an exclusive
+  backup. `--check`, now part of Repository integrity, validates the RibbonX
+  against the Office 2010 signatures of its VBA callbacks. The new
+  `worksheet-ribbon` suite parses the menu XML the callbacks return; an `all`
+  run now has 23 suites. Not yet run in Excel or against an Excel-saved
+  package.
 - Added the development loader `tests/modules/KPR_Dev_Import.bas`:
   `KPR_Dev_ImportModules(Source, TargetWorkbook)` replaces the K-PRICING
   modules of an open workbook or add-in with those of one commit, downloaded

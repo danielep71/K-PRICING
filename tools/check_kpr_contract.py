@@ -55,6 +55,7 @@ ALLOWED_DEPENDENCIES = {
             "kpr_demo_dates",
             "kpr_ui_actions",
             "kpr_ui_commandbars",
+            "kpr_ui_ribbon",
         }
     ),
     # Registration holds function names as manifest text only.
@@ -73,6 +74,7 @@ ALLOWED_DEPENDENCIES = {
     "kpr_ui_actions": frozenset({"kpr_register_public_udfs"}),
     # Each menu surface reaches every command through the shared actions.
     "kpr_ui_commandbars": frozenset({"kpr_ui_actions"}),
+    "kpr_ui_ribbon": frozenset({"kpr_ui_actions"}),
 }
 REQUIRED_MEMBERS = {
     "kpr_core_err": frozenset({"ErrValue", "ErrNum", "ErrNA", "ErrForCondition"}),
@@ -151,6 +153,7 @@ REQUIRED_MEMBERS = {
         "KPR_Tests_RunRegistration",
         "KPR_Tests_RunDemo",
         "KPR_Tests_RunCommandBars",
+        "KPR_Tests_RunRibbon",
         "KPR_Tests_Available",
         "KPR_Test_RunAll",
         "KPR_Test_RunSuite",
@@ -173,6 +176,17 @@ REQUIRED_MEMBERS = {
         "KPR_UI_CommandBarClick",
         "KPR_UI_ToolbarInstall",
         "KPR_UI_ToolbarRemove",
+    }),
+    # Every callback src/ribbon/customUI14.xml names, plus the refresh.
+    "kpr_ui_ribbon": frozenset({
+        "KPR_UI_Ribbon_OnLoad",
+        "KPR_UI_Ribbon_OnAction",
+        "KPR_UI_Ribbon_GetFunctions",
+        "KPR_UI_Ribbon_GetDemos",
+        "KPR_UI_Ribbon_GetDemosEnabled",
+        "KPR_UI_Ribbon_GetDevelopmentVisible",
+        "KPR_UI_RibbonRefresh",
+        "KPR_UI_RibbonMenuXml",
     }),
 }
 FORBIDDEN_PARSE_CALLS = ("IsDate", "DateValue", "CVDate", "IsNumeric")
