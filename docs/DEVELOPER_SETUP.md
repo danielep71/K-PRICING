@@ -72,6 +72,7 @@ python3 tools/gen_fixtures.py --root . --check
 python3 tools/check_test_evidence.py --root . --self-test
 python3 tools/test_documentation.py -v
 python3 tools/test_verification_depth.py -v
+python3 tools/test_inject_ribbon.py -v
 python3 tools/check_documentation.py --root .
 python3 tools/check_release.py --root . --self-test
 python3 tools/check_release_semantics.py --root . --self-test

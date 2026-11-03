@@ -104,6 +104,16 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added `tools/inject_ribbon.py` for the Excel Ribbon (#47). `--target` writes
+  `customUI/customUI14.xml` and exactly one Office 2010 ribbon relationship
+  into one explicitly named, untracked `.xlsm` or `.xlam`, after validating
+  the package; every other entry is copied byte-for-byte, repeated runs give
+  identical bytes, and the file is replaced atomically after an exclusive
+  backup. `--check` validates the RibbonX XML (stable unique `KPR_` ids,
+  `imageMso` icons only) against the Office 2010 signatures of its VBA
+  callbacks and reports unused ribbon callbacks. Synthetic-package tests run in
+  Repository integrity; `--check` joins CI once the RibbonX and callback
+  sources land. Not yet run against an Excel-saved package.
 - Added the development loader `tests/modules/KPR_Dev_Import.bas`:
   `KPR_Dev_ImportModules(Source, TargetWorkbook)` replaces the K-PRICING
   modules of an open workbook or add-in with those of one commit, downloaded
