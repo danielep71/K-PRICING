@@ -79,7 +79,7 @@ Attribute VB_Name = "KPR_Demo__Builder"
 '   catalog entries are run by name.
 '
 ' UPDATED
-'   2026-10-06
+'   2026-11-03
 '
 ' AUTHOR
 '   Daniele Penza
@@ -176,19 +176,26 @@ Public Function KPR_Demo_Catalog() As Variant
 '                              KPR_Demo_Catalog
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   The demos this project can build, one "EntryPoint|Caption" text per demo.
-'   A new demo adds one line here; KPR_Demo_Build and the regression suite
-'   read this list, as the Ribbon and CommandBars menus (#47, #48) will.
+'   The demos this project can build, one "EntryPoint|Caption|Group" text per
+'   demo. A new demo adds one line here; KPR_Demo_Build, the regression suite
+'   and the Ribbon and CommandBars menus (KPR_UI_Actions) read this list.
+'
+' FIELDS
+'   EntryPoint  the content module's build procedure
+'   Caption     the menu item text
+'   Group       the functional module the demo belongs to; the menus show
+'               one Demo sheets submenu per group, so it matches a caption
+'               of KPR_UI_FunctionGroups
 '
 ' RETURNS
-'   A zero-based array of "EntryPoint|Caption" texts.
+'   A zero-based array of "EntryPoint|Caption|Group" texts.
 '
 ' UPDATED
-'   2026-10-06
+'   2026-11-03
 '==============================================================================
 '
     KPR_Demo_Catalog = Array( _
-        "KPR_Demo_BuildDates|Date primitives")
+        "KPR_Demo_BuildDates|Date primitives|Date primitives")
 
 End Function
 

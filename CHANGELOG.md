@@ -104,6 +104,18 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added the classic **KPR Dates** toolbar (#48) and the shared menu commands it
+  calls. `src/modules/KPR_UI_Actions.bas` holds the commands: insert a
+  supported function into the active cell with Excel's Function Arguments
+  dialog, build a catalog demo sheet, register or clear the Function Wizard
+  help, and, only when the regression modules are loaded, the pure and durable
+  regression runs. `src/modules/KPR_UI_CommandBars.bas` adds
+  `KPR_UI_InstallCommandBar` and `KPR_UI_RemoveCommandBar`, which are safe to
+  run repeatedly in any order, create temporary controls only and remove only
+  K-PRICING's own. Demo catalog entries gain a group, so the menus show one
+  submenu per functional module. The new `worksheet-commandbars` regression
+  suite sets the evidence record's `commandbars` outcome; an `all` run now has
+  22 suites. Not yet run in Excel.
 - Added the development loader `tests/modules/KPR_Dev_Import.bas`:
   `KPR_Dev_ImportModules(Source, TargetWorkbook)` replaces the K-PRICING
   modules of an open workbook or add-in with those of one commit, downloaded

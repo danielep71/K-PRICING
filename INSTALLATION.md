@@ -104,15 +104,19 @@ Import the migrated production dependency set in this order:
 5. `src/modules/KPR_DATES_DAYS.bas`
 6. `src/modules/KPR_REGISTER_PUBLIC_UDFS.bas` — project-internal
    MacroOptions registration manifest; no module dependencies
-7. `tests/modules/KPR_Test_Fixtures_Generated.bas` — development/regression
+7. `src/modules/KPR_UI_Actions.bas` — the commands behind every K-PRICING
+   menu; depends on `KPR_REGISTER_PUBLIC_UDFS`
+8. `src/modules/KPR_UI_CommandBars.bas` — the classic **KPR Dates** toolbar;
+   depends on `KPR_UI_Actions`
+9. `tests/modules/KPR_Test_Fixtures_Generated.bas` — development/regression
    only; generated fixture data with no dependencies
-8. `tests/modules/KPR_Test_Oracle.bas` — development/regression only; Excel
-   cross-oracle cases that depend on `KPR_DATES_DAYS` alone
-9. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
-10. `examples/modules/KPR_Demo_DirectVBA.bas` — optional consumer example
-11. `examples/modules/KPR_Demo__Builder.bas` — shared demo builder; no module
+10. `tests/modules/KPR_Test_Oracle.bas` — development/regression only; Excel
+    cross-oracle cases that depend on `KPR_DATES_DAYS` alone
+11. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
+12. `examples/modules/KPR_Demo_DirectVBA.bas` — optional consumer example
+13. `examples/modules/KPR_Demo__Builder.bas` — shared demo builder; no module
     dependencies
-12. `examples/modules/KPR_Demo_Dates.bas` — Date Primitives demo; depends on
+14. `examples/modules/KPR_Demo_Dates.bas` — Date Primitives demo; depends on
     `KPR_Demo__Builder`. Both demo modules are optional for users, but required
     whenever `KPR_REGRESSION_TESTS` is imported, because its `worksheet-demo`
     suite builds the demo
@@ -126,6 +130,43 @@ blanks that metadata and returns them to **User Defined**. Both are idempotent,
 preserve the workbook's saved state, and never change a calculation; a
 non-empty `? KPR_Register_LastReport()` lists any function that failed. Source provenance and path adaptation are recorded
 in [`docs/MIGRATION_PROVENANCE.md`](docs/MIGRATION_PROVENANCE.md).
+
+### Menus
+
+The two `KPR_UI_` modules are unsupported infrastructure, like the
+registration module. `KPR_UI_Actions` holds the commands; the menus only call
+it. It reaches the demo and regression modules by name, so a build without
+them still compiles: their menu items are simply absent or disabled.
+
+The classic toolbar is **KPR Dates**. In Excel 2007 and later it appears on the
+Ribbon's **Add-ins** tab:
+
+| Menu | Items |
+| --- | --- |
+| Functions | One submenu per functional module (today **Date primitives**), one item per supported function. An item puts the function into the active cell and opens Excel's Function Arguments dialog; **Cancel** gives the cell back its previous content |
+| Demo sheets | One submenu per demo group, one item per demo; it builds the demo sheet into the active workbook |
+| Setup | **Register function help** and **Clear function help**, the two registration entry points |
+| Development | Only when the regression modules are loaded: **Run the pure regression suites** (report in the Immediate window) and **Durable evidence run...**, which asks for the source SHA and an output folder |
+
+To show it, run `KPR_UI_InstallCommandBar` from the macro list (**Alt+F8**) or
+the Immediate window; to remove it, run `KPR_UI_RemoveCommandBar`. Both can be
+run again at any time, in any order: install never duplicates the toolbar, and
+removal deletes only K-PRICING's own controls. The toolbar is temporary, so it
+disappears when Excel closes. To have it every session, call both from the
+`ThisWorkbook` module of the workbook or add-in:
+
+```vb
+Private Sub Workbook_Open()
+    KPR_UI_InstallCommandBar
+End Sub
+
+Private Sub Workbook_BeforeClose(Cancel As Boolean)
+    KPR_UI_RemoveCommandBar
+End Sub
+```
+
+After loading or removing the demo or regression modules, run
+`KPR_UI_InstallCommandBar` again so the menus follow.
 
 > [!CAUTION]
 > A `.frm` and adjacent `.frx` are one logical UserForm component. Import the
@@ -296,7 +337,8 @@ troubleshooting channels.
 
 ## 🗑️ Removal
 
-1. Run any project-owned shutdown/cleanup procedure.
+1. Run any project-owned shutdown/cleanup procedure, such as
+   `KPR_UI_RemoveCommandBar`.
 2. Remove the production components and optional integrations the project owns.
 3. Compile the remaining VBA project.
 4. Close/reopen and verify the host no longer depends on removed project state.

@@ -71,6 +71,7 @@ Replace the example SHA with the exact candidate you imported.
 | `worksheet-oracle` | worksheet | `KPR_Tests_RunOracle`: the Excel cross-oracle cases in `KPR_Test_Oracle` (#41) |
 | `worksheet-registration` | worksheet | `KPR_Tests_RunRegistration`: the MacroOptions manifest and register / clean-up lifecycle in `KPR_REGISTER_PUBLIC_UDFS` (#42) |
 | `worksheet-demo` | worksheet | `KPR_Tests_RunDemo`: builds the Date Primitives demo (#46) into files and into scratch workbooks, requires identical builds, no failing row and no existing sheet changed |
+| `worksheet-commandbars` | worksheet | `KPR_Tests_RunCommandBars`: the menu layer in `KPR_UI_Actions` and the **KPR Dates** toolbar lifecycle in `KPR_UI_CommandBars` (#48): install, repeat install, removal and repeat removal, with no duplicate and no command run |
 | `worksheet-state` | worksheet | `KPR_Tests_RunStateCheck`: runs the durable runner on `date-type` twice, once with a deliberately injected failure, and proves the caller's state is restored after both |
 
 `KPR_Tests_RunAll("all")`, `KPR_Tests_RunEvidence` and the
@@ -233,8 +234,22 @@ no failing row. It then builds twice into a scratch workbook, requiring a new
 sheet each time (the second named `KPR Dates Demo (2)`), the scratch sheet
 and the first demo unchanged and no failing row, and once with a 1904 scratch
 workbook active, requiring that workbook untouched and a new workbook built
-instead. It has 44 assertions, so an `all` run has 21 suites and 9,320
-assertions. The suite sets the evidence record's `demo_generation` outcome.
+instead. It has 44 assertions. The suite sets the evidence record's
+`demo_generation` outcome.
+
+The `worksheet-commandbars` suite checks that every demo catalog entry has an
+entry point, a caption and a group naming a functional module, that the
+Functions list matches the registration manifest and that malformed or unknown
+menu actions are refused. It then removes, installs, installs again, removes
+and removes again the **KPR Dates** toolbar, requiring one visible toolbar, the
+same KPR-owned control count after each install, one button per supported
+function, demo and setup or development command, each carrying a known action,
+and no KPR-owned control after each removal, with calculation, events, screen
+updating, alerts, the active workbook and sheet and the selection unchanged.
+It runs no command, so no dialog opens, and a toolbar installed on entry is
+installed again at the end. It has 37 assertions, so an `all` run has 22
+suites and 9,357 assertions. The suite sets the evidence record's
+`commandbars` outcome.
 
 ## Caller-state restoration
 
@@ -314,7 +329,8 @@ Each outcome has a `status` of `PASS`, `FAIL`, `NOT_RUN` or `NOT_APPLICABLE`.
 
 The runner writes `regression` from the run itself, `cross_oracle` from the
 `worksheet-oracle` suite, `macro_options` from the `worksheet-registration`
-suite and `demo_generation` from the `worksheet-demo` suite: `PASS` or `FAIL`
+suite, `commandbars` from the `worksheet-commandbars` suite and
+`demo_generation` from the `worksheet-demo` suite: `PASS` or `FAIL`
 when that suite ran, `NOT_RUN` when it was not selected. Every other outcome is `NOT_RUN`, because the runner
 cannot observe it. The certification operator
 completes those outcomes in the same file after observing them, and never
@@ -349,8 +365,9 @@ against the schema, then:
   state restoration;
 - every certification outcome follows the detail and reason rules;
   `cross_oracle` matches the `worksheet-oracle` suite, `macro_options` the
-  `worksheet-registration` suite and `demo_generation` the `worksheet-demo`
-  suite, each `NOT_RUN` when its suite was not selected;
+  `worksheet-registration` suite, `commandbars` the `worksheet-commandbars`
+  suite and `demo_generation` the `worksheet-demo` suite, each `NOT_RUN` when
+  its suite was not selected;
 - with `--compare`, the second record passes the same schema and semantic
   checks, and both records are identical outside the declared
   nondeterministic fields;

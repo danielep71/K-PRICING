@@ -49,10 +49,12 @@ RUNNER_FAILURE_SUITE = "runner"
 ORACLE_SUITE = "worksheet-oracle"
 REGISTRATION_SUITE = "worksheet-registration"
 DEMO_SUITE = "worksheet-demo"
+COMMANDBARS_SUITE = "worksheet-commandbars"
 # Certification outcomes the runner derives from one registered suite.
 SUITE_OUTCOMES = {
     "cross_oracle": ORACLE_SUITE,
     "macro_options": REGISTRATION_SUITE,
+    "commandbars": COMMANDBARS_SUITE,
     "demo_generation": DEMO_SUITE,
 }
 REGISTRY_PATTERN = re.compile(
@@ -486,7 +488,7 @@ def synthetic_record(root: Path) -> dict[str, Any]:
             "cross_oracle": _outcome("PASS", "21 oracle assertion(s), 0 failure(s)", None),
             "macro_options": _outcome("PASS", "40 registration assertion(s), 0 failure(s)", None),
             "ribbonx": _outcome("NOT_RUN", None, operator),
-            "commandbars": _outcome("NOT_RUN", None, operator),
+            "commandbars": _outcome("PASS", "37 toolbar assertion(s), 0 failure(s)", None),
             "demo_generation": _outcome("PASS", "60 demo assertion(s), 0 failure(s)", None),
             "source_round_trip": _outcome("NOT_RUN", None, operator),
         },
@@ -518,6 +520,8 @@ def _single_suite(record: dict[str, Any]) -> dict[str, Any]:
         "NOT_RUN", None, "The worksheet-registration suite was not selected in this run.")
     record["certification"]["demo_generation"] = _outcome(
         "NOT_RUN", None, "The worksheet-demo suite was not selected in this run.")
+    record["certification"]["commandbars"] = _outcome(
+        "NOT_RUN", None, "The worksheet-commandbars suite was not selected in this run.")
     return record
 
 
@@ -664,6 +668,12 @@ def self_test(root: Path) -> int:
         ("demo marked not applicable in certification",
          lambda r: _set("certification/demo_generation", _outcome("NOT_APPLICABLE", None, "n/a"))(_certified(r)),
          {"certification": True}, "demo_generation"),
+        ("commandbars outcome disagrees with suite",
+         _set("certification/commandbars", _outcome("FAIL", "x", None)), {},
+         "commandbars must be PASS to match"),
+        ("commandbars outcome without the suite",
+         lambda r: _set("certification/commandbars", _outcome("PASS", "x", None))(_single_suite(r)), {},
+         "commandbars must be NOT_RUN when"),
         ("certification of one suite", lambda r: _certified(_single_suite(r)), {"certification": True},
          "KPR_Test_RunAll record"),
         ("compile marked not applicable",

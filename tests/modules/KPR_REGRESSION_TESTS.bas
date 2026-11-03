@@ -5,9 +5,9 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 ' PURPOSE
 '   Deterministic regression suites for the KPR date layer, launched from one
 '   dispatcher, plus separate macro-only runners for host, Range-shape,
-'   dynamic-array, worksheet-fixture, cross-oracle, registration, demo and
-'   state-restoration behavior, and the durable runner that drives all of them
-'   and writes structured evidence.
+'   dynamic-array, worksheet-fixture, cross-oracle, registration, demo,
+'   CommandBars and state-restoration behavior, and the durable runner that
+'   drives all of them and writes structured evidence.
 '
 ' SUITE REGISTRY
 '   KPR_Tests_RunAll dispatches to the suites below. Passing a suite name runs
@@ -46,7 +46,8 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '   KPR_Test_RunAll runs TestRegistry in order: the twelve suites above, then
 '   fixtures, then the macro-only runners as worksheet-host, worksheet-shape,
 '   worksheet-array, worksheet-fixtures, worksheet-oracle,
-'   worksheet-registration, worksheet-demo and worksheet-state.
+'   worksheet-registration, worksheet-demo, worksheet-commandbars and
+'   worksheet-state.
 '   KPR_Test_RunSuite runs one of them. tools/check_test_evidence.py reads the registry from this source.
 '
 ' SCOPE
@@ -281,6 +282,15 @@ Public Sub KPR_Tests_Run()
         ReportRun "all"
 
 End Sub
+
+Public Function KPR_Tests_Available() As Boolean
+'
+' TRUE. The menus (KPR_UI_Actions) call this through Application.Run to learn
+' that the regression modules are loaded and show their Development commands.
+'
+    KPR_Tests_Available = True
+
+End Function
 
 Public Sub KPR_Tests_RunSuite( _
     ByVal SuiteName As String)
@@ -834,7 +844,7 @@ Private Function TestRegistry() As Variant
         "boundary", "mapper", "host", "pillar", "surface", "shape", _
         "parity", "fixtures", "worksheet-host", "worksheet-shape", _
         "worksheet-array", "worksheet-fixtures", "worksheet-oracle", "worksheet-registration", _
-        "worksheet-demo", "worksheet-state")
+        "worksheet-demo", "worksheet-commandbars", "worksheet-state")
 
 End Function
 
@@ -852,7 +862,8 @@ Private Function SuiteKind( _
         Case "fixtures"
             SuiteKind = "fixture"
         Case "worksheet-host", "worksheet-shape", "worksheet-array", "worksheet-fixtures", _
-             "worksheet-oracle", "worksheet-registration", "worksheet-demo", "worksheet-state"
+             "worksheet-oracle", "worksheet-registration", "worksheet-demo", "worksheet-commandbars", _
+             "worksheet-state"
             SuiteKind = "worksheet"
         Case Else
             SuiteKind = "pure"
@@ -879,6 +890,7 @@ Private Sub ExecuteSuite( _
         Case "worksheet-oracle":    KPR_Tests_RunOracle
         Case "worksheet-registration": KPR_Tests_RunRegistration
         Case "worksheet-demo":      KPR_Tests_RunDemo
+        Case "worksheet-commandbars": KPR_Tests_RunCommandBars
         Case "worksheet-state":     KPR_Tests_RunStateCheck
         Case Else
             If Not RunSuite(SuiteName) Then
@@ -1695,7 +1707,7 @@ Private Function TryWriteEvidence( _
     Print #FileNo, "    ""cross_oracle"": " & Oracle & ","
     Print #FileNo, "    ""macro_options"": " & RegistrationOutcome(Rec) & ","
     Print #FileNo, "    ""ribbonx"": " & OperatorOutcome() & ","
-    Print #FileNo, "    ""commandbars"": " & OperatorOutcome() & ","
+    Print #FileNo, "    ""commandbars"": " & CommandBarsOutcome(Rec) & ","
     Print #FileNo, "    ""demo_generation"": " & DemoOutcome(Rec) & ","
     Print #FileNo, "    ""source_round_trip"": " & OperatorOutcome()
     Print #FileNo, "  },"
@@ -1809,6 +1821,40 @@ Private Function DemoOutcome( _
                                               CStr(Rec.SuiteFails(I)) & " failure(s)", "")
                 Case Else
                     DemoOutcome = JsonOutcome("NOT_RUN", "", "The worksheet-demo suite did not run.")
+            End Select
+        End If
+    Next I
+
+End Function
+
+Private Function CommandBarsOutcome( _
+    ByRef Rec As RunRecord) _
+    As String
+'
+' The commandbars outcome follows the worksheet-commandbars suite when this
+' run selected it; otherwise the toolbar lifecycle was not exercised.
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim I               As Long         'Suite cursor
+
+'------------------------------------------------------------------------------
+' MAP
+'------------------------------------------------------------------------------
+    CommandBarsOutcome = JsonOutcome("NOT_RUN", "", _
+                                     "The worksheet-commandbars suite was not selected in this run.")
+    For I = 0 To Rec.SuiteCount - 1
+        If Rec.SuiteNames(I) = "worksheet-commandbars" Then
+            Select Case Rec.SuiteStatus(I)
+                Case "PASS", "FAIL"
+                    CommandBarsOutcome = JsonOutcome(Rec.SuiteStatus(I), _
+                                                     CStr(Rec.SuiteChecks(I)) & " toolbar assertion(s), " & _
+                                                     CStr(Rec.SuiteFails(I)) & " failure(s)", "")
+                Case Else
+                    CommandBarsOutcome = JsonOutcome("NOT_RUN", "", _
+                                                     "The worksheet-commandbars suite did not run.")
             End Select
         End If
     Next I
@@ -3055,6 +3101,224 @@ Private Function RegistrationSelection() As String
     Err.Clear
 
 End Function
+
+'
+'------------------------------------------------------------------------------
+'
+'                      COMMANDBARS LIFECYCLE RUNNER (MACRO ONLY)
+'
+'------------------------------------------------------------------------------
+'
+
+Public Sub KPR_Tests_RunCommandBars()
+'
+'==============================================================================
+'                           KPR_Tests_RunCommandBars
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Checks the menu layer (KPR_UI_Actions) and the classic toolbar lifecycle
+'   (KPR_UI_CommandBars), and prints the report to the Immediate window.
+'
+' METHOD
+'   Menu content: every demo catalog entry has an entry point, a caption and
+'   a group that names a functional module; the Functions list matches the
+'   registration manifest; unknown or malformed menu actions are refused.
+'   Lifecycle: removes, installs, installs again, removes and removes again,
+'   requiring one visible "KPR Dates" toolbar, the same KPR-owned control
+'   count after each install, a known command behind every enabled button,
+'   and no KPR-owned control after each removal. Calculation, events, screen
+'   updating, alerts, the active workbook and sheet and the selection must be
+'   exactly as found. No command is run, so no dialog opens.
+'
+' STATE
+'   A toolbar that was installed on entry is installed again at the end.
+'   Macro-only: it changes the CommandBars collection while it runs.
+'
+' UPDATED
+'   2026-11-03
+'==============================================================================
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const BAR_NAME      As String = "KPR Dates"     'Toolbar name the module uses
+    Dim Calc            As XlCalculation        'Calculation mode on entry
+    Dim Events          As Boolean              'EnableEvents on entry
+    Dim Screen          As Boolean              'ScreenUpdating on entry
+    Dim Alerts          As Boolean              'DisplayAlerts on entry
+    Dim BookName        As String               'Active workbook on entry
+    Dim SheetName       As String               'Active sheet on entry
+    Dim SelectionText   As String               'Selection on entry
+    Dim HadBar          As Boolean              'A KPR toolbar existed on entry
+    Dim Entry           As Variant              'Catalog cursor
+    Dim Fields          As Variant              'Fields of one catalog entry
+    Dim Names           As Variant              'Functions of the date module
+    Dim Demos           As Variant              'Every demo entry
+    Dim Expected        As Long                 'Buttons the toolbar must carry
+    Dim Action          As Variant              'Refused-action cursor
+    Dim First           As Long                 'KPR-owned controls after the first install
+    Dim Done            As Boolean              'Result of one lifecycle call
+    Dim Visible         As Boolean              'The toolbar is shown
+    Dim I               As Long                 'Report cursor
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record what the lifecycle must leave as found
+        Set mFailures = New Collection
+        mChecks = 0
+        Calc = Application.Calculation
+        Events = Application.EnableEvents
+        Screen = Application.ScreenUpdating
+        Alerts = Application.DisplayAlerts
+        BookName = RegistrationActiveBook()
+        SheetName = RegistrationActiveSheet()
+        SelectionText = RegistrationSelection()
+        HadBar = (KPR_UI_CommandBarControlCount() > 0)
+
+'------------------------------------------------------------------------------
+' MENU CONTENT
+'------------------------------------------------------------------------------
+    'The catalog groups must name a functional module, or a menu loses them
+        For Each Entry In KPR_Demo_Catalog()
+            Fields = Split(CStr(Entry), "|")
+            CheckUI "commandbars/catalog fields " & CStr(Fields(0)), _
+                    UBound(Fields) = 2, "entry is " & CStr(Entry)
+            If UBound(Fields) = 2 Then
+                CheckUI "commandbars/catalog group " & CStr(Fields(0)), _
+                        IsFunctionGroup(CStr(Fields(2))), "group " & CStr(Fields(2)) & " is not a functional module"
+            End If
+        Next Entry
+        Names = KPR_UI_FunctionNames("KPR_Dates_")
+        CheckUI "commandbars/functions match the manifest", _
+                IsArray(Names), "no KPR_Dates_ function listed"
+        If IsArray(Names) Then
+            CheckUI "commandbars/function count", UBound(Names) + 1 = KPR_Register_ManifestCount(), _
+                    CStr(UBound(Names) + 1) & " listed, manifest has " & CStr(KPR_Register_ManifestCount())
+        End If
+        Demos = KPR_UI_DemoEntries("")
+        CheckUI "commandbars/demos available", KPR_UI_DemosAvailable() And IsArray(Demos), _
+                "the demo catalog did not answer"
+        CheckUI "commandbars/tests available", KPR_UI_TestsAvailable(), "KPR_Tests_Available did not answer"
+        For Each Action In Array("", "fn", "fn:", ":x", "fn:KPR_Dates_NoSuch", "demo:KPR_Demo_NoSuch", _
+                                 "setup:delete", "dev:all", "other:x")
+            CheckUI "commandbars/refuse action '" & CStr(Action) & "'", _
+                    Not KPR_UI_ActionKnown(CStr(Action)), "the action was accepted"
+        Next Action
+
+'------------------------------------------------------------------------------
+' INSTALL TWICE
+'------------------------------------------------------------------------------
+    'The second install must replace the first, never add to it
+        Done = KPR_UI_RemoveCommandBar()
+        CheckUI "commandbars/clean start", Done And KPR_UI_CommandBarControlCount() = 0, _
+                CStr(KPR_UI_CommandBarControlCount()) & " KPR control(s) left"
+        If IsArray(Names) And IsArray(Demos) Then Expected = UBound(Names) + UBound(Demos) + 2 + 4
+        Done = KPR_UI_InstallCommandBar()
+        CheckUI "commandbars/install", Done, KPR_UI_CommandBarLastReport()
+        First = KPR_UI_CommandBarControlCount()
+        CheckUI "commandbars/install owns controls", First > 1, CStr(First) & " KPR control(s)"
+        CheckBarActions "first install", Expected
+        Visible = False
+        On Error Resume Next
+        Visible = Application.CommandBars(BAR_NAME).Visible
+        Err.Clear
+        On Error GoTo 0
+        CheckUI "commandbars/toolbar visible", Visible, "the toolbar is hidden or absent"
+        Done = KPR_UI_InstallCommandBar()
+        CheckUI "commandbars/repeat install", Done, KPR_UI_CommandBarLastReport()
+        CheckUI "commandbars/repeat install adds nothing", KPR_UI_CommandBarControlCount() = First, _
+                CStr(KPR_UI_CommandBarControlCount()) & " KPR control(s), first install had " & CStr(First)
+        CheckBarActions "repeat install", Expected
+
+'------------------------------------------------------------------------------
+' REMOVE TWICE
+'------------------------------------------------------------------------------
+    'Removal of absent UI is not an error
+        Done = KPR_UI_RemoveCommandBar()
+        CheckUI "commandbars/remove", Done And KPR_UI_CommandBarControlCount() = 0, _
+                CStr(KPR_UI_CommandBarControlCount()) & " KPR control(s) left"
+        CheckUI "commandbars/no actions after removal", IsEmpty(KPR_UI_CommandBarActions()), _
+                "the toolbar still lists actions"
+        Done = KPR_UI_RemoveCommandBar()
+        CheckUI "commandbars/repeat remove", Done And KPR_UI_CommandBarControlCount() = 0, _
+                CStr(KPR_UI_CommandBarControlCount()) & " KPR control(s) left"
+
+'------------------------------------------------------------------------------
+' STATE
+'------------------------------------------------------------------------------
+    'Neither install nor removal may move the user or change Excel settings
+        CheckUI "commandbars/state calculation", Application.Calculation = Calc, "calculation mode changed"
+        CheckUI "commandbars/state events", Application.EnableEvents = Events, "EnableEvents changed"
+        CheckUI "commandbars/state screen updating", Application.ScreenUpdating = Screen, "ScreenUpdating changed"
+        CheckUI "commandbars/state alerts", Application.DisplayAlerts = Alerts, "DisplayAlerts changed"
+        CheckUI "commandbars/state active workbook", RegistrationActiveBook() = BookName, "active workbook changed"
+        CheckUI "commandbars/state active sheet", RegistrationActiveSheet() = SheetName, "active sheet changed"
+        CheckUI "commandbars/state selection", RegistrationSelection() = SelectionText, "selection changed"
+
+'------------------------------------------------------------------------------
+' RESTORE AND REPORT
+'------------------------------------------------------------------------------
+    'Give back a toolbar the user had installed
+        If HadBar Then KPR_UI_InstallCommandBar
+        If Not mQuietTrace Then
+            Debug.Print "KPR commandbars regression  checks: " & CStr(mChecks) & "  failures: " & CStr(mFailures.Count)
+            For I = 1 To mFailures.Count
+                Debug.Print "  FAIL  " & CStr(mFailures(I)(0)) & " : " & CStr(mFailures(I)(1))
+            Next I
+        End If
+
+End Sub
+
+Private Sub CheckBarActions( _
+    ByVal Label As String, _
+    ByVal Expected As Long)
+'
+' Requires Expected enabled buttons on the toolbar, each carrying a menu
+' action that KPR_UI_ActionKnown accepts.
+'
+    Dim Actions         As Variant      'KPR_UI_CommandBarActions result
+    Dim Action          As Variant      'Action cursor
+    Dim Unknown         As String       'Refused actions
+
+    Actions = KPR_UI_CommandBarActions()
+    CheckUI "commandbars/" & Label & " has buttons", IsArray(Actions), "no enabled button"
+    If Not IsArray(Actions) Then Exit Sub
+    CheckUI "commandbars/" & Label & " button count", UBound(Actions) + 1 = Expected, _
+            CStr(UBound(Actions) + 1) & " button(s), expected " & CStr(Expected)
+    For Each Action In Actions
+        If Not KPR_UI_ActionKnown(CStr(Action)) Then Unknown = Unknown & " '" & CStr(Action) & "'"
+    Next Action
+    CheckUI "commandbars/" & Label & " every action known", Len(Unknown) = 0, "unknown:" & Unknown
+
+End Sub
+
+Private Function IsFunctionGroup( _
+    ByVal Group As String) _
+    As Boolean
+'
+' TRUE when Group is the caption of one of KPR_UI_FunctionGroups.
+'
+    Dim Entry           As Variant      'KPR_UI_FunctionGroups cursor
+
+    For Each Entry In KPR_UI_FunctionGroups()
+        If StrComp(Split(CStr(Entry), "|")(0), Group, vbTextCompare) = 0 Then IsFunctionGroup = True
+    Next Entry
+
+End Function
+
+Private Sub CheckUI( _
+    ByVal Label As String, _
+    ByVal Passed As Boolean, _
+    ByVal Detail As String)
+'
+' Counts one menu or toolbar assertion and records it when it fails.
+'
+    mChecks = mChecks + 1
+    If Not Passed Then Record Label, Detail
+
+End Sub
 
 '
 '------------------------------------------------------------------------------

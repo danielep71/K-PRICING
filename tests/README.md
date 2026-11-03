@@ -86,6 +86,16 @@ unchanged, and into a 1904 scratch workbook, requiring a new workbook instead.
 It feeds the evidence record's `demo_generation` outcome and removes its files
 and scratch workbooks afterwards.
 
+## Menus and toolbar
+
+The `worksheet-commandbars` suite (or `KPR_Tests_RunCommandBars` alone) checks
+the menu layer in `src/modules/KPR_UI_Actions.bas` and the **KPR Dates**
+toolbar in `src/modules/KPR_UI_CommandBars.bas`: install, repeat install,
+removal and repeat removal, with no duplicate control, a known command behind
+every button and the caller's state unchanged. It runs no command, so no dialog
+opens. It feeds the evidence record's `commandbars` outcome and reinstalls a
+toolbar that was present on entry.
+
 The optional [Windows/Excel evidence interface](../docs/EXCEL_EVIDENCE.md)
 records this harness output, source identity and host environment with explicit
 manual/automated execution. Its validator does not execute Excel.

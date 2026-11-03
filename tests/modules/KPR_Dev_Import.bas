@@ -60,7 +60,7 @@ Attribute VB_Name = "KPR_Dev_Import"
 '   None.
 '
 ' UPDATED
-'   2026-10-06
+'   2026-11-03
 '
 ' AUTHOR
 '   Daniele Penza
@@ -87,13 +87,14 @@ Attribute VB_Name = "KPR_Dev_Import"
             "KPR_Core_Array,KPR_Core_Dates,KPR_Core_Err,KPR_Core_Parse,KPR_DATES_DAYS," & _
             "KPR_REGISTER_PUBLIC_UDFS,KPR_REGRESSION_TESTS,KPR_Test_Fixtures_Generated," & _
             "KPR_Test_Oracle,KPR_DateExample,KPR_Demo_Builder,KPR__Demo_Builder," & _
-            "KPR_Demo__Builder,KPR_Demo_Dates,KPR_Demo_DirectVBA"
+            "KPR_Demo__Builder,KPR_Demo_Dates,KPR_Demo_DirectVBA,KPR_UI_Actions," & _
+            "KPR_UI_CommandBars"
 
     'Prefix of the hidden workbook names that record what the loader imported
         Private Const RECORD_PREFIX As String = "KPRDEV_"
 
     'Default roles to import
-        Private Const DEFAULT_ROLES As String = "public,internal,test,example"
+        Private Const DEFAULT_ROLES As String = "public,internal,ui,test,example"
 
     'VBComponent type of a standard module
         Private Const STANDARD_MODULE As Long = 1
@@ -124,7 +125,8 @@ Public Function KPR_Dev_ImportModules( _
 '   TargetWorkbook
 '     Name of the open workbook or add-in to update, e.g. "KPR.xlam".
 '   Roles
-'     Optional. Comma-separated profile roles to import; default all four.
+'     Optional. Comma-separated profile roles to import; default all five
+'     (public, internal, ui, test, example).
 '
 ' RETURNS
 '   The number of modules imported, or -1 when the loader stopped; the
