@@ -4,8 +4,12 @@
 from __future__ import annotations
 
 import json
+import os
+import socket
+import subprocess
 import tempfile
 import unittest
+from datetime import date
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
@@ -251,14 +255,14 @@ class InitializerDepthTests(unittest.TestCase):
             self.assertEqual((root / "old.txt").read_bytes(), b"new")
             self.assertEqual((root / "new.txt").read_bytes(), b"x")
             before = (root / "old.txt").read_bytes()
-            with patch.object(initializer.os, "replace", side_effect=OSError("boom")):
+            with patch.object(os, "replace", side_effect=OSError("boom")):
                 with self.assertRaisesRegex(initializer.InitializationError, "original files were restored"):
                     initializer._apply_changes(root, {"old.txt": b"broken"})
             self.assertEqual((root / "old.txt").read_bytes(), before)
 
 
 class ReleaseDepthTests(unittest.TestCase):
-    def base_policy(self) -> dict:
+    def base_policy(self) -> dict[str, Any]:
         profile = {"required_checks": ["vba-compile", "regression"], "allowed_asset_globs": []}
         return {
             "schema_version": 1,
@@ -342,7 +346,7 @@ class ReleaseDepthTests(unittest.TestCase):
             ("a\\b", False), ("a\0b", False), (1, False),
         ):
             self.assertEqual(release._safe_relative(value), expected)
-        with patch.object(release.subprocess, "run", side_effect=FileNotFoundError()):
+        with patch.object(subprocess, "run", side_effect=FileNotFoundError()):
             with self.assertRaises(release.OperationalError):
                 release._git(Path("."), "status")
         with patch.object(release, "_git_output", return_value=None):
@@ -1193,7 +1197,7 @@ class ExternalLinkBoundaryTests(unittest.TestCase):
         raw = Raw()
         connection = external_links.PinnedHTTPS("example.com", "8.8.8.8", 1)
         setattr(connection, "tls_context", TLS())
-        with patch.object(external_links.socket, "create_connection", return_value=raw):
+        with patch.object(socket, "create_connection", return_value=raw):
             with self.assertRaisesRegex(RuntimeError, "tls"):
                 connection.connect()
         self.assertTrue(raw.closed)
@@ -1220,12 +1224,12 @@ class ExternalLinkBoundaryTests(unittest.TestCase):
 
         fake = Connection()
         with (
-            patch.object(external_links.socket, "getaddrinfo", return_value=[(None, None, None, None, ("8.8.8.8", 443))]),
+            patch.object(socket, "getaddrinfo", return_value=[(None, None, None, None, ("8.8.8.8", 443))]),
             patch.object(external_links, "PinnedHTTPS", return_value=fake),
         ):
             self.assertEqual(external_links.request("https://example.com/a b", 1), (200, None))
         self.assertTrue(fake.closed)
-        with patch.object(external_links.socket, "getaddrinfo", return_value=[(None, None, None, None, ("127.0.0.1", 443))]):
+        with patch.object(socket, "getaddrinfo", return_value=[(None, None, None, None, ("127.0.0.1", 443))]):
             with self.assertRaises(ValueError):
                 external_links.request("https://example.com/a", 1)
 
@@ -1258,7 +1262,7 @@ class ExternalLinkBoundaryTests(unittest.TestCase):
             patch.object(external_links, "collect", return_value=links),
         ):
             report = external_links.build_report(
-                Path("."), external_links.date(2026, 9, 12),
+                Path("."), date(2026, 9, 12),
                 transport=lambda _u, _t: (200, None), pause=lambda _n: None,
             )
         self.assertEqual(report["status"], "fail")
@@ -1273,7 +1277,7 @@ class ExternalLinkBoundaryTests(unittest.TestCase):
             patch.object(external_links, "collect", return_value=links),
         ):
             limited = external_links.build_report(
-                Path("."), external_links.date(2026, 9, 12),
+                Path("."), date(2026, 9, 12),
                 transport=lambda _u, _t: (200, None), pause=lambda _n: None,
             )
         self.assertTrue(limited["limit_exceeded"])

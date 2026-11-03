@@ -237,6 +237,11 @@ Use only the categories needed by a release.
   a parallel **Python tooling coverage** job and fail below the `fail_under`
   ratchet (80%, measured baseline 81%). This replaces the unenforced 95%
   setting, which pointed at a workflow removed at initialization.
+- Tightened the Python tooling quality gates to the reference template:
+  Ruff's McCabe complexity ceiling drops from 20 to 15, with the 16 functions
+  above it split into named helpers (no behaviour change), and mypy now runs in
+  `strict` mode over every `tools/` module instead of `_gatelib` alone. Three
+  unittest modules relax only the annotate-every-definition rules.
 - The weekly external-link observation now probes static badge queries on
   `img.shields.io`, an approved query domain, instead of reporting all 37
   styled badges as access restricted. The README CI badge no longer carries a

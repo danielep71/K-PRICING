@@ -7,6 +7,7 @@ import json
 import os
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -348,7 +349,7 @@ class DocumentationTests(unittest.TestCase):
 
     def probe(self, responses):
         calls = []
-        sleeps = []
+        sleeps: list[int] = []
         def transport(url, timeout):
             calls.append((url, timeout))
             value = responses[len(calls) - 1]
@@ -551,7 +552,7 @@ class DocumentationTests(unittest.TestCase):
                 links.validate_policy(network, TODAY)
 
     def test_request_sends_admitted_query(self):
-        with patch.object(links.socket, "getaddrinfo", return_value=[(2, 1, 6, "", ("93.184.215.14", 443))]), \
+        with patch.object(socket, "getaddrinfo", return_value=[(2, 1, 6, "", ("93.184.215.14", 443))]), \
                 patch.object(links, "PinnedHTTPS") as connection:
             connection.return_value.getresponse.return_value.status = 200
             links.request("https://example.org/badge?style=flat", 2)
@@ -559,14 +560,14 @@ class DocumentationTests(unittest.TestCase):
             self.assertEqual(connection.return_value.request.call_args.args[1], "/badge?style=flat")
 
     def test_private_dns_never_connects(self):
-        with patch.object(links.socket, "getaddrinfo", return_value=[(2, 1, 6, "", ("127.0.0.1", 443))]), \
+        with patch.object(socket, "getaddrinfo", return_value=[(2, 1, 6, "", ("127.0.0.1", 443))]), \
                 patch.object(links, "PinnedHTTPS") as connection:
             with self.assertRaises(ValueError):
                 links.request("https://example.org", 2)
             connection.assert_not_called()
 
     def test_tls_connect_uses_checked_ip(self):
-        with patch.object(links.socket, "create_connection") as connect:
+        with patch.object(socket, "create_connection") as connect:
             client = links.PinnedHTTPS("example.org", "93.184.215.14", 2)
             with patch.object(client.tls_context, "wrap_socket") as wrap:
                 client.connect()

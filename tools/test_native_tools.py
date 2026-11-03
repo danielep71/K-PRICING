@@ -14,6 +14,7 @@ from unittest.mock import patch
 from zipfile import ZipFile
 
 import kpr
+from check_excel_evidence import source_inventory
 from workbook_snapshot import NS, REL, compare, snapshot
 
 
@@ -233,7 +234,7 @@ class SourceTests(unittest.TestCase):
         kpr.git(self.root, "add", ".")
         kpr.git(self.root, "commit", "-qm", "Synthetic current demo inventory")
         sha = kpr.git(self.root, "rev-parse", "HEAD")
-        self.assertEqual([entry["path"] for entry in kpr.source_inventory(self.root, sha, profile)],
+        self.assertEqual([entry["path"] for entry in source_inventory(self.root, sha, profile)],
                          ["Example.bas"])
         report = kpr.inventory(self.root, sha)
         self.assertEqual(report["scope"], "all-configured-components-including-examples")
@@ -263,7 +264,7 @@ class SourceTests(unittest.TestCase):
         self.assertEqual([entry["path"] for entry in entries],
                          ["DemoForm.frm", "DemoForm.frx", "Example.bas"])
         self.assertEqual(entries[1]["role"], "resource")
-        self.assertEqual(len(kpr.source_inventory(self.root, sha, profile)), 1)
+        self.assertEqual(len(source_inventory(self.root, sha, profile)), 1)
 
     def test_missing_extra_stale_and_wrong_identity(self) -> None:
         path = self.exports / "Example.bas"
@@ -326,7 +327,7 @@ class SourceTests(unittest.TestCase):
 
     def test_authoritative_gate_failure_and_interruption_not_green(self) -> None:
         for exit_code, expected in ((0, "pass"), (1, "fail"), (2, "error"), (-15, "error")):
-            with self.subTest(exit_code=exit_code), patch.object(kpr.subprocess, "run", return_value=
+            with self.subTest(exit_code=exit_code), patch.object(subprocess, "run", return_value=
                     subprocess.CompletedProcess([], exit_code, "details", "")):
                 self.assertEqual(kpr.check(self.root)["status"], expected)
 

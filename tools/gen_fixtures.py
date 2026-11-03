@@ -1513,7 +1513,7 @@ def vba_value(value: Val) -> str:
         moment = dt.datetime.fromisoformat(value.payload)
         return (f"DateSerial({moment.year}, {moment.month}, {moment.day}) + "
                 f"TimeSerial({moment.hour}, {moment.minute}, {moment.second})")
-    simple = {
+    simple: dict[str, Callable[[], str]] = {
         "num": lambda: f"CDbl({vba_number(value.payload)})", "lng": lambda: f"CLng({value.payload})",
         "str": lambda: vba_string(value.payload), "bool": lambda: value.payload.title(),
         "empty": lambda: "Empty", "null": lambda: "Null",
