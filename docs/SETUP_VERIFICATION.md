@@ -22,7 +22,7 @@ and host details should remain public. That decision is recorded in
 | Branch ruleset | Active `Protect main` (23919706), default branch; no bypass actors; PR required, zero required approvals, all review conversations resolved; strict `Repository integrity` from GitHub Actions; deletion and force-push blocked |
 | Tag ruleset | Active `Protect version tags` (23919838), `refs/tags/v*`; no bypass actors; all updates, deletions and force-pushes blocked; creation allowed |
 | Private vulnerability reporting | Enabled; authenticated UI offers Disable; reporting route in [SECURITY.md](../SECURITY.md) |
-| CodeQL | Public eligibility active; advanced setup; Python and JavaScript/TypeScript analysis, not VBA |
+| CodeQL | Public eligibility active; advanced setup; Actions, JavaScript/TypeScript and Python analysis, not VBA |
 | Scorecard | Public default-branch publication and verification active |
 | Dependency graph | Enabled |
 | Dependabot alerts / security updates | Disabled; configured version-update PRs are a separate control |
@@ -105,13 +105,13 @@ inputs. No publishing token is supplied to source validation.
 
 | Workflow | Trigger and execution boundary | Permissions / evidence |
 | --- | --- | --- |
-| Static repository checks | PR, main/release push, version tag, manual, reusable caller; applicable | Contents read; exact SHA, Python 3.10, Ruff 0.16.6, mypy 2.3.1, actionlint 1.7.12; reports 30 days |
-| Sync issue labels | Relevant PRs run offline fixtures; relevant trusted main push/manual reconciles | PR contents read; trusted issues write; exact post-read verification |
+| Static repository checks | PR, main/release push, version tag, manual, reusable caller; applicable | Contents read; exact SHA, Python 3.10.22, Ruff 0.16.6, mypy 2.3.1, actionlint 1.7.12; reports 30 days |
+| Sync issue labels | Relevant PRs run offline fixtures; relevant trusted main push or manual dispatch of the default branch reconciles; a dispatch of any other ref skips reconciliation | PR contents read; trusted issues write; Node 24.22.2; exact post-read verification |
 | Issue triage | Issue and milestone events on the default branch; manual | Contents/issues/pull-requests read; read-only audit; reports 30 days |
 | Keep milestones issue-only | Daily scan, manual run of the default branch, and changes to its workflow on main; no `pull_request_target` | Issues read, pull-requests write; no checkout; read-back after each removal |
-| Detect issue-label drift | Relevant PR fixtures; daily 05:17 UTC, manual and changes to its workflow on main run live | Contents/ issues read only; no mutation; reports 30 days |
+| Detect issue-label drift | Relevant PR fixtures; daily 05:17 UTC, manual and changes to its workflow on main run live | Contents/ issues read only; Node 24.22.2; no mutation; reports 30 days |
 | External documentation links | Monday 06:17 UTC, manual and checker/policy/workflow changes on main | Anonymous probes, contents read; reports 14 days; restricted/transient observations remain non-green |
-| CodeQL | Existing PR/push/schedule/manual paths gated by visibility/explicit private opt-in | Public jobs active; tooling-language scans cover Python/JavaScript, not VBA; PR analysis is read-only without SARIF upload; trusted upload uses security-events write |
+| CodeQL | Existing PR/push/schedule/manual paths gated by visibility/explicit private opt-in | Public jobs active; tooling-language scans cover Actions, JavaScript and Python, not VBA; PR analysis is read-only without SARIF upload; trusted upload uses security-events write |
 | Scorecard | Existing paths require a public repository | Active here; publication verification requires successful publication job; the public path remains excluded for private repositories |
 | Release closeout | Manual verification of an already published release | Not applicable to setup; actions/contents/issues read only; validates candidate, tag, release and milestone facts without publishing |
 
@@ -126,10 +126,11 @@ workflow is the authority for exact commands and pins; use
 [developer setup](DEVELOPER_SETUP.md) to reproduce them. Retained tests import
 only retained operational modules; hosted imports and full CI verify this.
 
-Dependabot checks GitHub Actions weekly on Monday at 06:00 Europe/Rome, up to
-five PRs, labeled `ci` and `tests`. Python lock updates require deliberate review
-and regeneration; there is no automatic pip-update configuration. Auto-merge
-remains disabled. Follow [dependency review](DEPENDENCY_UPDATES.md).
+Dependabot checks GitHub Actions and the hash-locked Python quality tools in
+`tools/requirements-quality-ci.txt` weekly on Monday at 06:00 Europe/Rome, up to
+five PRs each, labeled `ci`, `tests` and `P3` and assigned to the maintainer.
+Python lock proposals still require review of package provenance and hashes.
+Auto-merge remains disabled. Follow [dependency review](DEPENDENCY_UPDATES.md).
 
 The four stale private-target classifications were removed after the visibility
 read-back. Three policy-clean targets now receive anonymous probes. The

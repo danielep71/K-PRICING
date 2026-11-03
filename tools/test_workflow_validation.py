@@ -172,6 +172,24 @@ def write_fixture_text(root: Path, relative: str, content: str) -> Path:
     return path
 
 
+def scorecard_published_job_failures(published: str) -> list[str]:
+    failures: list[str] = []
+    if re.search(r"(?m)^    env:\s*(?:#.*)?$", published):
+        failures.append("Scorecard published job must not define job-level env")
+    if re.search(r"(?m)^    defaults:\s*(?:#.*)?$", published):
+        failures.append("Scorecard published job must not define job-level defaults")
+    if re.search(r"(?m)^        run:", published):
+        failures.append("Scorecard published job may use only OpenSSF-approved actions")
+
+    for action in re.findall(r"(?m)^        uses:\s*([^\s#]+)", published):
+        owner_action = action.split("@", 1)[0]
+        if owner_action not in SCORECARD_APPROVED_ACTIONS:
+            failures.append(
+                f"Scorecard published job uses unsupported action {owner_action}"
+            )
+    return failures
+
+
 def scorecard_publication_contract(root: Path) -> tuple[str, list[str]]:
     path = root / SCORECARD_WORKFLOW
     if not path.is_file():
@@ -195,19 +213,7 @@ def scorecard_publication_contract(root: Path) -> tuple[str, list[str]]:
         return "FAIL", failures
 
     published = match.group("body")
-    if re.search(r"(?m)^    env:\s*(?:#.*)?$", published):
-        failures.append("Scorecard published job must not define job-level env")
-    if re.search(r"(?m)^    defaults:\s*(?:#.*)?$", published):
-        failures.append("Scorecard published job must not define job-level defaults")
-    if re.search(r"(?m)^        run:", published):
-        failures.append("Scorecard published job may use only OpenSSF-approved actions")
-
-    for action in re.findall(r"(?m)^        uses:\s*([^\s#]+)", published):
-        owner_action = action.split("@", 1)[0]
-        if owner_action not in SCORECARD_APPROVED_ACTIONS:
-            failures.append(
-                f"Scorecard published job uses unsupported action {owner_action}"
-            )
+    failures.extend(scorecard_published_job_failures(published))
 
     if text.count("id-token: write") != 1 or "id-token: write" not in published:
         failures.append(

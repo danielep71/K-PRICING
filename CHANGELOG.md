@@ -248,6 +248,11 @@ Use only the categories needed by a release.
   a parallel **Python tooling coverage** job and fail below the `fail_under`
   ratchet (80%, measured baseline 81%). This replaces the unenforced 95%
   setting, which pointed at a workflow removed at initialization.
+- Tightened the Python tooling quality gates to the reference template:
+  Ruff's McCabe complexity ceiling drops from 20 to 15, with the 16 functions
+  above it split into named helpers (no behaviour change), and mypy now runs in
+  `strict` mode over every `tools/` module instead of `_gatelib` alone. Three
+  unittest modules relax only the annotate-every-definition rules.
 - The weekly external-link observation now probes static badge queries on
   `img.shields.io`, an approved query domain, instead of reporting all 37
   styled badges as access restricted. The README CI badge no longer carries a
@@ -275,6 +280,15 @@ Use only the categories needed by a release.
   history, assets and tools through the deterministic initializer.
 
 ### Security
+
+- A manual dispatch of the label-sync workflow from any branch other than the
+  default branch now skips reconciliation, so an unmerged label manifest or
+  script can no longer change the live labels. The repository gate rejects any
+  workflow job with `issues: write` that lacks this default-branch guard.
+- CodeQL also analyzes the workflows themselves (Actions language). CI pins
+  Python 3.10.22 and Node.js 24.22.2 instead of the runner's choice, and
+  Dependabot also proposes updates to the hash-locked Python quality tools;
+  its pull requests carry a `P3` priority and an assignee.
 
 - Enable public-repository CodeQL/Scorecard paths, private vulnerability reporting
   and branch/tag rulesets; retain conditional safeguards for private visibility.

@@ -13,7 +13,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from check_excel_evidence import evaluate as evaluate_excel_evidence
 from check_excel_evidence import load_policy as load_excel_policy
@@ -89,7 +89,7 @@ def exact_keys(value: Any, keys: set[str], label: str) -> dict[str, Any]:
     require(isinstance(value, dict), f"{label} must be an object")
     actual = set(value)
     require(actual == keys, f"{label} keys differ: expected {sorted(keys)}, got {sorted(actual)}")
-    return value
+    return cast(dict[str, Any], value)
 
 
 def safe_file(base: Path, relative: str) -> Path:
@@ -350,6 +350,23 @@ def validate_manifest(
     }
 
 
+def _expect_rejection(
+    root: Path,
+    manifest_file: Path,
+    candidate_sha: str,
+    degraded: dict[str, Any],
+    expected: str,
+    case: str,
+) -> None:
+    manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
+    try:
+        validate_manifest(root, manifest_file, candidate_sha)
+    except ValueError as error:
+        require(expected in str(error), f"degraded {case} case failed for wrong reason")
+    else:
+        raise RuntimeError(f"degraded {case} self-test unexpectedly passed")
+
+
 def self_test(root: Path) -> None:
     root = root.resolve()
     candidate_sha = checked_out_sha(root)
@@ -509,25 +526,13 @@ def self_test(root: Path) -> None:
 
         degraded: dict[str, Any] = json.loads(json.dumps(manifest))
         degraded["source"]["sha"] = "a" * 40
-        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
-        try:
-            validate_manifest(root, manifest_file, candidate_sha)
-        except ValueError as error:
-            require("frozen KPR baseline" in str(error),
-                    "degraded source-identity case failed for wrong reason")
-        else:
-            raise RuntimeError("degraded source-identity self-test unexpectedly passed")
+        _expect_rejection(root, manifest_file, candidate_sha, degraded,
+                          "frozen KPR baseline", "source-identity")
 
         degraded = json.loads(json.dumps(manifest))
         degraded["destination"]["sha"] = "c" * 40
-        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
-        try:
-            validate_manifest(root, manifest_file, candidate_sha)
-        except ValueError as error:
-            require("checked-out candidate" in str(error),
-                    "degraded destination-identity case failed for wrong reason")
-        else:
-            raise RuntimeError("degraded destination-identity self-test unexpectedly passed")
+        _expect_rejection(root, manifest_file, candidate_sha, degraded,
+                          "checked-out candidate", "destination-identity")
 
         degraded = json.loads(json.dumps(manifest))
         dest = next(x for x in degraded["logs"] if x["id"] == "destination-observations")
@@ -537,13 +542,8 @@ def self_test(root: Path) -> None:
         )
         retained(dest["path"], changed)
         dest["sha256"] = hashlib.sha256(changed.encode()).hexdigest()
-        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
-        try:
-            validate_manifest(root, manifest_file, candidate_sha)
-        except ValueError as error:
-            require("observations differ" in str(error), "degraded parity case failed for wrong reason")
-        else:
-            raise RuntimeError("degraded parity self-test unexpectedly passed")
+        _expect_rejection(root, manifest_file, candidate_sha, degraded,
+                          "observations differ", "parity")
         retained("destination-observations.log", obs)
 
         degraded = json.loads(json.dumps(manifest))
@@ -553,28 +553,16 @@ def self_test(root: Path) -> None:
         bad_host_text = json.dumps(bad_host, sort_keys=True) + "\n"
         retained(host_entry["path"], bad_host_text)
         host_entry["sha256"] = hashlib.sha256(bad_host_text.encode()).hexdigest()
-        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
-        try:
-            validate_manifest(root, manifest_file, candidate_sha)
-        except ValueError as error:
-            require("authoritative Excel evidence validation" in str(error),
-                    "degraded host-schema case failed for wrong reason")
-        else:
-            raise RuntimeError("degraded host-schema self-test unexpectedly passed")
+        _expect_rejection(root, manifest_file, candidate_sha, degraded,
+                          "authoritative Excel evidence validation", "host-schema")
         retained("destination-host-record.log", migration_files["destination-host-record"])
 
         degraded = json.loads(json.dumps(manifest))
         degraded_environment = dict(synthetic_environment)
         degraded_environment["excel_build"] = "different-build"
         degraded["environment"] = degraded_environment
-        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
-        try:
-            validate_manifest(root, manifest_file, candidate_sha)
-        except ValueError as error:
-            require("host record environment differs" in str(error),
-                    "degraded host-environment case failed for wrong reason")
-        else:
-            raise RuntimeError("degraded host-environment self-test unexpectedly passed")
+        _expect_rejection(root, manifest_file, candidate_sha, degraded,
+                          "host record environment differs", "host-environment")
 
         degraded = json.loads(json.dumps(manifest))
         dest = next(x for x in degraded["logs"] if x["id"] == "destination-observations")
@@ -584,26 +572,15 @@ def self_test(root: Path) -> None:
         )
         retained(dest["path"], failed_runner)
         dest["sha256"] = hashlib.sha256(failed_runner.encode()).hexdigest()
-        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
-        try:
-            validate_manifest(root, manifest_file, candidate_sha)
-        except ValueError as error:
-            require("shape runner failures=1" in str(error),
-                    "degraded runner-failure case failed for wrong reason")
-        else:
-            raise RuntimeError("degraded runner-failure self-test unexpectedly passed")
+        _expect_rejection(root, manifest_file, candidate_sha, degraded,
+                          "shape runner failures=1", "runner-failure")
         retained("destination-observations.log", obs)
 
         degraded = json.loads(json.dumps(manifest))
         host = next(x for x in degraded["logs"] if x["id"] == "destination-host-record")
         host["sha256"] = "0" * 64
-        manifest_file.write_text(json.dumps(degraded), encoding="utf-8")
-        try:
-            validate_manifest(root, manifest_file, candidate_sha)
-        except ValueError as error:
-            require("digest mismatch" in str(error), "degraded digest case failed for wrong reason")
-        else:
-            raise RuntimeError("degraded digest self-test unexpectedly passed")
+        _expect_rejection(root, manifest_file, candidate_sha, degraded,
+                          "digest mismatch", "digest")
 
     print(
         "PASS migration-evidence self-test: positive, source identity, destination identity, "

@@ -28,7 +28,8 @@ class ProvenanceTests(unittest.TestCase):
         self.trust = json.loads((ROOT / provenance.POLICY).read_text())
         self.evidence_path = self.area / "evidence.json"
         self.record_path = self.area / "provenance.json"
-        self.manifest = self.area / "assets.sha256"
+        self.manifest_file = self.area / "assets.sha256"
+        self.manifest: Path | None = self.manifest_file
         self.signature = None
         self.tag_registry_keys: list[str] = []
 
@@ -40,6 +41,12 @@ class ProvenanceTests(unittest.TestCase):
             capture_output=True,
         )
         return key
+
+    def head(self) -> str:
+        sha = gate._git_output(self.root, "rev-parse", "HEAD")
+        if sha is None:
+            self.fail("fixture HEAD does not resolve")
+        return sha
 
     def fixture(self, profile="application", binary=True, signed=False, tag_mode="none"):
         if signed:
@@ -74,8 +81,7 @@ class ProvenanceTests(unittest.TestCase):
         (self.root / provenance.POLICY).write_text(json.dumps(self.trust))
         gate._git(self.root, "add", "--all")
         self.assertEqual(gate._git(self.root, "commit", "-m", "Adopt provenance").returncode, 0)
-        self.sha = gate._git_output(self.root, "rev-parse", "HEAD")
-        self.assertIsNotNone(self.sha)
+        self.sha = self.head()
         if tag_mode == "signed":
             self.tag_key = self.new_key("tag-key")
             self.tag_registry_keys = [self.tag_key.with_suffix(".pub").read_text().strip()]
@@ -101,7 +107,7 @@ class ProvenanceTests(unittest.TestCase):
                 "candidate_sha": self.sha,
                 "package_test": "PASS",
             }]
-            self.manifest.write_text(f"{digest}  dist/fixture.xlsm\n")
+            self.manifest_file.write_text(f"{digest}  dist/fixture.xlsm\n")
         else:
             self.manifest = None
         self.evidence = gate._fixture_evidence(
@@ -122,7 +128,7 @@ class ProvenanceTests(unittest.TestCase):
             "distribution": self.evidence["distribution"],
             "digest_algorithm": "sha256",
             "evidence_sha256": hashlib.sha256(self.evidence_path.read_bytes()).hexdigest(),
-            "manifest_sha256": hashlib.sha256(self.manifest.read_bytes()).hexdigest() if binary else None,
+            "manifest_sha256": hashlib.sha256(self.manifest_file.read_bytes()).hexdigest() if binary else None,
             "assets": [{"path": asset["path"], "sha256": asset["sha256"]} for asset in assets],
             "workflow": {
                 "repository": self.configuration["repository"],
@@ -310,7 +316,7 @@ class ProvenanceTests(unittest.TestCase):
         self.evidence_path.write_bytes(self.evidence_path.read_bytes() + b"\n")
         self.fails()
         self.evidence_path.write_text(json.dumps(self.evidence))
-        self.manifest.write_bytes(self.manifest.read_bytes() + b"\n")
+        self.manifest_file.write_bytes(self.manifest_file.read_bytes() + b"\n")
         self.fails()
 
     def test_duplicate_json_key(self):
@@ -350,7 +356,7 @@ class ProvenanceTests(unittest.TestCase):
         (self.root / gate.POLICY_PATH).write_text(json.dumps(release_policy))
         gate._git(self.root, "add", gate.POLICY_PATH)
         gate._git(self.root, "commit", "-m", "Remove provenance selector")
-        sha = gate._git_output(self.root, "rev-parse", "HEAD")
+        sha = self.head()
         findings = provenance.validate(
             self.root,
             self.configuration,
@@ -374,7 +380,7 @@ class ProvenanceTests(unittest.TestCase):
         (self.root / provenance.POLICY).write_text(json.dumps(trust))
         gate._git(self.root, "add", provenance.POLICY)
         gate._git(self.root, "commit", "-m", "Mismatch provenance mode")
-        sha = gate._git_output(self.root, "rev-parse", "HEAD")
+        sha = self.head()
         findings = provenance.validate(
             self.root,
             self.configuration,
@@ -394,7 +400,7 @@ class ProvenanceTests(unittest.TestCase):
         (self.root / gate.POLICY_PATH).write_text(json.dumps(release_policy))
         gate._git(self.root, "add", gate.POLICY_PATH)
         gate._git(self.root, "commit", "-m", "Require signed provenance")
-        sha = gate._git_output(self.root, "rev-parse", "HEAD")
+        sha = self.head()
         findings = provenance.validate(
             self.root,
             self.configuration,
@@ -456,7 +462,7 @@ class ProvenanceTests(unittest.TestCase):
                 (self.root / provenance.POLICY).write_text(json.dumps(self.trust))
                 gate._git(self.root, "add", provenance.POLICY)
                 gate._git(self.root, "commit", "-m", "Synthetic invalid policy")
-                sha = gate._git_output(self.root, "rev-parse", "HEAD")
+                sha = self.head()
                 findings = provenance.validate(
                     self.root,
                     self.configuration,
@@ -472,7 +478,7 @@ class ProvenanceTests(unittest.TestCase):
         self.fixture("library", binary=False)
         gate._git(self.root, "rm", provenance.POLICY)
         gate._git(self.root, "commit", "-m", "Synthetic missing policy")
-        sha = gate._git_output(self.root, "rev-parse", "HEAD")
+        sha = self.head()
         self.assertTrue(
             provenance.validate(
                 self.root,
@@ -491,7 +497,7 @@ class ProvenanceTests(unittest.TestCase):
         (self.root / gate.PROFILE_PATH).write_text(json.dumps(self.configuration))
         gate._git(self.root, "add", gate.PROFILE_PATH)
         gate._git(self.root, "commit", "-m", "Synthetic future contract")
-        sha = gate._git_output(self.root, "rev-parse", "HEAD")
+        sha = self.head()
         self.assertTrue(
             provenance.validate(
                 self.root,
@@ -514,7 +520,7 @@ class ProvenanceTests(unittest.TestCase):
                     raise error
                 return real_run(args, **kwargs)
 
-            with self.subTest(error=type(error).__name__), patch.object(provenance.subprocess, "run", run):
+            with self.subTest(error=type(error).__name__), patch.object(subprocess, "run", run):
                 self.fails()
 
     @unittest.skipUnless(shutil.which("ssh-keygen"), "requires OpenSSH")

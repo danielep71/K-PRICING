@@ -17,6 +17,13 @@ import check_release as release
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _rev_parse(root: Path, revision: str) -> str:
+    sha = release._git_output(root, "rev-parse", revision)
+    if sha is None:
+        raise AssertionError(f"fixture revision {revision} does not resolve")
+    return sha
+
+
 class HostEvidenceTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
@@ -38,7 +45,7 @@ class HostEvidenceTests(unittest.TestCase):
         (self.root / host.POLICY).write_text(json.dumps(self.policy))
         release._git(self.root, "add", "--all")
         release._git(self.root, "commit", "-m", "Synthetic host policy")
-        self.sha = release._git_output(self.root, "rev-parse", "HEAD")
+        self.sha = _rev_parse(self.root, "HEAD")
         self.log = "\n".join([
             "PROJECT TESTS", *("CASE=" + case for case in self.policy["cases"]),
             f"CASES={self.case_count}",
@@ -268,7 +275,7 @@ class HostEvidenceTests(unittest.TestCase):
         (self.root / "src/Project.bas").write_text("changed")
         self.invalid()
         release._git(self.root, "checkout", "--", "src/Project.bas")
-        old = release._git_output(self.root, "rev-parse", "HEAD^")
+        old = _rev_parse(self.root, "HEAD^")
         self.path.write_text(json.dumps(self.record))
         report = host.evaluate(self.root, old, self.path)
         self.assertIn("EVIDENCE_INVALID", report["outcomes"])

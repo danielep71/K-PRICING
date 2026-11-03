@@ -101,6 +101,73 @@ def label_at_start(code: str) -> str | None:
     return match.group(1) if match else None
 
 
+def record_label(
+    path: str, current: dict[str, Any], label: str, start_line: int
+) -> list[dict[str, Any]]:
+    key = label.casefold()
+    labels = current["labels"]
+    if key in labels:
+        return [
+            {
+                "path": path,
+                "procedure": current["name"],
+                "line": start_line,
+                "target": label,
+                "message": (
+                    f"Duplicate label {label!r} in procedure {current['name']}; "
+                    f"first defined at line {labels[key]}."
+                ),
+            }
+        ]
+    labels[key] = start_line
+    return []
+
+
+def statement_jumps(
+    code: str, start_line: int, end_line: int
+) -> list[tuple[int, int, str, str]]:
+    jumps: list[tuple[int, int, str, str]] = []
+    for match in JUMP.finditer(code):
+        operation = match.group(1).casefold()
+        target = match.group(2)
+        prefix = code[: match.start()].casefold()
+        if operation == "resume" and (target is None or target.casefold() == "next"):
+            continue
+        if operation == "goto" and target in {"0", "-1"} and re.search(
+            r"\bon\s+error\s*$", prefix
+        ):
+            continue
+        if target is None:
+            continue
+        jumps.append((start_line, end_line, match.group(1), target))
+    return jumps
+
+
+def unresolved_jumps(
+    path: str, procedures: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    for procedure in procedures:
+        labels = procedure["labels"]
+        for start_line, end_line, operation, target in procedure["jumps"]:
+            if target.casefold() not in labels:
+                findings.append(
+                    {
+                        "path": path,
+                        "procedure": procedure["name"],
+                        "line": start_line,
+                        "end_line": end_line,
+                        "operation": operation,
+                        "target": target,
+                        "message": (
+                            f"{operation} target {target!r} is not defined in "
+                            f"procedure {procedure['name']}."
+                        ),
+                    }
+                )
+    return findings
+
+
 def analyze_component(path: str, text: str) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     procedures: list[dict[str, Any]] = []
@@ -154,37 +221,8 @@ def analyze_component(path: str, text: str) -> list[dict[str, Any]]:
 
         label = label_at_start(code)
         if label is not None:
-            key = label.casefold()
-            labels = current["labels"]
-            if key in labels:
-                findings.append(
-                    {
-                        "path": path,
-                        "procedure": current["name"],
-                        "line": start_line,
-                        "target": label,
-                        "message": (
-                            f"Duplicate label {label!r} in procedure {current['name']}; "
-                            f"first defined at line {labels[key]}."
-                        ),
-                    }
-                )
-            else:
-                labels[key] = start_line
-
-        for match in JUMP.finditer(code):
-            operation = match.group(1).casefold()
-            target = match.group(2)
-            prefix = code[: match.start()].casefold()
-            if operation == "resume" and (target is None or target.casefold() == "next"):
-                continue
-            if operation == "goto" and target in {"0", "-1"} and re.search(
-                r"\bon\s+error\s*$", prefix
-            ):
-                continue
-            if target is None:
-                continue
-            current["jumps"].append((start_line, end_line, match.group(1), target))
+            findings.extend(record_label(path, current, label, start_line))
+        current["jumps"].extend(statement_jumps(code, start_line, end_line))
 
     if current is not None:
         findings.append(
@@ -196,24 +234,7 @@ def analyze_component(path: str, text: str) -> list[dict[str, Any]]:
             }
         )
 
-    for procedure in procedures:
-        labels = procedure["labels"]
-        for start_line, end_line, operation, target in procedure["jumps"]:
-            if target.casefold() not in labels:
-                findings.append(
-                    {
-                        "path": path,
-                        "procedure": procedure["name"],
-                        "line": start_line,
-                        "end_line": end_line,
-                        "operation": operation,
-                        "target": target,
-                        "message": (
-                            f"{operation} target {target!r} is not defined in "
-                            f"procedure {procedure['name']}."
-                        ),
-                    }
-                )
+    findings.extend(unresolved_jumps(path, procedures))
     return findings
 
 

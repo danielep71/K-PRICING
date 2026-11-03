@@ -326,6 +326,40 @@ def _string_list(
     return items
 
 
+def _vba_minimum_roles(
+    field: str, minimum_roles: object, failures: list[dict[str, Any]]
+) -> dict[Any, Any]:
+    if not isinstance(minimum_roles, dict) or not minimum_roles:
+        failures.append(finding(CONFIG_PATH, f"{field}.minimum_roles must be a non-empty object."))
+        return {}
+    role_names = list(minimum_roles)
+    if role_names != sorted(role_names, key=lambda item: (item.casefold(), item)):
+        failures.append(finding(CONFIG_PATH, f"{field}.minimum_roles keys must be sorted case-insensitively."))
+    for role, minimum in minimum_roles.items():
+        if role not in VBA_ROLES:
+            failures.append(finding(CONFIG_PATH, f"{field}.minimum_roles has invalid role {role!r}."))
+        if isinstance(minimum, bool) or not isinstance(minimum, int) or minimum < 1:
+            failures.append(finding(CONFIG_PATH, f"{field}.minimum_roles.{role} must be a positive integer."))
+    return minimum_roles
+
+
+def _vba_required_components(
+    field: str, required_components: object, failures: list[dict[str, Any]]
+) -> dict[Any, Any]:
+    if not isinstance(required_components, dict) or not required_components:
+        failures.append(finding(CONFIG_PATH, f"{field}.required_components must be a non-empty object."))
+        return {}
+    paths = list(required_components)
+    if paths != sorted(paths, key=lambda item: (item.casefold(), item)):
+        failures.append(finding(CONFIG_PATH, f"{field}.required_components keys must be sorted case-insensitively."))
+    for path, role in required_components.items():
+        if not isinstance(path, str) or not _valid_relative_path(path):
+            failures.append(finding(CONFIG_PATH, f"{field}.required_components contains an invalid path: {path!r}."))
+        if role not in VBA_ROLES:
+            failures.append(finding(CONFIG_PATH, f"{field}.required_components.{path} has invalid role {role!r}."))
+    return required_components
+
+
 def _validate_profile_contract(
     name: str, entry: object, failures: list[dict[str, Any]]
 ) -> None:
@@ -344,32 +378,10 @@ def _validate_profile_contract(
         failures.append(finding(CONFIG_PATH, f"{field} must contain exactly minimum_roles and required_components."))
         return
     assert isinstance(contract, dict)
-    minimum_roles = contract.get("minimum_roles")
-    if not isinstance(minimum_roles, dict) or not minimum_roles:
-        failures.append(finding(CONFIG_PATH, f"{field}.minimum_roles must be a non-empty object."))
-        minimum_roles = {}
-    else:
-        role_names = list(minimum_roles)
-        if role_names != sorted(role_names, key=lambda item: (item.casefold(), item)):
-            failures.append(finding(CONFIG_PATH, f"{field}.minimum_roles keys must be sorted case-insensitively."))
-        for role, minimum in minimum_roles.items():
-            if role not in VBA_ROLES:
-                failures.append(finding(CONFIG_PATH, f"{field}.minimum_roles has invalid role {role!r}."))
-            if isinstance(minimum, bool) or not isinstance(minimum, int) or minimum < 1:
-                failures.append(finding(CONFIG_PATH, f"{field}.minimum_roles.{role} must be a positive integer."))
-    required_components = contract.get("required_components")
-    if not isinstance(required_components, dict) or not required_components:
-        failures.append(finding(CONFIG_PATH, f"{field}.required_components must be a non-empty object."))
-        required_components = {}
-    else:
-        paths = list(required_components)
-        if paths != sorted(paths, key=lambda item: (item.casefold(), item)):
-            failures.append(finding(CONFIG_PATH, f"{field}.required_components keys must be sorted case-insensitively."))
-        for path, role in required_components.items():
-            if not isinstance(path, str) or not _valid_relative_path(path):
-                failures.append(finding(CONFIG_PATH, f"{field}.required_components contains an invalid path: {path!r}."))
-            if role not in VBA_ROLES:
-                failures.append(finding(CONFIG_PATH, f"{field}.required_components.{path} has invalid role {role!r}."))
+    minimum_roles = _vba_minimum_roles(field, contract.get("minimum_roles"), failures)
+    required_components = _vba_required_components(
+        field, contract.get("required_components"), failures
+    )
     component_roles = {role for role in required_components.values() if isinstance(role, str)}
     for role in VBA_BASELINE_ROLES:
         if minimum_roles.get(role, 0) < 1:
@@ -935,6 +947,28 @@ def _yaml_scalar_error(value: str) -> str | None:
     return None
 
 
+def _yaml_entry_check(
+    candidate: str, mapping: re.Pattern[str]
+) -> tuple[str | None, bool]:
+    """Return a line's structural error and whether it opens a block scalar."""
+
+    if candidate == "-":
+        return None, False
+    if candidate.startswith("- "):
+        candidate = candidate[2:].strip()
+        if not candidate:
+            return None, False
+        if not mapping.match(candidate):
+            return _yaml_scalar_error(candidate), False
+    match = mapping.match(candidate)
+    if not match:
+        return "expected a mapping entry or sequence item", False
+    scalar = (match.group(1) or "").strip()
+    if scalar in {"|", "|-", "|+", ">", ">-", ">+"}:
+        return None, True
+    return _yaml_scalar_error(scalar), False
+
+
 def validate_yaml_subset(text: str) -> list[tuple[int, str]]:
     """Validate the conservative YAML dialect used by GitHub repository files."""
 
@@ -961,29 +995,11 @@ def validate_yaml_subset(text: str) -> list[tuple[int, str]]:
         content = _strip_yaml_comment(raw_line[indent:])
         if not content:
             continue
-        candidate = content
-        if candidate == "-":
-            continue
-        if candidate.startswith("- "):
-            candidate = candidate[2:].strip()
-            if not candidate:
-                continue
-            if not mapping.match(candidate):
-                scalar_error = _yaml_scalar_error(candidate)
-                if scalar_error:
-                    errors.append((number, scalar_error))
-                continue
-        match = mapping.match(candidate)
-        if not match:
-            errors.append((number, "expected a mapping entry or sequence item"))
-            continue
-        scalar = (match.group(1) or "").strip()
-        if scalar in {"|", "|-", "|+", ">", ">-", ">+"}:
+        error, opens_block = _yaml_entry_check(content, mapping)
+        if opens_block:
             block_parent_indent = indent
-            continue
-        scalar_error = _yaml_scalar_error(scalar)
-        if scalar_error:
-            errors.append((number, scalar_error))
+        elif error:
+            errors.append((number, error))
     return errors
 
 
@@ -1458,44 +1474,12 @@ def _validate_label_array(
             break
 
 
-def check_label_manifest(
-    repo: Repository, config: dict[str, Any]
-) -> dict[str, Any]:
-    failures: list[dict[str, Any]] = []
-    try:
-        document = json.loads(repo.text(LABEL_MANIFEST_PATH))
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
-        return rule_result(
-            "label-manifest",
-            "Canonical label manifest",
-            [
-                finding(
-                    LABEL_MANIFEST_PATH,
-                    f"Cannot load label manifest: {error}",
-                    getattr(error, "lineno", None),
-                )
-            ],
-            "",
-        )
-    if not _same_keys(document, {"schema_version", "prune", "core", "overlays"}):
-        failures.append(
-            finding(
-                LABEL_MANIFEST_PATH,
-                "Root must contain exactly schema_version, prune, core, and overlays.",
-            )
-        )
-    if not isinstance(document, dict):
-        document = {}
-    if document.get("schema_version") != 1:
-        failures.append(finding(LABEL_MANIFEST_PATH, "schema_version must be 1."))
-    if not isinstance(document.get("prune"), bool):
-        failures.append(finding(LABEL_MANIFEST_PATH, "prune must be a boolean."))
-    seen: dict[str, str] = {}
-    core = document.get("core")
-    _validate_label_array(core, "core", seen, failures)
-    if isinstance(core, list) and not core:
-        failures.append(finding(LABEL_MANIFEST_PATH, "core must not be empty."))
-    overlays = document.get("overlays")
+def _validate_label_overlays(
+    overlays: object,
+    config: dict[str, Any],
+    seen: dict[str, str],
+    failures: list[dict[str, Any]],
+) -> None:
     if not _same_keys(overlays, {"profile", "domain"}):
         failures.append(
             finding(
@@ -1549,6 +1533,47 @@ def check_label_manifest(
                             f"Selected label domain has no manifest overlay: {selected!r}.",
                         )
                     )
+
+
+def check_label_manifest(
+    repo: Repository, config: dict[str, Any]
+) -> dict[str, Any]:
+    failures: list[dict[str, Any]] = []
+    try:
+        document = json.loads(repo.text(LABEL_MANIFEST_PATH))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        return rule_result(
+            "label-manifest",
+            "Canonical label manifest",
+            [
+                finding(
+                    LABEL_MANIFEST_PATH,
+                    f"Cannot load label manifest: {error}",
+                    getattr(error, "lineno", None),
+                )
+            ],
+            "",
+        )
+    if not _same_keys(document, {"schema_version", "prune", "core", "overlays"}):
+        failures.append(
+            finding(
+                LABEL_MANIFEST_PATH,
+                "Root must contain exactly schema_version, prune, core, and overlays.",
+            )
+        )
+    if not isinstance(document, dict):
+        document = {}
+    if document.get("schema_version") != 1:
+        failures.append(finding(LABEL_MANIFEST_PATH, "schema_version must be 1."))
+    if not isinstance(document.get("prune"), bool):
+        failures.append(finding(LABEL_MANIFEST_PATH, "prune must be a boolean."))
+    seen: dict[str, str] = {}
+    core = document.get("core")
+    _validate_label_array(core, "core", seen, failures)
+    if isinstance(core, list) and not core:
+        failures.append(finding(LABEL_MANIFEST_PATH, "core must not be empty."))
+    overlays = document.get("overlays")
+    _validate_label_overlays(overlays, config, seen, failures)
     count = len(seen)
     selected_profile = config["profile"] if config["mode"] == "generated" else None
     resolved_count = len(core) if isinstance(core, list) else 0
@@ -1661,6 +1686,25 @@ def _issue_label_names(repo: Repository) -> set[object]:
     }
 
 
+def _validate_issue_form_header(
+    path: str,
+    text: str,
+    specification: dict[str, Any],
+    label_names: set[object],
+    failures: list[dict[str, Any]],
+) -> None:
+    for key in ("name", "description"):
+        value = _yaml_header_scalar(text, key)
+        if value is None or not value.strip():
+            failures.append(finding(path, f"Top-level {key} must be non-empty."))
+    if _yaml_header_scalar(text, "title") != specification["title"]:
+        failures.append(finding(path, f"Top-level title must be {specification['title']!r}."))
+    _validate_issue_form_labels(path, text, specification, label_names, failures)
+    assignees = _yaml_flow_array(text, "assignees")
+    if assignees is None or len(assignees) != 1:
+        failures.append(finding(path, "Top-level assignees must be a JSON flow array naming one maintainer."))
+
+
 def _validate_issue_form(
     repo: Repository,
     filename: str,
@@ -1674,16 +1718,7 @@ def _validate_issue_form(
     except (OSError, UnicodeError) as error:
         failures.append(finding(path, f"Cannot read canonical issue form: {error}"))
         return
-    for key in ("name", "description"):
-        value = _yaml_header_scalar(text, key)
-        if value is None or not value.strip():
-            failures.append(finding(path, f"Top-level {key} must be non-empty."))
-    if _yaml_header_scalar(text, "title") != specification["title"]:
-        failures.append(finding(path, f"Top-level title must be {specification['title']!r}."))
-    _validate_issue_form_labels(path, text, specification, label_names, failures)
-    assignees = _yaml_flow_array(text, "assignees")
-    if assignees is None or len(assignees) != 1:
-        failures.append(finding(path, "Top-level assignees must be a JSON flow array naming one maintainer."))
+    _validate_issue_form_header(path, text, specification, label_names, failures)
     blocks = _issue_form_blocks(text)
     if not blocks or len(blocks) > ISSUE_FORM_MAX_ELEMENTS:
         failures.append(
@@ -1916,10 +1951,100 @@ def _workflow_job_blocks(lines: list[str]) -> list[tuple[int, list[str]]]:
 
 
 def _job_excludes_pull_request(block: list[str]) -> bool:
+    # Further conditions may be joined with &&; an || could readmit pull requests.
     exclusion = re.compile(
-        r"^    if:\s*github\.event_name\s*!=\s*(['\"])pull_request\1\s*(?:#.*)?$"
+        r"^    if:\s*github\.event_name\s*!=\s*(['\"])pull_request\1"
+        r"(?:\s*&&\s*[^|#]+?)?\s*(?:#.*)?$"
     )
     return any(exclusion.match(line) for line in block)
+
+
+DEFAULT_BRANCH_GUARD = (
+    "github.ref == format('refs/heads/{0}', github.event.repository.default_branch)"
+)
+
+
+ISSUE_WRITE_FLOW_RE = re.compile(
+    rf"(?:^|,)\s*(?:issues|'issues'|\"issues\")\s*:\s*{WORKFLOW_WRITE_VALUE}\s*(?=,|$)"
+)
+
+
+def _permission_lines_grant_issue_write(lines: list[str], indent: int) -> bool:
+    """Read one permissions declaration at ``indent``: block, flow map or write-all."""
+    key = re.compile(rf"^{' ' * indent}permissions:\s*(.*)$")
+    for index, line in enumerate(lines):
+        match = key.match(line)
+        if not match:
+            continue
+        value = _strip_yaml_comment(match.group(1)).strip()
+        if value in {"write-all", "'write-all'", '"write-all"'}:
+            return True
+        mapping = re.fullmatch(r"\{(.*)\}", value)
+        if mapping:
+            return ISSUE_WRITE_FLOW_RE.search(mapping.group(1)) is not None
+        for entry in lines[index + 1:]:
+            if entry.strip() and len(entry) - len(entry.lstrip(" ")) <= indent:
+                break
+            if re.fullmatch(
+                rf"(?:issues|'issues'|\"issues\"):\s*{WORKFLOW_WRITE_VALUE}",
+                _strip_yaml_comment(entry).strip(),
+            ):
+                return True
+        return False
+    return False
+
+
+def _job_declares_permissions(block: list[str]) -> bool:
+    return any(re.match(r"^    permissions:", line) for line in block)
+
+
+def _condition_requires_default_branch(block: list[str]) -> bool:
+    """The job condition must be a conjunction with the exact guard as one term.
+
+    A guard inside a comment, or one alternative of an ||, does not restrict
+    the job, so only top-level && terms count.
+    """
+    for line in block:
+        match = re.match(r"^    if:\s*(.*)$", line)
+        if not match:
+            continue
+        condition = _strip_yaml_comment(match.group(1)).strip()
+        if condition.startswith("${{") and condition.endswith("}}"):
+            condition = condition[3:-2].strip()
+        if "||" in condition:
+            return False
+        return any(term.strip() == DEFAULT_BRANCH_GUARD for term in condition.split("&&"))
+    return False
+
+
+def _check_issue_write_default_branch(
+    path: str,
+    lines: list[str],
+    failures: list[dict[str, Any]],
+) -> None:
+    """A job that can write issues or labels runs only on the default branch.
+
+    The event filters cover push, but a manual dispatch can name any ref, and an
+    unmerged label manifest or script must never mutate the live repository.
+    Jobs without their own permissions inherit the workflow-level grant.
+    """
+    jobs = _workflow_job_blocks(lines)
+    top_level = lines[: jobs[0][0]] if jobs else lines
+    inherited = _permission_lines_grant_issue_write(top_level, 0)
+    for start, block in jobs:
+        if _job_declares_permissions(block):
+            grants = _permission_lines_grant_issue_write(block, 4)
+        else:
+            grants = inherited
+        if grants and not _condition_requires_default_branch(block):
+            failures.append(
+                finding(
+                    path,
+                    "Job with issues write permission must be gated to the default branch: "
+                    f"its if: must be a conjunction including `{DEFAULT_BRANCH_GUARD}`.",
+                    start + 1,
+                )
+            )
 
 
 def _check_job_pr_permissions(
@@ -2045,6 +2170,7 @@ def check_workflow_actions(
         except (OSError, UnicodeError):
             continue
         _check_pr_workflow_permissions(path, lines, failures)
+        _check_issue_write_default_branch(path, lines, failures)
         checked += _check_external_action_references(path, lines, failures)
     return rule_result(
         "workflow-actions",
@@ -3131,7 +3257,9 @@ End Sub
     _run_git(root, "commit", "-m", "Create passing fixture")
 
 
-def _update_fixture_json(root: Path, path: str, mutate: Callable[[dict], None]) -> None:
+def _update_fixture_json(
+    root: Path, path: str, mutate: Callable[[dict[str, Any]], None]
+) -> None:
     document = json.loads((root / path).read_text(encoding="utf-8"))
     mutate(document)
     _write_fixture(
@@ -3232,7 +3360,7 @@ def _degrade_line_endings(root: Path) -> None:
 
 
 def _degrade_label_manifest(root: Path) -> None:
-    def mutate(document: dict) -> None:
+    def mutate(document: dict[str, Any]) -> None:
         document["core"][0]["color"] = "d73a4a"
 
     _update_fixture_json(root, LABEL_MANIFEST_PATH, mutate)
@@ -3314,6 +3442,72 @@ def _degrade_workflow_pr_flow_map_job_write(root: Path) -> None:
     )
 
 
+_ISSUE_WRITE_JOB = (
+    "  labels:\n"
+    "    if: {condition}\n"
+    "    runs-on: ubuntu-latest\n"
+    "    permissions:{permissions}\n"
+    "    steps:\n"
+    "      - run: echo fixture\n"
+)
+_ISSUE_WRITE_BLOCK = "\n      issues: write"
+
+
+def _append_issue_write_job(
+    root: Path, condition: str, permissions: str = _ISSUE_WRITE_BLOCK
+) -> None:
+    path = root / ".github/workflows/static-checks.yml"
+    text = path.read_text(encoding="utf-8")
+    _write_fixture(
+        path, text + _ISSUE_WRITE_JOB.format(condition=condition, permissions=permissions)
+    )
+
+
+def _write_dispatch_workflow(root: Path, header: str, job: str) -> None:
+    _write_fixture(
+        root / ".github/workflows/labels.yml",
+        "name: Labels\n\non:\n  workflow_dispatch:\n\n" + header + "jobs:\n" + job,
+    )
+    # The gate reads tracked files only.
+    _run_git(root, "add", ".github/workflows/labels.yml")
+
+
+def _degrade_workflow_issue_write_any_ref(root: Path) -> None:
+    _append_issue_write_job(root, "github.event_name != 'pull_request'")
+
+
+def _degrade_workflow_issue_write_commented_guard(root: Path) -> None:
+    _append_issue_write_job(
+        root, f"github.event_name != 'pull_request' # {DEFAULT_BRANCH_GUARD}"
+    )
+
+
+def _degrade_workflow_issue_write_flow_map(root: Path) -> None:
+    _append_issue_write_job(
+        root, "github.event_name != 'pull_request'", " {contents: read, issues: write}"
+    )
+
+
+def _degrade_workflow_issue_write_or_condition(root: Path) -> None:
+    # Dispatch-only, so only the default-branch rule can reject it.
+    _write_dispatch_workflow(
+        root,
+        "permissions:\n  contents: read\n\n",
+        _ISSUE_WRITE_JOB.format(
+            condition=f"github.event_name == 'workflow_dispatch' || {DEFAULT_BRANCH_GUARD}",
+            permissions=_ISSUE_WRITE_BLOCK,
+        ),
+    )
+
+
+def _degrade_workflow_issue_write_inherited(root: Path) -> None:
+    _write_dispatch_workflow(
+        root,
+        "permissions: write-all\n\n",
+        "  labels:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo fixture\n",
+    )
+
+
 def _degrade_version_changelog(root: Path) -> None:
     _write_fixture(root / "VERSION", "version-one\n")
 
@@ -3353,14 +3547,14 @@ def _degrade_vba_structure(root: Path) -> None:
 
 
 def _degrade_vba_visibility(root: Path) -> None:
-    def mutate(document: dict) -> None:
+    def mutate(document: dict[str, Any]) -> None:
         document["vba"]["components"]["src/modules/Quality.bas"] = "internal"
 
     _update_fixture_json(root, CONFIG_PATH, mutate)
 
 
 def _degrade_generated_vba_contract(root: Path) -> None:
-    def mutate(document: dict) -> None:
+    def mutate(document: dict[str, Any]) -> None:
         document["profiles"]["library"]["vba_contract"]["minimum_roles"][
             "internal"
         ] = 2
@@ -3426,6 +3620,31 @@ BRANCH_SELF_TEST_CASES: tuple[
         "workflow-actions",
         _degrade_workflow_pr_flow_map_job_write,
     ),
+    (
+        "workflow-issue-write-any-ref",
+        "workflow-actions",
+        _degrade_workflow_issue_write_any_ref,
+    ),
+    (
+        "workflow-issue-write-commented-guard",
+        "workflow-actions",
+        _degrade_workflow_issue_write_commented_guard,
+    ),
+    (
+        "workflow-issue-write-flow-map",
+        "workflow-actions",
+        _degrade_workflow_issue_write_flow_map,
+    ),
+    (
+        "workflow-issue-write-or-condition",
+        "workflow-actions",
+        _degrade_workflow_issue_write_or_condition,
+    ),
+    (
+        "workflow-issue-write-inherited",
+        "workflow-actions",
+        _degrade_workflow_issue_write_inherited,
+    ),
 )
 
 
@@ -3449,8 +3668,7 @@ def _tree_digest(root: Path) -> str:
     return digest.hexdigest()
 
 
-def run_self_test() -> int:
-    failures: list[str] = []
+def _run_positive_self_test(failures: list[str]) -> None:
     with tempfile.TemporaryDirectory(prefix="repository-quality-") as temporary:
         root = Path(temporary)
         _initialize_fixture(root)
@@ -3475,43 +3693,39 @@ def run_self_test() -> int:
         if before != middle or middle != after:
             failures.append("checker changed the positive fixture")
 
-    for expected_rule, degrade in SELF_TEST_CASES:
-        with tempfile.TemporaryDirectory(
-            prefix=f"repository-quality-{expected_rule}-"
-        ) as temporary:
-            root = Path(temporary)
-            _initialize_fixture(root)
-            degrade(root)
-            before = _tree_digest(root)
-            report = build_report(root)
-            after = _tree_digest(root)
-            results = {result["id"]: result for result in report["rules"]}
-            actual = results.get(expected_rule)
-            if actual is None:
-                failures.append(f"{expected_rule}: expected rule did not run")
-            elif actual["status"] != "fail":
-                failures.append(f"{expected_rule}: degraded fixture was not rejected")
-            if before != after:
-                failures.append(f"{expected_rule}: checker changed the fixture")
 
+def _run_degraded_self_test(
+    failures: list[str],
+    case_name: str,
+    expected_rule: str,
+    degrade: Callable[[Path], None],
+) -> None:
+    with tempfile.TemporaryDirectory(
+        prefix=f"repository-quality-{case_name}-"
+    ) as temporary:
+        root = Path(temporary)
+        _initialize_fixture(root)
+        degrade(root)
+        before = _tree_digest(root)
+        report = build_report(root)
+        after = _tree_digest(root)
+        results = {result["id"]: result for result in report["rules"]}
+        actual = results.get(expected_rule)
+        if actual is None:
+            failures.append(f"{case_name}: expected rule did not run")
+        elif actual["status"] != "fail":
+            failures.append(f"{case_name}: degraded fixture was not rejected")
+        if before != after:
+            failures.append(f"{case_name}: checker changed the fixture")
+
+
+def run_self_test() -> int:
+    failures: list[str] = []
+    _run_positive_self_test(failures)
+    for expected_rule, degrade in SELF_TEST_CASES:
+        _run_degraded_self_test(failures, expected_rule, expected_rule, degrade)
     for case_name, expected_rule, degrade in BRANCH_SELF_TEST_CASES:
-        with tempfile.TemporaryDirectory(
-            prefix=f"repository-quality-{case_name}-"
-        ) as temporary:
-            root = Path(temporary)
-            _initialize_fixture(root)
-            degrade(root)
-            before = _tree_digest(root)
-            report = build_report(root)
-            after = _tree_digest(root)
-            results = {result["id"]: result for result in report["rules"]}
-            actual = results.get(expected_rule)
-            if actual is None:
-                failures.append(f"{case_name}: expected rule did not run")
-            elif actual["status"] != "fail":
-                failures.append(f"{case_name}: degraded fixture was not rejected")
-            if before != after:
-                failures.append(f"{case_name}: checker changed the fixture")
+        _run_degraded_self_test(failures, case_name, expected_rule, degrade)
 
     if failures:
         for message in failures:

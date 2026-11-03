@@ -165,6 +165,42 @@ def _parse_assignments(entries: Iterable[str], option: str) -> dict[str, list[st
     return parsed
 
 
+def _validate_scalar_formats(scalars: dict[str, str]) -> None:
+    if not REPOSITORY_PATTERN.fullmatch(scalars.get("REPOSITORY_PATH", "")):
+        raise InitializationError("REPOSITORY_PATH must use GitHub owner/name form.")
+    contact = scalars.get("SUPPORT_CONTACT", "")
+    if not (re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", contact) or contact.startswith("https://")):
+        raise InitializationError("SUPPORT_CONTACT must be an email address or HTTPS URL.")
+    length_limits = {
+        "MAINTAINER_NAME": 100,
+        "PROJECT_NAME": 100,
+        "PROJECT_TAGLINE": 120,
+        "PROJECT_DESCRIPTION": 280,
+    }
+    for name, limit in length_limits.items():
+        if len(scalars[name]) > limit:
+            raise InitializationError(f"{name} exceeds its {limit}-character limit.")
+    if not re.fullmatch(r"20[0-9]{2}", scalars.get("COPYRIGHT_YEAR", "")):
+        raise InitializationError("COPYRIGHT_YEAR must be a four-digit year from 2000 through 2099.")
+
+
+def _validate_social_preview(
+    root: Path, tracked: set[str], scalars: dict[str, str], require_preview_file: bool
+) -> None:
+    preview = scalars.get("SOCIAL_PREVIEW_PATH")
+    if preview:
+        item = PurePosixPath(preview)
+        if item.is_absolute() or ".." in item.parts:
+            raise InitializationError("SOCIAL_PREVIEW_PATH must name a repository-relative file.")
+        if require_preview_file:
+            if preview not in tracked:
+                raise InitializationError(
+                    "SOCIAL_PREVIEW_PATH must name a tracked repository-relative file."
+                )
+            if not (root / item).is_file():
+                raise InitializationError("SOCIAL_PREVIEW_PATH does not exist in the working tree.")
+
+
 def _validate_values(
     root: Path,
     tracked: set[str],
@@ -203,35 +239,8 @@ def _validate_values(
     if missing:
         raise InitializationError("Missing required substitutions: " + ", ".join(sorted(missing)))
 
-    if not REPOSITORY_PATTERN.fullmatch(scalars.get("REPOSITORY_PATH", "")):
-        raise InitializationError("REPOSITORY_PATH must use GitHub owner/name form.")
-    contact = scalars.get("SUPPORT_CONTACT", "")
-    if not (re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", contact) or contact.startswith("https://")):
-        raise InitializationError("SUPPORT_CONTACT must be an email address or HTTPS URL.")
-    length_limits = {
-        "MAINTAINER_NAME": 100,
-        "PROJECT_NAME": 100,
-        "PROJECT_TAGLINE": 120,
-        "PROJECT_DESCRIPTION": 280,
-    }
-    for name, limit in length_limits.items():
-        if len(scalars[name]) > limit:
-            raise InitializationError(f"{name} exceeds its {limit}-character limit.")
-    if not re.fullmatch(r"20[0-9]{2}", scalars.get("COPYRIGHT_YEAR", "")):
-        raise InitializationError("COPYRIGHT_YEAR must be a four-digit year from 2000 through 2099.")
-
-    preview = scalars.get("SOCIAL_PREVIEW_PATH")
-    if preview:
-        item = PurePosixPath(preview)
-        if item.is_absolute() or ".." in item.parts:
-            raise InitializationError("SOCIAL_PREVIEW_PATH must name a repository-relative file.")
-        if require_preview_file:
-            if preview not in tracked:
-                raise InitializationError(
-                    "SOCIAL_PREVIEW_PATH must name a tracked repository-relative file."
-                )
-            if not (root / item).is_file():
-                raise InitializationError("SOCIAL_PREVIEW_PATH does not exist in the working tree.")
+    _validate_scalar_formats(scalars)
+    _validate_social_preview(root, tracked, scalars, require_preview_file)
     return scalars, repeatable
 
 
@@ -429,6 +438,66 @@ def _strip_template_maintenance_workflow(path: str, text: str) -> str:
     return "".join(output)
 
 
+def _template_only_paths(
+    configured_template_only: set[str], tracked: set[str], selected_preview: str
+) -> set[str]:
+    missing_template_paths = configured_template_only - tracked
+    if missing_template_paths:
+        raise InitializationError(
+            "Configured template-only paths are not tracked: "
+            + ", ".join(sorted(missing_template_paths))
+        )
+    if (
+        selected_preview in configured_template_only
+        and selected_preview != CANONICAL_SOCIAL_PREVIEW_PATH
+    ):
+        raise InitializationError(
+            "SOCIAL_PREVIEW_PATH may retain only "
+            f"{CANONICAL_SOCIAL_PREVIEW_PATH} from template_only_paths."
+        )
+    retained_template_only = (
+        {CANONICAL_SOCIAL_PREVIEW_PATH}
+        if selected_preview == CANONICAL_SOCIAL_PREVIEW_PATH
+        else set()
+    )
+    return configured_template_only - retained_template_only
+
+
+def _rewrite_security_url(
+    path: str, rendered: str, template_repository: str, generated_repository: str
+) -> str:
+    template_security_url = (
+        f"https://github.com/{template_repository}/security/policy"
+    )
+    generated_security_url = (
+        f"https://github.com/{generated_repository}/security/policy"
+    )
+    if template_security_url not in rendered:
+        raise InitializationError(
+            f"{path}: canonical template security URL is missing."
+        )
+    return rendered.replace(template_security_url, generated_security_url)
+
+
+def _check_placeholder_usage(
+    catalogue: dict[str, dict[str, Any]],
+    scalars: dict[str, str],
+    repeatable: dict[str, list[str]],
+    seen: set[str],
+) -> None:
+    supplied = set(scalars) | set(repeatable)
+    unused = supplied - seen
+    if unused:
+        raise InitializationError("Unused substitutions: " + ", ".join(sorted(unused)))
+    expected_used = {
+        name for name, specification in catalogue.items()
+        if specification.get("category") in {"required", "profile-specific"}
+    }
+    missing_uses = expected_used - seen
+    if missing_uses:
+        raise InitializationError("Registered required/profile placeholders are unused: " + ", ".join(sorted(missing_uses)))
+
+
 def _build_changes(
     root: Path,
     profile: str,
@@ -455,28 +524,11 @@ def _build_changes(
         raise InitializationError("Repository mode must be template or a matching prior initialization.")
 
     excluded = set(placeholders["exclude_paths"])
-    configured_template_only = set(placeholders["template_only_paths"])
-    missing_template_paths = configured_template_only - tracked
-    if missing_template_paths:
-        raise InitializationError(
-            "Configured template-only paths are not tracked: "
-            + ", ".join(sorted(missing_template_paths))
-        )
-    selected_preview = scalars.get("SOCIAL_PREVIEW_PATH", "")
-    if (
-        selected_preview in configured_template_only
-        and selected_preview != CANONICAL_SOCIAL_PREVIEW_PATH
-    ):
-        raise InitializationError(
-            "SOCIAL_PREVIEW_PATH may retain only "
-            f"{CANONICAL_SOCIAL_PREVIEW_PATH} from template_only_paths."
-        )
-    retained_template_only = (
-        {CANONICAL_SOCIAL_PREVIEW_PATH}
-        if selected_preview == CANONICAL_SOCIAL_PREVIEW_PATH
-        else set()
+    template_only = _template_only_paths(
+        set(placeholders["template_only_paths"]),
+        tracked,
+        scalars.get("SOCIAL_PREVIEW_PATH", ""),
     )
-    template_only = configured_template_only - retained_template_only
     token_pattern = re.compile(placeholders["pattern"])
     changes: dict[str, bytes | None] = {path: None for path in sorted(template_only)}
     seen: set[str] = set()
@@ -501,17 +553,9 @@ def _build_changes(
             path, rendered, config["repository"], scalars["REPOSITORY_PATH"]
         )
         if path == ".github/ISSUE_TEMPLATE/config.yml":
-            template_security_url = (
-                f"https://github.com/{config['repository']}/security/policy"
+            rendered = _rewrite_security_url(
+                path, rendered, config["repository"], scalars["REPOSITORY_PATH"]
             )
-            generated_security_url = (
-                f"https://github.com/{scalars['REPOSITORY_PATH']}/security/policy"
-            )
-            if template_security_url not in rendered:
-                raise InitializationError(
-                    f"{path}: canonical template security URL is missing."
-                )
-            rendered = rendered.replace(template_security_url, generated_security_url)
         unresolved = sorted({match.group(1) for match in token_pattern.finditer(rendered)})
         if unresolved:
             raise InitializationError(f"{path}: unresolved placeholders: {', '.join(unresolved)}")
@@ -523,17 +567,7 @@ def _build_changes(
         if output != source:
             changes[path] = output
 
-    supplied = set(scalars) | set(repeatable)
-    unused = supplied - seen
-    if unused:
-        raise InitializationError("Unused substitutions: " + ", ".join(sorted(unused)))
-    expected_used = {
-        name for name, specification in catalogue.items()
-        if specification.get("category") in {"required", "profile-specific"}
-    }
-    missing_uses = expected_used - seen
-    if missing_uses:
-        raise InitializationError("Registered required/profile placeholders are unused: " + ", ".join(sorted(missing_uses)))
+    _check_placeholder_usage(catalogue, scalars, repeatable, seen)
 
     generated_config = json.loads(json.dumps(config))
     generated_config["mode"] = "generated"

@@ -33,10 +33,11 @@ have separately documented observation, credential and mutation boundaries.
 [`pyproject.toml`](../pyproject.toml) sets Python 3.10 as the compatibility target
 and 100 columns as a formatting target. CI runs `ruff check tools` with exactly
 `E4`, `E7`, `E9`, `F`, `I001`, `C90`, and `S314`; `I001` rejects unsorted or
-unformatted import blocks, and `C90` uses a McCabe ceiling of 20. CI also runs
-`mypy` across `tools/`; `_gatelib` is subject to the pinned mypy 2.3.1 strict
-bundle through its per-module override while the rest of the tree remains on the
-established whole-tree baseline. E501 is not selected and CI does not run
+unformatted import blocks, and `C90` uses a McCabe ceiling of 15. CI also runs
+`mypy` across `tools/` under the pinned mypy 2.3.1 `strict` bundle; only
+`test_documentation`, `test_excel_evidence`, and `test_release_provenance` relax
+the annotate-every-definition rules for their unannotated unittest methods and
+fixture helpers. E501 is not selected and CI does not run
 `ruff format --check`; line length and formatter output are therefore not
 blocking rules. Prefer readable wrapping without changing literals or churning
 unrelated code. Editor indentation and line endings are defined in

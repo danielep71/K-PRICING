@@ -82,7 +82,7 @@ def load_json(path: Path) -> dict[str, Any]:
         return result
 
     try:
-        value = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique)
+        value: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique)
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
         raise CertificationError(f"cannot read {path}: {error}") from error
     require(isinstance(value, dict), f"{path} must contain one JSON object")

@@ -104,7 +104,7 @@ def _validate_tag_signature_policy(value: Any) -> None:
 
 
 def policy_for(root: Path, sha: str, configuration: dict[str, Any]) -> dict[str, Any]:
-    policy = decode(committed(root, sha, POLICY))
+    policy: dict[str, Any] = decode(committed(root, sha, POLICY))
     object_keys(policy, "schema_version workflow signature tag_signature", "policy")
     require(type(policy["schema_version"]) is int and policy["schema_version"] == 1,
             "unsupported provenance policy schema")

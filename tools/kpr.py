@@ -40,7 +40,8 @@ def candidate(root: Path, sha: str) -> dict[str, Any]:
     require(git(root, "rev-parse", "HEAD") == sha, "HEAD differs from candidate")
     require(not git(root, "status", "--porcelain", "--untracked-files=all"),
             "candidate is dirty (tracked changes or nonignored untracked files)")
-    return decode(committed(root, sha, PROFILE))
+    profile: dict[str, Any] = decode(committed(root, sha, PROFILE))
+    return profile
 
 
 def normalize_source(raw: bytes, suffix: str) -> bytes:

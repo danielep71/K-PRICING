@@ -54,7 +54,7 @@ def source_inventory(root: Path, sha: str, config: dict[str, Any], *,
 
 
 def load_policy(root: Path, sha: str) -> dict[str, Any]:
-    policy = decode(committed(root, sha, POLICY))
+    policy: dict[str, Any] = decode(committed(root, sha, POLICY))
     object_keys(policy, "schema_version entry_point cases assertions_by_office_bitness expected_error_cases", "host policy")
     require(type(policy["schema_version"]) is int and policy["schema_version"] == 1,
             "unsupported host policy schema")
@@ -126,7 +126,7 @@ def validate_environment(record: dict[str, Any]) -> None:
 def retained_log(directory: Path, value: Any) -> str:
     object_keys(value, "path sha256", "retained log")
     require(relative(value["path"]), "unsafe log path")
-    path = directory / value["path"]
+    path: Path = directory / value["path"]
     require(not any(parent.is_symlink() for parent in (path, *path.parents)), "symlinked log path")
     require(path.resolve().is_relative_to(directory.resolve()) and path.is_file(), "missing log")
     raw = path.read_bytes()

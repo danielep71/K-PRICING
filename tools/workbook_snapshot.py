@@ -83,7 +83,7 @@ def value(cell: ET.Element, strings: list[ET.Element]) -> dict[str, Any]:
     return {"type": kind, "value": text, "cache_present": raw is not None}
 
 
-def sheet_snapshot(node: ET.Element, strings: list[ET.Element]) -> tuple[dict, dict]:
+def sheet_snapshot(node: ET.Element, strings: list[ET.Element]) -> tuple[dict[str, Any], dict[str, Any]]:
     cells = node.findall(f"{NS}sheetData/{NS}row/{NS}c")
     arrays = []
     for cell in cells:
@@ -119,7 +119,7 @@ def sheet_snapshot(node: ET.Element, strings: list[ET.Element]) -> tuple[dict, d
     return {"cells": structure, "properties": tree(metadata)}, results
 
 
-def worksheet_parts(zip_file: ZipFile, workbook: ET.Element) -> list[tuple[str, dict]]:
+def worksheet_parts(zip_file: ZipFile, workbook: ET.Element) -> list[tuple[str, dict[str, str]]]:
     relations = xml(zip_file, "xl/_rels/workbook.xml.rels")
     mapping = {}
     for item in relations:
