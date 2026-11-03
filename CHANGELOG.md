@@ -104,6 +104,15 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Added a one-click Excel check to the development loader
+  (`tests/modules/KPR_Dev_Import.bas`): the macro `KPR_Dev_CheckLatest`
+  (Alt+F8) resolves `main` to its exact commit, imports it into `KPR.xlam`,
+  compiles and saves it, runs `KPR_Test_RunAll` twice, checks on Windows that
+  Excel loads the K-PRICING Ribbon in a throwaway copy, and leaves the two
+  evidence files and a `summary.txt` in `Documents\KPR-evidence`.
+  `KPR_Dev_CheckBuild` does the same for any branch, commit or build, and the
+  Ribbon module gains `KPR_UI_RibbonLoaded` for that check. Not yet run in
+  Excel.
 - Added the classic **KPR Dates** toolbar (#48) and the shared menu commands it
   calls. `src/modules/KPR_UI_Actions.bas` holds the commands: insert a
   supported function into the active cell with Excel's Function Arguments

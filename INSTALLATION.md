@@ -353,6 +353,42 @@ file is fetched and checked before the target changes. The call returns the
 number of modules imported, or `-1` with the reason in the Immediate window.
 The target is not saved: compile it, then save it.
 
+#### One-click Excel check
+
+The same module offers one macro that does a whole Excel check of the latest
+`main` with `KPR.xlam` open: in Excel press **Alt+F8**, choose
+`KPR_Dev_CheckLatest` and click **Run**. It runs unattended:
+
+1. asks GitHub for the exact commit `main` points to;
+2. imports that commit's modules into `KPR.xlam` with the loader;
+3. compiles the VBA project (**Debug > Compile**) and saves `KPR.xlam`;
+4. runs `KPR_Test_RunAll` twice;
+5. on Windows, writes the commit's Ribbon into a throwaway copy of
+   `KPR.xlam` with PowerShell, opens the copy with its events off and checks
+   that Excel loaded the **K-PRICING** tab and built its menus, then closes
+   and deletes the copy. Your own `KPR.xlam` never gets the tab this way; use
+   `tools/inject_ribbon.py` for that, as [Ribbon](#ribbon) describes.
+
+At the end it opens a new folder `Documents\KPR-evidence\<date>-<commit>`
+holding `run-1\kpr-test-evidence.json`, `run-2\kpr-test-evidence.json` and
+`summary.txt`, and shows the summary. A failed import or compile stops the
+check before the test runs, and the summary says why. To check another branch
+or commit, or another build, run
+`? KPR_Dev_CheckBuild("<branch or full SHA>", "<workbook name>")` in the
+Immediate window.
+
+To install or update the loader itself in `PERSONAL.XLSB` without the file
+dialogs, paste these lines into the Immediate window (**Ctrl+G** in the VBA
+editor), one at a time, pressing Enter after each. The first downloads the
+loader, the second removes the old copy (skip it on a first install) and the
+third imports the new one and saves `PERSONAL.XLSB`:
+
+```text
+Set h = CreateObject("MSXML2.XMLHTTP.6.0"): h.Open "GET", "https://raw.githubusercontent.com/danielep71/k-pricing/main/tests/modules/KPR_Dev_Import.bas", False: h.send: Set s = CreateObject("ADODB.Stream"): s.Type = 1: s.Open: s.Write h.responseBody: s.SaveToFile Environ("TEMP") & "\KPR_Dev_Import.bas", 2: s.Close
+Set p = Workbooks("PERSONAL.XLSB").VBProject: p.VBComponents.Remove p.VBComponents("KPR_Dev_Import")
+Workbooks("PERSONAL.XLSB").VBProject.VBComponents.Import Environ("TEMP") & "\KPR_Dev_Import.bas": Workbooks("PERSONAL.XLSB").Save
+```
+
 ### Local modifications
 
 Treat a locally modified copy as a fork. Diff it against the old and new exported

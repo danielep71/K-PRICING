@@ -18,6 +18,8 @@ Attribute VB_Name = "KPR_UI_Ribbon"
 '   - KPR_UI_Ribbon_GetDevelopmentVisible   getVisible of the Development group
 '   Other entry points
 '   - KPR_UI_RibbonRefresh                  rebuild the tab after modules change
+'   - KPR_UI_RibbonLoaded                   Excel has loaded the tab, for the
+'                                           one-click Excel check
 '   - KPR_UI_RibbonMenuXml                  the menu XML, for the callbacks and
 '                                           the regression suite
 '
@@ -193,6 +195,17 @@ Public Sub KPR_UI_RibbonRefresh()
     Err.Clear
 
 End Sub
+
+
+Public Function KPR_UI_RibbonLoaded() As Boolean
+'
+' TRUE once Excel has loaded this project's K-PRICING tab (onLoad ran) and
+' no VBA reset has lost the Ribbon object since. KPR_Dev_CheckBuild reads it
+' after opening a copy that carries the tab.
+'
+    KPR_UI_RibbonLoaded = Not mRibbon Is Nothing
+
+End Function
 
 
 Public Function KPR_UI_RibbonMenuXml( _
