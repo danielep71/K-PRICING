@@ -362,6 +362,8 @@
       "src/core/KPR_Core_Parse.bas": "internal",
       "src/modules/KPR_DATES_DAYS.bas": "public",
       "src/modules/KPR_REGISTER_PUBLIC_UDFS.bas": "internal",
+      "src/modules/KPR_UI_Actions.bas": "ui",
+      "src/modules/KPR_UI_CommandBars.bas": "ui",
       "tests/modules/KPR_Dev_Import.bas": "test",
       "tests/modules/KPR_REGRESSION_TESTS.bas": "test",
       "tests/modules/KPR_Test_Fixtures_Generated.bas": "test",

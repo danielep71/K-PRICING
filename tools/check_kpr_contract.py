@@ -53,6 +53,8 @@ ALLOWED_DEPENDENCIES = {
             "kpr_test_oracle",
             "kpr_demo__builder",
             "kpr_demo_dates",
+            "kpr_ui_actions",
+            "kpr_ui_commandbars",
         }
     ),
     # Registration holds function names as manifest text only.
@@ -66,6 +68,11 @@ ALLOWED_DEPENDENCIES = {
     "kpr_demo__builder": frozenset(),
     # A demo content module describes its sheet through the builder only.
     "kpr_demo_dates": frozenset({"kpr_demo__builder"}),
+    # Menu commands delegate to registration; demos and tests are optional
+    # modules reached by name through Application.Run only.
+    "kpr_ui_actions": frozenset({"kpr_register_public_udfs"}),
+    # Each menu surface reaches every command through the shared actions.
+    "kpr_ui_commandbars": frozenset({"kpr_ui_actions"}),
 }
 REQUIRED_MEMBERS = {
     "kpr_core_err": frozenset({"ErrValue", "ErrNum", "ErrNA", "ErrForCondition"}),
@@ -143,8 +150,29 @@ REQUIRED_MEMBERS = {
         "KPR_Tests_RunOracle",
         "KPR_Tests_RunRegistration",
         "KPR_Tests_RunDemo",
+        "KPR_Tests_RunCommandBars",
+        "KPR_Tests_Available",
         "KPR_Test_RunAll",
         "KPR_Test_RunSuite",
+    }),
+    # The menus call these by name: KPR_UI_Actions from both surfaces, the
+    # CommandBars entry points from Workbook_Open and every toolbar button.
+    "kpr_ui_actions": frozenset({
+        "KPR_UI_RunAction",
+        "KPR_UI_ActionKnown",
+        "KPR_UI_FunctionGroups",
+        "KPR_UI_FunctionNames",
+        "KPR_UI_DemoGroups",
+        "KPR_UI_DemoEntries",
+        "KPR_UI_DemosAvailable",
+        "KPR_UI_TestsAvailable",
+    }),
+    "kpr_ui_commandbars": frozenset({
+        "KPR_UI_InstallCommandBar",
+        "KPR_UI_RemoveCommandBar",
+        "KPR_UI_CommandBarClick",
+        "KPR_UI_ToolbarInstall",
+        "KPR_UI_ToolbarRemove",
     }),
 }
 FORBIDDEN_PARSE_CALLS = ("IsDate", "DateValue", "CVDate", "IsNumeric")
