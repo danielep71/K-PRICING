@@ -1,3 +1,8 @@
+# Proposes updates to the SHA-pinned GitHub Actions and to the hash-locked
+# Python quality tools in tools/requirements-quality-ci.txt. Every update
+# arrives as a pull request for review; nothing merges automatically.
+# Labels must exist in .github/labels.json; each pull request carries exactly
+# one priority label and an assignee.
 version: 2
 updates:
   - package-ecosystem: "github-actions"
@@ -13,9 +18,34 @@ updates:
     labels:
       - "ci"
       - "tests"
+      - "P3"
+    assignees:
+      - "danielep71"
     groups:
       # CodeQL refuses to run with init, analyze and upload-sarif at different
       # versions, so their pins must always move in one pull request
       codeql-action:
         patterns:
           - "github/codeql-action/*"
+  - package-ecosystem: "pip"
+    directory: "/tools"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Rome"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps(python)"
+    labels:
+      - "ci"
+      - "tests"
+      - "P3"
+    assignees:
+      - "danielep71"
+    groups:
+      # Ruff, mypy, coverage and their dependencies share one hash lock that
+      # CI installs as a whole, so they move together
+      python-quality-tools:
+        patterns:
+          - "*"

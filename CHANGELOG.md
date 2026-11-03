@@ -265,6 +265,15 @@ Use only the categories needed by a release.
 
 ### Security
 
+- A manual dispatch of the label-sync workflow from any branch other than the
+  default branch now skips reconciliation, so an unmerged label manifest or
+  script can no longer change the live labels. The repository gate rejects any
+  workflow job with `issues: write` that lacks this default-branch guard.
+- CodeQL also analyzes the workflows themselves (Actions language). CI pins
+  Python 3.10.22 and Node.js 24.22.2 instead of the runner's choice, and
+  Dependabot also proposes updates to the hash-locked Python quality tools;
+  its pull requests carry a `P3` priority and an assignee.
+
 - Enable public-repository CodeQL/Scorecard paths, private vulnerability reporting
   and branch/tag rulesets; retain conditional safeguards for private visibility.
 - Record the maintainer's 2026-09-24 decision to retain the existing email and
