@@ -72,6 +72,7 @@ Replace the example SHA with the exact candidate you imported.
 | `worksheet-registration` | worksheet | `KPR_Tests_RunRegistration`: the MacroOptions manifest and register / clean-up lifecycle in `KPR_REGISTER_PUBLIC_UDFS` (#42) |
 | `worksheet-demo` | worksheet | `KPR_Tests_RunDemo`: builds the Date Primitives demo (#46) into files and into scratch workbooks, requires identical builds, no failing row and no existing sheet changed |
 | `worksheet-commandbars` | worksheet | `KPR_Tests_RunCommandBars`: the menu layer in `KPR_UI_Actions` and the **KPR Dates** toolbar lifecycle in `KPR_UI_CommandBars` (#48): install, repeat install, removal and repeat removal, with no duplicate and no command run |
+| `worksheet-ribbon` | worksheet | `KPR_Tests_RunRibbon`: the menu XML the Ribbon callbacks in `KPR_UI_Ribbon` return (#47), parsed with MSXML |
 | `worksheet-state` | worksheet | `KPR_Tests_RunStateCheck`: runs the durable runner on `date-type` twice, once with a deliberately injected failure, and proves the caller's state is restored after both |
 
 `KPR_Tests_RunAll("all")`, `KPR_Tests_RunEvidence` and the
@@ -247,9 +248,19 @@ function, demo and setup or development command, each carrying a known action,
 and no KPR-owned control after each removal, with calculation, events, screen
 updating, alerts, the active workbook and sheet and the selection unchanged.
 It runs no command, so no dialog opens, and a toolbar installed on entry is
-installed again at the end. It has 37 assertions, so an `all` run has 22
-suites and 9,357 assertions. The suite sets the evidence record's
-`commandbars` outcome.
+installed again at the end. It has 37 assertions. The suite sets the
+evidence record's `commandbars` outcome.
+
+The `worksheet-ribbon` suite parses, with MSXML, the Functions and Demo sheets
+menus `KPR_UI_RibbonMenuXml` builds for every functional module. It requires a
+`menu` root in the `customUI/2009/07` namespace, one button per supported
+function or catalog demo, unique ids starting with `KPR_`,
+`KPR_UI_Ribbon_OnAction` on every button and a known action in every tag; an
+unknown module or kind must give one disabled item, and `KPR_UI_RibbonRefresh`
+must be harmless without a loaded tab. It has 15 assertions, so an `all` run
+has 23 suites and 9,372 assertions. VBA cannot load RibbonX, so the suite does
+not set the `ribbonx` outcome: the certification operator records it after
+loading the tab in Excel.
 
 ## Caller-state restoration
 

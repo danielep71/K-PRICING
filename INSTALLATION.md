@@ -108,15 +108,19 @@ Import the migrated production dependency set in this order:
    menu; depends on `KPR_REGISTER_PUBLIC_UDFS`
 8. `src/modules/KPR_UI_CommandBars.bas` — the classic **KPR Dates** toolbar;
    depends on `KPR_UI_Actions`
-9. `tests/modules/KPR_Test_Fixtures_Generated.bas` — development/regression
-   only; generated fixture data with no dependencies
-10. `tests/modules/KPR_Test_Oracle.bas` — development/regression only; Excel
+9. `src/modules/KPR_UI_Ribbon.bas` — the callbacks of the **K-PRICING**
+   Ribbon tab; depends on `KPR_UI_Actions`. The tab itself,
+   `src/ribbon/customUI14.xml`, is not imported: `tools/inject_ribbon.py`
+   writes it into the file (see [Ribbon](#ribbon))
+10. `tests/modules/KPR_Test_Fixtures_Generated.bas` — development/regression
+    only; generated fixture data with no dependencies
+11. `tests/modules/KPR_Test_Oracle.bas` — development/regression only; Excel
     cross-oracle cases that depend on `KPR_DATES_DAYS` alone
-11. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
-12. `examples/modules/KPR_Demo_DirectVBA.bas` — optional consumer example
-13. `examples/modules/KPR_Demo__Builder.bas` — shared demo builder; no module
+12. `tests/modules/KPR_REGRESSION_TESTS.bas` — development/regression only
+13. `examples/modules/KPR_Demo_DirectVBA.bas` — optional consumer example
+14. `examples/modules/KPR_Demo__Builder.bas` — shared demo builder; no module
     dependencies
-14. `examples/modules/KPR_Demo_Dates.bas` — Date Primitives demo; depends on
+15. `examples/modules/KPR_Demo_Dates.bas` — Date Primitives demo; depends on
     `KPR_Demo__Builder`. Both demo modules are optional for users, but required
     whenever `KPR_REGRESSION_TESTS` is imported, because its `worksheet-demo`
     suite builds the demo
@@ -133,7 +137,7 @@ in [`docs/MIGRATION_PROVENANCE.md`](docs/MIGRATION_PROVENANCE.md).
 
 ### Menus
 
-The two `KPR_UI_` modules are unsupported infrastructure, like the
+The `KPR_UI_` modules are unsupported infrastructure, like the
 registration module. `KPR_UI_Actions` holds the commands; the menus only call
 it. It reaches the demo and regression modules by name, so a build without
 them still compiles: their menu items are simply absent or disabled.
@@ -167,6 +171,41 @@ End Sub
 
 After loading or removing the demo or regression modules, run
 `KPR_UI_InstallCommandBar` again so the menus follow.
+
+<a id="ribbon"></a>
+
+### Ribbon
+
+The **K-PRICING** tab (Excel 2010 and later) offers the same commands as the
+toolbar: a **Date primitives** group with **Functions** and **Demo sheets**
+menus, a **Setup** group with the two registration buttons, and a
+**Development** group shown only when the regression modules are loaded. Its
+callbacks are in `KPR_UI_Ribbon`; the tab is `src/ribbon/customUI14.xml`,
+which lives inside the `.xlam` or `.xlsm` file itself, so it is added with a
+tool, not through the VBA editor:
+
+1. Import `KPR_UI_Actions` and `KPR_UI_Ribbon` (with the loader or by hand),
+   compile and save the workbook or add-in.
+2. **Close Excel**: the file must not be open while it is changed.
+3. From a clone of the repository at the same commit, run:
+
+   ```bash
+   python3 tools/inject_ribbon.py --target "C:/path/to/KPR.xlam"
+   ```
+
+   The tool checks the file and the RibbonX first, keeps a backup next to it
+   (`KPR.xlam.bak`), then replaces the file in one step. It writes
+   `customUI/customUI14.xml` and its relationship, and running it again
+   replaces the same part instead of adding another. It refuses a file
+   tracked by Git.
+4. Open the file in Excel. The **K-PRICING** tab appears.
+
+The tab replaces any other `customUI14.xml` in the file, such as an earlier
+private ribbon: remove that ribbon's callback module once the new tab works.
+After loading or removing the demo or regression modules, run
+`KPR_UI_RibbonRefresh` from the Immediate window, or reopen the file, so the
+tab follows. To remove the tab, restore the `.bak` copy or remove the
+`customUI` part with any Office package editor.
 
 > [!CAUTION]
 > A `.frm` and adjacent `.frx` are one logical UserForm component. Import the

@@ -6,8 +6,8 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '   Deterministic regression suites for the KPR date layer, launched from one
 '   dispatcher, plus separate macro-only runners for host, Range-shape,
 '   dynamic-array, worksheet-fixture, cross-oracle, registration, demo,
-'   CommandBars and state-restoration behavior, and the durable runner that
-'   drives all of them and writes structured evidence.
+'   CommandBars, Ribbon menu and state-restoration behavior, and the durable
+'   runner that drives all of them and writes structured evidence.
 '
 ' SUITE REGISTRY
 '   KPR_Tests_RunAll dispatches to the suites below. Passing a suite name runs
@@ -46,8 +46,8 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '   KPR_Test_RunAll runs TestRegistry in order: the twelve suites above, then
 '   fixtures, then the macro-only runners as worksheet-host, worksheet-shape,
 '   worksheet-array, worksheet-fixtures, worksheet-oracle,
-'   worksheet-registration, worksheet-demo, worksheet-commandbars and
-'   worksheet-state.
+'   worksheet-registration, worksheet-demo, worksheet-commandbars,
+'   worksheet-ribbon and worksheet-state.
 '   KPR_Test_RunSuite runs one of them. tools/check_test_evidence.py reads the registry from this source.
 '
 ' SCOPE
@@ -844,7 +844,7 @@ Private Function TestRegistry() As Variant
         "boundary", "mapper", "host", "pillar", "surface", "shape", _
         "parity", "fixtures", "worksheet-host", "worksheet-shape", _
         "worksheet-array", "worksheet-fixtures", "worksheet-oracle", "worksheet-registration", _
-        "worksheet-demo", "worksheet-commandbars", "worksheet-state")
+        "worksheet-demo", "worksheet-commandbars", "worksheet-ribbon", "worksheet-state")
 
 End Function
 
@@ -863,7 +863,7 @@ Private Function SuiteKind( _
             SuiteKind = "fixture"
         Case "worksheet-host", "worksheet-shape", "worksheet-array", "worksheet-fixtures", _
              "worksheet-oracle", "worksheet-registration", "worksheet-demo", "worksheet-commandbars", _
-             "worksheet-state"
+             "worksheet-ribbon", "worksheet-state"
             SuiteKind = "worksheet"
         Case Else
             SuiteKind = "pure"
@@ -891,6 +891,7 @@ Private Sub ExecuteSuite( _
         Case "worksheet-registration": KPR_Tests_RunRegistration
         Case "worksheet-demo":      KPR_Tests_RunDemo
         Case "worksheet-commandbars": KPR_Tests_RunCommandBars
+        Case "worksheet-ribbon":    KPR_Tests_RunRibbon
         Case "worksheet-state":     KPR_Tests_RunStateCheck
         Case Else
             If Not RunSuite(SuiteName) Then
@@ -3317,6 +3318,144 @@ Private Sub CheckUI( _
 '
     mChecks = mChecks + 1
     If Not Passed Then Record Label, Detail
+
+End Sub
+
+'
+'------------------------------------------------------------------------------
+'
+'                         RIBBON MENU RUNNER (MACRO ONLY)
+'
+'------------------------------------------------------------------------------
+'
+
+Public Sub KPR_Tests_RunRibbon()
+'
+'==============================================================================
+'                             KPR_Tests_RunRibbon
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Checks the menu XML the Ribbon callbacks return (KPR_UI_RibbonMenuXml),
+'   and prints the report to the Immediate window. Loading the tab itself is
+'   observed by the certification operator (the ribbonx outcome), because
+'   VBA cannot load RibbonX.
+'
+' METHOD
+'   Parses the Functions and Demo sheets menus of every functional module
+'   with MSXML and requires a <menu> root in the customUI/2009/07 namespace,
+'   one button per supported function or catalog demo of the module, unique
+'   ids starting with KPR_, KPR_UI_Ribbon_OnAction on every button and a tag
+'   that KPR_UI_ActionKnown accepts. An unknown module or menu kind must give
+'   one disabled item, and KPR_UI_RibbonRefresh must be harmless without a
+'   loaded tab. No command is run.
+'
+' UPDATED
+'   2026-11-03
+'==============================================================================
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Group           As Variant      'KPR_UI_FunctionGroups cursor
+    Dim Caption         As String       'Caption of one functional module
+    Dim Names           As Variant      'Its functions
+    Dim Demos           As Variant      'Its demos
+    Dim Expected        As Long         'Buttons the menu must have
+    Dim Refreshed       As Boolean      'KPR_UI_RibbonRefresh returned
+    Dim I               As Long         'Report cursor
+
+'------------------------------------------------------------------------------
+' MENUS
+'------------------------------------------------------------------------------
+    'Every functional module has both menus, built from the same lists the
+    'toolbar uses
+        Set mFailures = New Collection
+        mChecks = 0
+        For Each Group In KPR_UI_FunctionGroups()
+            Caption = Split(CStr(Group), "|")(0)
+            Names = KPR_UI_FunctionNames(Split(CStr(Group), "|")(1))
+            Expected = 0
+            If IsArray(Names) Then Expected = UBound(Names) + 1
+            CheckRibbonMenu "functions " & Caption, KPR_UI_RibbonMenuXml("functions", Caption), Expected
+            Demos = KPR_UI_DemoEntries(Caption)
+            Expected = 0
+            If IsArray(Demos) Then Expected = UBound(Demos) + 1
+            CheckRibbonMenu "demos " & Caption, KPR_UI_RibbonMenuXml("demos", Caption), Expected
+        Next Group
+
+'------------------------------------------------------------------------------
+' FALLBACKS
+'------------------------------------------------------------------------------
+    'An empty menu still parses and shows one disabled item
+        CheckRibbonMenu "unknown module", KPR_UI_RibbonMenuXml("functions", "No such module"), 0
+        CheckRibbonMenu "unknown kind", KPR_UI_RibbonMenuXml("other", "Date primitives"), 0
+        On Error Resume Next
+        KPR_UI_RibbonRefresh
+        Refreshed = (Err.Number = 0)
+        Err.Clear
+        On Error GoTo 0
+        CheckUI "ribbon/refresh without a tab", Refreshed, "KPR_UI_RibbonRefresh raised"
+
+'------------------------------------------------------------------------------
+' REPORT
+'------------------------------------------------------------------------------
+    If Not mQuietTrace Then
+        Debug.Print "KPR ribbon regression  checks: " & CStr(mChecks) & "  failures: " & CStr(mFailures.Count)
+        For I = 1 To mFailures.Count
+            Debug.Print "  FAIL  " & CStr(mFailures(I)(0)) & " : " & CStr(mFailures(I)(1))
+        Next I
+    End If
+
+End Sub
+
+Private Sub CheckRibbonMenu( _
+    ByVal Label As String, _
+    ByVal Xml As String, _
+    ByVal Expected As Long)
+'
+' Parses one getContent result and checks its root, its buttons and their
+' actions. Expected = 0 means the single disabled "not available" item.
+'
+    Const CUSTOMUI_NS   As String = "http://schemas.microsoft.com/office/2009/07/customui"
+    Dim Doc             As Object       'MSXML2.DOMDocument.6.0
+    Dim Buttons         As Object       'The button elements
+    Dim Button          As Object       'Button cursor
+    Dim Ids             As Object       'Scripting.Dictionary of ids seen
+    Dim Bad             As String       'Buttons that break a rule
+    Dim Id              As String       'id attribute of one button
+
+    Set Doc = CreateObject("MSXML2.DOMDocument.6.0")
+    Doc.async = False
+    Doc.validateOnParse = False
+    CheckUI "ribbon/" & Label & " parses", Doc.LoadXML(Xml), "not well-formed: " & Left$(Xml, 200)
+    If Doc.DocumentElement Is Nothing Then Exit Sub
+    CheckUI "ribbon/" & Label & " root", _
+            Doc.DocumentElement.BaseName = "menu" And Doc.DocumentElement.NamespaceURI = CUSTOMUI_NS, _
+            "root is " & Doc.DocumentElement.nodeName & " in " & Doc.DocumentElement.NamespaceURI
+    Set Buttons = Doc.DocumentElement.ChildNodes
+    If Expected = 0 Then
+        If Buttons.Length = 1 Then
+            CheckUI "ribbon/" & Label & " single disabled item", _
+                    LCase$("" & Buttons.Item(0).getAttribute("enabled")) = "false", "the item is enabled"
+        Else
+            CheckUI "ribbon/" & Label & " single disabled item", False, CStr(Buttons.Length) & " item(s)"
+        End If
+        Exit Sub
+    End If
+    CheckUI "ribbon/" & Label & " button count", Buttons.Length = Expected, _
+            CStr(Buttons.Length) & " button(s), expected " & CStr(Expected)
+    Set Ids = CreateObject("Scripting.Dictionary")
+    For Each Button In Buttons
+        Id = "" & Button.getAttribute("id")
+        If Button.BaseName <> "button" Or Left$(Id, 4) <> "KPR_" Or Ids.Exists(Id) _
+           Or ("" & Button.getAttribute("onAction")) <> "KPR_UI_Ribbon_OnAction" _
+           Or Not KPR_UI_ActionKnown("" & Button.getAttribute("tag")) Then
+            Bad = Bad & " " & Id
+        End If
+        If Not Ids.Exists(Id) Then Ids.Add Id, True
+    Next Button
+    CheckUI "ribbon/" & Label & " every button valid", Len(Bad) = 0, "invalid:" & Bad
 
 End Sub
 
