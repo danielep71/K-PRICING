@@ -318,7 +318,77 @@ class DocumentationTests(unittest.TestCase):
 
     def test_multiline_and_inline_commands(self):
         text = "`python3 tools/a.py --root .`\npython3 tools/b.py \\\n  --output out.json\n"
-        self.assertEqual(docs.commands(text), [("tools/a.py", {"--root"}), ("tools/b.py", {"--output"})])
+        self.assertEqual(docs.commands(text), [("tools/a.py", ["--root", "."]),
+                                               ("tools/b.py", ["--output", "out.json"])])
+
+    def test_launchers_module_form_and_quoted_commands(self):
+        text = ("py -3 tools/a.py --root .\n`python -m tools.b -v`\n"
+                '--add CMD="python3 tools/c.py --root ." --add OTHER=x\n'
+                "python3 tools/d.py --evidence <path> | tee out --ignored # --comment\n")
+        self.assertEqual(docs.commands(text), [
+            ("tools/a.py", ["--root", "."]), ("tools/b.py", ["-v"]),
+            ("tools/c.py", ["--root", "."]), ("tools/d.py", ["--evidence", "PLACEHOLDER"])])
+
+    def write_documented(self, script, *commands):
+        (self.root / "tools/fixture.py").write_text(textwrap.dedent(script))
+        (self.root / "README.md").write_text("# Fixture\n\n" + "\n".join(commands) + "\n")
+        self.save()
+        return docs.build_report(self.root)["findings"]
+
+    def test_subcommand_options_are_scoped(self):
+        script = """
+            import argparse
+            cli = argparse.ArgumentParser()
+            cli.add_argument("--root")
+            commands = cli.add_subparsers(dest="command")
+            commands.add_parser("check")
+            help_text = {"inventory": "a", "round-trip": "b"}
+            for name, text in help_text.items():
+                operation = commands.add_parser(name, help=text)
+                operation.add_argument("--candidate-sha", required=True)
+                if name == "round-trip":
+                    operation.add_argument("-e", "--exports")
+            """
+        good = ("python3 tools/fixture.py --root . check",
+                "python3 tools/fixture.py round-trip --candidate-sha A -e out",
+                "python3 tools/fixture.py inventory --help")
+        self.assertEqual(self.write_documented(script, *good), [])
+        findings = self.write_documented(
+            script, "python3 tools/fixture.py inventory --exports x --candidate-sha A",
+            "python3 tools/fixture.py check --root .", "python3 tools/fixture.py deploy")
+        self.assertEqual(findings, [
+            "README.md: tools/fixture.py undocumented CLI option --exports",
+            "README.md: tools/fixture.py undocumented CLI option --root",
+            "README.md: tools/fixture.py unknown subcommand deploy"])
+
+    def test_short_options_and_unittest_scripts(self):
+        script = """
+            import argparse, unittest
+            p = argparse.ArgumentParser()
+            p.add_argument("-n", "--dry-run", action="store_true")
+            p.add_argument("-o")
+            if __name__ == "__main__":
+                unittest.main()
+            """
+        self.assertEqual(self.write_documented(script, "python3 tools/fixture.py -n -o x -v -k case"), [])
+        self.assertEqual(self.write_documented(script, "python3 tools/fixture.py -z"),
+                         ["README.md: tools/fixture.py undocumented CLI option -z"])
+        # A value-taking option without its value does not hide the next option.
+        self.assertEqual(self.write_documented(script, "python3 tools/fixture.py -o --removed-option"),
+                         ["README.md: tools/fixture.py undocumented CLI option --removed-option"])
+        self.assertEqual(self.write_documented(script, "python3 tools/fixture.py -o -1 -n"), [])
+
+    def test_unreadable_parser_fails(self):
+        script = """
+            import argparse
+            commands = argparse.ArgumentParser().add_subparsers()
+            commands.add_parser(compute_name())
+            """
+        findings = self.write_documented(script, "python3 tools/fixture.py run")
+        self.assertEqual(len(findings), 1)
+        self.assertIn("parser not readable", findings[0])
+        self.assertIn("subcommand name is not readable statically", findings[0])
+        self.assertIn("parser not readable", self.write_documented("def (:\n", "python3 tools/fixture.py")[0])
 
     def test_workflow_and_context_renames_detected(self):
         workflow = self.root / ".github/workflows/fixture.yml"

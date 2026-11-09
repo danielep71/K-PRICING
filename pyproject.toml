@@ -1,6 +1,7 @@
 # Python tooling quality contract for the repository-maintenance scripts.
 # The distributed VBA source remains dependency-free; Ruff, mypy and coverage.py are CI/development tools only.
-# mypy runs in strict mode over every module under tools/; Ruff caps McCabe complexity at 15.
+# mypy runs in strict mode with warn_unreachable over every module under tools/; Ruff caps
+# McCabe complexity at 15.
 
 [tool.ruff]
 target-version = "py313"
@@ -20,6 +21,8 @@ pretty = true
 show_error_codes = true
 warn_unused_configs = true
 strict = true
+# strict does not enable this one: report branches that type narrowing makes dead.
+warn_unreachable = true
 
 # The unittest modules below keep unannotated test methods and fixture helpers,
 # so only the annotate-every-def rules are relaxed for them; every other strict

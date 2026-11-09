@@ -32,9 +32,13 @@ on:
 permissions:
   contents: read
 
+# A new push to a pull request cancels the check of its superseded head. Every
+# other run (a push to main or a release branch, a tag, a manual or reusable
+# call) has a group of its own and is never cancelled, so no intermediate push
+# loses its result.
 concurrency:
-  group: static-checks-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: static-checks-${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 defaults:
   run:

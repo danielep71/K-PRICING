@@ -262,6 +262,17 @@ Use only the categories needed by a release.
   removal back with a separate GET and lists every pull request and removed
   milestone title in its job summary.
 
+- Quality gates follow the template more closely. mypy adds `warn_unreachable`
+  to strict mode (no existing finding). Static checks cancel only a superseded
+  pull-request head: every push, tag, manual or reusable run has a concurrency
+  group of its own and is never cancelled. `tools/check_documentation.py`
+  checks documented commands per subcommand, including subcommands named from
+  a literal loop, short options, `unittest` options and the `py`, `py -3` and
+  `-m tools.<module>` forms, and fails on a parser it cannot read statically.
+  `.gitignore` also excludes Java and password-manager keystores (`*.jks`,
+  `*.keystore`, `*.kdbx`) and SSH private keys (`id_rsa*`, `id_ecdsa*`,
+  `id_ed25519*`), keeping their `.pub` halves trackable.
+
 - The repository's Python tooling moves from Python 3.10, which reached end of
   life in October 2026 and no longer receives security fixes, to 3.13: CI pins
   3.13.18, `pyproject.toml` targets 3.13 for Ruff and mypy, and the hash lock in
