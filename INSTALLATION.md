@@ -371,6 +371,12 @@ is denied"):
 &([scriptblock]::Create((irm https://raw.githubusercontent.com/danielep71/K-PRICING/main/tools/Check-KPR.ps1)))
 ```
 
+Add `-RepoRoot` with the folder of your clone once, for example
+`... Check-KPR.ps1))) -RepoRoot 'C:\path\to\K-PRICING'`: the workbook then goes
+into the clone's `build` folder, which git ignores, and later runs, the
+shortcut included, remember the clone (`HKCU\Software\K-PRICING\Check`).
+`tools\Check-KPR.cmd` run from a clone finds it by itself.
+
 The first run also puts a **K-PRICING check** shortcut on the desktop, so later
 checks are a double-click. From a clone, `tools\Check-KPR.cmd` does the same
 (`tools\Check-KPR.cmd my-branch` checks another branch). Leave Excel alone
@@ -387,7 +393,8 @@ until the window says it is finished. `tools/Check-KPR.ps1`:
    compiles the project (**Debug > Compile**), saves it, runs
    `KPR_Test_RunAll` twice and loads the commit's Ribbon in a throwaway copy,
    checking that Excel loaded the **K-PRICING** tab and built its menus;
-5. builds the workbook to use, `Documents\K-PRICING\K-PRICING-<commit>.xlsm`:
+5. builds the workbook to use, `K-PRICING-<commit>.xlsm` in `<clone>\build`
+   (or in `Documents\K-PRICING` when no clone is known):
    the template with the production and example modules, compiled, the commit
    on the **Home** sheet and the **KPR Dates Demo** sheet built once. It is
    built in the temporary folder and copied there only when complete; when

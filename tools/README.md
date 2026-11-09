@@ -442,7 +442,10 @@ next to a scratch workbook holding that commit's
 `tests/modules/KPR_Dev_Import.bas`, and calls
 `KPR_Dev_CheckBuild(<sha>, "K-PRICING_Development.xlsm", True)`: import,
 compile, save, `KPR_Test_RunAll` twice and the Ribbon load check. It then
-builds `Documents\K-PRICING\K-PRICING-<commit>.xlsm` from the template with
+builds `K-PRICING-<commit>.xlsm` in the clone's ignored `build` folder (the
+clone comes from `-RepoRoot`, remembered in `HKCU\Software\K-PRICING\Check`,
+or from the script's own location; `Documents\K-PRICING` without one) from the
+template with
 the `public`, `internal`, `ui` and `example` modules, compiles it, writes the
 commit on Home and builds the demo sheet with `KPR_Demo_BuildDates`; it is
 built in the temporary folder and copied out under a new, time-stamped name

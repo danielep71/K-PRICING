@@ -16,7 +16,8 @@ it creates on the first run, or with tools\Check-KPR.cmd from a clone. It:
    without the template gets an empty KPR.xlam instead);
 4. runs KPR_Dev_CheckBuild unattended on it: import of every module, compile,
    save, KPR_Test_RunAll twice and the Ribbon load check;
-5. builds the workbook to use, Documents\K-PRICING\K-PRICING-<commit>.xlsm:
+5. builds the workbook to use, K-PRICING-<commit>.xlsm in the build folder of
+   your clone (-RepoRoot, remembered), or in Documents\K-PRICING without one:
    the template with the production and example modules, compiled, the
    commit written on the Home sheet and the KPR Dates Demo sheet built once
    by KPR_Demo_BuildDates;
@@ -32,10 +33,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "&([scriptblock]::Create(
 .EXAMPLE
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\Check-KPR.ps1 -Branch my-branch
 .EXAMPLE
-&([scriptblock]::Create((irm https://raw.githubusercontent.com/danielep71/K-PRICING/main/tools/Check-KPR.ps1)))
+&([scriptblock]::Create((irm https://raw.githubusercontent.com/danielep71/K-PRICING/main/tools/Check-KPR.ps1))) -RepoRoot 'C:\path\to\K-PRICING'
 
 Inside a PowerShell window that is already open; it starts no other
-PowerShell, so it also works where a policy forbids that.
+PowerShell, so it also works where a policy forbids that. -RepoRoot names
+your clone once: the workbook goes into its build folder, and later runs
+remember it.
 #>
 [CmdletBinding()]
 param(
@@ -46,7 +49,9 @@ param(
     [Parameter(Mandatory = $false)]
     [switch]$NoShortcut,
     [Parameter(Mandatory = $false)]
-    [switch]$NoPause
+    [switch]$NoPause,
+    [Parameter(Mandatory = $false)]
+    [string]$RepoRoot
 )
 
 Set-StrictMode -Version Latest
@@ -128,6 +133,42 @@ public static extern uint GetWindowThreadProcessId(System.IntPtr hWnd, out uint 
     $processId = [uint32]0
     [void][KprCheck.Native]::GetWindowThreadProcessId([System.IntPtr][int64]$Excel.Hwnd, [ref]$processId)
     return [int]$processId
+}
+
+function Resolve-OutputFolder {
+    # The workbook goes into <clone>\build (ignored by git) when the clone is
+    # known: -RepoRoot, then the clone this script runs from, then the clone
+    # remembered from an earlier -RepoRoot; otherwise Documents\K-PRICING.
+    param([string]$Given)
+    $key = "HKCU:\Software\K-PRICING\Check"
+    $root = $null
+    if (-not [string]::IsNullOrWhiteSpace($Given)) {
+        if (-not (Test-Path -LiteralPath (Join-Path $Given ".git"))) {
+            throw "-RepoRoot is not a clone of the repository (no .git folder): $Given"
+        }
+        $root = (Resolve-Path -LiteralPath $Given).Path
+        if (-not (Test-Path -LiteralPath $key)) {
+            New-Item -Path $key -Force | Out-Null
+        }
+        Set-ItemProperty -LiteralPath $key -Name "RepoRoot" -Value $root
+        Say "Clone remembered for the next checks: $root"
+    }
+    elseif (-not [string]::IsNullOrWhiteSpace($PSCommandPath)) {
+        $candidate = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
+        if (Test-Path -LiteralPath (Join-Path $candidate ".git")) {
+            $root = $candidate
+        }
+    }
+    if ($null -eq $root) {
+        $remembered = Get-RegistryValue -Path $key -Name "RepoRoot"
+        if ($null -ne $remembered -and (Test-Path -LiteralPath (Join-Path $remembered ".git"))) {
+            $root = $remembered
+        }
+    }
+    if ($null -ne $root) {
+        return (Join-Path $root "build")
+    }
+    return (Join-Path ([Environment]::GetFolderPath("MyDocuments")) "K-PRICING")
 }
 
 function New-FromTemplate {
@@ -225,6 +266,8 @@ try {
         throw "GitHub did not return a commit for the branch '$Branch'."
     }
     Say "Branch $Branch is at commit $sha"
+    $outDir = Resolve-OutputFolder -Given $RepoRoot
+    Say "The workbook will be saved in $outDir"
 
     # Environment, and the one Excel option the check needs
     $officeVersion = Get-OfficeVersion
@@ -336,7 +379,6 @@ try {
         [void]$book.Worksheets.Item("Home").Activate()
         $book.Save()
         $book.Close($false)
-        $outDir = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "K-PRICING"
         New-Item -ItemType Directory -Force -Path $outDir | Out-Null
         $bookPath = Join-Path $outDir $bookName
         if (Test-Path -LiteralPath $bookPath) {
