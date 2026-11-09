@@ -444,7 +444,10 @@ next to a scratch workbook holding that commit's
 compile, save, `KPR_Test_RunAll` twice and the Ribbon load check. It then
 builds `Documents\K-PRICING\K-PRICING-<commit>.xlsm` from the template with
 the `public`, `internal`, `ui` and `example` modules, compiles it, writes the
-commit on Home and builds the demo sheet with `KPR_Demo_BuildDates`. It adds
+commit on Home and builds the demo sheet with `KPR_Demo_BuildDates`; it is
+built in the temporary folder and copied out under a new, time-stamped name
+when the target already exists, so a saved workbook is never replaced. Only a
+404 for the template selects the earlier empty-`KPR.xlam` check. It adds
 `check.log` to the evidence folder, zips it and copies the summary and both
 evidence files to the clipboard.
 

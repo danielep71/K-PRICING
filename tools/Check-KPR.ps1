@@ -248,6 +248,12 @@ try {
         Say "Downloaded the workbook template of $($sha.Substring(0, 8))"
     }
     catch {
+        # Only a confirmed 404 means the commit predates the template; any
+        # other failure stops the run rather than checking the wrong build.
+        $response = $_.Exception.Response
+        if ($null -eq $response -or [int]$response.StatusCode -ne 404) {
+            throw ("The workbook template could not be downloaded: " + $_.Exception.Message)
+        }
         $templatePath = $null
         Say "This commit has no workbook template: the check uses an empty KPR.xlam and builds no workbook."
     }
@@ -303,11 +309,11 @@ try {
     # The workbook to use: production and example modules, commit, demo sheet
     if ($null -ne $templatePath) {
         Say "Building the workbook: production modules, the commit on Home and the demo sheet."
-        $outDir = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "K-PRICING"
-        New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+        # Built in the temporary folder and copied out only when complete, under
+        # a new name when the folder already has one: a workbook you saved there
+        # is never replaced.
         $bookName = "K-PRICING-" + $sha.Substring(0, 8) + ".xlsm"
-        $bookPath = Join-Path $outDir $bookName
-        $book = New-FromTemplate -Excel $excel -Template $templatePath -Path $bookPath
+        $book = New-FromTemplate -Excel $excel -Template $templatePath -Path (Join-Path $work $bookName)
         $imported = [int]$excel.Run($qualified + "KPR_Dev_ImportModules", $sha, $bookName, $productionRoles)
         if ($imported -lt 0) {
             throw "The workbook's modules could not be imported."
@@ -324,6 +330,14 @@ try {
         [void]$book.Worksheets.Item("Home").Activate()
         $book.Save()
         $book.Close($false)
+        $outDir = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "K-PRICING"
+        New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+        $bookPath = Join-Path $outDir $bookName
+        if (Test-Path -LiteralPath $bookPath) {
+            $bookPath = Join-Path $outDir ("K-PRICING-" + $sha.Substring(0, 8) + "-" +
+                (Get-Date).ToString("yyyyMMdd-HHmmss") + ".xlsm")
+        }
+        Copy-Item -LiteralPath (Join-Path $work $bookName) -Destination $bookPath
         $workbookPath = $bookPath
         Say "Workbook: PASS ($imported modules, demo sheet built) $bookPath" "Green"
     }

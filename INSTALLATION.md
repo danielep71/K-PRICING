@@ -380,14 +380,19 @@ until the window says it is finished. `tools/Check-KPR.ps1`:
    checking that Excel loaded the **K-PRICING** tab and built its menus;
 5. builds the workbook to use, `Documents\K-PRICING\K-PRICING-<commit>.xlsm`:
    the template with the production and example modules, compiled, the commit
-   on the **Home** sheet and the **KPR Dates Demo** sheet built once;
+   on the **Home** sheet and the **KPR Dates Demo** sheet built once. It is
+   built in the temporary folder and copied there only when complete; when
+   that file already exists, the new one gets the time in its name, so a
+   workbook you saved is never replaced;
 6. writes `check.log` (Windows, Excel, branch, commit, each step) next to
    `summary.txt`, `run-1\kpr-test-evidence.json` and
    `run-2\kpr-test-evidence.json` in `Documents\KPR-evidence\<date>-<commit>`,
    zips the folder, shows the workbook in Explorer and copies the summary and
    evidence to the clipboard, ready to paste.
 
-Open the workbook with macros enabled: the **K-PRICING** tab, the functions and
+A commit without the template (before it was added) gets the earlier check on
+an empty `KPR.xlam` and no workbook; any other failure to download the
+template stops the check. Open the workbook with macros enabled: the **K-PRICING** tab, the functions and
 the demo work while it is open.
 
 A watchdog closes the check's Excel after 30 minutes (`-TimeoutMinutes`), so an
