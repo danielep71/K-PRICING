@@ -34,8 +34,9 @@ from inject_ribbon import (
 
 TEMPLATE = ROOT / "src" / "workbook" / "KPR_Template.xlsx"
 HOME_SHEET = "Home"
+DEMO_SHEET = "KPR Dates Demo"
 # The build writes the commit's SHA here.
-COMMIT_CELL = "B13"
+COMMIT_CELL = "D22"
 REPOSITORY_URL = "https://github.com/danielep71/K-PRICING"
 
 MAIN_NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
@@ -44,24 +45,56 @@ PACKAGE_REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
 OFFICE_DOCUMENT_TYPE = DOC_REL_NS + "/officeDocument"
 DECLARATION = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
 
+# The Home sheet follows the K-SACCR workbook template: Aptos; column A is the
+# black navigation column, B a gutter, C the labels and D the text; row 1 is
+# the black band with the gold wordmark, row 2 the blue band with the sheet
+# title, row 3 the grey subtitle; rows 1 to 3 and column A are frozen.
 # Style indexes into cellXfs below.
-NORMAL, TITLE, HEADING, NOTE = 0, 1, 2, 3
+(NORMAL, NAV, WORDMARK, BLACK_BAND, SHEET_TITLE, BLUE_BAND, SUBTITLE, SECTION, LABEL, TEXT,
+ LINK, NAV_CURRENT, NAV_BUTTON) = range(13)
 
-# (row, column A text, style); column B of the commit row is filled by the build.
-HOME_ROWS: tuple[tuple[int, str, int], ...] = (
-    (1, "K-PRICING", TITLE),
-    (2, "Date primitives for Excel: the KPR_Dates_* worksheet and VBA functions.", NORMAL),
-    (4, "Start here", HEADING),
-    (5, "The K-PRICING tab on the Ribbon inserts any function and builds the demo sheets.", NORMAL),
-    (6, "K-PRICING > Register function help lists the functions under KPR Dates in Insert Function"
-        " (Shift+F3).", NORMAL),
-    (7, "The KPR Dates Demo sheet compares each function with Excel's own formulas; change its"
-        " orange inputs.", NORMAL),
-    (9, "About this file", HEADING),
-    (10, "Built from the K-PRICING repository: this template plus the VBA source of one commit.", NOTE),
-    (11, "Keep it as a macro-enabled workbook (.xlsm). The functions work only while it is open.", NOTE),
-    (12, "Source: " + REPOSITORY_URL, NOTE),
-    (13, "Commit:", NOTE),
+# (row, height in points, ((column, text, style, internal link or ""), ...))
+HomeCell = tuple[str, str, int, str]
+HOME_ROWS: tuple[tuple[int, float, tuple[HomeCell, ...]], ...] = (
+    (1, 24, (("B", "K-PRICING", WORDMARK, ""), ("C", "", BLACK_BAND, ""), ("D", "", BLACK_BAND, ""))),
+    (2, 26.1, (("A", "Home", NAV_CURRENT, ""), ("B", "Home", SHEET_TITLE, ""),
+               ("C", "", BLUE_BAND, ""), ("D", "", BLUE_BAND, ""))),
+    (3, 33.95, (("A", DEMO_SHEET, NAV_BUTTON, f"'{DEMO_SHEET}'!A1"),
+                ("C", "Start here: what K-PRICING provides, how to use it and a link to every sheet."
+                      " The commit this workbook was built from is at the bottom.", SUBTITLE, ""))),
+    (5, 30, (("C", "What K-PRICING does", SECTION, ""),)),
+    (6, 46, (("C", "Provides", LABEL, ""),
+             ("D", "The KPR_Dates_* worksheet and VBA functions: Gregorian date primitives for pricing,"
+                   " with scalar and dynamic-array inputs, strict parsing, explicit errors and the 1900"
+                   " date system.", TEXT, ""))),
+    (7, 46, (("C", "Does not cover", LABEL, ""),
+             ("D", "Business calendars and holidays (v0.0.5), business-day arithmetic and roll conventions"
+                   " (v0.0.6), schedules, day counts and accruals, settlement, curves and pricing.", TEXT, ""))),
+    (8, 30, (("C", "Support", LABEL, ""),
+             ("D", "Questions and problems: " + REPOSITORY_URL + "/issues", TEXT, ""))),
+    (10, 30, (("C", "How to use", SECTION, ""),)),
+    (11, 30, (("C", "1. Enable macros", LABEL, ""),
+              ("D", "Open this .xlsm with macros enabled: the functions, the K-PRICING tab and the demo work"
+                    " only while it is open.", TEXT, ""))),
+    (12, 30, (("C", "2. Insert a function", LABEL, ""),
+              ("D", "K-PRICING tab, Functions: inserts a function into the active cell and opens Excel's"
+                    " Function Arguments dialog for it.", TEXT, ""))),
+    (13, 30, (("C", "3. Register function help", LABEL, ""),
+              ("D", "K-PRICING tab, Register function help: lists the functions under KPR Dates in Insert"
+                    " Function (Shift+F3), with argument help.", TEXT, ""))),
+    (14, 30, (("C", "4. Try the demo", LABEL, ""),
+              ("D", "KPR Dates Demo compares each function with Excel's own formulas; change its orange"
+                    " inputs. K-PRICING tab, Demo sheets builds it again.", TEXT, ""))),
+    (16, 30, (("C", "Sheets", SECTION, ""),)),
+    (17, 30, (("C", HOME_SHEET, LABEL, ""), ("D", "Start here. This sheet.", TEXT, ""))),
+    (18, 30, (("C", DEMO_SHEET, LINK, f"'{DEMO_SHEET}'!A1"),
+              ("D", "Demo. Each function next to Excel's own formula, with a status per row.", TEXT, ""))),
+    (20, 30, (("C", "About this workbook", SECTION, ""),)),
+    (21, 30, (("C", "Source", LABEL, ""), ("D", REPOSITORY_URL, TEXT, ""))),
+    (22, 30, (("C", "Commit", LABEL, ""),)),
+    (23, 30, (("C", "Built from", LABEL, ""),
+              ("D", "src/workbook/KPR_Template.xlsx and the VBA source of that commit, by"
+                    " tools/Check-KPR.ps1.", TEXT, ""))),
 )
 
 
@@ -109,39 +142,82 @@ def workbook_relationships() -> bytes:
 
 
 def styles() -> bytes:
+    def font(attributes: str, size: str, rgb: str) -> str:
+        return f'<font>{attributes}<sz val="{size}"/><color rgb="FF{rgb}"/><name val="Aptos"/><family val="2"/></font>'
+
+    fonts = (
+        font("", "11", "000000"),            # 0 body
+        font("", "14", "FFC000"),            # 1 wordmark
+        font("<b/>", "18", "FFFFFF"),        # 2 sheet title
+        font("<i/>", "10", "595959"),        # 3 subtitle
+        font("<b/>", "14", "1F3864"),        # 4 section
+        font("<b/>", "10", "000000"),        # 5 label
+        font("", "9", "000000"),             # 6 text
+        font("<u/>", "9", "0563C1"),         # 7 link
+        font("<b/>", "10", "FFFFFF"),        # 8 navigation
+    )
+    fills = ('<fill><patternFill patternType="none"/></fill>'
+             '<fill><patternFill patternType="gray125"/></fill>'
+             + "".join(f'<fill><patternFill patternType="solid"><fgColor rgb="FF{rgb}"/>'
+                       '<bgColor indexed="64"/></patternFill></fill>'
+                       for rgb in ("000000", "265A99", "262626")))
+    left = '<alignment horizontal="left" vertical="center" indent="1"/>'
+    centre = '<alignment horizontal="center" vertical="center" wrapText="1"/>'
+    middle = '<alignment vertical="center"/>'
+    wrap = '<alignment vertical="center" wrapText="1"/>'
+    # (font, fill, alignment) per style index, in the order of the constants above
+    xfs = ((0, 0, ""), (0, 2, ""), (1, 2, left), (0, 2, middle), (2, 3, left), (0, 3, middle),
+           (3, 0, middle), (4, 0, wrap), (5, 0, wrap), (6, 0, wrap), (7, 0, wrap),
+           (8, 3, centre), (8, 4, centre))
+    cell_xfs = ""
+    for f, fill, align in xfs:
+        flags = (' applyFont="1"' if f else "") + (' applyFill="1"' if fill else "")
+        tail = f' applyAlignment="1">{align}</xf>' if align else "/>"
+        cell_xfs += f'<xf numFmtId="0" fontId="{f}" fillId="{fill}" borderId="0" xfId="0"{flags}{tail}'
     return _xml(
         f'<styleSheet xmlns="{MAIN_NS}">'
-        '<fonts count="4">'
-        '<font><sz val="11"/><name val="Calibri"/><family val="2"/></font>'
-        '<font><b/><sz val="20"/><color rgb="FF1F4E79"/><name val="Calibri"/><family val="2"/></font>'
-        '<font><b/><sz val="13"/><color rgb="FF1F4E79"/><name val="Calibri"/><family val="2"/></font>'
-        '<font><i/><sz val="10"/><color rgb="FF595959"/><name val="Calibri"/><family val="2"/></font>'
-        "</fonts>"
-        '<fills count="2"><fill><patternFill patternType="none"/></fill>'
-        '<fill><patternFill patternType="gray125"/></fill></fills>'
+        f'<fonts count="{len(fonts)}">{"".join(fonts)}</fonts>'
+        f'<fills count="5">{fills}</fills>'
         '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
         '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
-        '<cellXfs count="4">'
-        '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
-        '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
-        '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
-        '<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
-        "</cellXfs>"
+        f'<cellXfs count="{len(xfs)}">{cell_xfs}</cellXfs>'
         '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>'
         "</styleSheet>")
 
 
 def home_sheet() -> bytes:
-    rows = "".join(
-        f'<row r="{row}"><c r="A{row}" s="{style}" t="inlineStr"><is><t>{escape(text)}</t></is></c></row>'
-        for row, text, style in HOME_ROWS)
+    rows = []
+    links = []
+    for row, height, cells in HOME_ROWS:
+        body = ""
+        for column, text, style, link in cells:
+            ref = f"{column}{row}"
+            if text:
+                body += (f'<c r="{ref}" s="{style}" t="inlineStr">'
+                         f'<is><t xml:space="preserve">{escape(text)}</t></is></c>')
+            else:
+                body += f'<c r="{ref}" s="{style}"/>'
+            if link:
+                links.append(f'<hyperlink ref="{ref}" location="{escape(link, {chr(34): "&quot;"})}"'
+                             f' display="{escape(text)}"/>')
+        rows.append(f'<row r="{row}" ht="{height}" customHeight="1">{body}</row>')
     return _xml(
         f'<worksheet xmlns="{MAIN_NS}" xmlns:r="{DOC_REL_NS}">'
-        '<sheetViews><sheetView showGridLines="0" tabSelected="1" workbookViewId="0"/></sheetViews>'
+        '<sheetViews><sheetView showGridLines="0" tabSelected="1" zoomScaleNormal="100" workbookViewId="0">'
+        '<pane xSplit="1" ySplit="3" topLeftCell="B4" activePane="bottomRight" state="frozen"/>'
+        '<selection pane="topRight" activeCell="B1" sqref="B1"/>'
+        '<selection pane="bottomLeft" activeCell="A4" sqref="A4"/>'
+        '<selection pane="bottomRight" activeCell="C5" sqref="C5"/>'
+        "</sheetView></sheetViews>"
         '<sheetFormatPr defaultRowHeight="15"/>'
-        '<cols><col min="1" max="1" width="12.7109375" customWidth="1"/>'
-        '<col min="2" max="2" width="48.7109375" customWidth="1"/></cols>'
-        f"<sheetData>{rows}</sheetData>"
+        f'<cols><col min="1" max="1" width="21.7" style="{NAV}" customWidth="1"/>'
+        '<col min="2" max="2" width="4" customWidth="1"/>'
+        '<col min="3" max="3" width="30" customWidth="1"/>'
+        '<col min="4" max="4" width="130" customWidth="1"/>'
+        '<col min="5" max="5" width="4.75" customWidth="1"/>'
+        '<col min="6" max="16384" width="9.140625" hidden="1"/></cols>'
+        f"<sheetData>{''.join(rows)}</sheetData>"
+        f"<hyperlinks>{''.join(links)}</hyperlinks>"
         '<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>'
         "</worksheet>")
 
