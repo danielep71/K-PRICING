@@ -272,6 +272,13 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- The workbook template's Home sheet follows the K-SACCR template: Aptos, a
+  black navigation column with Home and a link to KPR Dates Demo, the black
+  band with the gold wordmark, the blue sheet-title band, a grey subtitle,
+  frozen rows 1 to 3 and column A, and navy sections with labels in column C
+  and text in column D (what K-PRICING does, how to use it, its sheets and the
+  commit, now written in `D22`).
+
 - Label synchronization no longer prunes a label that an issue or pull request,
   open or closed, still carries: before any change it checks every label it
   would delete (a paginated scan for names with a comma, which the labels

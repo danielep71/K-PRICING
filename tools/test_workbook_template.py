@@ -16,6 +16,7 @@ from inject_ribbon import (
     DEFAULT_CUSTOMUI,
     FIXED_DATE_TIME,
     RIBBON_REL_TYPE,
+    ROOT,
     parse_xml,
 )
 
@@ -68,15 +69,32 @@ class WorkbookTemplateTests(unittest.TestCase):
         self.assertIn("K-PRICING", home)
         self.assertIn(wt.REPOSITORY_URL, home)
         row = int(wt.COMMIT_CELL[1:])
-        self.assertIn((row, "Commit:", wt.NOTE), wt.HOME_ROWS)
+        labels = {(number, cell[0], cell[1]) for number, _, cells in wt.HOME_ROWS for cell in cells}
+        self.assertIn((row, "C", "Commit"), labels)
         self.assertNotIn(f'r="{wt.COMMIT_CELL}"', home, "the build fills the commit cell")
+        script = (ROOT / "tools" / "Check-KPR.ps1").read_text(encoding="ascii")
+        self.assertIn(f'$templateCell = "{wt.COMMIT_CELL}"', script, "the build writes the commit cell")
+
+    def test_home_follows_the_k_saccr_layout(self) -> None:
+        home = parse_xml("home", self.archive.read("xl/worksheets/sheet1.xml"))
+        main = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+        pane = next(home.iter(main + "pane"))
+        self.assertEqual((pane.get("xSplit"), pane.get("ySplit"), pane.get("state")), ("1", "3", "frozen"))
+        widths = [(col.get("min"), col.get("width")) for col in home.iter(main + "col")]
+        self.assertEqual(widths[:5], [("1", "21.7"), ("2", "4"), ("3", "30"), ("4", "130"), ("5", "4.75")])
+        links = {link.get("ref"): link.get("location") for link in home.iter(main + "hyperlink")}
+        self.assertEqual(links, {"A3": f"'{wt.DEMO_SHEET}'!A1", "C18": f"'{wt.DEMO_SHEET}'!A1"})
+        styles = self.archive.read("xl/styles.xml")
+        for colour in (b"FFC000", b"265A99", b"1F3864", b"Aptos"):
+            self.assertIn(colour, styles)
 
     def test_text_is_escaped(self) -> None:
         rows = wt.HOME_ROWS
         try:
-            wt.HOME_ROWS = ((1, "a < b & c", wt.NORMAL),)
+            wt.HOME_ROWS = ((1, 15, (("B", "a < b & c", wt.TEXT, "'x\"y'!A1"),)),)
             parse_xml("home", wt.home_sheet())
             self.assertIn(b"a &lt; b &amp; c", wt.home_sheet())
+            self.assertIn(b"location=\"'x&quot;y'!A1\"", wt.home_sheet())
         finally:
             wt.HOME_ROWS = rows
 
