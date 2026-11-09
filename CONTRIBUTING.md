@@ -93,7 +93,8 @@ work, the practical rules are:
 - production, tests, examples and generated artifacts remain in their governed
   locations;
 - public-surface changes update [`docs/PUBLIC_API.txt`](docs/PUBLIC_API.txt) and
-  their regression coverage; and
+  their regression coverage, and every new or removed public VBA member, of any
+  module, updates [`docs/API_INVENTORY.txt`](docs/API_INVENTORY.txt); and
 - a workbook/add-in is never the only record of a source change.
 
 Do not weaken a project-specific numerical, UI, lifecycle, performance or

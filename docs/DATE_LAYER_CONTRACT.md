@@ -739,6 +739,30 @@ algorithms.
 `KPR_Cal_*` is reserved for v0.0.5. v0.0.4 creates no calendar placeholder and
 adds no calendar option to a pure `KPR_Dates_*` function.
 
+[`API_INVENTORY.txt`](API_INVENTORY.txt) classifies every technically public
+member of every tracked VBA component, one line each, so that no public
+procedure is unclassified:
+
+| Class | Components | Status |
+| --- | --- | --- |
+| `supported` | `KPR_DATES_DAYS` | The 22 functions of section 2, with their vectorization; the only API |
+| `internal` | `KPR_Core_*` (`Option Private Module`) | Unsupported; primitives for later K-PRICING code |
+| `registration` | `KPR_REGISTER_PUBLIC_UDFS` | Unsupported; MacroOptions register/clear lifecycle and manifest (#42) |
+| `ui` | `KPR_UI_Actions`, `KPR_UI_CommandBars`, `KPR_UI_Ribbon` | Unsupported; menu actions, toolbar and Ribbon callbacks (#47, #48) |
+| `test` | `KPR_REGRESSION_TESTS`, `KPR_Test_Fixtures_Generated`, `KPR_Test_Oracle` | Unsupported; regression runner, fixtures and Excel oracle |
+| `development` | `KPR_Dev_Import` | Unsupported; development loader and one-click Excel check |
+| `demo` | `KPR_Demo__Builder`, `KPR_Demo_Dates`, `KPR_Demo_DirectVBA` | Unsupported; demo builder, Date Primitives demo, direct-VBA example |
+
+It also records the reserved namespaces and milestone boundaries: `KPR_Cal_*`
+for the v0.0.5 calendars, holidays and business-day predicates, and the
+calendar-aware v0.0.6 business-day arithmetic and roll conventions built on
+them. The `kpr-api-inventory` rule of `tools/check_kpr_contract.py` fails when
+a public member is unclassified or a listed one is gone, when a class does not
+fit its component's role, when the supported set, a vectorization or a
+signature differs between this contract, the facade and `PUBLIC_API.txt`, when
+a `KPR_Dates_*` procedure appears outside the facade, or when a
+`KPR_Dates_*_Spill` twin or a reserved `KPR_Cal_*` name is declared.
+
 Performance is not part of this contract and no benchmark is kept in the
 repository; the maintainer measures it with an external VBA performance
 add-in. Every facade call reads the caller and workbook date system through

@@ -302,7 +302,12 @@ date-layer architecture: exact 22-function facade surface, Variant return types,
 core dependency direction, strict locale-independent parsing, date-window
 constants, caller/date-system guard placement, volatility scope, caller-workbook
 authority, array-engine purity, required in-project members, and boundary-safe
-date construction.
+date construction. Its `kpr-api-inventory` rule checks
+`docs/API_INVENTORY.txt`: every technically public member of every tracked
+component is classified (`supported` only for the 22 facade functions), the
+supported set, vectorization and signatures agree across the contract, the
+facade and `docs/PUBLIC_API.txt`, and no `KPR_Dates_*_Spill` twin or reserved
+`KPR_Cal_*` name is declared.
 
 Run the focused positive/degraded fixtures and the candidate check with:
 
