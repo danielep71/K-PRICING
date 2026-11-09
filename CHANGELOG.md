@@ -390,6 +390,14 @@ Use only the categories needed by a release.
 
 ### Fixed
 
+- The one-click Excel check works where a policy forbids PowerShell or Excel
+  from starting `powershell.exe` ("Access is denied"). Its watchdog runs in a
+  runspace of the same process, it can be pasted into an open PowerShell
+  window as `&([scriptblock]::Create((irm <url>)))`, and when the loader's
+  Ribbon check cannot start PowerShell it opens the copy as it is: a workbook
+  built from the template already carries the commit's tab, and the result
+  says so.
+
 - `KPR_Dates_DateFromPillar` now records `PILLAR_AGGREGATE_RANGE`, as the
   contract and fixtures specify, when a valid pillar shifts the result outside
   the supported window; it recorded `RESULT_WINDOW` (#87). The result is

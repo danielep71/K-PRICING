@@ -513,7 +513,10 @@ Private Function RibbonCheck( _
 ' is restored on every exit) and returns PASS when
 ' Excel loaded the tab (KPR_UI_RibbonLoaded) and its Functions menu builds,
 ' FAIL otherwise, or NOT RUN where PowerShell is unavailable. The copy is
-' closed and deleted.
+' closed and deleted. Where a policy stops Excel from starting PowerShell,
+' the copy is opened as it is: a workbook built from the template
+' src/workbook/KPR_Template.xlsx already carries the commit's tab (CI checks
+' the template against src/ribbon), and the result says so.
 '
     Dim Work        As String       'Ribbon working folder
     Dim CopyPath    As String       'The copy that receives the tab
@@ -524,6 +527,7 @@ Private Function RibbonCheck( _
     Dim Loaded      As Boolean      'onLoad ran in the copy
     Dim Started     As Single       'Wait start
     Dim Menu        As String       'Functions menu XML from the copy
+    Dim Skipped     As String       'Why the injector did not run, if it did not
 
     RibbonCheck = "FAIL"
     Events = Application.EnableEvents
@@ -540,10 +544,14 @@ Private Function RibbonCheck( _
     Target.SaveCopyAs CopyPath
     Script = Work & "\inject.ps1"
     WriteText Script, InjectorScript()
+    ExitCode = -1
+    On Error Resume Next
     ExitCode = CreateObject("WScript.Shell").Run("powershell.exe -NoProfile -ExecutionPolicy Bypass -File """ & _
                                               Script & """ -Package """ & CopyPath & """ -CustomUI """ & _
                                               Work & "\customUI14.xml""", 0, True)
-    If ExitCode <> 0 Then
+    If Err.Number <> 0 Then Skipped = "PowerShell could not start: " & Err.Description
+    On Error GoTo Failed
+    If Len(Skipped) = 0 And ExitCode <> 0 Then
         Detail = "PowerShell could not write the tab (exit " & CStr(ExitCode) & ")"
         GoTo CleanUp
     End If
@@ -557,10 +565,12 @@ Private Function RibbonCheck( _
     Menu = CStr(Application.Run(QualifiedIn(Copy, "KPR_UI_RibbonMenuXml"), "functions", "Date primitives"))
     If Not Loaded Then
         Detail = "Excel did not load the tab (onLoad never ran)"
+        If Len(Skipped) > 0 Then Detail = Detail & "; " & Skipped
     ElseIf InStr(1, Menu, "KPR_Fn_", vbBinaryCompare) = 0 Then
         Detail = "the tab loaded but its Functions menu is empty"
     Else
         RibbonCheck = "PASS"
+        If Len(Skipped) > 0 Then Detail = "the workbook's own tab, from the template; " & Skipped
     End If
 
 CleanUp:
