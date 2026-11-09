@@ -152,8 +152,18 @@ solution that will own its deployment and lifecycle. The profile is fixed in
 rules add to the repository baseline and never weaken source integrity,
 security, action pinning or release provenance.
 
-Today the source is the migrated date layer and its test infrastructure. There
-are no class, form, workbook-document, Ribbon or packaging components yet.
+Today the source is the migrated date layer, its test infrastructure, the
+Ribbon (`src/ribbon/`) and the macro-free workbook template
+(`src/workbook/KPR_Template.xlsx`). There are no class, form or
+workbook-document modules and no release packaging yet.
+
+Profile exception: Office packages are never tracked, except
+`src/workbook/KPR_Template.xlsx`, re-included by its exact path in
+`.gitignore` and allowed by `allowed_office_binary_globs`. It is generated
+by `tools/workbook_template.py` from tracked source, holds no VBA and no
+document properties, and CI fails when it differs from its source. Owner: the
+repository owner. Removing it means building the workbook from an empty one
+again in `tools/Check-KPR.ps1`.
 
 ### Application commitments
 

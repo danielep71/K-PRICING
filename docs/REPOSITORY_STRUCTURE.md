@@ -45,7 +45,7 @@ Create these `src/` subdirectories only when the project has corresponding compo
 | `src/core/` | Internal standard modules for calculations, parsing, validation, and shared implementation |
 | `src/classes/` | Production class modules, state managers, event sinks, and UI hook classes |
 | `src/forms/` | Production UserForms with each `.frm` adjacent to its `.frx` resource |
-| `src/workbook/` | Host-bound workbook and worksheet document-module source snapshots such as `ThisWorkbook` and sheet modules |
+| `src/workbook/` | Host-bound workbook and worksheet document-module source snapshots such as `ThisWorkbook` and sheet modules, and the macro-free workbook template `KPR_Template.xlsx` that `tools/workbook_template.py` generates |
 
 ### Public modules
 
@@ -106,7 +106,7 @@ Directory names are not style variants. Do not introduce an alternative because 
 1. Give each durable artifact one authoritative home.
 2. Create a subdirectory only with its first real file or an instructional README.
 3. Do not use `.gitkeep`, empty decorative folders, or parallel legacy/canonical locations.
-4. Keep generated, cache, test-output, and distribution directories ignored unless an explicit repository contract says otherwise.
+4. Keep generated, cache, test-output, and distribution directories ignored unless an explicit repository contract says otherwise. Office packages are never tracked, except `src/workbook/KPR_Template.xlsx`, the macro-free template re-included by its exact path in `.gitignore` and allowed by `allowed_office_binary_globs`; it holds the Home sheet and the Ribbon, no VBA and no document properties, and CI checks it against `tools/workbook_template.py`.
 5. If a profile exception is necessary, document the reason, owner, and migration constraint in the root README.
 6. Update `INSTALLATION.md`, `CONTRIBUTING.md`, static checks, and release tooling together when a path becomes contractual.
 7. Preserve published links and package contracts deliberately; do not retain unexplained history forever.
