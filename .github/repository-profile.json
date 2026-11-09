@@ -179,7 +179,9 @@
       }
     }
   },
-  "allowed_office_binary_globs": [],
+  "allowed_office_binary_globs": [
+    "src/workbook/KPR_Template.xlsx"
+  ],
   "placeholders": {
     "pattern": "\\{\\{([A-Z][A-Z0-9_]*)\\}\\}",
     "catalogue": {

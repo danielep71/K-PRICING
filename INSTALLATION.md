@@ -355,8 +355,8 @@ The target is not saved: compile it, then save it.
 
 #### One-click Excel check
 
-The Excel check of the latest `main` runs by itself on Windows. Press
-**Win+R**, paste this line and press **Enter**:
+The Excel check of the latest `main`, and the K-PRICING workbook, are built by
+themselves on Windows. Press **Win+R**, paste this line and press **Enter**:
 
 ```text
 powershell -NoP -EP Bypass -c "&([scriptblock]::Create((irm https://raw.githubusercontent.com/danielep71/K-PRICING/main/tools/Check-KPR.ps1)))"
@@ -370,18 +370,25 @@ until the window says it is finished. `tools/Check-KPR.ps1`:
 1. asks GitHub for the exact commit the branch points to;
 2. checks Excel's *Trust access to the VBA project object model*; when it is
    off, it asks, and turns it on for your Windows user only if you answer Y;
-3. starts its own Excel, without your add-ins or `PERSONAL.XLSB`, creates an
-   empty `KPR.xlam` in a temporary folder and a scratch workbook holding that
+3. starts its own Excel, without your add-ins or `PERSONAL.XLSB`, and saves
+   the commit's template `src/workbook/KPR_Template.xlsx` as a development
+   workbook in a temporary folder, next to a scratch workbook holding the
    commit's loader;
-4. runs `KPR_Dev_CheckBuild` unattended: it imports the commit's modules,
+4. runs `KPR_Dev_CheckBuild` unattended on it: it imports every module,
    compiles the project (**Debug > Compile**), saves it, runs
    `KPR_Test_RunAll` twice and loads the commit's Ribbon in a throwaway copy,
    checking that Excel loaded the **K-PRICING** tab and built its menus;
-5. writes `check.log` (Windows, Excel, branch, commit, each step) next to
+5. builds the workbook to use, `Documents\K-PRICING\K-PRICING-<commit>.xlsm`:
+   the template with the production and example modules, compiled, the commit
+   on the **Home** sheet and the **KPR Dates Demo** sheet built once;
+6. writes `check.log` (Windows, Excel, branch, commit, each step) next to
    `summary.txt`, `run-1\kpr-test-evidence.json` and
    `run-2\kpr-test-evidence.json` in `Documents\KPR-evidence\<date>-<commit>`,
-   zips the folder, shows the zip in Explorer and copies all four files to the
-   clipboard, ready to paste.
+   zips the folder, shows the workbook in Explorer and copies the summary and
+   evidence to the clipboard, ready to paste.
+
+Open the workbook with macros enabled: the **K-PRICING** tab, the functions and
+the demo work while it is open.
 
 A watchdog closes the check's Excel after 30 minutes (`-TimeoutMinutes`), so an
 unanswered dialog cannot hang it. If the VBA editor shows a *Compile error*

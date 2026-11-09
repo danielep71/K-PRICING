@@ -437,12 +437,23 @@ the target.
 Windows Run in [INSTALLATION.md](../INSTALLATION.md#one-click-excel-check))
 runs the Excel check of a branch unattended on a Windows host with desktop
 Excel. It resolves the branch to its exact commit, starts its own Excel,
-creates an empty `KPR.xlam` and a scratch workbook holding that commit's
+saves the commit's `src/workbook/KPR_Template.xlsx` as a development `.xlsm`
+next to a scratch workbook holding that commit's
 `tests/modules/KPR_Dev_Import.bas`, and calls
-`KPR_Dev_CheckBuild(<sha>, "KPR.xlam", True)`: import, compile, save,
-`KPR_Test_RunAll` twice and the Ribbon load check. It adds `check.log` to the
-evidence folder, zips it and copies the summary and both evidence files to the
-clipboard. It asks before turning on *Trust access to the VBA project object
+`KPR_Dev_CheckBuild(<sha>, "K-PRICING_Development.xlsm", True)`: import,
+compile, save, `KPR_Test_RunAll` twice and the Ribbon load check. It then
+builds `Documents\K-PRICING\K-PRICING-<commit>.xlsm` from the template with
+the `public`, `internal`, `ui` and `example` modules, compiles it, writes the
+commit on Home and builds the demo sheet with `KPR_Demo_BuildDates`. It adds
+`check.log` to the evidence folder, zips it and copies the summary and both
+evidence files to the clipboard.
+
+`workbook_template.py` generates the template from
+`src/ribbon/customUI14.xml` and the Home sheet text it holds: a stored ZIP
+with fixed order and timestamps, so `--check` (CI) compares bytes and
+`--write` regenerates it. `test_workbook_template.py` checks it is current,
+deterministic, well formed, macro-free, without document properties, and
+carries the Ribbon with one relationship. It asks before turning on *Trust access to the VBA project object
 model* and changes no other setting; a watchdog closes the check's Excel after
 `-TimeoutMinutes` (30). The script needs only Windows PowerShell 5.1 and has no
 Python dependency; `check_test_evidence.py` validates its output afterwards.

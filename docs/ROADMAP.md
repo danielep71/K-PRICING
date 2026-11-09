@@ -92,7 +92,7 @@ activated.
 | Business-day arithmetic and roll conventions | v0.0.4, v0.0.5 | v0.0.6 |
 | `_Spill` twins or `KPR_Dates_Spill.bas` | All milestones | Not planned |
 | Ctrl+Shift+Enter or legacy multi-cell compatibility | All milestones | Not planned |
-| Committed Office binaries | All milestones | Release assets only |
+| Committed Office binaries | All milestones | Release assets only; the generated macro-free template `src/workbook/KPR_Template.xlsx` is the one tracked package |
 | Broader pricing capabilities | v0.0.3–v0.0.6 | Not yet scheduled |
 | Business-day `ON` / `TN` pillars | v0.0.4, v0.0.5 | v0.0.6, calendar-aware functions only |
 | In-repository performance benchmarks | All milestones | Not planned; measured with an external VBA performance add-in |

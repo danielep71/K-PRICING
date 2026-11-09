@@ -752,7 +752,10 @@ The following are explicitly outside v0.0.4:
 - business-day arithmetic;
 - following, preceding, modified, nearest, or other roll conventions;
 - duplicate `_Spill` functions or `KPR_Dates_Spill.bas`; and
-- generated `.xlsm`, `.xlam`, `.xlsx`, or other Office binaries in git.
+- built `.xlsm`, `.xlam`, `.xlsx`, or other Office binaries in git. The one
+  tracked package is the macro-free template `src/workbook/KPR_Template.xlsx`,
+  which `tools/workbook_template.py` generates from tracked source and CI
+  checks byte for byte; it holds no VBA.
 
 ## ✅ 11. Contract acceptance traceability
 

@@ -1,7 +1,8 @@
 <#
 .SYNOPSIS
-One-click Excel check of K-PRICING: builds a fresh KPR.xlam from one commit,
-compiles it, runs the regression twice and loads the Ribbon, unattended.
+One-click Excel check and build of K-PRICING: from one commit and the workbook
+template, it checks a development workbook (compile, regression twice, Ribbon)
+and builds the K-PRICING workbook with its demo sheet, unattended.
 .DESCRIPTION
 Run it by pasting one line into Windows Run (Win+R), by the desktop shortcut
 it creates on the first run, or with tools\Check-KPR.cmd from a clone. It:
@@ -9,13 +10,20 @@ it creates on the first run, or with tools\Check-KPR.cmd from a clone. It:
 2. checks "Trust access to the VBA project object model" and, only when you
    answer Y, turns it on for your Windows user;
 3. starts its own Excel (your open workbooks and installed add-ins are not
-   touched), creates an empty KPR.xlam in a temporary folder and a scratch
-   workbook holding that commit's tests\modules\KPR_Dev_Import.bas;
-4. runs KPR_Dev_CheckBuild unattended: import, compile, save, KPR_Test_RunAll
-   twice and the Ribbon load check;
-5. adds check.log (Windows, Excel, branch, commit, result) to the evidence
+   touched) and saves that commit's template src\workbook\KPR_Template.xlsx
+   as K-PRICING_Development.xlsm in a temporary folder, next to a scratch
+   workbook holding the commit's tests\modules\KPR_Dev_Import.bas (a commit
+   without the template gets an empty KPR.xlam instead);
+4. runs KPR_Dev_CheckBuild unattended on it: import of every module, compile,
+   save, KPR_Test_RunAll twice and the Ribbon load check;
+5. builds the workbook to use, Documents\K-PRICING\K-PRICING-<commit>.xlsm:
+   the template with the production and example modules, compiled, the
+   commit written on the Home sheet and the KPR Dates Demo sheet built once
+   by KPR_Demo_BuildDates;
+6. adds check.log (Windows, Excel, branch, commit, each step) to the evidence
    folder Documents\KPR-evidence\<date>-<commit>, zips it, copies the summary
-   and both evidence files to the clipboard and shows the zip in Explorer.
+   and both evidence files to the clipboard and shows the workbook in
+   Explorer.
 A watchdog closes this run's Excel after -TimeoutMinutes, so a dialog nobody
 answers cannot hang the check. The script never pushes, and changes no other
 Excel or Windows setting.
@@ -43,6 +51,10 @@ $repository = "danielep71/K-PRICING"
 $rawBase = "https://raw.githubusercontent.com/$repository"
 $scriptUrl = "$rawBase/main/tools/Check-KPR.ps1"
 $xlOpenXMLAddIn = 55
+$xlOpenXMLWorkbookMacroEnabled = 52
+$compileControlId = 578
+$productionRoles = "public,internal,ui,example"
+$templateCell = "B13"
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $script:log = New-Object System.Collections.Generic.List[string]
 
@@ -113,6 +125,41 @@ public static extern uint GetWindowThreadProcessId(System.IntPtr hWnd, out uint 
     return [int]$processId
 }
 
+function New-FromTemplate {
+    # Opens the macro-free template read-only and saves it as an .xlsm at Path;
+    # the new workbook stays open.
+    param($Excel, [string]$Template, [string]$Path)
+    if (Test-Path -LiteralPath $Path) {
+        Remove-Item -LiteralPath $Path -Force
+    }
+    $book = $Excel.Workbooks.Open($Template, 0, $true)
+    $book.SaveAs($Path, $xlOpenXMLWorkbookMacroEnabled)
+    return $book
+}
+
+function Invoke-Compile {
+    # Debug > Compile VBAProject on Book's project. The command is greyed out
+    # once the project is compiled, so it still being enabled means an error.
+    param($Excel, $Book)
+    $vbe = $Excel.VBE
+    $vbe.MainWindow.Visible = $true
+    $vbe.ActiveVBProject = $Book.VBProject
+    $command = $vbe.CommandBars.FindControl(1, $compileControlId)
+    if ($null -eq $command) {
+        return $false
+    }
+    if ($command.Enabled) {
+        $command.Execute()
+    }
+    for ($attempt = 0; $attempt -lt 10; $attempt++) {
+        Start-Sleep -Milliseconds 500
+        if (-not $vbe.CommandBars.FindControl(1, $compileControlId).Enabled) {
+            return $true
+        }
+    }
+    return $false
+}
+
 function New-DesktopShortcut {
     $desktop = [Environment]::GetFolderPath("Desktop")
     $path = Join-Path $desktop "K-PRICING check.lnk"
@@ -154,6 +201,7 @@ $code = 1
 $excel = $null
 $work = $null
 $folder = ""
+$workbookPath = $null
 $watchdog = $null
 $doneFlag = $null
 $timeoutFlag = $null
@@ -194,14 +242,30 @@ try {
     $loader = $loader -replace "`r?`n", "`r`n"
     [System.IO.File]::WriteAllText($loaderPath, $loader, [System.Text.Encoding]::ASCII)
     Say "Downloaded the loader of $($sha.Substring(0, 8))"
+    $templatePath = Join-Path $work "KPR_Template.xlsx"
+    try {
+        Invoke-WebRequest -UseBasicParsing -Uri "$rawBase/$sha/src/workbook/KPR_Template.xlsx" -OutFile $templatePath
+        Say "Downloaded the workbook template of $($sha.Substring(0, 8))"
+    }
+    catch {
+        $templatePath = $null
+        Say "This commit has no workbook template: the check uses an empty KPR.xlam and builds no workbook."
+    }
 
     # A private Excel: no add-in or Personal Macro Workbook is loaded in it
     $excel = New-Object -ComObject Excel.Application
     $excel.Visible = $true
     $excel.DisplayAlerts = $false
     Say "Excel $($excel.Version) (build $($excel.Build)) started for this check"
-    $target = $excel.Workbooks.Add()
-    $target.SaveAs((Join-Path $work "KPR.xlam"), $xlOpenXMLAddIn)
+    if ($null -ne $templatePath) {
+        $devName = "K-PRICING_Development.xlsm"
+        $target = New-FromTemplate -Excel $excel -Template $templatePath -Path (Join-Path $work $devName)
+    }
+    else {
+        $devName = "KPR.xlam"
+        $target = $excel.Workbooks.Add()
+        $target.SaveAs((Join-Path $work $devName), $xlOpenXMLAddIn)
+    }
     $scratch = $excel.Workbooks.Add()
     try {
         [void]$scratch.VBProject.VBComponents.Import($loaderPath)
@@ -230,11 +294,40 @@ try {
     Say "Importing, compiling and running the regression twice: this takes a few minutes."
     Say "If a 'Compile error' box appears in the VBA editor, click OK: the check then reports it."
     $qualified = "'" + $scratch.Name + "'!"
-    $passed = [bool]$excel.Run($qualified + "KPR_Dev_CheckBuild", $sha, "KPR.xlam", $true)
+    $passed = [bool]$excel.Run($qualified + "KPR_Dev_CheckBuild", $sha, $devName, $true)
     $folder = [string]$excel.Run($qualified + "KPR_Dev_LastCheckFolder")
-    Set-Content -LiteralPath $doneFlag -Value done
     Say ("KPR_Dev_CheckBuild: " + $(if ($passed) { "PASS" } else { "FAIL" })) $(if ($passed) { "Green" } else { "Red" })
     $code = $(if ($passed) { 0 } else { 1 })
+    $target.Close($false)
+
+    # The workbook to use: production and example modules, commit, demo sheet
+    if ($null -ne $templatePath) {
+        Say "Building the workbook: production modules, the commit on Home and the demo sheet."
+        $outDir = Join-Path ([Environment]::GetFolderPath("MyDocuments")) "K-PRICING"
+        New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+        $bookName = "K-PRICING-" + $sha.Substring(0, 8) + ".xlsm"
+        $bookPath = Join-Path $outDir $bookName
+        $book = New-FromTemplate -Excel $excel -Template $templatePath -Path $bookPath
+        $imported = [int]$excel.Run($qualified + "KPR_Dev_ImportModules", $sha, $bookName, $productionRoles)
+        if ($imported -lt 0) {
+            throw "The workbook's modules could not be imported."
+        }
+        if (-not (Invoke-Compile -Excel $excel -Book $book)) {
+            throw "The workbook does not compile with the production and example modules; the VBA editor shows the line."
+        }
+        $book.Worksheets.Item("Home").Range($templateCell).Value2 = $sha
+        [void]$book.Activate()
+        $own = "'" + $bookName.Replace("'", "''") + "'!"
+        if (-not [bool]$excel.Run($own + "KPR_Demo_BuildDates")) {
+            throw ("The demo sheet was not built: " + [string]$excel.Run($own + "KPR_Demo_LastReport"))
+        }
+        [void]$book.Worksheets.Item("Home").Activate()
+        $book.Save()
+        $book.Close($false)
+        $workbookPath = $bookPath
+        Say "Workbook: PASS ($imported modules, demo sheet built) $bookPath" "Green"
+    }
+    Set-Content -LiteralPath $doneFlag -Value done
 }
 catch {
     if ($null -ne $timeoutFlag -and (Test-Path -LiteralPath $timeoutFlag)) {
@@ -274,12 +367,18 @@ finally {
 Say ("Finished in {0:N0} minutes" -f ((Get-Date) - $startedAt).TotalMinutes)
 if (-not [string]::IsNullOrWhiteSpace($folder) -and (Test-Path -LiteralPath $folder)) {
     [System.IO.File]::WriteAllText((Join-Path $folder "check.log"), (($script:log -join "`r`n") + "`r`n"), $utf8NoBom)
+    $workbookLine = $(if ($null -ne $workbookPath) { "Workbook: PASS ($workbookPath)" } else { "Workbook: NOT BUILT (see check.log)" })
+    [System.IO.File]::AppendAllText((Join-Path $folder "summary.txt"), $workbookLine + "`r`n", $utf8NoBom)
     $zip = $folder.TrimEnd("\") + ".zip"
     Compress-Archive -Path (Join-Path $folder "*") -DestinationPath $zip -Force
     Write-Host ""
     Write-Host ([System.IO.File]::ReadAllText((Join-Path $folder "summary.txt")))
     Send-ToClipboard -Folder $folder
-    Start-Process -FilePath "explorer.exe" -ArgumentList "/select,`"$zip`""
+    $shown = $(if ($null -ne $workbookPath) { $workbookPath } else { $zip })
+    Start-Process -FilePath "explorer.exe" -ArgumentList "/select,`"$shown`""
+    if ($null -ne $workbookPath) {
+        Write-Host "Your workbook: $workbookPath" -ForegroundColor Green
+    }
     Write-Host "The result is copied to the clipboard: paste it (Ctrl+V) in the chat with Claude." -ForegroundColor Cyan
     Write-Host "The same files are in $zip" -ForegroundColor Cyan
     if ($code -eq 0 -and $null -ne $work) {

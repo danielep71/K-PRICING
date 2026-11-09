@@ -198,6 +198,11 @@ jobs:
           python3 tools/test_inject_ribbon.py -v
           python3 tools/inject_ribbon.py --check
 
+      - name: Check the workbook template is generated from its source
+        run: |
+          python3 tools/test_workbook_template.py -v
+          python3 tools/workbook_template.py --check
+
       - name: Exercise strict release-semantics fixtures
         id: release-semantics-self-test
         continue-on-error: true
@@ -567,6 +572,8 @@ jobs:
           tools/check_issues.py --check-config
           tools/test_inject_ribbon.py
           tools/inject_ribbon.py --check
+          tools/test_workbook_template.py
+          tools/workbook_template.py --check
           tools/check_documentation.py --root .
           tools/check_release_semantics.py --root . --self-test
           tools/initialize_repository.py --root . --self-test
