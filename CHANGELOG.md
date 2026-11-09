@@ -251,6 +251,17 @@ Use only the categories needed by a release.
 
 ### Changed
 
+- Label synchronization no longer prunes a label that an issue or pull request,
+  open or closed, still carries: before any change it checks every label it
+  would delete (a paginated scan for names with a comma, which the labels
+  filter cannot express) and fails on a used label, a malformed response or an
+  exhausted page limit. The reconcile job declares `pull-requests: read` for
+  that check. The label sync and drift summaries share one Markdown helper that
+  fences code spans longer than any backtick inside the value, escapes table
+  pipes and turns line breaks into spaces. The PR-milestone scan reads each
+  removal back with a separate GET and lists every pull request and removed
+  milestone title in its job summary.
+
 - Quality gates follow the template more closely. mypy adds `warn_unreachable`
   to strict mode (no existing finding). Static checks cancel only a superseded
   pull-request head: every push, tag, manual or reusable run has a concurrency

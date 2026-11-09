@@ -4,6 +4,8 @@ import assert from "node:assert/strict";
 import { appendFile, readFile } from "node:fs/promises";
 import process from "node:process";
 
+import { codeSpan, selfTestMarkdown, tableCode, tableText } from "./markdown-summary.mjs";
+
 const EXPECTED_SCHEMA_VERSION = 1;
 const DEFAULT_MANIFEST = ".github/labels.json";
 const DEFAULT_POLICY = ".github/repository-profile.json";
@@ -11,6 +13,8 @@ const API_VERSION = "2022-11-28";
 const PROFILE_NAMES = ["application", "library", "ui-component"];
 const LABELS_PER_PAGE = 100;
 const MAX_LABEL_PAGES = 100;
+const ISSUES_PER_PAGE = 100;
+const MAX_ISSUE_PAGES = 100;
 const MAX_RATE_LIMIT_RETRIES = 2;
 const MAX_RETRY_DELAY_MS = 5000;
 
@@ -367,13 +371,55 @@ async function applyChanges(repository, token, changes) {
   }
 }
 
-function markdownEscape(value) {
-  return String(value).replaceAll("|", "\\|").replaceAll("\n", " ");
+// Prune protection: a label outside the manifest is deleted only when no issue
+// or pull request, open or closed, carries it. The issues endpoint lists pull
+// requests too. A name without a comma is checked with the labels filter; the
+// filter splits on commas, so a name with one is found by scanning every issue
+// and pull request. A malformed response or an exhausted page limit fails, so
+// a deletion is never applied on an incomplete check. request(suffix) returns
+// the parsed JSON of a GET.
+export async function assertSafeDeletions(changes, request) {
+  const deletions = changes.filter(change => change.action === "delete").map(change => change.currentName);
+  const used = [];
+  for (const name of deletions.filter(item => !item.includes(","))) {
+    const items = await request(`/issues?state=all&labels=${encodeURIComponent(name)}&per_page=1`);
+    if (!Array.isArray(items)) throw new Error(`Malformed issue response for label ${JSON.stringify(name)}`);
+    if (items.length > 0) used.push(name);
+  }
+  const pending = new Map(deletions.filter(item => item.includes(",")).map(name => [name.toLowerCase(), name]));
+  for (let page = 1; pending.size > 0; page += 1) {
+    if (page > MAX_ISSUE_PAGES) throw new Error(`Label usage scan exceeded ${MAX_ISSUE_PAGES} pages`);
+    const items = await request(
+      `/issues?state=all&sort=created&direction=asc&per_page=${ISSUES_PER_PAGE}&page=${page}`
+    );
+    if (!Array.isArray(items)) throw new Error("Malformed issue collection in the label usage scan");
+    for (const item of items) {
+      if (!item || typeof item !== "object" || !Array.isArray(item.labels)) {
+        throw new Error("Malformed issue labels in the label usage scan");
+      }
+      for (const label of item.labels) {
+        const name = typeof label === "string" ? label : label?.name;
+        if (typeof name !== "string") throw new Error("Malformed issue label in the label usage scan");
+        const key = name.toLowerCase();
+        if (pending.has(key)) {
+          used.push(pending.get(key));
+          pending.delete(key);
+        }
+      }
+    }
+    if (items.length < ISSUES_PER_PAGE) break;
+  }
+  if (used.length > 0) {
+    throw new Error(
+      "Refusing to prune labels still used by issues or pull requests: "
+      + used.sort(compareNames).map(name => JSON.stringify(name)).join(", ")
+    );
+  }
 }
 
 function renderLabelNames(labels) {
   if (labels.length === 0) return "none";
-  return labels.map(label => markdownEscape(JSON.stringify(label.name))).join(", ");
+  return labels.map(label => JSON.stringify(label.name)).join(", ");
 }
 
 function renderSummary({
@@ -401,8 +447,8 @@ function renderSummary({
     "# Repository label synchronization",
     "",
     `- Mode: \`${mode}\`${dryRun ? " (dry run)" : ""}`,
-    `- Policy source: \`${policyPath ?? "unavailable"}\``,
-    `- Label manifest: \`${manifestPath ?? "unavailable"}\``,
+    `- Policy source: ${codeSpan(policyPath ?? "unavailable")}`,
+    `- Label manifest: ${codeSpan(manifestPath ?? "unavailable")}`,
     `- Schema: **${manifest?.schema_version ?? "unavailable"}**`,
     `- Core / selected labels: **${coreLabels.length} / ${resolvedLabels.length}**`,
     `- Profile overlay: **${profile ?? "none"}**`,
@@ -422,14 +468,14 @@ function renderSummary({
     `- Complete resolved set (${resolvedLabels.length}): ${renderLabelNames(resolvedLabels)}`
   );
   if (error) {
-    lines.push("", "## Failure", "", `\`${markdownEscape(error)}\``);
+    lines.push("", "## Failure", "", codeSpan(error));
   } else if (changes.length === 0) {
     lines.push("", "No label changes are required.");
   } else {
     lines.push("", "| Action | Label | Detail |", "|---|---|---|");
     for (const change of changes) {
       const detail = change.action === "update" ? change.fields.join(", ") : change.action === "delete" ? "outside selected manifest" : "missing live label";
-      lines.push(`| ${change.action} | \`${markdownEscape(change.name)}\` | ${markdownEscape(detail)} |`);
+      lines.push(`| ${change.action} | ${tableCode(change.name)} | ${tableText(detail)} |`);
     }
   }
   return `${lines.join("\n")}\n`;
@@ -592,7 +638,88 @@ async function runSelfTest(manifestPath, policyPath) {
   assert.match(summary, new RegExp(`Complete resolved set \\(${selectedLabels.length}\\):`));
   for (const label of selectedLabels) assert.match(summary, new RegExp(`"${label.name}"`));
 
-  process.stdout.write("SELF-TEST PASS: retry delays, validation, policy, overlay, and reconciliation fixtures\n");
+  selfTestMarkdown(assert);
+  const oddPlan = planChanges(desired, [...structuredClone(desired), { name: "a`|b", color: "ABCDEF", description: "odd" }]);
+  const oddSummary = renderSummary({
+    mode: "plan",
+    manifest,
+    manifestPath: "x`y.json",
+    policyPath: "p.json",
+    desiredLabels: desired,
+    profile: null,
+    domains: [],
+    changes: oddPlan,
+    error: null
+  });
+  assert.match(oddSummary, /^\| delete \| ``a`\\\|b`` \| outside selected manifest \|$/m);
+  assert.match(oddSummary, /Label manifest: ``x`y\.json``/);
+  assert.match(
+    renderSummary({ mode: "failed", manifest: null, manifestPath: null, policyPath: null, desiredLabels: [],
+      profile: null, domains: [], error: "bad `x`\nnext" }),
+    /## Failure\n\n``bad `x` next``\n/
+  );
+
+  await selfTestSafeDeletions();
+
+  process.stdout.write(
+    "SELF-TEST PASS: retry delays, validation, policy, overlay, reconciliation, prune protection, and summary fixtures\n"
+  );
+}
+
+function fakeIssues(pages) {
+  const calls = [];
+  const request = async suffix => {
+    calls.push(suffix);
+    if (typeof pages === "function") return pages(suffix);
+    const page = Number(new URL(`https://x${suffix}`).searchParams.get("page") ?? "1");
+    return pages[page - 1] ?? [];
+  };
+  return { calls, request };
+}
+
+function issuesWith(count, labels = []) {
+  return Array.from({ length: count }, () => ({ labels }));
+}
+
+async function selfTestSafeDeletions() {
+  const del = name => ({ action: "delete", name, currentName: name });
+  const none = fakeIssues([]);
+  await assertSafeDeletions([{ action: "create", name: "x", target: {} }], none.request);
+  assert.equal(none.calls.length, 0, "no deletion needs no usage check");
+
+  const unused = fakeIssues(() => []);
+  await assertSafeDeletions([del("stale label")], unused.request);
+  assert.deepEqual(unused.calls, ["/issues?state=all&labels=stale%20label&per_page=1"]);
+
+  const used = fakeIssues(suffix => (suffix.includes("labels=in%20use") ? [{ number: 7 }] : []));
+  await assert.rejects(
+    assertSafeDeletions([del("free"), del("in use")], used.request),
+    /still used by issues or pull requests: "in use"$/
+  );
+
+  const commaUsed = fakeIssues([issuesWith(ISSUES_PER_PAGE, ["x"]), [{ labels: [{ name: "A, B" }] }]]);
+  await assert.rejects(assertSafeDeletions([del("a, b")], commaUsed.request), /"a, b"/);
+  assert.equal(commaUsed.calls.length, 2, "a comma name is found by a paginated scan");
+  assert.ok(commaUsed.calls.every(call => !call.includes("labels=")));
+
+  const commaFree = fakeIssues([issuesWith(ISSUES_PER_PAGE, ["x"]), issuesWith(3, ["y"])]);
+  await assertSafeDeletions([del("a, b")], commaFree.request);
+  assert.equal(commaFree.calls.length, 2);
+
+  await assert.rejects(assertSafeDeletions([del("x")], fakeIssues(() => ({})).request), /Malformed issue response/);
+  await assert.rejects(assertSafeDeletions([del("a,b")], fakeIssues(() => ({})).request), /Malformed issue collection/);
+  await assert.rejects(
+    assertSafeDeletions([del("a,b")], fakeIssues(() => [{ labels: null }]).request),
+    /Malformed issue labels/
+  );
+  await assert.rejects(
+    assertSafeDeletions([del("a,b")], fakeIssues(() => [{ labels: [{}] }]).request),
+    /Malformed issue label in/
+  );
+  await assert.rejects(
+    assertSafeDeletions([del("a,b")], fakeIssues(() => issuesWith(ISSUES_PER_PAGE, ["x"])).request),
+    /exceeded 100 pages/
+  );
 }
 
 async function main() {
@@ -639,6 +766,10 @@ async function main() {
     return;
   }
 
+  await assertSafeDeletions(
+    changes,
+    suffix => githubRequest(options.repository, process.env.GITHUB_TOKEN, "GET", suffix)
+  );
   await applyChanges(options.repository, process.env.GITHUB_TOKEN, changes);
   const after = await listLiveLabels(options.repository, process.env.GITHUB_TOKEN);
   const remaining = planChanges(desired, after, { prune: manifest.prune });

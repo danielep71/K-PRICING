@@ -6,6 +6,8 @@ name: Keep milestones issue-only
 # The repository gate prohibits pull_request_target, so the workflow does not
 # react to each pull-request event: a milestone set on a pull request lasts
 # until the next scan. The job never checks out or runs repository code.
+# Each removal is read back with a separate GET, and the job summary lists
+# every pull request and the milestone title removed from it.
 
 on:
   push:
@@ -48,17 +50,44 @@ jobs:
           import os
           from urllib.request import Request, urlopen
 
-          def reconcile(request, repository):
+          def cell(value):
+              # A milestone title is data: it must not end a table cell or
+              # start a new row in the job summary.
+              text = " ".join(str(value).splitlines())
+              return text.replace("\\", "\\\\").replace("|", "\\|").replace("`", "\\`")
+
+          def summary(removed, failure=None):
+              lines = ["# PR milestone reconciliation", ""]
+              if failure is not None:
+                  lines += [f"**Failed:** {cell(failure)}", ""]
+              if not removed:
+                  lines.append("No milestone was removed.")
+              else:
+                  lines += [f"Removed {len(removed)} milestone assignment(s).", "",
+                            "| Pull request | Removed milestone |", "| --- | --- |"]
+                  lines += [f"| #{number} | {cell(title)} |" for number, title in removed]
+              return "\n".join(lines) + "\n"
+
+          def reconcile(request, repository, removed):
               def clear(number):
                   # Verify the live object before mutating the issues endpoint.
-                  item = request("GET", f"/repos/{repository}/issues/{number}")
+                  path = f"/repos/{repository}/issues/{number}"
+                  item = request("GET", path)
                   if "pull_request" not in item:
                       raise ValueError("Refusing to change an issue")
-                  if item.get("milestone") is not None:
-                      result = request("PATCH", f"/repos/{repository}/issues/{number}", {"milestone": None})
+                  milestone = item.get("milestone")
+                  if milestone is not None:
+                      result = request("PATCH", path, {"milestone": None})
                       if result.get("milestone") is not None:
                           raise ValueError(f"PR #{number} still has a milestone")
-                      print(f"Removed milestone from PR #{number}")
+                      # Record the accepted PATCH first, so a failing read-back
+                      # still leaves the removal in the summary.
+                      title = milestone.get("title", "") if isinstance(milestone, dict) else ""
+                      removed.append((number, title))
+                      print(f"Removed milestone {title!r} from PR #{number}")
+                      # Read the post-state back independently of the PATCH.
+                      if request("GET", path).get("milestone") is not None:
+                          raise ValueError(f"PR #{number} still has a milestone after the read-back")
 
               # Traverse the full unfiltered PR collection in creation order so
               # mutations cannot shift pagination. This includes closed and
@@ -90,7 +119,16 @@ jobs:
                   with urlopen(req, timeout=30) as response:
                       return json.load(response)
 
-              reconcile(request, repository)
+              # The summary lists every removal, also when a later step fails.
+              removed, failure = [], None
+              try:
+                  reconcile(request, repository, removed)
+              except Exception as error:
+                  failure = f"{type(error).__name__}: {error}"
+                  raise
+              finally:
+                  with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as handle:
+                      handle.write(summary(removed, failure))
 
           if __name__ == "__main__":
               main()

@@ -6,6 +6,8 @@ name: Sync issue labels
 # manifest or script never changes the live labels.
 # The workflow self-tests the script, and the script validates the manifest
 # before the first API mutation, then verifies an exact post-run match.
+# A label outside the manifest is pruned only when no issue or pull request,
+# open or closed, still carries it; otherwise the run fails before any change.
 
 on:
   pull_request:
@@ -16,6 +18,7 @@ on:
       - .github/labels.json
       - .github/repository-profile.json
       - .github/scripts/labels-sync.mjs
+      - .github/scripts/markdown-summary.mjs
       - .github/workflows/labels-sync.yml
   push:
     branches:
@@ -24,6 +27,7 @@ on:
       - .github/labels.json
       - .github/repository-profile.json
       - .github/scripts/labels-sync.mjs
+      - .github/scripts/markdown-summary.mjs
       - .github/workflows/labels-sync.yml
   workflow_dispatch:
 
@@ -67,6 +71,8 @@ jobs:
     permissions:
       contents: read
       issues: write
+      # The prune protection lists the pull requests that carry a label.
+      pull-requests: read
 
     steps:
       - name: Check out the exact SHA to apply
