@@ -355,33 +355,51 @@ The target is not saved: compile it, then save it.
 
 #### One-click Excel check
 
-The same module offers one macro that does a whole Excel check of the latest
-`main` with `KPR.xlam` open: in Excel press **Alt+F8**, choose
-`KPR_Dev_CheckLatest` and click **Run**. It runs unattended:
+The Excel check of the latest `main` runs by itself on Windows. Press
+**Win+R**, paste this line and press **Enter**:
 
-1. asks GitHub for the exact commit `main` points to;
-2. imports that commit's modules into `KPR.xlam` with the loader;
-3. compiles the VBA project (**Debug > Compile**) and saves `KPR.xlam`;
-4. runs `KPR_Test_RunAll` twice;
-5. on Windows, writes the commit's Ribbon into a throwaway copy of
-   `KPR.xlam` with PowerShell, opens the copy with its events off and checks
-   that Excel loaded the **K-PRICING** tab and built its menus, then closes
-   and deletes the copy. Your own `KPR.xlam` never gets the tab this way; use
-   `tools/inject_ribbon.py` for that, as [Ribbon](#ribbon) describes.
+```text
+powershell -NoP -EP Bypass -c "&([scriptblock]::Create((irm https://raw.githubusercontent.com/danielep71/K-PRICING/main/tools/Check-KPR.ps1)))"
+```
 
-At the end it opens a new folder `Documents\KPR-evidence\<date>-<commit>`
-holding `run-1\kpr-test-evidence.json`, `run-2\kpr-test-evidence.json` and
-`summary.txt`, and shows the summary. A failed import or compile stops the
-check before the test runs, and the summary says why. To check another branch
-or commit, or another build, run
+The first run also puts a **K-PRICING check** shortcut on the desktop, so later
+checks are a double-click. From a clone, `tools\Check-KPR.cmd` does the same
+(`tools\Check-KPR.cmd my-branch` checks another branch). Leave Excel alone
+until the window says it is finished. `tools/Check-KPR.ps1`:
+
+1. asks GitHub for the exact commit the branch points to;
+2. checks Excel's *Trust access to the VBA project object model*; when it is
+   off, it asks, and turns it on for your Windows user only if you answer Y;
+3. starts its own Excel, without your add-ins or `PERSONAL.XLSB`, creates an
+   empty `KPR.xlam` in a temporary folder and a scratch workbook holding that
+   commit's loader;
+4. runs `KPR_Dev_CheckBuild` unattended: it imports the commit's modules,
+   compiles the project (**Debug > Compile**), saves it, runs
+   `KPR_Test_RunAll` twice and loads the commit's Ribbon in a throwaway copy,
+   checking that Excel loaded the **K-PRICING** tab and built its menus;
+5. writes `check.log` (Windows, Excel, branch, commit, each step) next to
+   `summary.txt`, `run-1\kpr-test-evidence.json` and
+   `run-2\kpr-test-evidence.json` in `Documents\KPR-evidence\<date>-<commit>`,
+   zips the folder, shows the zip in Explorer and copies all four files to the
+   clipboard, ready to paste.
+
+A watchdog closes the check's Excel after 30 minutes (`-TimeoutMinutes`), so an
+unanswered dialog cannot hang it. If the VBA editor shows a *Compile error*
+box, click **OK**: the check then reports the failed compile. Your own
+`KPR.xlam` and Excel settings are never changed, except the VBA project access
+you agree to; use `tools/inject_ribbon.py` to give a real build the tab, as
+[Ribbon](#ribbon) describes.
+
+The same check is available inside Excel. With the loader in `PERSONAL.XLSB`
+and `KPR.xlam` open, press **Alt+F8** and run `KPR_Dev_CheckLatest`; it shows
+the summary and opens the folder. To check another branch or commit, or
+another build, run
 `? KPR_Dev_CheckBuild("<branch or full SHA>", "<workbook name>")` in the
-Immediate window.
-
-To install or update the loader itself in `PERSONAL.XLSB` without the file
-dialogs, paste these lines into the Immediate window (**Ctrl+G** in the VBA
-editor), one at a time, pressing Enter after each. The first downloads the
-loader, the second removes the old copy (skip it on a first install) and the
-third imports the new one and saves `PERSONAL.XLSB`:
+Immediate window. To install or update the loader itself in `PERSONAL.XLSB`
+without the file dialogs, paste these lines into the Immediate window
+(**Ctrl+G** in the VBA editor), one at a time, pressing Enter after each. The
+first downloads the loader, the second removes the old copy (skip it on a
+first install) and the third imports the new one and saves `PERSONAL.XLSB`:
 
 ```text
 Set h = CreateObject("MSXML2.XMLHTTP.6.0"): h.Open "GET", "https://raw.githubusercontent.com/danielep71/k-pricing/main/tests/modules/KPR_Dev_Import.bas", False: h.send: Set s = CreateObject("ADODB.Stream"): s.Type = 1: s.Open: s.Write h.responseBody: s.SaveToFile Environ("TEMP") & "\KPR_Dev_Import.bas", 2: s.Close

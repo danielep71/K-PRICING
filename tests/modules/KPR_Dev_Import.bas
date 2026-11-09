@@ -18,6 +18,8 @@ Attribute VB_Name = "KPR_Dev_Import"
 '                               latest main in KPR.xlam
 '   - KPR_Dev_CheckBuild        import, compile, save, two regression runs
 '                               and a Ribbon load check of one commit
+'   - KPR_Dev_LastCheckFolder   the evidence folder of the last check, for
+'                               tools/Check-KPR.ps1
 '   - KPR_Dev_ImportModules     import one commit's modules into a target
 '
 ' WHERE IT LIVES
@@ -64,7 +66,7 @@ Attribute VB_Name = "KPR_Dev_Import"
 '   None.
 '
 ' UPDATED
-'   2026-11-03
+'   2026-11-09
 '
 ' AUTHOR
 '   Daniele Penza
@@ -108,6 +110,11 @@ Attribute VB_Name = "KPR_Dev_Import"
 
     'Control id of Debug > Compile in the VBA editor
         Private Const COMPILE_COMMAND As Long = 578
+
+'------------------------------------------------------------------------------
+' MODULE STATE
+'------------------------------------------------------------------------------
+    Private mLastFolder     As String       'Evidence folder of the last check
 
 '
 '------------------------------------------------------------------------------
@@ -275,7 +282,8 @@ End Sub
 
 Public Function KPR_Dev_CheckBuild( _
     ByVal Source As String, _
-    ByVal TargetWorkbook As String) _
+    ByVal TargetWorkbook As String, _
+    Optional ByVal Unattended As Boolean = False) _
     As Boolean
 '
 '==============================================================================
@@ -290,12 +298,16 @@ Public Function KPR_Dev_CheckBuild( _
 '     5. loads the commit's Ribbon into a copy of the target and checks that
 '        Excel loaded it (Windows only);
 '   then writes summary.txt, opens the folder and shows the outcome.
+'   tools/Check-KPR.ps1 calls it Unattended, from a fresh Excel it starts.
 '
 ' INPUTS
 '   Source
 '     A branch name such as "main", or a full commit SHA.
 '   TargetWorkbook
 '     The open workbook or add-in to update, e.g. "KPR.xlam".
+'   Unattended
+'     TRUE: no message box and no Explorer window, for a script that drives
+'     Excel; KPR_Dev_LastCheckFolder then gives the folder.
 '
 ' RETURNS
 '   TRUE when every step passed.
@@ -311,7 +323,7 @@ Public Function KPR_Dev_CheckBuild( _
 '   would test the wrong code.
 '
 ' UPDATED
-'   2026-11-03
+'   2026-11-09
 '==============================================================================
 '
 
@@ -386,13 +398,14 @@ Finish:
         If Len(Detail) > 0 Then Report = Report & "STOPPED: " & Detail & vbCrLf
         Report = Report & "Result:  " & IIf(Passed, "PASS", "FAIL") & vbCrLf
         If Len(Folder) = 0 And Len(Sha) > 0 Then Folder = EvidenceFolder(Sha)
+        mLastFolder = Folder
         If Len(Folder) > 0 Then
             WriteText Folder & Application.PathSeparator & "summary.txt", Report
-            Shell "explorer.exe """ & Folder & """", vbNormalFocus
+            If Not Unattended Then Shell "explorer.exe """ & Folder & """", vbNormalFocus
             Report = Report & vbCrLf & "Send the files of this folder:" & vbCrLf & Folder
         End If
         Debug.Print Report
-        MsgBox Report, IIf(Passed, vbInformation, vbExclamation), "K-PRICING check"
+        If Not Unattended Then MsgBox Report, IIf(Passed, vbInformation, vbExclamation), "K-PRICING check"
         KPR_Dev_CheckBuild = Passed
         Exit Function
 
@@ -400,6 +413,25 @@ Fail:
     'An unexpected error still reaches the report
         Detail = "error " & CStr(Err.Number) & " (" & Err.Description & ")"
         Resume Finish
+
+End Function
+
+
+Public Function KPR_Dev_LastCheckFolder() As String
+'
+'==============================================================================
+'                           KPR_Dev_LastCheckFolder
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The evidence folder KPR_Dev_CheckBuild last wrote, or "" when it wrote
+'   none (it stopped before resolving the commit). tools/Check-KPR.ps1 reads
+'   it after an unattended check.
+'
+' UPDATED
+'   2026-11-09
+'==============================================================================
+'
+    KPR_Dev_LastCheckFolder = mLastFolder
 
 End Function
 
