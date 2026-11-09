@@ -1,0 +1,177 @@
+# K-PRICING API inventory (#49): every technically public VBA member, classified.
+# <component><TAB><kind><TAB><name><TAB><class><TAB><vectorization>
+#
+# Only class "supported" is API: the 22 KPR_Dates_* functions of docs/PUBLIC_API.txt
+# and docs/DATE_LAYER_CONTRACT.md section 2, with their vectorization
+# (array-capable or scalar-only). Every other class is unsupported infrastructure:
+# technically public because VBA, Application.Run, MacroOptions, RibbonX,
+# CommandBars, the tests or the demo builder need it, and free to change
+# without notice. Its vectorization is "-".
+#
+#   supported     the worksheet and VBA date API (src/modules/KPR_DATES_DAYS.bas)
+#   internal      src/core primitives behind Option Private Module
+#   registration  the MacroOptions register/clear lifecycle and its manifest (#42)
+#   ui            menu actions, the KPR Dates toolbar and the Ribbon callbacks (#47, #48)
+#   test          the regression runner, generated fixtures and the Excel oracle
+#   development   the development loader and the one-click Excel check
+#   demo          the demo builder, the Date Primitives demo and the direct-VBA example
+#
+# tools/check_kpr_contract.py (rule kpr-api-inventory) fails when a public member
+# is missing here or listed but gone, when a class does not fit its component's
+# role, when the supported set or a vectorization differs from the contract, when
+# a KPR_Dates_* procedure appears outside the facade, or when a _Spill name or a
+# reserved name is declared.
+#
+# Reserved namespaces and milestone boundaries:
+# RESERVED	KPR_Cal_*	v0.0.5	business calendars, weekend masks, holiday sets and business-day predicates; no placeholder before v0.0.5
+# RESERVED	KPR_Cal_* (calendar-aware)	v0.0.6	business-day arithmetic and roll conventions built on the v0.0.5 calendars; KPR_Dates_* gains no calendar option
+KPR_DATES_DAYS	Function	KPR_Dates_DayOfWeek	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_DaysInMonth	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_DaysInYear	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_BeginOfMonth	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_EndOfMonth	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_BeginOfQuarter	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_EndOfQuarter	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_BeginOfYear	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_EndOfYear	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_IsMonthEnd	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_IsQuarterEnd	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_IsYearEnd	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_IsLeapYear	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_AddDays	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_AddWeeks	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_AddMonths	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_AddYears	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_NthWeekdayOfMonth	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_LastWeekdayOfMonth	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_PillarFromDates	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_DateFromPillar	supported	array-capable
+KPR_DATES_DAYS	Function	KPR_Dates_HostDateSystem	supported	scalar-only
+KPR_Core_Array	Enum	KPR_ArgShape	internal	-
+KPR_Core_Array	Const	KPR_MAX_ELEMENTS	internal	-
+KPR_Core_Array	Function	Array_Rank	internal	-
+KPR_Core_Array	Function	TryUnwrapScalar	internal	-
+KPR_Core_Array	Function	CheckCapacity	internal	-
+KPR_Core_Array	Function	TryClassifyShape	internal	-
+KPR_Core_Array	Function	TryMaterialize	internal	-
+KPR_Core_Array	Function	AccumulateShape	internal	-
+KPR_Core_Array	Function	ElementAt	internal	-
+KPR_Core_Array	Function	TryAllocateOutput	internal	-
+KPR_Core_Array	Function	TryUnwrapControl	internal	-
+KPR_Core_Dates	Enum	KPR_PillarRounding	internal	-
+KPR_Core_Dates	Const	KPR_MIN_DATE	internal	-
+KPR_Core_Dates	Const	KPR_MAX_DATE	internal	-
+KPR_Core_Dates	Function	IsDateInWindow	internal	-
+KPR_Core_Dates	Function	IsLeapYear	internal	-
+KPR_Core_Dates	Function	DaysInMonth	internal	-
+KPR_Core_Dates	Function	EndOfMonth	internal	-
+KPR_Core_Dates	Function	BeginOfQuarter	internal	-
+KPR_Core_Dates	Function	EndOfQuarter	internal	-
+KPR_Core_Dates	Function	BeginOfYear	internal	-
+KPR_Core_Dates	Function	EndOfYear	internal	-
+KPR_Core_Dates	Function	TryAddMonths	internal	-
+KPR_Core_Dates	Function	TryPillar_Parse	internal	-
+KPR_Core_Dates	Function	TryPillar_Format	internal	-
+KPR_Core_Err	Enum	KPR_Condition	internal	-
+KPR_Core_Err	Function	ErrValue	internal	-
+KPR_Core_Err	Function	ErrNum	internal	-
+KPR_Core_Err	Function	ErrNA	internal	-
+KPR_Core_Err	Function	ErrForCondition	internal	-
+KPR_Core_Parse	Function	TryParseDateScalar	internal	-
+KPR_Core_Parse	Function	TryParseLongScalar	internal	-
+KPR_Core_Parse	Function	TryParseBoolControl	internal	-
+KPR_Core_Parse	Function	TryParseRoundingControl	internal	-
+KPR_REGISTER_PUBLIC_UDFS	Function	KPR_Register_PublicUDFs	registration	-
+KPR_REGISTER_PUBLIC_UDFS	Function	KPR_Register_ClearPublicUDFs	registration	-
+KPR_REGISTER_PUBLIC_UDFS	Function	KPR_Register_LastReport	registration	-
+KPR_REGISTER_PUBLIC_UDFS	Function	KPR_Register_ManifestCount	registration	-
+KPR_REGISTER_PUBLIC_UDFS	Function	KPR_Register_ManifestName	registration	-
+KPR_REGISTER_PUBLIC_UDFS	Function	KPR_Register_ManifestArgCount	registration	-
+KPR_REGISTER_PUBLIC_UDFS	Function	KPR_Register_ManifestArgDescriptions	registration	-
+KPR_UI_Actions	Sub	KPR_UI_InsertFunction	ui	-
+KPR_UI_Actions	Sub	KPR_UI_BuildDemo	ui	-
+KPR_UI_Actions	Sub	KPR_UI_RegisterFunctions	ui	-
+KPR_UI_Actions	Sub	KPR_UI_ClearFunctions	ui	-
+KPR_UI_Actions	Sub	KPR_UI_RunTests	ui	-
+KPR_UI_Actions	Sub	KPR_UI_RunEvidence	ui	-
+KPR_UI_Actions	Function	KPR_UI_FunctionGroups	ui	-
+KPR_UI_Actions	Function	KPR_UI_FunctionNames	ui	-
+KPR_UI_Actions	Function	KPR_UI_DemoGroups	ui	-
+KPR_UI_Actions	Function	KPR_UI_DemoEntries	ui	-
+KPR_UI_Actions	Function	KPR_UI_DemosAvailable	ui	-
+KPR_UI_Actions	Function	KPR_UI_TestsAvailable	ui	-
+KPR_UI_Actions	Function	KPR_UI_ActionKnown	ui	-
+KPR_UI_Actions	Sub	KPR_UI_RunAction	ui	-
+KPR_UI_CommandBars	Sub	KPR_UI_ToolbarInstall	ui	-
+KPR_UI_CommandBars	Sub	KPR_UI_ToolbarRemove	ui	-
+KPR_UI_CommandBars	Function	KPR_UI_InstallCommandBar	ui	-
+KPR_UI_CommandBars	Function	KPR_UI_RemoveCommandBar	ui	-
+KPR_UI_CommandBars	Sub	KPR_UI_CommandBarClick	ui	-
+KPR_UI_CommandBars	Function	KPR_UI_CommandBarLastReport	ui	-
+KPR_UI_CommandBars	Function	KPR_UI_CommandBarControlCount	ui	-
+KPR_UI_CommandBars	Function	KPR_UI_CommandBarActions	ui	-
+KPR_UI_Ribbon	Sub	KPR_UI_Ribbon_OnLoad	ui	-
+KPR_UI_Ribbon	Sub	KPR_UI_Ribbon_OnAction	ui	-
+KPR_UI_Ribbon	Sub	KPR_UI_Ribbon_GetFunctions	ui	-
+KPR_UI_Ribbon	Sub	KPR_UI_Ribbon_GetDemos	ui	-
+KPR_UI_Ribbon	Sub	KPR_UI_Ribbon_GetDemosEnabled	ui	-
+KPR_UI_Ribbon	Sub	KPR_UI_Ribbon_GetDevelopmentVisible	ui	-
+KPR_UI_Ribbon	Sub	KPR_UI_RibbonRefresh	ui	-
+KPR_UI_Ribbon	Function	KPR_UI_RibbonLoaded	ui	-
+KPR_UI_Ribbon	Function	KPR_UI_RibbonMenuXml	ui	-
+KPR_Dev_Import	Function	KPR_Dev_ImportModules	development	-
+KPR_Dev_Import	Sub	KPR_Dev_CheckLatest	development	-
+KPR_Dev_Import	Function	KPR_Dev_CheckBuild	development	-
+KPR_Dev_Import	Function	KPR_Dev_LastCheckFolder	development	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_Run	test	-
+KPR_REGRESSION_TESTS	Function	KPR_Tests_Available	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunSuite	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunEvidence	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunMigrationEvidence	test	-
+KPR_REGRESSION_TESTS	Function	KPR_Tests_RunAll	test	-
+KPR_REGRESSION_TESTS	Function	KPR_Test_RunAll	test	-
+KPR_REGRESSION_TESTS	Function	KPR_Test_RunSuite	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunFixtureHost	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunOracle	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunRegistration	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunDemo	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunCommandBars	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunRibbon	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunStateCheck	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunHost	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunShape	test	-
+KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunArray	test	-
+KPR_Test_Fixtures_Generated	Const	KPR_FX_ID	test	-
+KPR_Test_Fixtures_Generated	Const	KPR_FX_SUITE	test	-
+KPR_Test_Fixtures_Generated	Const	KPR_FX_FUNCTION	test	-
+KPR_Test_Fixtures_Generated	Const	KPR_FX_CONTEXT	test	-
+KPR_Test_Fixtures_Generated	Const	KPR_FX_ARGC	test	-
+KPR_Test_Fixtures_Generated	Const	KPR_FX_ARGS	test	-
+KPR_Test_Fixtures_Generated	Const	KPR_FX_EXPECT_TYPE	test	-
+KPR_Test_Fixtures_Generated	Const	KPR_FX_EXPECTED	test	-
+KPR_Test_Fixtures_Generated	Const	KPR_FX_CONDITION	test	-
+KPR_Test_Fixtures_Generated	Const	KPR_FX_LEVEL	test	-
+KPR_Test_Fixtures_Generated	Function	KPR_Fixtures_Count	test	-
+KPR_Test_Fixtures_Generated	Function	KPR_Fixtures_SourceHash	test	-
+KPR_Test_Fixtures_Generated	Function	KPR_Fixtures_Case	test	-
+KPR_Test_Oracle	Sub	KPR_Oracle_RunCases	test	-
+KPR_Demo_Dates	Function	KPR_Demo_BuildDates	demo	-
+KPR_Demo_DirectVBA	Sub	RunDateExample	demo	-
+KPR_Demo__Builder	Const	DEMO_DATE	demo	-
+KPR_Demo__Builder	Function	KPR_Demo_Catalog	demo	-
+KPR_Demo__Builder	Function	KPR_Demo_Build	demo	-
+KPR_Demo__Builder	Function	KPR_Demo_LastReport	demo	-
+KPR_Demo__Builder	Function	Demo_Begin	demo	-
+KPR_Demo__Builder	Function	Demo_Finish	demo	-
+KPR_Demo__Builder	Function	Demo_Abort	demo	-
+KPR_Demo__Builder	Function	Demo_HasDynamicArrays	demo	-
+KPR_Demo__Builder	Sub	Demo_Inputs	demo	-
+KPR_Demo__Builder	Sub	Demo_Input	demo	-
+KPR_Demo__Builder	Sub	Demo_Section	demo	-
+KPR_Demo__Builder	Sub	Demo_Compare	demo	-
+KPR_Demo__Builder	Sub	Demo_Note	demo	-
+KPR_Demo__Builder	Sub	Demo_Cases	demo	-
+KPR_Demo__Builder	Sub	Demo_Case	demo	-
+KPR_Demo__Builder	Sub	Demo_Spill	demo	-
+KPR_Demo__Builder	Sub	Demo_SpillColumn	demo	-
+KPR_Demo__Builder	Function	Demo_Sheet	demo	-

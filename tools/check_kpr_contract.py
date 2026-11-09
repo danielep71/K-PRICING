@@ -334,6 +334,8 @@ def load_inputs(root: Path) -> dict[str, Any]:
         "sources": sources,
         "manifest": (root / MANIFEST_PATH).read_text(encoding="utf-8"),
         "contract": (root / CONTRACT_PATH).read_text(encoding="utf-8"),
+        "inventory": (root / INVENTORY_PATH).read_text(encoding="utf-8")
+        if (root / INVENTORY_PATH).is_file() else "",
     }
 
 
@@ -1211,6 +1213,229 @@ def rule_registration_manifest(data: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+# ---------------------------------------------------------------------------
+# API inventory (#49): every technically public member, classified
+# ---------------------------------------------------------------------------
+INVENTORY_PATH = "docs/API_INVENTORY.txt"
+# The class each component role may use; only "supported" is API.
+ROLE_CLASSES = {
+    "public": {"supported"},
+    "internal": {"internal", "registration"},
+    "ui": {"ui"},
+    "test": {"test", "development"},
+    "example": {"demo"},
+}
+VECTORIZATIONS = {"array-capable", "scalar-only"}
+RESERVED_NAMESPACE = "KPR_Cal_"
+MEMBER_KEYWORDS = r"Sub|Function|Property\s+(?:Get|Let|Set)|Const|Enum|Type|Declare|Event"
+PUBLIC_MEMBER = re.compile(
+    rf"^(?:(?:Public|Global)\s+|(?=(?:Static\s+)?(?:Sub|Function|Property|Enum|Type|Declare|Event)\b))"
+    rf"(?:Static\s+)?(?P<kind>{MEMBER_KEYWORDS})\s+(?:PtrSafe\s+)?(?:(?:Function|Sub)\s+)?(?P<name>[A-Za-z_]\w*)",
+    re.I,
+)
+PUBLIC_VARIABLE = re.compile(
+    rf"^(?:Public|Global)\s+(?:WithEvents\s+)?(?!(?:{MEMBER_KEYWORDS}|Static)\b)(?P<name>[A-Za-z_]\w*)", re.I
+)
+
+
+def member_kind(keyword: str) -> str:
+    word = keyword.split()[0].casefold()
+    return {"sub": "Sub", "function": "Function", "property": "Property", "const": "Const",
+            "enum": "Enum", "type": "Type", "declare": "Declare", "event": "Event"}[word]
+
+
+def technically_public(text: str) -> list[tuple[int, str, str]]:
+    """(line, kind, name) of every member VBA lets other modules or Excel reach."""
+    output: list[tuple[int, str, str]] = []
+    depth = 0
+    for number, statement in logical(text):
+        if re.match(r"^(?:Private\s+|Public\s+|Friend\s+)?(?:Static\s+)?(?:Sub|Function|Property)\b", statement, re.I) \
+                and depth == 0:
+            hit = PUBLIC_MEMBER.match(statement)
+            if hit:
+                output.append((number, member_kind(hit.group("kind")), hit.group("name")))
+            depth = 1
+            continue
+        if re.match(r"^End\s+(?:Sub|Function|Property)\b", statement, re.I):
+            depth = 0
+            continue
+        if depth:
+            continue
+        constants = re.match(r"^(?:Public|Global)\s+Const\s+(.*)$", statement, re.I)
+        if constants:
+            output.extend((number, "Const", name) for name in declared_list(constants.group(1)))
+            continue
+        hit = PUBLIC_MEMBER.match(statement)
+        if hit:
+            output.append((number, member_kind(hit.group("kind")), hit.group("name")))
+            continue
+        if PUBLIC_VARIABLE.match(statement):
+            listed = re.sub(r"^(?:Public|Global)\s+(?:WithEvents\s+)?", "", statement, flags=re.I)
+            output.extend((number, "Variable", name) for name in declared_list(listed))
+    return output
+
+
+def declared_list(text: str) -> list[str]:
+    """Every identifier of a comma-separated VBA declaration list ("A As Long, B As Long = 2")."""
+    names = []
+    for part in _split_top(text, ","):
+        hit = re.match(r"^(?:WithEvents\s+)?([A-Za-z_]\w*)", part, re.I)
+        if hit:
+            names.append(hit.group(1))
+    return names
+
+
+def inventory_records(text: str) -> tuple[list[dict[str, Any]], dict[str, str], list[str]]:
+    records: list[dict[str, Any]] = []
+    reserved: dict[str, str] = {}
+    errors: list[str] = []
+    for number, raw in enumerate(text.splitlines(), 1):
+        if raw.startswith("# RESERVED\t"):
+            fields = raw.split("\t")
+            if len(fields) != 4 or not all(field.strip() for field in fields):
+                errors.append(f"line {number}: a reservation is '# RESERVED<TAB>prefix<TAB>milestone<TAB>scope'")
+            else:
+                reserved[fields[1]] = fields[2]
+            continue
+        if not raw.strip() or raw.startswith("#"):
+            continue
+        fields = raw.split("\t")
+        if len(fields) != 5:
+            errors.append(f"line {number}: expected component, kind, name, class and vectorization")
+            continue
+        records.append({"line": number, "component": fields[0], "kind": fields[1], "name": fields[2],
+                        "class": fields[3], "vectorization": fields[4]})
+    return records, reserved, errors
+
+
+def contract_vectorization(text: str) -> dict[str, str]:
+    output: dict[str, str] = {}
+    for name, cell in re.findall(r"^\|\s*\d+\s*\|\s*`(KPR_Dates_\w+)`\s*\|[^|]*\|\s*([^|]+?)\s*\|\s*$", text, re.M):
+        output[name] = "scalar-only" if cell.casefold().startswith("scalar-only") else cell.casefold()
+    return output
+
+
+def _member_errors(path: str, role: str, entry: dict[str, Any] | None, line: int, kind: str,
+                   name: str) -> list[dict[str, Any]]:
+    if entry is None:
+        return [finding(path, f"Unclassified public member {kind} {name}: add it to {INVENTORY_PATH}.", line)]
+    failures: list[dict[str, Any]] = []
+    if entry["kind"] != kind:
+        failures.append(finding(INVENTORY_PATH, f"{name} is a {kind}, listed as {entry['kind']}.", entry["line"]))
+    if entry["class"] not in ROLE_CLASSES.get(role, set()):
+        failures.append(finding(INVENTORY_PATH, f"{name} in a {role!r} component cannot be class {entry['class']!r}.",
+                                entry["line"]))
+    return failures
+
+
+def _forbidden_name_errors(path: str, text: str) -> list[dict[str, Any]]:
+    """Reserved KPR_Cal_* names and KPR_Dates_*_Spill twins, at any visibility and in any use."""
+    failures: list[dict[str, Any]] = []
+    for number, line in enumerate(executable_text(text).splitlines(), 1):
+        for name in re.findall(rf"\b{RESERVED_NAMESPACE}\w*", line, re.I):
+            failures.append(finding(path, f"{name} uses the reserved {RESERVED_NAMESPACE}* namespace.", number))
+        for name in re.findall(r"\bKPR_Dates_\w*_Spill\b", line, re.I):
+            failures.append(finding(path, f"{name} is a forbidden KPR_Dates_*_Spill twin.", number))
+    return failures
+
+
+def _facade_only_errors(path: str, role: str, text: str) -> list[dict[str, Any]]:
+    if role == "public":
+        return []
+    failures: list[dict[str, Any]] = []
+    for number, statement in logical(text):
+        hit = re.match(r"^(?:Public\s+|Private\s+|Friend\s+)?(?:Static\s+)?(?:Function|Sub)\s+(KPR_Dates_\w+)",
+                       statement, re.I)
+        if hit:
+            failures.append(finding(path, f"{hit.group(1)}: a KPR_Dates_* function belongs only in the public facade.",
+                                    number))
+    return failures
+
+
+def _inventory_component_errors(data: dict[str, Any], records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    failures: list[dict[str, Any]] = []
+    by_component: dict[str, dict[str, dict[str, Any]]] = {}
+    for record in records:
+        members = by_component.setdefault(record["component"].casefold(), {})
+        if record["name"].casefold() in members:
+            failures.append(finding(INVENTORY_PATH, f"{record['name']} is listed twice.", record["line"]))
+        members[record["name"].casefold()] = record
+    seen_components: set[str] = set()
+    for path, text in sorted(data["sources"].items()):
+        stem = Path(path).stem
+        seen_components.add(stem.casefold())
+        role = data["roles"].get(path, "")
+        listed = by_component.get(stem.casefold(), {})
+        declared = technically_public(text)
+        for line, kind, name in declared:
+            failures.extend(_member_errors(path, role, listed.get(name.casefold()), line, kind, name))
+        declared_names = {name.casefold() for _, _, name in declared}
+        failures.extend(finding(INVENTORY_PATH, f"{entry['name']} is listed but not public in {stem}.", entry["line"])
+                        for key, entry in listed.items() if key not in declared_names)
+        failures.extend(_facade_only_errors(path, role, text))
+        failures.extend(_forbidden_name_errors(path, text))
+    failures.extend(finding(INVENTORY_PATH, f"{entry['component']} is not a tracked component.", entry["line"])
+                    for component, members in by_component.items() if component not in seen_components
+                    for entry in members.values())
+    if any(Path(path).stem.casefold() == "kpr_dates_spill" for path in data["roles"]):
+        failures.append(finding(CONFIG_PATH, "KPR_Dates_Spill.bas is forbidden."))
+    return failures
+
+
+def normal_signature(text: str) -> str:
+    text = re.sub(r"\(\s+", "(", text)
+    text = re.sub(r"\s+\)", ")", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def signature_errors(data: dict[str, Any]) -> list[dict[str, Any]]:
+    """The 22 signatures must agree in the contract, the facade and docs/PUBLIC_API.txt."""
+    contract = {name: normal_signature(line) for line, name in re.findall(
+        r"^(Public Function (KPR_Dates_\w+)\(.*)$", data["contract"], re.M)}
+    manifest = {fields[3]: normal_signature(fields[4]) for fields in
+                (raw.split("\t") for raw in data["manifest"].splitlines() if raw.startswith("# SIG\t"))
+                if len(fields) == 5}
+    facade = {name: normal_signature(statement) for name, (_, statement) in facade_functions(data).items()}
+    failures: list[dict[str, Any]] = []
+    for name, signature in sorted(facade.items()):
+        if contract.get(name) != signature:
+            failures.append(finding(CONTRACT_PATH, f"{name}: the contract signature differs from the facade."))
+        if manifest.get(name) != signature:
+            failures.append(finding(MANIFEST_PATH, f"{name}: the manifest signature differs from the facade."))
+    return failures
+
+
+def rule_api_inventory(data: dict[str, Any]) -> dict[str, Any]:
+    records, reserved, errors = inventory_records(data.get("inventory", ""))
+    failures = [finding(INVENTORY_PATH, error) for error in errors]
+    if not records:
+        failures.append(finding(INVENTORY_PATH, "The API inventory is missing or empty."))
+    failures.extend(_inventory_component_errors(data, records))
+    failures.extend(signature_errors(data))
+    supported = {record["name"]: record for record in records if record["class"] == "supported"}
+    contract = contract_vectorization(data["contract"])
+    if len(supported) != 22 or set(supported) != set(contract):
+        failures.append(finding(INVENTORY_PATH, f"Exactly the 22 contract functions must be supported; found {len(supported)}."))
+    for name, record in supported.items():
+        if record["vectorization"] not in VECTORIZATIONS:
+            failures.append(finding(INVENTORY_PATH, f"{name} needs array-capable or scalar-only.", record["line"]))
+        elif contract.get(name) != record["vectorization"]:
+            failures.append(finding(INVENTORY_PATH, f"{name} vectorization differs from the contract.", record["line"]))
+    for record in records:
+        if record["class"] != "supported" and record["vectorization"] != "-":
+            failures.append(finding(INVENTORY_PATH, f"{record['name']} is unsupported; its vectorization is '-'.", record["line"]))
+    if f"{RESERVED_NAMESPACE}*" not in reserved:
+        failures.append(finding(INVENTORY_PATH, f"The reserved {RESERVED_NAMESPACE}* namespace is not recorded."))
+    unsupported = len(records) - len(supported)
+    return result(
+        "kpr-api-inventory",
+        "Classified inventory of technically public members",
+        failures,
+        f"{len(supported)} supported functions, with signatures matching the contract and manifest, and "
+        f"{unsupported} unsupported infrastructure members classified; {RESERVED_NAMESPACE}* reserved",
+    )
+
+
 RULES = (
     rule_components,
     rule_surface,
@@ -1225,6 +1450,7 @@ RULES = (
     rule_day_zero,
     rule_oracle_scope,
     rule_registration_manifest,
+    rule_api_inventory,
 )
 
 
@@ -1574,6 +1800,67 @@ def self_test(root: Path) -> None:
         '    Application.MacroOptions Macro:="KPR_Dates_AddDays", Description:="x"\r\nEnd Sub\r\n'
     )
     scenarios.append(("MacroOptions outside the registration module", "kpr-registration-manifest", stray))
+    ui = "src/modules/KPR_UI_Actions.bas"
+    demo = "examples/modules/KPR_Demo_Dates.bas"
+
+    def with_source(path: str, extra: str) -> dict[str, Any]:
+        case = copy.deepcopy(base)
+        case["sources"][path] += extra
+        return case
+
+    def with_inventory(old: str, new: str) -> dict[str, Any]:
+        case = copy.deepcopy(base)
+        if old not in case["inventory"]:
+            raise RuntimeError(f"Self-test inventory target not found: {old!r}")
+        case["inventory"] = case["inventory"].replace(old, new, 1)
+        return case
+
+    def listed_first(extra: str, entry: str) -> dict[str, Any]:
+        # Only the first name of the declaration list is inventoried.
+        case = with_source(ui, extra)
+        case["inventory"] += f"KPR_UI_Actions\t{entry}\tui\t-\n"
+        return case
+
+    first_only = listed_first("\r\nPublic KPR_UI_Listed As Long\r\n", "Variable\tKPR_UI_Listed")
+    if report(root, first_only)["status"] != "pass":
+        raise RuntimeError("A fully inventoried public variable must pass")
+
+    inventory_cases = (
+        ("unclassified public member", with_source(ui, "\r\nPublic Sub KPR_UI_Unlisted()\r\nEnd Sub\r\n")),
+        ("implicitly public member", with_source(ui, "\r\nSub KPR_UI_Implicit()\r\nEnd Sub\r\n")),
+        ("listed member that is gone", with_inventory(
+            "KPR_UI_Actions\tSub\tKPR_UI_RunAction\tui\t-\n",
+            "KPR_UI_Actions\tSub\tKPR_UI_RunAction\tui\t-\nKPR_UI_Actions\tSub\tKPR_UI_Gone\tui\t-\n")),
+        ("infrastructure classified as supported", with_inventory(
+            "KPR_UI_Actions\tSub\tKPR_UI_RunAction\tui\t-", "KPR_UI_Actions\tSub\tKPR_UI_RunAction\tsupported\t-")),
+        ("vectorization differs from the contract", with_inventory(
+            "KPR_Dates_AddDays\tsupported\tarray-capable", "KPR_Dates_AddDays\tsupported\tscalar-only")),
+        ("unsupported member with a vectorization", with_inventory(
+            "KPR_UI_Actions\tSub\tKPR_UI_RunAction\tui\t-", "KPR_UI_Actions\tSub\tKPR_UI_RunAction\tui\tarray-capable")),
+        ("supported function outside the facade", with_source(
+            "src/core/KPR_Core_Dates.bas", "\r\nPrivate Function KPR_Dates_Helper() As Variant\r\nEnd Function\r\n")),
+        ("_Spill twin in a demo module", with_source(
+            demo, "\r\nPublic Function KPR_Dates_AddDays_Spill() As Variant\r\nEnd Function\r\n")),
+        ("reserved namespace declared", with_source(
+            demo, "\r\nPublic Function KPR_Cal_IsHoliday() As Variant\r\nEnd Function\r\n")),
+        ("reservation not recorded", with_inventory("# RESERVED\tKPR_Cal_*\t", "# RESERVED\tKPR_Other_*\t")),
+        ("second variable of a public declaration", listed_first(
+            "\r\nPublic KPR_UI_Listed As Long, KPR_UI_Second As Long\r\n", "Variable\tKPR_UI_Listed")),
+        ("second constant of a public declaration", listed_first(
+            "\r\nPublic Const KPR_UI_A As Long = 1, KPR_UI_B As Long = 2\r\n", "Const\tKPR_UI_A")),
+        ("private reserved name", with_source(
+            ui, "\r\nPrivate Function KPR_Cal_IsHoliday() As Boolean\r\nEnd Function\r\n")),
+    )
+    for label, case in inventory_cases:
+        scenarios.append((label, "kpr-api-inventory", case))
+    renamed = copy.deepcopy(base)
+    renamed["contract"] = renamed["contract"].replace(
+        "Public Function KPR_Dates_AddDays(ByVal DateIn As Variant, ByVal nDays As Variant)",
+        "Public Function KPR_Dates_AddDays(ByVal nDays As Variant, ByVal DateIn As Variant)", 1)
+    scenarios.append(("contract signature differs from the facade", "kpr-api-inventory", renamed))
+    empty = copy.deepcopy(base)
+    empty["inventory"] = ""
+    scenarios.append(("missing inventory", "kpr-api-inventory", empty))
     for name, expected, case in scenarios:
         rep = report(root, case)
         failed_ids = {
