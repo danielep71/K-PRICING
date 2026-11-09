@@ -20,6 +20,7 @@ on:
       - .github/repository-profile.json
       - .github/scripts/labels-drift.mjs
       - .github/scripts/labels-sync.mjs
+      - .github/scripts/markdown-summary.mjs
       - .github/workflows/labels-drift.yml
       - .github/workflows/labels-sync.yml
   schedule:

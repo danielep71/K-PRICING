@@ -8,6 +8,8 @@ import { join } from "node:path";
 import process from "node:process";
 import { promisify } from "node:util";
 
+import { codeSpan, tableCode, tableText } from "./markdown-summary.mjs";
+
 const execFileAsync = promisify(execFile);
 const TOOL_NAME = "Repository label drift";
 const API_VERSION = "2022-11-28";
@@ -229,7 +231,9 @@ function canonicalRows(stdout) {
   if (!countMatch) throw new Error("Canonical plan summary has no planned-change count");
   const rows = [];
   for (const line of stdout.split("\n")) {
-    const match = line.match(/^\| (update|create|delete) \| `([^`]*)` \| ([^|]*) \|$/);
+    // The label cell is a code span whose fence and escaping come from the
+    // shared helper, so it is compared as rendered, never decoded.
+    const match = line.match(/^\| (update|create|delete) \| (.+) \| ([^|]*) \|$/);
     if (match) {
       rows.push({ action: match[1], name: match[2], detail: match[3].trim() });
     }
@@ -240,7 +244,7 @@ function canonicalRows(stdout) {
 function localRows(changes) {
   return changes.map(change => ({
     action: change.action,
-    name: change.name,
+    name: tableCode(change.name),
     detail: change.action === "update"
       ? change.fields.join(", ")
       : change.action === "delete"
@@ -316,13 +320,9 @@ function buildReport({ repository, manifestPath, policyPath, manifest, selection
   };
 }
 
-function markdownEscape(value) {
-  return String(value).replaceAll("|", "\\|").replaceAll("\n", " ");
-}
-
 function compactLabel(label) {
   if (label === null) return "—";
-  return `\`${markdownEscape(label.name)}\` / \`${label.color}\` / ${markdownEscape(label.description)}`;
+  return `${tableCode(label.name)} / ${tableCode(label.color)} / ${tableText(label.description)}`;
 }
 
 function markdownReport(report) {
@@ -330,9 +330,9 @@ function markdownReport(report) {
     "# Repository label drift",
     "",
     `- Status: **${String(report.status).toUpperCase()}**`,
-    `- Repository: \`${report.repository ?? "fixture"}\``,
-    `- Manifest: \`${report.manifest}\``,
-    `- Policy: \`${report.policy}\``,
+    `- Repository: ${codeSpan(report.repository ?? "fixture")}`,
+    `- Manifest: ${codeSpan(report.manifest)}`,
+    `- Policy: ${codeSpan(report.policy)}`,
     `- Profile overlay: **${report.selection.profile ?? "none"}**`,
     `- Domain overlays: **${report.selection.domains.length > 0 ? report.selection.domains.join(", ") : "none"}**`,
     `- Desired / observed: **${report.counts.desired} / ${report.counts.observed}**`,
@@ -350,7 +350,7 @@ function markdownReport(report) {
     );
     for (const difference of report.differences) {
       lines.push(
-        `| ${difference.action} | \`${markdownEscape(difference.name)}\` | `
+        `| ${difference.action} | ${tableCode(difference.name)} | `
         + `${difference.fields.length > 0 ? difference.fields.join(", ") : "—"} | `
         + `${compactLabel(difference.observed)} | ${compactLabel(difference.desired)} |`
       );
@@ -434,6 +434,7 @@ async function runSelfTest(manifestPath, policyPath) {
   drifted[0].color = drifted[0].color === "000000" ? "FFFFFF" : "000000";
   drifted[0].description = "simulated out-of-band change";
   drifted.push({ name: "out-of-band", color: "ABCDEF", description: "simulated extra label" });
+  drifted.push({ name: "odd `|` label", color: "ABCDEF", description: "pipe | and `tick`\r\nline" });
   const driftedBefore = JSON.stringify(drifted);
   const driftFirst = await checkedReport({
     repository: "fixture/drift",
@@ -454,12 +455,16 @@ async function runSelfTest(manifestPath, policyPath) {
     liveLabels: drifted
   });
   assert.equal(driftFirst.status, "drift");
-  assert.deepEqual(driftFirst.differences.map(item => item.action), ["update", "create", "delete"]);
+  assert.deepEqual(driftFirst.differences.map(item => item.action), ["update", "create", "delete", "delete"]);
   assert.equal(JSON.stringify(driftFirst), JSON.stringify(driftSecond));
   assert.equal(markdownReport(driftFirst), markdownReport(driftSecond));
   assert.equal(JSON.stringify(drifted), driftedBefore, "drift check must not mutate live input");
   assert.match(markdownReport(driftFirst), /simulated out-of-band change/);
   assert.match(markdownReport(driftFirst), new RegExp(missing.name));
+  assert.match(
+    markdownReport(driftFirst),
+    /^\| delete \| ``odd `\\\|` label`` \| — \| ``odd `\\\|` label`` \/ `ABCDEF` \/ pipe \\\| and \\`tick\\` line \| — \|$/m
+  );
 
   process.stdout.write(
     "SELF-TEST PASS: retry delays and deterministic no-drift and create/update/delete drift fixtures are read-only and match the canonical reconciler.\n"
