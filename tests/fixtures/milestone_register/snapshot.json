@@ -1,0 +1,97 @@
+{
+  "milestones": [
+    {
+      "title": "v0.0.3 - Test Hardening",
+      "number": 3
+    },
+    {
+      "title": "v0.0.4 — Date primitives",
+      "number": 4
+    }
+  ],
+  "issues": [
+    {
+      "number": 52,
+      "title": "Certify | publish",
+      "state": "open",
+      "body": "## Exit gate\r\n- [ ] Tag  \r\n\r\n```text\r\ncode\r\n```\r\n\r\n",
+      "html_url": "https://github.com/example/repo/issues/52",
+      "labels": [
+        {
+          "name": "release"
+        },
+        {
+          "name": "P2"
+        },
+        {
+          "name": "blocked"
+        }
+      ],
+      "assignees": [
+        {
+          "login": "danielep71"
+        }
+      ],
+      "milestone": {
+        "title": "v0.0.4 — Date primitives",
+        "number": 4
+      }
+    },
+    {
+      "number": 7,
+      "title": "Pull request in the milestone",
+      "state": "closed",
+      "body": "not an issue",
+      "html_url": "https://github.com/example/repo/issues/7",
+      "labels": [],
+      "assignees": [],
+      "milestone": {
+        "title": "v0.0.4 — Date primitives",
+        "number": 4
+      },
+      "pull_request": {
+        "url": "x"
+      }
+    },
+    {
+      "number": 46,
+      "title": "Demo builder",
+      "state": "closed",
+      "body": "Body with ````four```` backticks\n````\ninside\n````",
+      "html_url": "https://github.com/example/repo/issues/46",
+      "labels": [
+        {
+          "name": "tests"
+        },
+        {
+          "name": "P2"
+        }
+      ],
+      "assignees": [
+        {
+          "login": "danielep71"
+        },
+        {
+          "login": "another"
+        }
+      ],
+      "milestone": {
+        "title": "v0.0.4 — Date primitives",
+        "number": 4
+      }
+    },
+    {
+      "number": 48,
+      "title": "No body",
+      "state": "open",
+      "body": null,
+      "html_url": "https://github.com/example/repo/issues/48",
+      "labels": [],
+      "assignees": [],
+      "milestone": {
+        "title": "v0.0.4 — Date primitives",
+        "number": 4
+      }
+    }
+  ]
+}

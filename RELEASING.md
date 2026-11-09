@@ -122,6 +122,14 @@ Run every project-specific numerical, UI, lifecycle, performance or packaging
 gate as well. A stronger specialist gate is additive; the generic repository
 gate never replaces it.
 
+The milestone register must be fresh when the candidate is assembled: run
+`python3 tools/milestone_register.py --check` and require `CURRENT` (exit 0).
+`DRIFT` means the live milestone changed after `docs/MILESTONE_REGISTER.md` was
+last generated: run `python3 tools/milestone_register.py --write`, review and
+merge the result, then assemble again. `UNVERIFIED` means GitHub could not be
+read; retry, and never treat it as current. The release sequence below runs the
+same check again immediately before tagging.
+
 
 ## 5. Certify in Excel
 
@@ -238,6 +246,8 @@ python3 tools/check_release.py \
   --evidence ../release-evidence.json \
   --output test-results/release-integrity.json \
   --summary test-results/release-integrity.md || exit $?
+
+python3 tools/milestone_register.py --check || exit $?
 
 git tag -a "$release_tag" "$candidate_sha" -m "K-PRICING ${release_version}" || exit $?
 

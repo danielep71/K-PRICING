@@ -104,6 +104,23 @@ Use only the categories needed by a release.
 
 ### Added
 
+- Static checks and milestone-register drift monitoring for the v0.0.4
+  candidate (#50). The deterministic `kpr-candidate-tree` rule of
+  `tools/check_kpr_contract.py` requires exactly the 16 approved VBA components
+  and their roles, the candidate's RibbonX, template, fixtures, contracts,
+  roadmap, register and tooling, classified RibbonX callbacks, parsable RibbonX
+  and evidence schema, and generated fixtures marked as generated; it refuses
+  tracked run output, built workbooks and calendar, business-day or `_Spill`
+  placeholders (15 degraded self-tests, one removing `docs/ROADMAP.md`).
+  Separately, `tools/milestone_register.py` renders milestone v0.0.4 into
+  `docs/MILESTONE_REGISTER.md` and checks it against the live issues: `CURRENT`,
+  `DRIFT` or `UNVERIFIED`, where an API, authentication, network or
+  malformed-response failure is never drift. The new `Milestone register`
+  workflow runs that check on relevant pushes, issue events and on demand, with
+  read-only permissions and no `pull_request` trigger; the static gate runs only
+  its frozen-snapshot tests. A fresh `CURRENT` is required at candidate assembly
+  and immediately before tagging (`RELEASING.md`).
+
 - `docs/API_INVENTORY.txt` classifies all 150 technically public VBA members
   (#49): the 22 supported `KPR_Dates_*` functions with their vectorization, and
   128 unsupported infrastructure members in the `internal`, `registration`,

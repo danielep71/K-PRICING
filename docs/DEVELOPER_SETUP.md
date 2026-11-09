@@ -76,6 +76,7 @@ python3 tools/test_documentation.py -v
 python3 tools/test_verification_depth.py -v
 python3 tools/test_inject_ribbon.py -v
 python3 tools/test_workbook_template.py -v
+python3 tools/test_milestone_register.py -v
 python3 tools/workbook_template.py --check
 python3 tools/check_documentation.py --root .
 python3 tools/check_release.py --root . --self-test
