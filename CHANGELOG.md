@@ -104,6 +104,17 @@ Use only the categories needed by a release.
 
 ### Added
 
+- `tools/Check-KPR.ps1` runs the Excel check of a branch with no manual
+  step: one line pasted into Windows Run (Win+R), the desktop shortcut it
+  creates on its first run, or `tools\Check-KPR.cmd` from a clone. It starts
+  its own Excel, builds a fresh `KPR.xlam` from the branch's exact commit with
+  the development loader, compiles it, runs `KPR_Test_RunAll` twice and loads
+  the Ribbon, then zips the evidence and copies it to the clipboard. It asks
+  before turning on *Trust access to the VBA project object model*, and a
+  watchdog closes its Excel after 30 minutes. `KPR_Dev_CheckBuild` gains an
+  optional `Unattended` argument (no message box or Explorer window) and
+  `KPR_Dev_LastCheckFolder` returns the folder it wrote.
+
 - Added a one-click Excel check to the development loader
   (`tests/modules/KPR_Dev_Import.bas`): the macro `KPR_Dev_CheckLatest`
   (Alt+F8) resolves `main` to its exact commit, imports it into `KPR.xlam`,

@@ -431,6 +431,22 @@ file is removed. Exit status `0` means success, `1` a validation failure
 reported on stderr, and `2` a usage error. Restore by copying the backup over
 the target.
 
+## One-click Excel check
+
+`Check-KPR.ps1` (or `Check-KPR.cmd`, double-clicked, or the one line for
+Windows Run in [INSTALLATION.md](../INSTALLATION.md#one-click-excel-check))
+runs the Excel check of a branch unattended on a Windows host with desktop
+Excel. It resolves the branch to its exact commit, starts its own Excel,
+creates an empty `KPR.xlam` and a scratch workbook holding that commit's
+`tests/modules/KPR_Dev_Import.bas`, and calls
+`KPR_Dev_CheckBuild(<sha>, "KPR.xlam", True)`: import, compile, save,
+`KPR_Test_RunAll` twice and the Ribbon load check. It adds `check.log` to the
+evidence folder, zips it and copies the summary and both evidence files to the
+clipboard. It asks before turning on *Trust access to the VBA project object
+model* and changes no other setting; a watchdog closes the check's Excel after
+`-TimeoutMinutes` (30). The script needs only Windows PowerShell 5.1 and has no
+Python dependency; `check_test_evidence.py` validates its output afterwards.
+
 ## Structured test evidence
 
 `check_test_evidence.py` validates the `kpr-test-evidence.json` record written
