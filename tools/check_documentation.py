@@ -245,6 +245,10 @@ def commands(text: str) -> list[tuple[str, list[str]]]:
     return result
 
 
+def is_option(token: str) -> bool:
+    return token.startswith("-") and len(token) > 1 and token != "--" and not NUMBER.match(token)
+
+
 def command_problems(cli: Cli, tokens: list[str]) -> list[str]:
     """Options the parser does not declare, and subcommands it does not have."""
     problems = []
@@ -255,11 +259,13 @@ def command_problems(cli: Cli, tokens: list[str]) -> list[str]:
         index += 1
         if token == "--":
             break
-        if token.startswith("-") and len(token) > 1 and not NUMBER.match(token):
+        if is_option(token):
             flag = token.split("=", 1)[0]
             if flag not in scope:
                 problems.append(f"undocumented CLI option {flag}")
-            elif scope[flag] and "=" not in token:
+            elif scope[flag] and "=" not in token and index < len(tokens) and not is_option(tokens[index]):
+                # The next token is the value; an option in its place is checked
+                # as an option, so a missing value cannot hide it.
                 index += 1
         elif cli.subcommands and not chosen:
             if token not in cli.subcommands:

@@ -373,6 +373,10 @@ class DocumentationTests(unittest.TestCase):
         self.assertEqual(self.write_documented(script, "python3 tools/fixture.py -n -o x -v -k case"), [])
         self.assertEqual(self.write_documented(script, "python3 tools/fixture.py -z"),
                          ["README.md: tools/fixture.py undocumented CLI option -z"])
+        # A value-taking option without its value does not hide the next option.
+        self.assertEqual(self.write_documented(script, "python3 tools/fixture.py -o --removed-option"),
+                         ["README.md: tools/fixture.py undocumented CLI option --removed-option"])
+        self.assertEqual(self.write_documented(script, "python3 tools/fixture.py -o -1 -n"), [])
 
     def test_unreadable_parser_fails(self):
         script = """
