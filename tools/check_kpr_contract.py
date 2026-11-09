@@ -1261,14 +1261,28 @@ def technically_public(text: str) -> list[tuple[int, str, str]]:
             continue
         if depth:
             continue
+        constants = re.match(r"^(?:Public|Global)\s+Const\s+(.*)$", statement, re.I)
+        if constants:
+            output.extend((number, "Const", name) for name in declared_list(constants.group(1)))
+            continue
         hit = PUBLIC_MEMBER.match(statement)
         if hit:
             output.append((number, member_kind(hit.group("kind")), hit.group("name")))
             continue
-        variable = PUBLIC_VARIABLE.match(statement)
-        if variable:
-            output.append((number, "Variable", variable.group("name")))
+        if PUBLIC_VARIABLE.match(statement):
+            listed = re.sub(r"^(?:Public|Global)\s+(?:WithEvents\s+)?", "", statement, flags=re.I)
+            output.extend((number, "Variable", name) for name in declared_list(listed))
     return output
+
+
+def declared_list(text: str) -> list[str]:
+    """Every identifier of a comma-separated VBA declaration list ("A As Long, B As Long = 2")."""
+    names = []
+    for part in _split_top(text, ","):
+        hit = re.match(r"^(?:WithEvents\s+)?([A-Za-z_]\w*)", part, re.I)
+        if hit:
+            names.append(hit.group(1))
+    return names
 
 
 def inventory_records(text: str) -> tuple[list[dict[str, Any]], dict[str, str], list[str]]:
@@ -1311,11 +1325,17 @@ def _member_errors(path: str, role: str, entry: dict[str, Any] | None, line: int
     if entry["class"] not in ROLE_CLASSES.get(role, set()):
         failures.append(finding(INVENTORY_PATH, f"{name} in a {role!r} component cannot be class {entry['class']!r}.",
                                 entry["line"]))
-    folded = name.casefold()
-    if folded.startswith(RESERVED_NAMESPACE.casefold()):
-        failures.append(finding(path, f"{name} uses the reserved {RESERVED_NAMESPACE}* namespace.", line))
-    if folded.startswith("kpr_dates_") and folded.endswith("_spill"):
-        failures.append(finding(path, f"{name} is a forbidden KPR_Dates_*_Spill twin.", line))
+    return failures
+
+
+def _forbidden_name_errors(path: str, text: str) -> list[dict[str, Any]]:
+    """Reserved KPR_Cal_* names and KPR_Dates_*_Spill twins, at any visibility and in any use."""
+    failures: list[dict[str, Any]] = []
+    for number, line in enumerate(executable_text(text).splitlines(), 1):
+        for name in re.findall(rf"\b{RESERVED_NAMESPACE}\w*", line, re.I):
+            failures.append(finding(path, f"{name} uses the reserved {RESERVED_NAMESPACE}* namespace.", number))
+        for name in re.findall(r"\bKPR_Dates_\w*_Spill\b", line, re.I):
+            failures.append(finding(path, f"{name} is a forbidden KPR_Dates_*_Spill twin.", number))
     return failures
 
 
@@ -1353,6 +1373,7 @@ def _inventory_component_errors(data: dict[str, Any], records: list[dict[str, An
         failures.extend(finding(INVENTORY_PATH, f"{entry['name']} is listed but not public in {stem}.", entry["line"])
                         for key, entry in listed.items() if key not in declared_names)
         failures.extend(_facade_only_errors(path, role, text))
+        failures.extend(_forbidden_name_errors(path, text))
     failures.extend(finding(INVENTORY_PATH, f"{entry['component']} is not a tracked component.", entry["line"])
                     for component, members in by_component.items() if component not in seen_components
                     for entry in members.values())
@@ -1794,6 +1815,16 @@ def self_test(root: Path) -> None:
         case["inventory"] = case["inventory"].replace(old, new, 1)
         return case
 
+    def listed_first(extra: str, entry: str) -> dict[str, Any]:
+        # Only the first name of the declaration list is inventoried.
+        case = with_source(ui, extra)
+        case["inventory"] += f"KPR_UI_Actions\t{entry}\tui\t-\n"
+        return case
+
+    first_only = listed_first("\r\nPublic KPR_UI_Listed As Long\r\n", "Variable\tKPR_UI_Listed")
+    if report(root, first_only)["status"] != "pass":
+        raise RuntimeError("A fully inventoried public variable must pass")
+
     inventory_cases = (
         ("unclassified public member", with_source(ui, "\r\nPublic Sub KPR_UI_Unlisted()\r\nEnd Sub\r\n")),
         ("implicitly public member", with_source(ui, "\r\nSub KPR_UI_Implicit()\r\nEnd Sub\r\n")),
@@ -1813,6 +1844,12 @@ def self_test(root: Path) -> None:
         ("reserved namespace declared", with_source(
             demo, "\r\nPublic Function KPR_Cal_IsHoliday() As Variant\r\nEnd Function\r\n")),
         ("reservation not recorded", with_inventory("# RESERVED\tKPR_Cal_*\t", "# RESERVED\tKPR_Other_*\t")),
+        ("second variable of a public declaration", listed_first(
+            "\r\nPublic KPR_UI_Listed As Long, KPR_UI_Second As Long\r\n", "Variable\tKPR_UI_Listed")),
+        ("second constant of a public declaration", listed_first(
+            "\r\nPublic Const KPR_UI_A As Long = 1, KPR_UI_B As Long = 2\r\n", "Const\tKPR_UI_A")),
+        ("private reserved name", with_source(
+            ui, "\r\nPrivate Function KPR_Cal_IsHoliday() As Boolean\r\nEnd Function\r\n")),
     )
     for label, case in inventory_cases:
         scenarios.append((label, "kpr-api-inventory", case))

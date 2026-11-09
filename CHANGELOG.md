@@ -111,8 +111,9 @@ Use only the categories needed by a release.
   reserved for v0.0.5 and the calendar-aware v0.0.6 boundary. The new
   `kpr-api-inventory` rule of `tools/check_kpr_contract.py` keeps it complete
   and checks that the supported set, vectorization and signatures agree across
-  the contract, the facade and `docs/PUBLIC_API.txt`; 12 degraded self-tests
-  cover it.
+  the contract, the facade and `docs/PUBLIC_API.txt`. Every name of a
+  comma-separated public declaration is inventoried, and `KPR_Cal_*` names are
+  refused at any visibility; 15 degraded self-tests cover the rule.
 
 - The K-PRICING workbook is built from a template, as in K-SACCR.
   `src/workbook/KPR_Template.xlsx` is the macro-free template (a Home sheet and
