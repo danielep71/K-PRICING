@@ -362,6 +362,15 @@ themselves on Windows. Press **Win+R**, paste this line and press **Enter**:
 powershell -NoP -EP Bypass -c "&([scriptblock]::Create((irm https://raw.githubusercontent.com/danielep71/K-PRICING/main/tools/Check-KPR.ps1)))"
 ```
 
+In a PowerShell window that is already open, paste only the part between the
+quotes instead; it starts no other PowerShell, so it also works where a
+company policy forbids that ("Program 'powershell.exe' failed to run: Access
+is denied"):
+
+```text
+&([scriptblock]::Create((irm https://raw.githubusercontent.com/danielep71/K-PRICING/main/tools/Check-KPR.ps1)))
+```
+
 The first run also puts a **K-PRICING check** shortcut on the desktop, so later
 checks are a double-click. From a clone, `tools\Check-KPR.cmd` does the same
 (`tools\Check-KPR.cmd my-branch` checks another branch). Leave Excel alone
@@ -395,12 +404,12 @@ an empty `KPR.xlam` and no workbook; any other failure to download the
 template stops the check. Open the workbook with macros enabled: the **K-PRICING** tab, the functions and
 the demo work while it is open.
 
-A watchdog closes the check's Excel after 30 minutes (`-TimeoutMinutes`), so an
-unanswered dialog cannot hang it. If the VBA editor shows a *Compile error*
-box, click **OK**: the check then reports the failed compile. Your own
-`KPR.xlam` and Excel settings are never changed, except the VBA project access
-you agree to; use `tools/inject_ribbon.py` to give a real build the tab, as
-[Ribbon](#ribbon) describes.
+A watchdog, running inside the same PowerShell, closes the check's Excel after
+30 minutes (`-TimeoutMinutes`), so an unanswered dialog cannot hang it. If the
+VBA editor shows a *Compile error* box, click **OK**: the check then reports
+the failed compile. Your own `KPR.xlam` and Excel settings are never changed,
+except the VBA project access you agree to; use `tools/inject_ribbon.py` to
+give a real build the tab, as [Ribbon](#ribbon) describes.
 
 The same check is available inside Excel. With the loader in `PERSONAL.XLSB`
 and `KPR.xlam` open, press **Alt+F8** and run `KPR_Dev_CheckLatest`; it shows

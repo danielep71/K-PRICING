@@ -31,6 +31,11 @@ Excel or Windows setting.
 powershell -NoProfile -ExecutionPolicy Bypass -Command "&([scriptblock]::Create((irm https://raw.githubusercontent.com/danielep71/K-PRICING/main/tools/Check-KPR.ps1)))"
 .EXAMPLE
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\Check-KPR.ps1 -Branch my-branch
+.EXAMPLE
+&([scriptblock]::Create((irm https://raw.githubusercontent.com/danielep71/K-PRICING/main/tools/Check-KPR.ps1)))
+
+Inside a PowerShell window that is already open; it starts no other
+PowerShell, so it also works where a policy forbids that.
 #>
 [CmdletBinding()]
 param(
@@ -292,10 +297,11 @@ try {
     $watch = "Start-Sleep -Seconds $($TimeoutMinutes * 60); " +
              "if (-not (Test-Path -LiteralPath '$doneQuoted')) { " +
              "Set-Content -LiteralPath '$timeoutQuoted' -Value timeout; Stop-Process -Id $excelPid -Force }"
-    # Encoded, because Start-Process does not quote its arguments.
-    $encoded = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($watch))
-    $watchdog = Start-Process -FilePath "powershell.exe" -WindowStyle Hidden -PassThru `
-        -ArgumentList @("-NoProfile", "-EncodedCommand", $encoded)
+    # A runspace in this process, not a child powershell.exe: some policies
+    # forbid PowerShell from starting another PowerShell.
+    $watchdog = [powershell]::Create()
+    [void]$watchdog.AddScript($watch)
+    [void]$watchdog.BeginInvoke()
 
     Say "Importing, compiling and running the regression twice: this takes a few minutes."
     Say "If a 'Compile error' box appears in the VBA editor, click OK: the check then reports it."
@@ -356,8 +362,13 @@ finally {
     if ($null -ne $doneFlag) {
         Set-Content -LiteralPath $doneFlag -Value done -ErrorAction SilentlyContinue
     }
-    if ($null -ne $watchdog -and -not $watchdog.HasExited) {
-        Stop-Process -Id $watchdog.Id -Force -ErrorAction SilentlyContinue
+    if ($null -ne $watchdog) {
+        try {
+            $watchdog.Stop()
+            $watchdog.Dispose()
+        }
+        catch {
+        }
     }
     if ($null -ne $excel) {
         try {
