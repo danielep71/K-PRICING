@@ -48,6 +48,12 @@ class RenderTests(unittest.TestCase):
         self.assertIn("`````text\nBody with ````four```` backticks\n````\ninside\n````\n`````", EXPECTED)
         self.assertIn("### #52 Certify \\| publish", EXPECTED)
 
+    def test_an_indented_backtick_run_lengthens_the_fence(self) -> None:
+        for indent in ("", " ", "   ", "\t"):
+            with self.subTest(indent=repr(indent)):
+                record = dict(mr.normal_issue(SNAPSHOT["issues"][0]), body=f"a\n{indent}````\nb")
+                self.assertIn(f"`````text\na\n{indent}````\nb\n`````\n", mr.render("v0.0.4", [record]))
+
 
 class RegionTests(unittest.TestCase):
     def run_tool(self, *argv: str) -> tuple[int, str]:

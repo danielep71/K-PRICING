@@ -169,7 +169,10 @@ def _cell(value: str) -> str:
 
 
 def _fence(body: str) -> str:
-    longest = max((len(line) - len(line.lstrip("`")) for line in body.split("\n")), default=0)
+    # Markdown lets a closing fence be indented, so a run counts after any
+    # leading blanks; counting deeper indents too only lengthens the fence.
+    runs = (line.lstrip(" \t") for line in body.split("\n"))
+    longest = max((len(run) - len(run.lstrip("`")) for run in runs), default=0)
     return "`" * max(4, longest + 1)
 
 
