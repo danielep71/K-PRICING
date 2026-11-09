@@ -307,7 +307,9 @@ Public Function KPR_Dev_CheckBuild( _
 '     The open workbook or add-in to update, e.g. "KPR.xlam".
 '   Unattended
 '     TRUE: no message box and no Explorer window, for a script that drives
-'     Excel; KPR_Dev_LastCheckFolder then gives the folder.
+'     Excel; KPR_Dev_LastCheckFolder then gives the folder. The Ribbon step
+'     is skipped (NOT RUN): Excel loads a workbook's Ribbon only while no
+'     macro runs, so the script checks the tab after this returns.
 '
 ' RETURNS
 '   TRUE when every step passed.
@@ -381,12 +383,19 @@ Public Function KPR_Dev_CheckBuild( _
 '------------------------------------------------------------------------------
 ' RIBBON
 '------------------------------------------------------------------------------
-    'A copy carries the tab, so the user's own add-in is never rewritten
-        Application.StatusBar = "K-PRICING check: loading the Ribbon in a copy..."
-        Ribbon = RibbonCheck(Target, Sha, Folder, Detail)
+    'A copy carries the tab, so the user's own add-in is never rewritten.
+    'Unattended, tools/Check-KPR.ps1 checks the tab itself once no macro is
+    'running: Excel does not load a workbook's Ribbon while a macro runs
+        If Unattended Then
+            Ribbon = "NOT RUN"
+            Detail = "tools/Check-KPR.ps1 checks the built workbook's tab"
+        Else
+            Application.StatusBar = "K-PRICING check: loading the Ribbon in a copy..."
+            Ribbon = RibbonCheck(Target, Sha, Folder, Detail)
+        End If
         Report = Report & "Ribbon:  " & Ribbon & IIf(Len(Detail) > 0, " (" & Detail & ")", "") & vbCrLf
         Detail = vbNullString
-        Passed = Run1 And Run2 And Ribbon = "PASS"
+        Passed = Run1 And Run2 And (Ribbon = "PASS" Or Unattended)
 
 '------------------------------------------------------------------------------
 ' REPORT

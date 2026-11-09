@@ -391,6 +391,14 @@ Use only the categories needed by a release.
 
 ### Fixed
 
+- The one-click Excel check's Ribbon step failed on the first real run ("Excel
+  did not load the tab", and a bare "400" box) although the build passed: the
+  loader opened a copy from inside a running macro, and Excel loads a
+  workbook's Ribbon only while no macro runs. Unattended, `KPR_Dev_CheckBuild`
+  now leaves that step to `tools/Check-KPR.ps1`, which reopens the built
+  workbook once the macros have returned and requires its K-PRICING tab and
+  Functions menu. The Alt+F8 path keeps the copy check.
+
 - The one-click Excel check works where a policy forbids PowerShell or Excel
   from starting `powershell.exe` ("Access is denied"). Its watchdog runs in a
   runspace of the same process, it can be pasted into an open PowerShell

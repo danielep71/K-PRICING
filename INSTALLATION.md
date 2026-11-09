@@ -391,15 +391,16 @@ until the window says it is finished. `tools/Check-KPR.ps1`:
    commit's loader;
 4. runs `KPR_Dev_CheckBuild` unattended on it: it imports every module,
    compiles the project (**Debug > Compile**), saves it, runs
-   `KPR_Test_RunAll` twice and loads the commit's Ribbon in a throwaway copy,
-   checking that Excel loaded the **K-PRICING** tab and built its menus;
+   `KPR_Test_RunAll` twice;
 5. builds the workbook to use, `K-PRICING-<commit>.xlsm` in `<clone>\build`
    (or in `Documents\K-PRICING` when no clone is known):
    the template with the production and example modules, compiled, the commit
    on the **Home** sheet and the **KPR Dates Demo** sheet built once. It is
    built in the temporary folder and copied there only when complete; when
    that file already exists, the new one gets the time in its name, so a
-   workbook you saved is never replaced;
+   workbook you saved is never replaced. It then opens the workbook again,
+   once no macro runs, and checks that Excel loads its **K-PRICING** tab and
+   builds the Functions menu;
 6. writes `check.log` (Windows, Excel, branch, commit, each step) next to
    `summary.txt`, `run-1\kpr-test-evidence.json` and
    `run-2\kpr-test-evidence.json` in `Documents\KPR-evidence\<date>-<commit>`,

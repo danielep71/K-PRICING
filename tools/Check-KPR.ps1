@@ -15,12 +15,14 @@ it creates on the first run, or with tools\Check-KPR.cmd from a clone. It:
    workbook holding the commit's tests\modules\KPR_Dev_Import.bas (a commit
    without the template gets an empty KPR.xlam instead);
 4. runs KPR_Dev_CheckBuild unattended on it: import of every module, compile,
-   save, KPR_Test_RunAll twice and the Ribbon load check;
+   save and KPR_Test_RunAll twice;
 5. builds the workbook to use, K-PRICING-<commit>.xlsm in the build folder of
    your clone (-RepoRoot, remembered), or in Documents\K-PRICING without one:
    the template with the production and example modules, compiled, the
    commit written on the Home sheet and the KPR Dates Demo sheet built once
-   by KPR_Demo_BuildDates;
+   by KPR_Demo_BuildDates; it then opens the workbook again, once no macro
+   runs, and checks that Excel loads its K-PRICING tab and builds the
+   Functions menu (Excel loads a workbook's Ribbon only while no macro runs);
 6. adds check.log (Windows, Excel, branch, commit, each step) to the evidence
    folder Documents\KPR-evidence\<date>-<commit>, zips it, copies the summary
    and both evidence files to the clipboard and shows the workbook in
@@ -171,6 +173,37 @@ function Resolve-OutputFolder {
     return (Join-Path ([Environment]::GetFolderPath("MyDocuments")) "K-PRICING")
 }
 
+function Test-WorkbookRibbon {
+    # Opens the built workbook again, now that no macro runs, and waits up to
+    # 20 seconds for its Ribbon: onLoad sets KPR_UI_RibbonLoaded, and the
+    # Functions menu must list the KPR_ functions. Excel loads a workbook's
+    # Ribbon only while no macro runs, so this cannot be done from VBA.
+    param($Excel, [string]$Path)
+    $book = $Excel.Workbooks.Open($Path)
+    $own = "'" + $book.Name.Replace("'", "''") + "'!"
+    try {
+        for ($attempt = 0; $attempt -lt 40; $attempt++) {
+            Start-Sleep -Milliseconds 500
+            try {
+                if ([bool]$Excel.Run($own + "KPR_UI_RibbonLoaded")) {
+                    $menu = [string]$Excel.Run($own + "KPR_UI_RibbonMenuXml", "functions", "Date primitives")
+                    if ($menu.Contains("KPR_Fn_")) {
+                        return "PASS (the K-PRICING tab loaded in $($book.Name) and its Functions menu lists the functions)"
+                    }
+                    return "FAIL (the K-PRICING tab loaded but its Functions menu is empty)"
+                }
+            }
+            catch {
+                # Excel can refuse a call while it is still opening the workbook.
+            }
+        }
+        return "FAIL (Excel did not load the K-PRICING tab in 20 seconds: onLoad never ran)"
+    }
+    finally {
+        $book.Close($false)
+    }
+}
+
 function New-FromTemplate {
     # Opens the macro-free template read-only and saves it as an .xlsm at Path;
     # the new workbook stays open.
@@ -248,6 +281,7 @@ $excel = $null
 $work = $null
 $folder = ""
 $workbookPath = $null
+$ribbonResult = "NOT RUN (no workbook was built)"
 $watchdog = $null
 $doneFlag = $null
 $timeoutFlag = $null
@@ -388,6 +422,11 @@ try {
         Copy-Item -LiteralPath (Join-Path $work $bookName) -Destination $bookPath
         $workbookPath = $bookPath
         Say "Workbook: PASS ($imported modules, demo sheet built) $bookPath" "Green"
+        $ribbonResult = Test-WorkbookRibbon -Excel $excel -Path $bookPath
+        Say ("Ribbon: " + $ribbonResult) $(if ($ribbonResult -like "PASS*") { "Green" } else { "Red" })
+        if ($ribbonResult -notlike "PASS*") {
+            $code = 1
+        }
     }
     Set-Content -LiteralPath $doneFlag -Value done
 }
@@ -435,7 +474,8 @@ Say ("Finished in {0:N0} minutes" -f ((Get-Date) - $startedAt).TotalMinutes)
 if (-not [string]::IsNullOrWhiteSpace($folder) -and (Test-Path -LiteralPath $folder)) {
     [System.IO.File]::WriteAllText((Join-Path $folder "check.log"), (($script:log -join "`r`n") + "`r`n"), $utf8NoBom)
     $workbookLine = $(if ($null -ne $workbookPath) { "Workbook: PASS ($workbookPath)" } else { "Workbook: NOT BUILT (see check.log)" })
-    [System.IO.File]::AppendAllText((Join-Path $folder "summary.txt"), $workbookLine + "`r`n", $utf8NoBom)
+    [System.IO.File]::AppendAllText((Join-Path $folder "summary.txt"),
+        $workbookLine + "`r`n" + "Ribbon (workbook): " + $ribbonResult + "`r`n", $utf8NoBom)
     $zip = $folder.TrimEnd("\") + ".zip"
     Compress-Archive -Path (Join-Path $folder "*") -DestinationPath $zip -Force
     Write-Host ""

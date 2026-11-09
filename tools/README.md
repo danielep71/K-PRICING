@@ -441,7 +441,9 @@ saves the commit's `src/workbook/KPR_Template.xlsx` as a development `.xlsm`
 next to a scratch workbook holding that commit's
 `tests/modules/KPR_Dev_Import.bas`, and calls
 `KPR_Dev_CheckBuild(<sha>, "K-PRICING_Development.xlsm", True)`: import,
-compile, save, `KPR_Test_RunAll` twice and the Ribbon load check. It then
+compile, save and `KPR_Test_RunAll` twice; unattended, the loader leaves the
+Ribbon to the script, because Excel loads a workbook's Ribbon only while no
+macro runs. It then
 builds `K-PRICING-<commit>.xlsm` in the clone's ignored `build` folder (the
 clone comes from `-RepoRoot`, remembered in `HKCU\Software\K-PRICING\Check`,
 or from the script's own location; `Documents\K-PRICING` without one) from the
@@ -449,7 +451,9 @@ template with
 the `public`, `internal`, `ui` and `example` modules, compiles it, writes the
 commit on Home and builds the demo sheet with `KPR_Demo_BuildDates`; it is
 built in the temporary folder and copied out under a new, time-stamped name
-when the target already exists, so a saved workbook is never replaced. Only a
+when the target already exists, so a saved workbook is never replaced. The
+script then reopens it and requires `KPR_UI_RibbonLoaded` and a Functions menu
+listing the `KPR_` functions within 20 seconds. Only a
 404 for the template selects the earlier empty-`KPR.xlam` check. It adds
 `check.log` to the evidence folder, zips it and copies the summary and both
 evidence files to the clipboard.
