@@ -80,12 +80,14 @@ jobs:
                       result = request("PATCH", path, {"milestone": None})
                       if result.get("milestone") is not None:
                           raise ValueError(f"PR #{number} still has a milestone")
-                      # Read the post-state back independently of the PATCH.
-                      if request("GET", path).get("milestone") is not None:
-                          raise ValueError(f"PR #{number} still has a milestone after the read-back")
+                      # Record the accepted PATCH first, so a failing read-back
+                      # still leaves the removal in the summary.
                       title = milestone.get("title", "") if isinstance(milestone, dict) else ""
                       removed.append((number, title))
                       print(f"Removed milestone {title!r} from PR #{number}")
+                      # Read the post-state back independently of the PATCH.
+                      if request("GET", path).get("milestone") is not None:
+                          raise ValueError(f"PR #{number} still has a milestone after the read-back")
 
               # Traverse the full unfiltered PR collection in creation order so
               # mutations cannot shift pagination. This includes closed and
