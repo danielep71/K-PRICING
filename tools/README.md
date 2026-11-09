@@ -489,7 +489,9 @@ number. Only the region between its two marker lines is replaced. `--write`
 fetches the live milestone and rewrites the region; `--check` compares and
 exits `0` (`CURRENT`), `1` (`DRIFT`, naming the first mismatched issue and
 field and the regeneration command) or `2` (`UNVERIFIED`: authentication, rate
-limit, network, API error or a malformed response, never drift). `--snapshot`
+limit, network, API error or a malformed response, never drift). An issue
+body with a line equal to a marker is refused as `UNVERIFIED` before anything
+is written, so a regeneration cannot leave the region unreadable. `--snapshot`
 reads a saved issue list instead of GitHub. The live check runs only in
 `.github/workflows/milestone-register.yml`, outside the deterministic gate;
 `test_milestone_register.py` runs in that gate against the frozen snapshot in

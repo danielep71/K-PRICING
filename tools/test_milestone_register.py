@@ -125,6 +125,22 @@ class RegionTests(unittest.TestCase):
                 self.assertEqual(self.tool("--write")[0], mr.UNVERIFIED)
                 self.assertEqual(self.document.read_text(encoding="utf-8"), text)
 
+    def test_a_marker_line_in_a_body_is_refused_before_writing(self) -> None:
+        self.tool("--write")
+        written = self.document.read_text(encoding="utf-8")
+        for marker in (mr.BEGIN, mr.END):
+            with self.subTest(marker=marker[:20]):
+                changed = copy.deepcopy(SNAPSHOT)
+                changed["issues"][0]["body"] = f"Format:\r\n{marker}\r\nend"
+                self.save(changed)
+                for mode in ("--write", "--check"):
+                    code, output = self.tool(mode)
+                    self.assertEqual(code, mr.UNVERIFIED)
+                    self.assertIn("issue #52: field body has a line equal to a generated-region marker", output)
+                self.assertEqual(self.document.read_text(encoding="utf-8"), written)
+        self.save(SNAPSHOT)
+        self.assertEqual(self.tool("--check")[0], mr.CURRENT)
+
     def test_summary_names_the_result(self) -> None:
         self.tool("--write")
         summary = self.folder / "summary.md"

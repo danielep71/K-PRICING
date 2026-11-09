@@ -201,6 +201,14 @@ def split_region(document: str) -> tuple[str, str, str]:
     return "\n".join(lines[: start + 1]), "\n".join(lines[start + 1: stop]), "\n".join(lines[stop:])
 
 
+def marker_collision(records: Sequence[dict[str, Any]]) -> None:
+    """A body line equal to a marker would split the region on the next read; refuse it before writing."""
+    for record in records:
+        if {BEGIN, END} & set(record["body"].split("\n")):
+            raise RegionError(f"issue #{record['number']}: field body has a line equal to a generated-region "
+                              "marker; the register cannot hold it, so nothing was written")
+
+
 def replace_region(document: str, region: str) -> str:
     before, _, after = split_region(document)
     return f"{before}\n{region}\n{after}"
@@ -237,6 +245,7 @@ def run(mode: str, document: Path, fetch: Fetch, repository: str, prefix: str) -
     try:
         title, records = fetch_register(fetch, repository, prefix)
         text = document.read_text(encoding="utf-8")
+        marker_collision(records)
         live = render(title, records)
         if mode == "write":
             document.write_text(replace_region(text, live), encoding="utf-8")
