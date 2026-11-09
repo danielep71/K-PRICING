@@ -14,15 +14,25 @@ separate verdicts, so a temporary service outage cannot weaken local validation.
 and anchor validation. `tools/check_documentation.py` additionally checks:
 
 - literal Python invocations of tracked scripts under `tools/` in maintained Markdown,
-  including inline and continued examples, against tracked filenames;
-- documented long options against literal `add_argument` declarations and
-  shared argument helpers, using Python AST parsing without executing code;
+  including inline and continued examples, against tracked filenames. The
+  `python`, `python3`, `py` and `py -3` launchers and the `-m tools.<module>`
+  form are recognized; a command quoted inside another command ends at its
+  quote, and the command ends at a comment or shell operator. `<placeholder>`
+  values are accepted as values;
+- documented long and short options against literal `add_argument`
+  declarations and shared argument helpers, using Python AST parsing without
+  importing or executing code. Subcommands are read from `add_subparsers` and
+  `add_parser`, including names taken from a literal list or dictionary in a
+  `for` loop (and an `if name == "..."` inside it); an option is valid only in
+  the parser that declares it, and an unknown subcommand is a finding. A
+  parser whose subcommand names cannot be read statically fails. Test modules
+  that call `unittest.main()` accept its options;
 - registered filename references against tracked targets and document text;
 - registered literal workflow names and named job contexts against their YAML;
 - registered JSON policy values against their JSON-pointer targets.
 
 The command scanner is not a shell interpreter: it does not execute examples,
-verify argument values, resolve arbitrary dynamic CLI generation or test Office.
+verify argument values, resolve dynamic CLI generation beyond literal loops, or test Office.
 Reference coverage is explicit in the policy. It cannot infer every prose claim
 or find every unregistered inline filename. Register new cross-file claims when
 they would otherwise drift silently. Complex/dynamic workflow names need a
