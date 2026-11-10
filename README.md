@@ -55,14 +55,17 @@
 
 ## ✨ What this project is
 
-**Status: public application development repository, version `0.0.0`.**
-The neutral starter passed a manual Windows 64-bit Excel run at commit
-`c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2`; see
-[the setup completion record](docs/SETUP_COMPLETION.md). The frozen KPR date layer
-is now migrated, and exact-source Excel parity passed on one Windows 64-bit
-host in #17 ([evidence](evidence/migration-2026-09-24/session.txt)); migration
-was accepted in #18 ([completion record](docs/MIGRATION_COMPLETION.md)) and no
-installable product is claimed. See the
+**Status: version `0.0.4`, the first functional release candidate: the
+[Date Primitives](#date-primitives) layer.** It is certified only by the
+exact-source Windows Excel run recorded in #52; until that evidence is complete
+and the `v0.0.4` tag exists, it is a candidate, not a release. The earlier
+milestones were not functional releases: v0.0.1 set up the repository (the
+neutral starter passed a manual Windows 64-bit Excel run at commit
+`c8f0b6ee147d07549484ec83743f5b7dfc0ea1f2`, see
+[the setup completion record](docs/SETUP_COMPLETION.md)) and v0.0.2 migrated
+the frozen KPR date layer (exact-source parity on one Windows 64-bit host in #17,
+[evidence](evidence/migration-2026-09-24/session.txt); accepted in #18,
+[completion record](docs/MIGRATION_COMPLETION.md)). See the
 [initialization status](docs/INITIALIZATION_STATUS.md) for provenance and setup boundaries.
 
 The product and repository name is **K-PRICING**; **KPR** is its short form,
@@ -142,6 +145,63 @@ Current GitHub controls and limitations are recorded in
 recorded in [the migration completion record](docs/MIGRATION_COMPLETION.md), and
 future work is sequenced in [the roadmap](docs/ROADMAP.md).
 
+<a id="date-primitives"></a>
+
+## 📅 Date Primitives (v0.0.4)
+
+The supported surface is exactly these 22 functions of
+[`KPR_DATES_DAYS`](src/modules/KPR_DATES_DAYS.bas), usable from a worksheet
+cell and from VBA. [`docs/DATE_LAYER_CONTRACT.md`](docs/DATE_LAYER_CONTRACT.md)
+is the normative behavior and [`docs/PUBLIC_API.txt`](docs/PUBLIC_API.txt) the
+checked list of names and signatures.
+
+| Group | Functions |
+| --- | --- |
+| Period boundaries | `KPR_Dates_BeginOfMonth`, `KPR_Dates_EndOfMonth`, `KPR_Dates_BeginOfQuarter`, `KPR_Dates_EndOfQuarter`, `KPR_Dates_BeginOfYear`, `KPR_Dates_EndOfYear` |
+| Predicates and counts | `KPR_Dates_IsMonthEnd`, `KPR_Dates_IsQuarterEnd`, `KPR_Dates_IsYearEnd`, `KPR_Dates_IsLeapYear`, `KPR_Dates_DaysInMonth`, `KPR_Dates_DaysInYear`, `KPR_Dates_DayOfWeek` |
+| Arithmetic | `KPR_Dates_AddDays`, `KPR_Dates_AddWeeks`, `KPR_Dates_AddMonths`, `KPR_Dates_AddYears` |
+| Weekday locators | `KPR_Dates_NthWeekdayOfMonth`, `KPR_Dates_LastWeekdayOfMonth` |
+| Pillars | `KPR_Dates_PillarFromDates`, `KPR_Dates_DateFromPillar` |
+| Diagnostic | `KPR_Dates_HostDateSystem` (the one volatile function) |
+
+The rules every function follows (contract sections 3 to 6 and 9):
+
+- **One surface for scalars and arrays.** A scalar call returns a scalar; a
+  Range or array argument returns a result of the same shape, and a scalar
+  argument is broadcast to it. There are no separate array or spill
+  functions. Multi-cell results are claimed only on dynamic-array Excel; no
+  Ctrl+Shift+Enter behavior is claimed.
+- **Supported dates:** 1900-03-01 through 9999-12-31. A date can be an Excel
+  date value or text in exactly the ISO form `YYYY-MM-DD`; locale-formatted or
+  numeric-looking text is refused, never guessed. A time part of a date value
+  is ignored.
+- **Optional arguments** (`Opt_...`) may be omitted or left blank to take their
+  default, and must be a single value: a multi-cell control is a call-level
+  `#VALUE!`.
+- **Capacity:** a result of up to 100,000 elements; a larger one is a
+  call-level `#NUM!`, decided before any cell is read.
+- **Errors are native Excel errors:** `#VALUE!` for input that cannot be
+  interpreted, `#NUM!` for a valid value outside the supported domain, a
+  library `#N/A` when the calling workbook's date system cannot be used, and
+  any incoming error passed through unchanged at its position.
+- **Date system:** a worksheet call uses the calling workbook's own date
+  system. A 1904 workbook gets a call-level `#N/A` from every value-taking
+  function, never a value shifted by 1,462 days; `KPR_Dates_HostDateSystem()`
+  reports 1900 or 1904. Direct VBA, `Application.Run` and the Immediate window
+  use the 1900 serial contract; the active workbook is never consulted.
+- **Calendar days only.** Business calendars, weekend masks and holidays
+  (`KPR_Cal_*`) are v0.0.5 scope, business-day arithmetic and roll conventions
+  v0.0.6 scope ([roadmap](docs/ROADMAP.md)).
+
+To try it, build the workbook with the one-click Excel check
+([`INSTALLATION.md`](INSTALLATION.md#one-click-excel-check)): it opens with the
+**K-PRICING** Ribbon tab, whose **Functions** menu inserts any of the 22
+functions and whose **Demo sheets** menu builds the **KPR Dates Demo** sheet,
+comparing each function with Excel's own formulas
+([`examples/README.md`](examples/README.md)). Registration, Ribbon, toolbar,
+demo and test entry points are unsupported infrastructure, classified in
+[`docs/API_INVENTORY.txt`](docs/API_INVENTORY.txt).
+
 <a id="application-profile"></a>
 
 ## 🧭 Application profile
@@ -155,7 +215,8 @@ security, action pinning or release provenance.
 Today the source is the migrated date layer, its test infrastructure, the
 Ribbon (`src/ribbon/`) and the macro-free workbook template
 (`src/workbook/KPR_Template.xlsx`). There are no class, form or
-workbook-document modules and no release packaging yet.
+workbook-document modules, and no tracked workbook or add-in package: the
+workbook is built from the template by `tools/Check-KPR.ps1`.
 
 Profile exception: Office packages are never tracked, except
 `src/workbook/KPR_Template.xlsx`, re-included by its exact path in
@@ -202,7 +263,11 @@ The initial target is Microsoft 365 Excel desktop on Windows, with 32-bit and
 historical setup evidence only; it does not certify the migrated KPR date layer.
 The migrated date layer compiled and matched the frozen source on one Windows
 64-bit Microsoft 365 Excel host (build 16.0.20326.20072, Italian regional format)
-in issue #17; 32-bit Office and other builds and locales remain untested.
+in issue #17. The most recent full regression ran twice on Windows 11 Enterprise
+with 64-bit Microsoft 365 Excel (build 16.0.20430.20180) at commit `ba250a7`:
+23 suites, 9,372 assertions, no failures (#47, #48). That is development
+evidence; the candidate is certified only by its own run in #52. 32-bit Office
+and other builds and locales remain untested.
 Mac, Excel for the web, older builds and a packaged deployment are not claimed
 as supported.
 
@@ -219,7 +284,17 @@ fails closed when a required validator or evidence report does not complete. It
 does **not** compile VBA or execute Excel.
 
 
-For a release candidate, use [`RELEASING.md`](RELEASING.md). SemVer/changelog
+Generated inputs are regenerated, never edited by hand:
+`python3 tools/gen_fixtures.py --root . --write` rewrites the regression
+fixtures ([`tests/fixtures/README.md`](tests/fixtures/README.md)),
+`python3 tools/workbook_template.py --write` the workbook template, and
+`python3 tools/milestone_register.py --write` the milestone register; CI fails
+when any of them differs from its source. The demo sheet is not tracked: it is
+built in Excel each time ([`examples/README.md`](examples/README.md)).
+
+For a release candidate, use [`RELEASING.md`](RELEASING.md); certification
+runs `KPR_Test_RunAll` twice on the exact candidate in Windows Excel and
+validates the evidence ([`docs/KPR_TEST_EVIDENCE.md`](docs/KPR_TEST_EVIDENCE.md)). SemVer/changelog
 semantics and release-evidence schemas are maintained separately in
 [`RELEASE_SEMANTICS.md`](docs/RELEASE_SEMANTICS.md) and
 [`RELEASE_EVIDENCE.md`](docs/RELEASE_EVIDENCE.md).
@@ -268,9 +343,10 @@ These are the current limitations. The
 [initialization record](.github/initialization.json) preserves the original
 2026-09-23 setup inputs and is provenance, not a live copy of this section.
 
-- Exact-source Excel compilation and parity passed on one Windows 64-bit host only (#17); 32-bit Office, other builds and other locales are untested. Migration acceptance is recorded in [MIGRATION_COMPLETION.md](docs/MIGRATION_COMPLETION.md).
-- Every milestone v0.0.3 test-hardening and registration issue is complete: the independent fixture generator (#38) is merged, the durable runner and evidence schema (#39) are complete and verified in Windows Excel, the regression matrix (#40) is complete and verified in Windows Excel, the Excel cross-oracle checks (#41) and their scope hardening (#63) are complete and verified in Windows Excel, and MacroOptions registration (#42) is implemented and verified in Windows Excel. In v0.0.4 the demo builder (#46) is complete and verified in Windows Excel; the UI, candidate assembly and first functional release follow (#47–#52), and calendars and business-day arithmetic are planned for v0.0.5 and v0.0.6. See the [roadmap](docs/ROADMAP.md). Broader pricing capabilities remain unscheduled.
-- No supported workbook/add-in or functional product release is available; the historical neutral-starter run certifies setup only.
+- Windows Excel evidence exists for 64-bit Microsoft 365 Excel only; 32-bit Office, other builds and other locales, Mac and Excel for the web are untested and not claimed.
+- v0.0.4 is a candidate until its exact-source certification and the `v0.0.4` tag and GitHub pre-release are complete (#52). It is distributed as tagged source; the workbook is built from it by `tools/Check-KPR.ps1`, and no workbook or add-in package is tracked.
+- Only the 22 `KPR_Dates_*` date primitives are supported. Calendars and holidays are planned for v0.0.5, business-day arithmetic and roll conventions for v0.0.6; broader pricing capabilities remain unscheduled ([roadmap](docs/ROADMAP.md)).
+- The historical neutral-starter run certifies repository setup only.
 
 The general evidence boundaries still apply: static inspection is not Excel
 execution, and one tested environment does not certify another.

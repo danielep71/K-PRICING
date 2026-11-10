@@ -30,13 +30,18 @@ handling by [`SECURITY.md`](SECURITY.md), and release publication/provenance by
 
 ## 🧭 Support baseline
 
-The current installation path is manual source import into a disposable `.xlsm`
-for development. There is no supported workbook/add-in package or functional
-release. The initial target and evidence status are:
+Version `0.0.4` is the first functional release candidate: the 22
+`KPR_Dates_*` date primitives ([README](README.md#date-primitives)). It is
+distributed as **tagged source**: import the components below into your own
+workbook or add-in, or build the K-PRICING workbook from the template with the
+[one-click Excel check](#one-click-excel-check). No workbook or add-in package
+is tracked. The candidate is certified only by the exact-source Windows Excel
+run recorded in #52; until then the target and evidence status are:
 
 | Target | Status |
 | --- | --- |
-| Microsoft 365 Excel desktop on Windows, 64-bit Office | Migrated date layer compiled and matched the frozen source on one host (Version 2608, Build 16.0.20326.20072, Italian regional format) in #17; other builds and locales untested |
+| Microsoft 365 Excel desktop on Windows, 64-bit Office | Migrated date layer compiled and matched the frozen source on one host (Version 2608, Build 16.0.20326.20072, Italian regional format) in #17; full regression passed twice on Windows 11 Enterprise, Build 16.0.20430.20180, at `ba250a7` (#47, #48); the candidate's own run is #52; other builds and locales untested |
+| Multi-cell (array) calls | Dynamic-array Excel only; no Ctrl+Shift+Enter or legacy multi-cell claim |
 | Microsoft 365 Excel desktop on Windows, 32-bit Office | Intended; untested separately |
 | Mac, Excel for the web, older desktop builds | No support claim |
 | References | Built-in VBA/Excel only; no additional external dependency for the migrated date layer |
@@ -352,6 +357,8 @@ modules, is left alone. Every
 file is fetched and checked before the target changes. The call returns the
 number of modules imported, or `-1` with the reason in the Immediate window.
 The target is not saved: compile it, then save it.
+
+<a id="one-click-excel-check"></a>
 
 #### One-click Excel check
 

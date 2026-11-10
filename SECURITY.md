@@ -55,14 +55,15 @@ publishes the default-branch posture. See the dated
 
 | Source state | Security support |
 | --- | --- |
-| Latest tagged functional release | None exists yet; no production-supported version |
+| Latest tagged functional release | `v0.0.4` once tagged (#52): ⚠️ pre-release, best-effort remediation |
 | Release candidate | ⚠️ Testing / best-effort remediation |
 | `main` | ⚠️ Development code / best effort |
 | Older tagged releases | ❌ Normally unsupported; upgrade first |
 | Modified copies / unofficial mirrors | ❌ Unsupported unless reproduced in official supported source |
 
-No functional release exists yet: the project is pre-release and has no
-production-supported security version. Reports must identify an exact release
+`0.0.4` is the first functional release candidate; its tag and GitHub
+pre-release follow its certification (#52). The project is pre-release and has
+no production-supported security version. Reports must identify an exact release
 tag or full commit SHA; relative descriptions such as “latest” are insufficient.
 
 <a id="reporting-a-vulnerability"></a>

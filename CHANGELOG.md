@@ -102,7 +102,24 @@ Use only the categories needed by a release.
 
 <!-- Add only user-visible changes made in this generated project. -->
 
+## [0.0.4] - 2026-11-10
+
+The first functional release of K-PRICING: the Date Primitives layer. It
+provides exactly 22 supported `KPR_Dates_*` worksheet and VBA functions in one
+scalar/array-capable surface, with the **KPR Dates Demo** sheet, the
+**K-PRICING** Ribbon tab and the classic **KPR Dates** toolbar. The supported
+behavior is defined by [`docs/DATE_LAYER_CONTRACT.md`](docs/DATE_LAYER_CONTRACT.md)
+and the supported names by [`docs/PUBLIC_API.txt`](docs/PUBLIC_API.txt).
+v0.0.1 (repository setup) and v0.0.2 (repository migration) were not
+functional releases and have no tag. Certification of this candidate in
+Windows Excel is recorded in #52.
+
 ### Added
+
+- The v0.0.4 release candidate (#51): `VERSION` is `0.0.4`, this section is cut
+  from the reviewed Unreleased entries, and the README, installation guide and
+  security policy describe the 22-function surface, its compatibility claim and
+  its boundaries.
 
 - Static checks and milestone-register drift monitoring for the v0.0.4
   candidate (#50). The deterministic `kpr-candidate-tree` rule of
@@ -480,14 +497,29 @@ Use only the categories needed by a release.
 - Allow the retained `KPR_` VBA namespace through the project identity policy, while preserving unrelated donor and
   template restrictions ([#2](https://github.com/danielep71/K-PRICING/issues/2)).
 
+### Compatibility
+
+- Scalar calls are claimed only for the Excel builds exercised in the
+  exact-source Windows certification of this candidate (#52). Multi-cell calls
+  are claimed only on dynamic-array Excel; there is no Ctrl+Shift+Enter or other
+  legacy multi-cell claim and no `_Spill` twin.
+- Worksheet calls use the 1900 date system of the calling workbook; a 1904
+  workbook gets a call-level `#N/A` from every value-taking function, never a
+  shifted value. Direct VBA, `Application.Run` and the Immediate window use the
+  documented 1900 serial contract, with no active-workbook fallback.
+
 ### Known limitations
 
-- The frozen KPR date-layer source, regression harness and project-specific static
-  contract guard are migrated. Exact-source Excel compilation and parity passed
-  on one Windows 64-bit host only (#17); 32-bit Office, other builds and locales
-  are untested, and release packaging remains pending.
+- The tested hosts are Windows 64-bit Microsoft 365 Excel only. 32-bit Office,
+  other builds and locales, Mac and Excel for the web are untested and not
+  claimed.
+- Business calendars, weekend masks and holidays (`KPR_Cal_*`) are v0.0.5 scope;
+  business-day arithmetic and roll conventions are v0.0.6 scope. `KPR_Dates_*`
+  functions count calendar days only.
+- Registration, Ribbon, toolbar, demo and test entry points are unsupported
+  infrastructure ([`docs/API_INVENTORY.txt`](docs/API_INVENTORY.txt)).
 - The accepted neutral-starter Excel run remains setup history only and does not
-  certify the migrated pricing/date implementation.
+  certify the date layer.
 
 ---
 
@@ -500,3 +532,6 @@ Release procedure:
    release, compare the preceding tag to the new release tag.
 5. Recreate an empty Unreleased section at the top.
 -->
+
+[Unreleased]: https://github.com/danielep71/K-PRICING/compare/v0.0.4...HEAD
+[0.0.4]: https://github.com/danielep71/K-PRICING/releases/tag/v0.0.4
