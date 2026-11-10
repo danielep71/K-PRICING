@@ -203,6 +203,11 @@ jobs:
           python3 tools/test_workbook_template.py -v
           python3 tools/workbook_template.py --check
 
+      # Offline: a frozen snapshot only. The live comparison with GitHub issues
+      # runs in milestone-register.yml, never in this deterministic gate.
+      - name: Check the milestone-register renderer against its frozen snapshot
+        run: python3 tools/test_milestone_register.py -v
+
       - name: Exercise strict release-semantics fixtures
         id: release-semantics-self-test
         continue-on-error: true
@@ -574,6 +579,7 @@ jobs:
           tools/inject_ribbon.py --check
           tools/test_workbook_template.py
           tools/workbook_template.py --check
+          tools/test_milestone_register.py
           tools/check_documentation.py --root .
           tools/check_release_semantics.py --root . --self-test
           tools/initialize_repository.py --root . --self-test

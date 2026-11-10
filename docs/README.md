@@ -48,6 +48,7 @@ may summarize it, but must link here rather than restating a competing rule.
 | v0.0.2 migration acceptance, limitations and next delivery scope | [`MIGRATION_COMPLETION.md`](MIGRATION_COMPLETION.md) | Link to the acceptance record |
 | Forward delivery roadmap: milestones, boundaries, dependency sequence and scope transitions | [`ROADMAP.md`](ROADMAP.md) | Link to the roadmap; issues hold acceptance criteria |
 | Public VBA surface | [`PUBLIC_API.txt`](PUBLIC_API.txt) | Human-readable API summary only |
+| v0.0.4 milestone register generated from the live issues, with its drift check | [`MILESTONE_REGISTER.md`](MILESTONE_REGISTER.md) | Link only; regenerate with `tools/milestone_register.py --write` |
 | Classification of every technically public VBA member and the reserved namespaces | [`API_INVENTORY.txt`](API_INVENTORY.txt) | Link only; the file is checked by `check_kpr_contract.py` |
 | Live repository provisioning and verification after generation | [`POST_CREATION_CHECKLIST.md`](POST_CREATION_CHECKLIST.md) | One reminder that settings are not inherited |
 | Historical initialization provenance and original inputs | [`INITIALIZATION_STATUS.md`](INITIALIZATION_STATUS.md) | Provenance link only |

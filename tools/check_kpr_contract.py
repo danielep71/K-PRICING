@@ -15,8 +15,10 @@ import json
 import re
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
+from xml.etree import ElementTree
 
 SCHEMA_VERSION = 1
 TOOL_NAME = "KPR migrated date-layer contract"
@@ -336,7 +338,16 @@ def load_inputs(root: Path) -> dict[str, Any]:
         "contract": (root / CONTRACT_PATH).read_text(encoding="utf-8"),
         "inventory": (root / INVENTORY_PATH).read_text(encoding="utf-8")
         if (root / INVENTORY_PATH).is_file() else "",
+        "tracked": set(git(root, "ls-files", "-z").stdout.decode("utf-8").split("\0")) - {""},
+        "required_paths": list(config.get("required_paths", [])),
+        "gitattributes": _read_text(root / ".gitattributes"),
+        "customui": _read_text(root / CUSTOMUI_SOURCE),
+        "schema": _read_text(root / SCHEMA_SOURCE),
     }
+
+
+def _read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8") if path.is_file() else ""
 
 
 def public_names(text: str) -> set[str]:
@@ -1436,6 +1447,142 @@ def rule_api_inventory(data: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+# ---------------------------------------------------------------------------
+# v0.0.4 candidate tree (#50): files, module inventory, RibbonX, schemas
+# ---------------------------------------------------------------------------
+# Every VBA component of the approved v0.0.4 architecture, with its role. A
+# component outside this list (a second runner, assertion or suite module, a
+# calendar placeholder) fails, so the inventory changes only deliberately.
+APPROVED_COMPONENTS = {
+    "src/modules/KPR_DATES_DAYS.bas": "public",
+    "src/modules/KPR_REGISTER_PUBLIC_UDFS.bas": "internal",
+    "src/modules/KPR_UI_Actions.bas": "ui",
+    "src/modules/KPR_UI_CommandBars.bas": "ui",
+    "src/modules/KPR_UI_Ribbon.bas": "ui",
+    "src/core/KPR_Core_Array.bas": "internal",
+    "src/core/KPR_Core_Dates.bas": "internal",
+    "src/core/KPR_Core_Err.bas": "internal",
+    "src/core/KPR_Core_Parse.bas": "internal",
+    "tests/modules/KPR_Dev_Import.bas": "test",
+    "tests/modules/KPR_REGRESSION_TESTS.bas": "test",
+    "tests/modules/KPR_Test_Fixtures_Generated.bas": "test",
+    "tests/modules/KPR_Test_Oracle.bas": "test",
+    "examples/modules/KPR_Demo__Builder.bas": "example",
+    "examples/modules/KPR_Demo_Dates.bas": "example",
+    "examples/modules/KPR_Demo_DirectVBA.bas": "example",
+}
+# The non-VBA files the v0.0.4 candidate needs: RibbonX, workbook template,
+# fixtures, contracts, the roadmap and register, and the tooling that checks
+# and builds the candidate.
+CANDIDATE_FILES = (
+    "src/ribbon/customUI14.xml",
+    "src/workbook/KPR_Template.xlsx",
+    "tests/fixtures/date_layer_fixtures.tsv",
+    "docs/API_INVENTORY.txt",
+    "docs/DATE_LAYER_CONTRACT.md",
+    "docs/KPR_TEST_EVIDENCE.md",
+    "docs/MILESTONE_REGISTER.md",
+    "docs/PUBLIC_API.txt",
+    "docs/ROADMAP.md",
+    "docs/kpr-test-evidence.schema.json",
+    "tools/Check-KPR.cmd",
+    "tools/Check-KPR.ps1",
+    "tools/check_kpr_contract.py",
+    "tools/check_test_evidence.py",
+    "tools/gen_fixtures.py",
+    "tools/inject_ribbon.py",
+    "tools/milestone_register.py",
+    "tools/workbook_template.py",
+)
+CUSTOMUI_SOURCE = "src/ribbon/customUI14.xml"
+SCHEMA_SOURCE = "docs/kpr-test-evidence.schema.json"
+GENERATED_FIXTURES = ("tests/fixtures/date_layer_fixtures.tsv", "tests/modules/KPR_Test_Fixtures_Generated.bas")
+TRACKED_OFFICE_ALLOWED = {"src/workbook/KPR_Template.xlsx"}
+OFFICE_SUFFIXES = {".xls", ".xlsx", ".xlsm", ".xlsb", ".xlam", ".xla", ".xlt", ".xltx", ".xltm"}
+PLACEHOLDER_STEM = re.compile(r"(?:^KPR_Cal|Calendar|Holiday|BusinessDay|BusDay|_Spill$)", re.I)
+UNSAFE_XML = re.compile(r"<!\s*(?:DOCTYPE|ENTITY)\b", re.I)
+RIBBON_CALLBACK = re.compile(r"\b(on[A-Z]\w*|get[A-Z]\w*)=\"([^\"]+)\"")
+
+
+def _component_errors(data: dict[str, Any]) -> list[dict[str, Any]]:
+    failures: list[dict[str, Any]] = []
+    vba = sorted(path for path in data["tracked"] if Path(path).suffix.casefold() in {".bas", ".cls", ".frm"})
+    for path in vba:
+        if path not in APPROVED_COMPONENTS:
+            failures.append(finding(path, "VBA component outside the approved v0.0.4 architecture (a duplicate "
+                                          "runner, assertion or suite module, or a placeholder?)."))
+    for path, role in APPROVED_COMPONENTS.items():
+        if path not in data["tracked"]:
+            failures.append(finding(path, "Approved v0.0.4 component is not tracked."))
+        elif data["roles"].get(path) != role:
+            failures.append(finding(CONFIG_PATH, f"{path} must have role {role!r}; found {data['roles'].get(path)!r}."))
+    stems: dict[str, str] = {}
+    for path in vba:
+        key = Path(path).stem.casefold()
+        if key in stems:
+            failures.append(finding(path, f"Component name collides, ignoring case, with {stems[key]}."))
+        stems[key] = path
+    return failures
+
+
+def _file_errors(data: dict[str, Any]) -> list[dict[str, Any]]:
+    failures = [finding(path, "Required v0.0.4 candidate file is not tracked.")
+                for path in CANDIDATE_FILES if path not in data["tracked"]]
+    for path in sorted(data["tracked"]):
+        pure = Path(path)
+        if pure.parts and pure.parts[0] == "test-results":
+            failures.append(finding(path, "Run output under test-results/ must never be tracked."))
+        if pure.suffix.casefold() in OFFICE_SUFFIXES and path not in TRACKED_OFFICE_ALLOWED:
+            failures.append(finding(path, "Generated Office binary is tracked; only the workbook template may be."))
+        if path.startswith(("src/", "tests/", "examples/")) and PLACEHOLDER_STEM.search(pure.stem):
+            failures.append(finding(path, "Calendar, business-day or _Spill placeholder before its milestone."))
+    for path in data["required_paths"]:
+        if re.search(r"KPR_Cal", path, re.I):
+            failures.append(finding(CONFIG_PATH, f"Required path {path} names a future KPR_Cal* module."))
+    attributes = data["gitattributes"]
+    for path in GENERATED_FIXTURES:
+        if not re.search(rf"^{re.escape(path)}\s+linguist-generated=true\s*$", attributes, re.M):
+            failures.append(finding(".gitattributes", f"{path} is not classified as generated source."))
+    return failures
+
+
+def _ribbon_errors(data: dict[str, Any]) -> list[dict[str, Any]]:
+    failures: list[dict[str, Any]] = []
+    text = data["customui"]
+    if UNSAFE_XML.search(text):
+        return [finding(CUSTOMUI_SOURCE, "RibbonX must not declare a DTD or entities.")]
+    try:
+        ElementTree.fromstring(text)  # noqa: S314 -- tracked source; DTD/entity declarations rejected above.
+    except ElementTree.ParseError as error:
+        return [finding(CUSTOMUI_SOURCE, f"RibbonX does not parse: {error}.")]
+    records, _, _ = inventory_records(data.get("inventory", ""))
+    callbacks = {record["name"]: record for record in records
+                 if record["component"] == "KPR_UI_Ribbon" and record["class"] == "ui"}
+    names = sorted({name for _, name in RIBBON_CALLBACK.findall(text)})
+    if not names:
+        failures.append(finding(CUSTOMUI_SOURCE, "RibbonX names no callback."))
+    failures.extend(finding(CUSTOMUI_SOURCE, f"Callback {name} is not a classified ui procedure of KPR_UI_Ribbon "
+                                             f"in {INVENTORY_PATH}.") for name in names if name not in callbacks)
+    try:
+        schema = json.loads(data["schema"])
+        if not isinstance(schema, dict) or schema.get("type") != "object":
+            failures.append(finding(SCHEMA_SOURCE, "The evidence schema must be a JSON object schema."))
+    except json.JSONDecodeError as error:
+        failures.append(finding(SCHEMA_SOURCE, f"The evidence schema does not parse: {error}."))
+    return failures
+
+
+def rule_candidate_tree(data: dict[str, Any]) -> dict[str, Any]:
+    failures = _component_errors(data) + _file_errors(data) + _ribbon_errors(data)
+    return result(
+        "kpr-candidate-tree",
+        "v0.0.4 candidate tree",
+        failures,
+        f"{len(APPROVED_COMPONENTS)} approved components, {len(CANDIDATE_FILES)} candidate files, classified "
+        "RibbonX callbacks and parsable schemas; no run output, placeholder or extra Office binary",
+    )
+
+
 RULES = (
     rule_components,
     rule_surface,
@@ -1451,6 +1598,7 @@ RULES = (
     rule_oracle_scope,
     rule_registration_manifest,
     rule_api_inventory,
+    rule_candidate_tree,
 )
 
 
@@ -1858,6 +2006,34 @@ def self_test(root: Path) -> None:
         "Public Function KPR_Dates_AddDays(ByVal DateIn As Variant, ByVal nDays As Variant)",
         "Public Function KPR_Dates_AddDays(ByVal nDays As Variant, ByVal DateIn As Variant)", 1)
     scenarios.append(("contract signature differs from the facade", "kpr-api-inventory", renamed))
+    def tree(change: Callable[[dict[str, Any]], None]) -> dict[str, Any]:
+        case = copy.deepcopy(base)
+        change(case)
+        return case
+
+    tree_cases: tuple[tuple[str, Callable[[dict[str, Any]], None]], ...] = (
+        ("roadmap removed", lambda case: case["tracked"].discard("docs/ROADMAP.md")),
+        ("milestone register removed", lambda case: case["tracked"].discard("docs/MILESTONE_REGISTER.md")),
+        ("approved component removed", lambda case: case["tracked"].discard("tests/modules/KPR_Test_Oracle.bas")),
+        ("duplicate assertion module", lambda case: case["tracked"].add("tests/modules/KPR_Test_Assert.bas")),
+        ("component name collides ignoring case",
+         lambda case: case["tracked"].add("examples/modules/kpr_demo_dates.bas")),
+        ("component role changed", lambda case: case["roles"].update({"src/modules/KPR_UI_Ribbon.bas": "internal"})),
+        ("unclassified Ribbon callback", lambda case: case.update(
+            customui=case["customui"].replace('onLoad="KPR_UI_Ribbon_OnLoad"', 'onLoad="KPR_UI_Ribbon_Missing"'))),
+        ("RibbonX does not parse", lambda case: case.update(customui=case["customui"].replace("</customUI>", ""))),
+        ("RibbonX declares a DTD", lambda case: case.update(customui="<!DOCTYPE x>" + case["customui"])),
+        ("evidence schema does not parse", lambda case: case.update(schema="{")),
+        ("generated fixtures not classified", lambda case: case.update(
+            gitattributes=case["gitattributes"].replace("linguist-generated=true", "text"))),
+        ("tracked run output", lambda case: case["tracked"].add("test-results/kpr-contract.json")),
+        ("tracked built workbook", lambda case: case["tracked"].add("build/K-PRICING.xlsm")),
+        ("calendar placeholder module", lambda case: case["tracked"].add("src/modules/KPR_Cal_Holidays.bas")),
+        ("required path names a future module",
+         lambda case: case["required_paths"].append("src/modules/KPR_Cal_Calendars.bas")),
+    )
+    for label, change in tree_cases:
+        scenarios.append((label, "kpr-candidate-tree", tree(change)))
     empty = copy.deepcopy(base)
     empty["inventory"] = ""
     scenarios.append(("missing inventory", "kpr-api-inventory", empty))

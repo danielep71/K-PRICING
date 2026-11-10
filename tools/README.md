@@ -307,7 +307,14 @@ date construction. Its `kpr-api-inventory` rule checks
 component is classified (`supported` only for the 22 facade functions), the
 supported set, vectorization and signatures agree across the contract, the
 facade and `docs/PUBLIC_API.txt`, and no `KPR_Dates_*_Spill` twin or reserved
-`KPR_Cal_*` name is declared.
+`KPR_Cal_*` name is declared. Its `kpr-candidate-tree` rule (#50) requires the
+v0.0.4 candidate: exactly the 16 approved VBA components with their roles (a
+duplicate runner, assertion or suite module fails), no two names equal ignoring
+case, the RibbonX, template, fixture, contract, roadmap, register and tooling
+files, every RibbonX callback classified as a `ui` member of `KPR_UI_Ribbon`,
+RibbonX and the evidence schema that parse, generated fixtures marked
+`linguist-generated`, and no tracked `test-results/` output, built workbook or
+calendar, business-day or `_Spill` placeholder.
 
 Run the focused positive/degraded fixtures and the candidate check with:
 
@@ -472,6 +479,24 @@ carries the Ribbon with one relationship. It asks before turning on *Trust acces
 model* and changes no other setting; a watchdog closes the check's Excel after
 `-TimeoutMinutes` (30). The script needs only Windows PowerShell 5.1 and has no
 Python dependency; `check_test_evidence.py` validates its output afterwards.
+
+## Milestone register
+
+`milestone_register.py` renders the issues of milestone v0.0.4 into the
+generated region of `docs/MILESTONE_REGISTER.md`: number, title, state,
+assignees, labels, milestone, URL and the complete body, by ascending issue
+number. Only the region between its two marker lines is replaced. `--write`
+fetches the live milestone and rewrites the region; `--check` compares and
+exits `0` (`CURRENT`), `1` (`DRIFT`, naming the first mismatched issue and
+field and the regeneration command) or `2` (`UNVERIFIED`: authentication, rate
+limit, network, API error or a malformed response, never drift). An issue
+body with a line equal to a marker is refused as `UNVERIFIED` before anything
+is written, so a regeneration cannot leave the region unreadable. `--snapshot`
+reads a saved issue list instead of GitHub. The live check runs only in
+`.github/workflows/milestone-register.yml`, outside the deterministic gate;
+`test_milestone_register.py` runs in that gate against the frozen snapshot in
+`tests/fixtures/milestone_register/`, proving byte-identical output, bounded
+replacement, `DRIFT` after an edit and `UNVERIFIED` for every failure class.
 
 ## Structured test evidence
 

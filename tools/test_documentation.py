@@ -48,7 +48,7 @@ class ReleaseCommandTests(unittest.TestCase):
             "### Initialized generated project", 1
         )[1]
         block = section.split("```bash\n", 1)[1].split("```", 1)[0]
-        stages = ["switch", "pull", "rev-parse", "version", "precheck", "tag", "postcheck", "push"]
+        stages = ["switch", "pull", "rev-parse", "version", "precheck", "register", "tag", "postcheck", "push"]
         stubs = r'''
 record() { printf '%s\n' "$1" >> calls.log; [ "$1" != "$fail_at" ]; }
 git() {
@@ -62,6 +62,7 @@ git() {
 tr() { record version || return 23; printf '1.0.0'; }
 python3() {
   case " $* " in
+    *" tools/milestone_register.py --check "*) record register ;;
     *" --require-tag-ref "*) record postcheck ;;
     *) record precheck ;;
   esac

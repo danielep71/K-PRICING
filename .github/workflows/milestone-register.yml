@@ -1,0 +1,65 @@
+name: Milestone register
+run-name: Milestone register — ${{ github.event_name }} @ ${{ github.sha }}
+
+# Compares docs/MILESTONE_REGISTER.md with the live issues of milestone v0.0.4
+# (#50). The result depends on mutable GitHub state, so this workflow stays
+# outside the deterministic static gate, is never a required status and has no
+# pull_request trigger. Every event checks the default branch's register.
+# CURRENT passes; DRIFT and UNVERIFIED fail the job, and the job summary says
+# which. A fresh CURRENT is required at candidate assembly and before tagging.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - docs/MILESTONE_REGISTER.md
+      - tools/milestone_register.py
+      - .github/workflows/milestone-register.yml
+  issues:
+    types:
+      - opened
+      - edited
+      - deleted
+      - transferred
+      - closed
+      - reopened
+      - assigned
+      - unassigned
+      - labeled
+      - unlabeled
+      - milestoned
+      - demilestoned
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: milestone-register
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Compare the register with the live milestone
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: read
+
+    steps:
+      - name: Check out the register on the default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Set up the pinned Python runtime
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13.18"
+
+      - name: Compare with the live milestone (CURRENT, DRIFT or UNVERIFIED)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 tools/milestone_register.py --check --summary "$GITHUB_STEP_SUMMARY"
