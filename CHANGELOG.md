@@ -320,6 +320,13 @@ Windows Excel is recorded in #52.
 
 ### Changed
 
+- The Excel check keeps its evidence on the computer: `tools/Check-KPR.ps1`
+  passes `<clone>\build\evidence` to `KPR_Dev_CheckBuild`, whose new optional
+  `EvidenceRoot` argument receives it, and without a clone the evidence goes
+  to `%LOCALAPPDATA%\K-PRICING\evidence`. `Documents`, often synced to
+  OneDrive or SharePoint, is no longer used. A commit whose loader predates
+  the argument still runs with three arguments.
+
 - The workbook template's Home sheet follows the K-SACCR template: Aptos, a
   black navigation column with Home and a link to KPR Dates Demo, the black
   band with the gold wordmark, the blue sheet-title band, a grey subtitle,

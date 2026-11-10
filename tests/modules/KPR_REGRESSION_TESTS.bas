@@ -6304,7 +6304,7 @@ Private Sub Run_ControlCases()
     'A VBA caller forwarding its own omitted Optional passes Missing, which
     'bypasses the declared default; each control must still take its default
         AssertResult "control/forwarded missing week base", _
-                     ForwardDayOfWeek(DateSerial(2026, 3, 15)), "Long", 7
+                     ForwardDayOfWeek(DateSerial(2026, 3, 15)), "Long", CLng(7)
         AssertDateResult "control/forwarded missing keep eom", _
                          ForwardAddMonths(DateSerial(2024, 2, 29), 1), DateSerial(2024, 3, 29)
         AssertResult "control/forwarded missing rounding", _
