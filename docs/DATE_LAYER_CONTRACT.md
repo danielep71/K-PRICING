@@ -241,7 +241,8 @@ vectorizes. A multi-cell or multi-element optional argument returns call-level
 `#VALUE!` under `CONTROL_NOT_SCALAR`.
 
 Omitting a control and supplying `Empty`, including a reference to a blank
-cell, both select the documented default. This is the one place where `Empty` is
+cell, both select the documented default. So does a direct VBA caller that
+forwards its own omitted `Optional` argument, which arrives as `Missing`. This is the one place where `Empty` is
 not contract-invalid: at a required value position it remains `#VALUE!` under
 `INPUT_BLANK_REQUIRED`.
 
@@ -252,8 +253,12 @@ not contract-invalid: at a required value position it remains `#VALUE!` under
 | `Opt_Rounding` | Omitted, `Empty`, or text `NEAREST`, `FLOOR`, or `CEILING`; outer whitespace is trimmed and the token is compared case-insensitively | `NEAREST` | Call-level `#VALUE!` |
 
 The Boolean controls accept a native Boolean only. Numeric `0` and `1`,
-Boolean-looking text such as `"TRUE"`, `Null`, dates, and objects are rejected
-with call-level `#VALUE!` under `CONTROL_TYPE_REJECTED`. `Opt_Rounding` accepts
+Boolean-looking text such as `"TRUE"`, `Null` and dates are rejected with
+call-level `#VALUE!` under `CONTROL_TYPE_REJECTED`. A control that is not a
+supported shape (an object other than a Range, a multi-area Range, or an empty
+or otherwise unsupported array) is rejected before its type is examined, with
+call-level `#VALUE!` under `SHAPE_UNSUPPORTED`, as for value arguments
+(section 7). `Opt_Rounding` accepts
 text only and rejects every other type under the same identifier; a text value
 that is not one of the three recognized tokens returns call-level `#VALUE!`
 under `CONTROL_TOKEN_UNKNOWN`.

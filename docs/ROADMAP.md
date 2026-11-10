@@ -22,20 +22,21 @@ K-PRICING. Neither is a current plan.
   this roadmap only schedules work against it.
 - Changing a milestone boundary, dependency or scope transition requires a
   reviewed update to this document together with the affected issues.
-- `VERSION` stays `0.0.0` until a release candidate is assembled (#51).
+- `VERSION` was `0.0.0` until the v0.0.4 candidate was assembled (#51); it is
+  now `0.0.4`. Changes after the candidate go under `Unreleased`.
 
 ## Milestones
 
 | Milestone | Scope | Issues | Release |
 | --- | --- | --- | --- |
-| v0.0.1 | Repository setup | Closed | Setup record, not a functional release |
-| v0.0.2 | Repository migration of the frozen date layer | Closed | Migration record, not a functional release |
-| v0.0.3 — Test Hardening and Registration | Independent fixtures, durable runner and evidence schema, complete regression suites, Excel cross-oracle checks and scope hardening, MacroOptions registration | #38 (done, PR #54), #39 (done, PRs #56 and #58), #40 (done, PR #59), #41 (done, PR #60), #63 (done, PR #64), #42 (done, PR #65) | No release |
-| v0.0.4 — Date Primitives | Demo builder, Ribbon and CommandBars, public/infrastructure classification, final static controls and drift monitoring, candidate assembly, exact-source certification | #46–#50 done; #51 candidate assembly (`VERSION` `0.0.4`); #52 | First functional release: tag `v0.0.4` |
-| v0.0.5 — Business Calendars and Holidays | Calendars, weekend masks and holiday sets in the reserved `KPR_Cal_*` namespace | Not yet created | Planned |
-| v0.0.6 — Business-Day Arithmetic and Roll Conventions | Business-day arithmetic and roll conventions built on v0.0.5 calendars | Not yet created | Planned |
+| v0.0.1 - Repo setup | Repository setup | Closed | Setup record, not a functional release |
+| v0.0.2 - Repo Migration | Repository migration of the frozen date layer | Closed | Migration record, not a functional release |
+| v0.0.3 - Test Hardening and Registration | Independent fixtures, durable runner and evidence schema, complete regression suites, Excel cross-oracle checks and scope hardening, MacroOptions registration | #38 (done, PR #54), #39 (done, PRs #56 and #58), #40 (done, PR #59), #41 (done, PR #60), #63 (done, PR #64), #42 (done, PR #65) | No release |
+| v0.0.4 — Date primitives | Demo builder, Ribbon and CommandBars, public/infrastructure classification, final static controls and drift monitoring, candidate assembly, exact-source certification | #46–#51 done, with the fixes #77 and #87; #52 open | First functional release: tag `v0.0.4` |
+| v0.0.5 — Business calendars and holidays | Calendars, weekend masks and holiday sets in the reserved `KPR_Cal_*` namespace | Milestone created (due 2027-01-15); no issues yet | Planned |
+| v0.0.6 — Business-day arithmetic and roll conventions | Business-day arithmetic and roll conventions built on v0.0.5 calendars | Milestone created (due 2027-02-26); no issues yet | Planned |
 
-## v0.0.3 — Test Hardening and Registration
+## v0.0.3 - Test Hardening and Registration
 
 Test hardening comes first and registration second, as decided at v0.0.2
 acceptance (#18).
@@ -52,15 +53,16 @@ acceptance (#18).
 Boundary: test and evidence infrastructure plus registration. No change to the
 supported 22-function calculation API or its behavior.
 
-## v0.0.4 — Date Primitives
+## v0.0.4 — Date primitives
 
 ```text
 #42 (v0.0.3) ─> #46 demo builder (done, PR #75)
 #39, #42, #46 ─> #47 Ribbon, #48 CommandBars (done, PRs #97, #96)
 #47, #48 ─> #49 public/infrastructure classification (done, PR #112)
 #40, #41, #49 ─> #50 final static controls and drift monitoring (done, PRs #113, #114)
-#50 ─> #51 candidate assembly
+#50 ─> #51 candidate assembly (done, PRs #115, #116)
 #51 ─> #52 exact-source certification and release
+Fixes found on the way: #77 (PR #78), #87 (PR #88)
 ```
 
 Boundary: the release certifies exactly the 22 supported `KPR_Dates_*`
@@ -69,13 +71,13 @@ on dynamic-array Excel. Registration, UI, test and demo entry points are
 unsupported infrastructure. #52 requires every v0.0.3 issue and every other
 v0.0.4 issue to be complete.
 
-## v0.0.5 — Business Calendars and Holidays
+## v0.0.5 — Business calendars and holidays
 
 Planned. Introduces calendars, weekend masks and holiday sets in the
 `KPR_Cal_*` namespace reserved by the date-layer contract. Its issues and
 acceptance criteria are created when the milestone is activated.
 
-## v0.0.6 — Business-Day Arithmetic and Roll Conventions
+## v0.0.6 — Business-day arithmetic and roll conventions
 
 Planned. Adds business-day arithmetic and following, preceding, modified and
 other roll conventions on top of the v0.0.5 calendars. It also gives the `ON`

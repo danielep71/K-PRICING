@@ -116,7 +116,7 @@ requires its registered, tracked façade, core, and test assets. Its JSON eviden
 records the selected profile, role minima, observed role counts, and mandatory
 component paths. In template mode it validates all three supported contracts.
 The `issue-forms` rule validates the three canonical intake forms, their
-manifest-backed labels, required evidence fields, empty reusable assignees,
+manifest-backed labels, required evidence fields, the top-level assignees array naming the one maintainer,
 blank-issue policy and repository-specific private-security route.
 
 Exit status `0` means every applicable rule passed, `1` means policy findings
@@ -297,7 +297,7 @@ compatibility view cannot hide an unsupported or unrecorded public declaration.
 
 `check_kpr_contract.py` is the project-specific additive guard for the migrated
 KPR date implementation. It does not replace the generic repository or complete
-public-API validators. It pins the six migrated component roles and the frozen
+public-API validators. It pins the seven migrated component roles and the frozen
 date-layer architecture: exact 22-function facade surface, Variant return types,
 core dependency direction, strict locale-independent parsing, date-window
 constants, caller/date-system guard placement, volatility scope, caller-workbook
@@ -356,8 +356,8 @@ description list, the optional-argument prefix wherever the signature is
 `Optional`, the scalar/array and error notes, and every MacroOptions text within
 255 characters. Records must be literal, the single `KPR Dates` category and the
 cleanup `User Defined` category must be named constants, argument arrays must
-be 1-based, and no other module may call `MacroOptions`. `--report` includes
-the parsed manifest as `registration_manifest`.
+be 1-based, and no other module may call `MacroOptions`. The `--output` JSON
+report includes the parsed manifest as `registration_manifest`.
 
 ## Independent date-layer fixtures
 
@@ -457,8 +457,9 @@ compile, save and `KPR_Test_RunAll` twice; unattended, the loader leaves the
 Ribbon to the script, because Excel loads a workbook's Ribbon only while no
 macro runs. It then
 builds `K-PRICING-<commit>.xlsm` in the clone's ignored `build` folder (the
-clone comes from `-RepoRoot`, remembered in `HKCU\Software\K-PRICING\Check`,
-or from the script's own location; `Documents\K-PRICING` without one) from the
+clone is `-RepoRoot`, which is then remembered in
+`HKCU\Software\K-PRICING\Check`; otherwise the clone the script runs from;
+otherwise the remembered one; `Documents\K-PRICING` without any) from the
 template with
 the `public`, `internal`, `ui` and `example` modules, compiles it, writes the
 commit on Home and builds the demo sheet with `KPR_Demo_BuildDates`; it is
@@ -674,6 +675,25 @@ Only canonical template mode generates fixtures for all three profiles. Run:
 ```bash
 python3 tools/initialize_repository.py --root . --self-test
 ```
+
+## Issue triage, release semantics and certification bundles
+
+- `check_issues.py` audits the live issues (`--repository`, read-only, the
+  `Issue triage` workflow) or an exported list (`--input`) for metadata and
+  dependency status the issue forms cannot enforce, and with `--check-config`
+  checks the forms and the label catalogue offline in Repository integrity
+  ([`docs/ISSUE_TRIAGE.md`](../docs/ISSUE_TRIAGE.md)).
+- `check_release_semantics.py` enforces the SemVer, changelog cut/freeze-date
+  and comparison-link contract; Repository integrity runs it with and without
+  `--self-test` ([`docs/RELEASE_SEMANTICS.md`](../docs/RELEASE_SEMANTICS.md)).
+- `release_certification.py` builds and verifies the deterministic,
+  candidate-bound certification bundle and plans the release assets
+  ([`docs/RELEASE_EVIDENCE.md`](../docs/RELEASE_EVIDENCE.md)); its
+  `--self-test`, like that of `_release_closeout.py`, runs in Repository
+  integrity and needs `ssh-keygen`.
+- `workbook_snapshot.py` is the library behind the native demo-workbook
+  snapshot commands; it reads saved OOXML content and never runs Excel
+  ([`docs/NATIVE_DEVELOPER_TOOLS.md`](../docs/NATIVE_DEVELOPER_TOOLS.md)).
 
 ## Rules
 

@@ -45,7 +45,7 @@ Attribute VB_Name = "KPR_Core_Parse"
 '   is still reported through its Boolean return and condition ByRef output.
 '
 ' UPDATED
-'   2026-09-27
+'   2026-11-10
 '
 ' AUTHOR
 '   Daniele Penza
@@ -301,8 +301,10 @@ Private Function TryClassifyDateText( _
 '   - Length must be exactly ten characters.
 '   - Positions 5 and 8 must be hyphens; the other eight must be ASCII digits.
 '   - Text that is numeric as a whole is reported as DATE_TEXT_NUMERIC, and text
-'     that merely contains a separator the host would accept is reported as
-'     DATE_TEXT_LOCALE, so provenance survives even though both return #VALUE!.
+'     shaped like a day-month-year or month-day-year date with "/" or "."
+'     separators is reported as DATE_TEXT_LOCALE, so provenance survives even
+'     though both return #VALUE!. Every other malformed text, including a
+'     year-first "2024/02/10" or a time suffix, is DATE_TEXT_FORMAT.
 '   - The year is gated against the supported window before construction; the
 '     month, day and leap day are validated by DateSerial round trip.
 '
@@ -348,10 +350,10 @@ Private Function TryClassifyDateText( _
         End If
 
     'Distinguish a locale-shaped date from generic malformed text for provenance.
-    'Whitespace is NOT a locale marker: the contract classifies padded text as
-    'DATE_TEXT_FORMAT, alongside every other malformed ISO shape.
-        If (InStr(1, TextIn, "/", vbBinaryCompare) > 0) Or _
-           (InStr(1, TextIn, ".", vbBinaryCompare) > 0) Then
+    'Only the whole d/m/y or m/d/y shape is a locale marker (contract 3.1): a
+    'separator alone is not, and neither is whitespace, so padded, time-suffixed
+    'and year-first text stays DATE_TEXT_FORMAT with every other malformed shape.
+        If LooksLocaleDate(TextIn) Then
             Condition = KPR_COND_DATE_TEXT_LOCALE
             Exit Function
         End If
@@ -606,7 +608,8 @@ Public Function TryParseBoolControl( _
 '     Accepted: Empty, meaning the documented default, or a native Boolean.
 '
 '     Rejected with CONTROL_TYPE_REJECTED: numeric 0 and 1, Boolean-looking text
-'     such as "TRUE", Null, dates, objects.
+'     such as "TRUE", Null, dates, objects. At the public boundary an object
+'     never arrives here: TryUnwrapControl reports it as SHAPE_UNSUPPORTED.
 '
 '   DefaultValue
 '     The documented default for this control, selected when ControlIn is Empty.
@@ -979,5 +982,89 @@ Private Function LooksNumeric( _
 '------------------------------------------------------------------------------
     'At least one digit is required
         LooksNumeric = (Digits > 0)
+
+End Function
+
+Private Function LooksLocaleDate( _
+    ByVal TextIn As String) _
+    As Boolean
+'
+'==============================================================================
+'                                LooksLocaleDate
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Reports whether text is shaped like a locale-formatted date.
+'
+' ACCEPTED SHAPE
+'   Three runs of ASCII digits separated by "/" or ".": one or two digits, one
+'   or two digits, then two to four digits, as in "31/12/2026", "12/31/2026"
+'   or "10.02.2024". Nothing may precede, follow or separate them otherwise.
+'   The test is about shape only; the digits are never read as a date.
+'
+' WHY
+'   The contract reserves DATE_TEXT_LOCALE for text shaped like a
+'   locale-formatted date. A year-first "2024/02/10", a time suffix such as
+'   "2024-02-10 12.30" or "1.2.3" contains a separator but is not that shape,
+'   so it is DATE_TEXT_FORMAT. tools/gen_fixtures.py applies the same rule.
+'
+' RETURNS
+'   Boolean
+'     TRUE  => the text has the shape above
+'     FALSE => otherwise
+'
+' UPDATED
+'   2026-11-10
+'==============================================================================
+'
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim I           As Long     'Character cursor
+    Dim Ch          As String   'Single character under test
+    Dim Part        As Long     'Digit run under construction, 1 to 3
+    Dim RunLen(1 To 3) As Long  'Digits in each run
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Default is not locale-shaped
+        LooksLocaleDate = False
+        Part = 1
+
+'------------------------------------------------------------------------------
+' SCAN
+'------------------------------------------------------------------------------
+    'Every character must be a digit or one of the two separators
+        For I = 1 To Len(TextIn)
+
+            'Read one character
+                Ch = Mid$(TextIn, I, 1)
+
+            'Digits lengthen the current run
+                If (Ch >= "0") And (Ch <= "9") Then
+                    RunLen(Part) = RunLen(Part) + 1
+
+            'A separator closes the current run; a third one is too many
+                ElseIf (Ch = "/") Or (Ch = ".") Then
+                    If Part = 3 Then Exit Function
+                    Part = Part + 1
+
+            'Anything else disqualifies the text
+                Else
+                    Exit Function
+                End If
+
+        Next I
+
+'------------------------------------------------------------------------------
+' ASSIGN RESULT
+'------------------------------------------------------------------------------
+    'Exactly three runs of the required lengths
+        If Part <> 3 Then Exit Function
+        If (RunLen(1) < 1) Or (RunLen(1) > 2) Then Exit Function
+        If (RunLen(2) < 1) Or (RunLen(2) > 2) Then Exit Function
+        If (RunLen(3) < 2) Or (RunLen(3) > 4) Then Exit Function
+        LooksLocaleDate = True
 
 End Function

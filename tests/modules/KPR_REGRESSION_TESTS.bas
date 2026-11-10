@@ -6069,6 +6069,16 @@ Private Sub Run_DateTextCases()
         AssertDateCondition "text/dmy slash", "31/12/2026", False, "DATE_TEXT_LOCALE"
         AssertDateCondition "text/mdy slash", "12/31/2026", False, "DATE_TEXT_LOCALE"
         AssertDateCondition "text/dotted", "31.12.2026", False, "DATE_TEXT_LOCALE"
+        AssertDateCondition "text/short dmy", "1/2/26", False, "DATE_TEXT_LOCALE"
+        AssertDateCondition "text/mixed separators", "10.02/2024", False, "DATE_TEXT_LOCALE"
+
+    'A separator alone is not a locale shape: these are malformed ISO text
+        AssertDateCondition "text/year-first slash", "2024/02/10", False, "DATE_TEXT_FORMAT"
+        AssertDateCondition "text/year-first dot", "2024.02.10", False, "DATE_TEXT_FORMAT"
+        AssertDateCondition "text/dotted time suffix", "2024-02-10 12.30", False, "DATE_TEXT_FORMAT"
+        AssertDateCondition "text/three-digit day", "310/12/2026", False, "DATE_TEXT_FORMAT"
+        AssertDateCondition "text/five-digit year", "31/12/20260", False, "DATE_TEXT_FORMAT"
+        AssertDateCondition "text/padded dmy", " 31/12/2026", False, "DATE_TEXT_FORMAT"
 
     'Numeric-looking text is never reinterpreted as a serial
         AssertDateCondition "text/serial digits", "46096", False, "DATE_TEXT_NUMERIC"
@@ -6108,7 +6118,7 @@ Private Sub Run_DateTextCases()
 
     'Numeric-looking and punctuated text shapes
         AssertDateCondition "text/dotted numeric shape", "31.12", False, "DATE_TEXT_NUMERIC"
-        AssertDateCondition "text/two decimal points", "1.2.3", False, "DATE_TEXT_LOCALE"
+        AssertDateCondition "text/two decimal points", "1.2.3", False, "DATE_TEXT_FORMAT"
         AssertDateCondition "text/sign only", "-", False, "DATE_TEXT_FORMAT"
         AssertDateCondition "text/signed serial", "-61", False, "DATE_TEXT_NUMERIC"
         AssertDateCondition "text/thousands separator", "46,096", False, "DATE_TEXT_FORMAT"
@@ -6288,7 +6298,51 @@ Private Sub Run_ControlCases()
         Set Obj = New Collection
         AssertControlRejected "control/object", Obj
 
+'------------------------------------------------------------------------------
+' FORWARDED OMISSION
+'------------------------------------------------------------------------------
+    'A VBA caller forwarding its own omitted Optional passes Missing, which
+    'bypasses the declared default; each control must still take its default
+        AssertResult "control/forwarded missing week base", _
+                     ForwardDayOfWeek(DateSerial(2026, 3, 15)), "Long", 7
+        AssertDateResult "control/forwarded missing keep eom", _
+                         ForwardAddMonths(DateSerial(2024, 2, 29), 1), DateSerial(2024, 3, 29)
+        AssertResult "control/forwarded missing rounding", _
+                     ForwardPillarFromDates(DateSerial(2026, 1, 1), DateSerial(2026, 1, 8)), "String", "1W"
+
 End Sub
+
+Private Function ForwardDayOfWeek( _
+    ByVal DateIn As Variant, _
+    Optional ByVal Opt_WeekBaseMonday As Variant) _
+    As Variant
+'
+' Forwards an omitted control as Missing, as a direct-VBA wrapper would.
+'
+    ForwardDayOfWeek = KPR_Dates_DayOfWeek(DateIn, Opt_WeekBaseMonday)
+End Function
+
+Private Function ForwardAddMonths( _
+    ByVal DateIn As Variant, _
+    ByVal nMonths As Variant, _
+    Optional ByVal Opt_KeepEOM As Variant) _
+    As Variant
+'
+' Forwards an omitted control as Missing, as a direct-VBA wrapper would.
+'
+    ForwardAddMonths = KPR_Dates_AddMonths(DateIn, nMonths, Opt_KeepEOM)
+End Function
+
+Private Function ForwardPillarFromDates( _
+    ByVal StartDate As Variant, _
+    ByVal EndDate As Variant, _
+    Optional ByVal Opt_Rounding As Variant) _
+    As Variant
+'
+' Forwards an omitted control as Missing, as a direct-VBA wrapper would.
+'
+    ForwardPillarFromDates = KPR_Dates_PillarFromDates(StartDate, EndDate, Opt_Rounding)
+End Function
 
 Private Sub AssertControlRejected( _
     ByVal Label As String, _

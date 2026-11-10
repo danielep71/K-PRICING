@@ -5221,13 +5221,16 @@ Private Function TryResolveBool( _
 ' BEHAVIOR
 '   - Each public Optional Variant declaration supplies its documented default,
 '     so an omitted argument reaches this helper as a native Boolean.
+'   - A direct VBA caller that forwards its own omitted Optional Variant passes
+'     Missing, which bypasses that default; Missing selects the same default
+'     here, as it does for Opt_Rounding in TryResolveRounding.
 '   - A blank cell arrives as Empty and selects the same default.
 '   - A control larger than 1x1 is CONTROL_NOT_SCALAR, reported by
 '     TryUnwrapControl from the control's dimensions alone.
 '   - An incoming error in a control propagates verbatim as a call-level result.
 '
 ' UPDATED
-'   2026-08-31
+'   2026-11-10
 '==============================================================================
 '
 
@@ -5243,6 +5246,17 @@ Private Function TryResolveBool( _
 '------------------------------------------------------------------------------
     'Default return is failure unless every stage succeeds
         TryResolveBool = False
+
+'------------------------------------------------------------------------------
+' RESOLVE OMISSION
+'------------------------------------------------------------------------------
+    'A forwarded Missing is an omission, not an incoming error: it selects the
+    'documented default instead of propagating as a call-level error value.
+        If IsMissing(ControlIn) Then
+            ParsedBool = DefaultValue
+            TryResolveBool = True
+            Exit Function
+        End If
 
 '------------------------------------------------------------------------------
 ' RESOLVE SHAPE
