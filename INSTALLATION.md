@@ -410,8 +410,10 @@ until the window says it is finished. `tools/Check-KPR.ps1`:
    builds the Functions menu;
 6. writes `check.log` (Windows, Excel, branch, commit, each step) next to
    `summary.txt`, `run-1\kpr-test-evidence.json` and
-   `run-2\kpr-test-evidence.json` in `Documents\KPR-evidence\<date>-<commit>`,
-   zips the folder, shows the workbook in Explorer and copies the summary and
+   `run-2\kpr-test-evidence.json` in `<clone>\build\evidence\<date>-<commit>`
+   (ignored by Git; `%LOCALAPPDATA%\K-PRICING\evidence` when no clone is
+   known), never in `Documents`, which is often synced to OneDrive or
+   SharePoint; it zips the folder, shows the workbook in Explorer and copies the summary and
    evidence to the clipboard, ready to paste.
 
 A commit without the template (before it was added) gets the earlier check on

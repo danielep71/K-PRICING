@@ -66,7 +66,7 @@ Attribute VB_Name = "KPR_Dev_Import"
 '   None.
 '
 ' UPDATED
-'   2026-11-09
+'   2026-11-10
 '
 ' AUTHOR
 '   Daniele Penza
@@ -283,7 +283,8 @@ End Sub
 Public Function KPR_Dev_CheckBuild( _
     ByVal Source As String, _
     ByVal TargetWorkbook As String, _
-    Optional ByVal Unattended As Boolean = False) _
+    Optional ByVal Unattended As Boolean = False, _
+    Optional ByVal EvidenceRoot As String = "") _
     As Boolean
 '
 '==============================================================================
@@ -310,12 +311,17 @@ Public Function KPR_Dev_CheckBuild( _
 '     Excel; KPR_Dev_LastCheckFolder then gives the folder. The Ribbon step
 '     is skipped (NOT RUN): Excel loads a workbook's Ribbon only while no
 '     macro runs, so the script checks the tab after this returns.
+'   EvidenceRoot
+'     The folder that receives the evidence folder; tools/Check-KPR.ps1
+'     passes <clone>\build\evidence. Empty: %LOCALAPPDATA%\K-PRICING\evidence.
+'     Documents is never used, because it is often synced to OneDrive or
+'     SharePoint.
 '
 ' RETURNS
 '   TRUE when every step passed.
 '
 ' OUTPUT
-'   A new folder Documents\KPR-evidence\<date>-<SHA prefix> holding
+'   A new folder <EvidenceRoot>\<date>-<SHA prefix> holding
 '   run-1\kpr-test-evidence.json, run-2\kpr-test-evidence.json and
 '   summary.txt. The Ribbon copy is deleted after the check.
 '
@@ -325,7 +331,7 @@ Public Function KPR_Dev_CheckBuild( _
 '   would test the wrong code.
 '
 ' UPDATED
-'   2026-11-09
+'   2026-11-10
 '==============================================================================
 '
 
@@ -370,7 +376,7 @@ Public Function KPR_Dev_CheckBuild( _
 ' REGRESSION RUNS
 '------------------------------------------------------------------------------
     'Two runs, so the evidence can be compared for determinism
-        Folder = EvidenceFolder(Sha)
+        Folder = EvidenceFolder(Sha, EvidenceRoot)
         Application.StatusBar = "K-PRICING check: regression run 1 of 2..."
         Run1 = CBool(Application.Run(QualifiedIn(Target, "KPR_Test_RunAll"), Sha, _
                                      Folder & Application.PathSeparator & "run-1"))
@@ -406,7 +412,7 @@ Finish:
         Application.StatusBar = False
         If Len(Detail) > 0 Then Report = Report & "STOPPED: " & Detail & vbCrLf
         Report = Report & "Result:  " & IIf(Passed, "PASS", "FAIL") & vbCrLf
-        If Len(Folder) = 0 And Len(Sha) > 0 Then Folder = EvidenceFolder(Sha)
+        If Len(Folder) = 0 And Len(Sha) > 0 Then Folder = EvidenceFolder(Sha, EvidenceRoot)
         mLastFolder = Folder
         If Len(Folder) > 0 Then
             WriteText Folder & Application.PathSeparator & "summary.txt", Report
@@ -640,18 +646,34 @@ End Function
 
 
 Private Function EvidenceFolder( _
-    ByVal Sha As String) _
+    ByVal Sha As String, _
+    ByVal Root As String) _
     As String
 '
-' Creates and returns Documents\KPR-evidence\<date-time>-<SHA prefix>.
+' Creates and returns <Root>\<date-time>-<SHA prefix>, creating Root and its
+' missing parents. An empty Root is %LOCALAPPDATA%\K-PRICING\evidence, a
+' local folder that is not synced; Documents is never used.
 '
-    Dim Base        As String       'Documents\KPR-evidence
+    Dim Base        As String       'Folder that receives the evidence folder
+    Dim Parts()     As String       'Path components of Base
+    Dim Path        As String       'Path built one component at a time
+    Dim I           As Long         'Component cursor
 
     On Error Resume Next
-    Base = CStr(CreateObject("WScript.Shell").SpecialFolders("MyDocuments"))
-    If Len(Base) = 0 Then Base = Environ$("USERPROFILE")
-    Base = Base & Application.PathSeparator & "KPR-evidence"
-    MkDir Base
+    Base = Root
+    If Len(Base) = 0 Then
+        Base = Environ$("LOCALAPPDATA")
+        If Len(Base) = 0 Then Base = Environ$("USERPROFILE")
+        Base = Base & Application.PathSeparator & "K-PRICING" & _
+               Application.PathSeparator & "evidence"
+    End If
+    If Right$(Base, 1) = Application.PathSeparator Then Base = Left$(Base, Len(Base) - 1)
+    Parts = Split(Base, Application.PathSeparator)
+    Path = Parts(0)
+    For I = 1 To UBound(Parts)
+        Path = Path & Application.PathSeparator & Parts(I)
+        If Len(Dir$(Path, vbDirectory)) = 0 Then MkDir Path
+    Next I
     EvidenceFolder = Base & Application.PathSeparator & Format$(Now, "yyyymmdd-hhnnss") & "-" & Left$(Sha, 8)
     MkDir EvidenceFolder
     Err.Clear
