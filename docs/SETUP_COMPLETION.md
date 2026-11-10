@@ -13,8 +13,9 @@ PR #24 subsequently fixed a Python fixture's locale-dependent text read at
 `2e2d3dba198c1641468af277553dea13a42d6411`, with
 [main CI passing](https://github.com/danielep71/K-PRICING/actions/runs/35918139650).
 These documentation/tooling changes do not change the runtime-tested candidate
-below. This is a milestone checkpoint, not a published release: VERSION remains
-0.0.0 and no release tag was created. Migration was subsequently executed and
+below. This is a milestone checkpoint, not a published release: VERSION stayed
+0.0.0 and no release tag was created. As of 2026-11-10, VERSION is 0.0.4, the
+v0.0.4 candidate (certification in #52, no tag yet). Migration was subsequently executed and
 accepted in v0.0.2 ([MIGRATION_COMPLETION.md](MIGRATION_COMPLETION.md)).
 
 ## Accepted candidate and host

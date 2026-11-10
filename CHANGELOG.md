@@ -162,7 +162,8 @@ Windows Excel is recorded in #52.
 - `tools/Check-KPR.ps1` runs the Excel check of a branch with no manual
   step: one line pasted into Windows Run (Win+R), the desktop shortcut it
   creates on its first run, or `tools\Check-KPR.cmd` from a clone. It starts
-  its own Excel, builds a fresh `KPR.xlam` from the branch's exact commit with
+  its own Excel, builds a fresh `KPR.xlam` (since replaced by the template
+  build, above) from the branch's exact commit with
   the development loader, compiles it, runs `KPR_Test_RunAll` twice and loads
   the Ribbon, then zips the evidence and copies it to the clipboard. It asks
   before turning on *Trust access to the VBA project object model*, and a
@@ -177,8 +178,8 @@ Windows Excel is recorded in #52.
   Excel loads the K-PRICING Ribbon in a throwaway copy, and leaves the two
   evidence files and a `summary.txt` in `Documents\KPR-evidence`.
   `KPR_Dev_CheckBuild` does the same for any branch, commit or build, and the
-  Ribbon module gains `KPR_UI_RibbonLoaded` for that check. Not yet run in
-  Excel.
+  Ribbon module gains `KPR_UI_RibbonLoaded` for that check. Run in Windows
+  Excel at `ba250a7` (#47, #48).
 - Added the classic **KPR Dates** toolbar (#48) and the shared menu commands it
   calls. `src/modules/KPR_UI_Actions.bas` holds the commands: insert a
   supported function into the active cell with Excel's Function Arguments
@@ -193,8 +194,8 @@ Windows Excel is recorded in #52.
   and cancelling the Function Arguments dialog gives the cell back its exact
   previous content. Demo catalog entries gain a group, so the menus show one
   submenu per functional module. The new `worksheet-commandbars` regression
-  suite sets the evidence record's `commandbars` outcome. Not yet run in
-  Excel.
+  suite sets the evidence record's `commandbars` outcome. Verified in Windows
+  Excel at `ba250a7`: `worksheet-commandbars` PASS.
 - Added the **K-PRICING** Ribbon tab (#47). `src/ribbon/customUI14.xml` (Office
   2010 schema, stable `KPR_` ids, built-in icons) has a **Date primitives**
   group whose Functions and Demo sheets menus are rebuilt every time they open
@@ -210,15 +211,17 @@ Windows Excel is recorded in #52.
   backup. `--check`, now part of Repository integrity, validates the RibbonX
   against the Office 2010 signatures of its VBA callbacks. The new
   `worksheet-ribbon` suite parses the menu XML the callbacks return; an `all`
-  run now has 23 suites. Not yet run in Excel or against an Excel-saved
-  package.
+  run now has 23 suites. Verified in Windows Excel at `ba250a7`:
+  `worksheet-ribbon` PASS, and the tab loaded in the workbook built from
+  `src/workbook/KPR_Template.xlsx`.
 - Added the development loader `tests/modules/KPR_Dev_Import.bas`:
   `KPR_Dev_ImportModules(Source, TargetWorkbook)` replaces the K-PRICING
   modules of an open workbook or add-in with those of one commit, downloaded
   from GitHub or read from a local clone, using the commit's repository
   profile as the module list. Repository modules the commit does not list
   are removed, so an older commit's set is restored; other modules of the
-  target are left alone and the target is not saved. Not yet run in Excel.
+  target are left alone and the target is not saved. Used by every Windows
+  Excel run of the one-click check, including `ba250a7`.
 - Portable native developer commands for logical demo-workbook snapshots and
   cell/property differences, clean-candidate source inventories, supplied VBE
   export round trips and read-only diagnostics (#46, #50, #52). Existing source
@@ -266,22 +269,22 @@ Windows Excel is recorded in #52.
   column and rectangle cases, and 1900/1904 worksheet calls), bringing the
   fixtures to 1,353 cases, and fails generation if any matrix case is missing.
   The durable runner adds a `worksheet-state` suite that proves caller-state
-  restoration after a deliberately failing and a passing nested run. Not yet
-  run in Excel.
+  restoration after a deliberately failing and a passing nested run. Verified
+  in Windows Excel on `33b07cd` (18 suites, 1,953 assertions).
 - Added the durable VBA test runner and structured evidence schema (#39):
   `KPR_Test_RunAll` and `KPR_Test_RunSuite` run a 17-suite registry, including
   the 981 generated fixture cases (direct VBA and 1900/1904 worksheet callers)
   and the worksheet runners, restore the caller's Excel state, and write
   `kpr-test-evidence.json` bound to an exact source SHA with the #52
   certification outcomes. `docs/kpr-test-evidence.schema.json` defines the
-  record and `tools/check_test_evidence.py` validates it. The runner has not
-  yet been executed on a Windows Excel host.
+  record and `tools/check_test_evidence.py` validates it. Verified in Windows
+  Excel on `9a978cd`: two runs of 17 suites and 1,577 assertions.
 - Added the independent date-layer fixture generator (#38): `tools/gen_fixtures.py`
   computes 981 expected results from the contract with Python standard-library
   date arithmetic, writes the canonical `tests/fixtures/date_layer_fixtures.tsv`
   and derives the generated VBA module `KPR_Test_Fixtures_Generated` from it.
-  Hosted CI runs its self-test and a drift check; the fixtures are not yet
-  executed in Excel (#39).
+  Hosted CI runs its self-test and a drift check; the fixtures run in Excel
+  through the durable runner (#39).
 - Added `docs/ROADMAP.md`, the authoritative forward roadmap: v0.0.3 test
   hardening and registration (#38–#42), v0.0.4 date primitives and the first
   functional release (#46–#52), and planned v0.0.5 business calendars and
@@ -432,7 +435,8 @@ Windows Excel is recorded in #52.
   script can no longer change the live labels. The repository gate rejects any
   workflow job with `issues: write` that lacks this default-branch guard.
 - CodeQL also analyzes the workflows themselves (Actions language). CI pins
-  Python 3.10.22 and Node.js 24.22.2 instead of the runner's choice, and
+  Python 3.10.22 (since 3.13.18) and Node.js 24.22.2 instead of the runner's
+  choice, and
   Dependabot also proposes updates to the hash-locked Python quality tools;
   its pull requests carry a `P3` priority and an assignee.
 
@@ -443,6 +447,31 @@ Windows Excel is recorded in #52.
 
 ### Fixed
 
+- Date text is reported as `DATE_TEXT_LOCALE` only when it is shaped like a
+  locale-formatted date (one or two digits, one or two digits, then two to four
+  digits, separated by `/` or `.`, as in `31/12/2026`), as contract section 3.1
+  and the fixture generator define it. Year-first text such as `2024/02/10`,
+  a dotted time suffix and `1.2.3` are `DATE_TEXT_FORMAT`; both still return
+  `#VALUE!`, so no worksheet value changes. Eight regression assertions pin the
+  boundary.
+- A direct VBA caller that forwards its own omitted `Optional` argument to
+  `Opt_WeekBaseMonday` or `Opt_KeepEOM` now gets the documented default, as it
+  already did for `Opt_Rounding`, instead of the forwarded `Missing` error value.
+  Three regression assertions cover the three controls. The contract states the
+  rule, and section 3.3 now agrees with section 7 that an object, multi-area
+  Range or empty array control is `SHAPE_UNSUPPORTED`.
+- Documentation consistency before certification: the release and
+  contribution guides name `KPR_Test_RunAll` as the certification entry point;
+  stale "not yet run in Excel" notes in this section, `0.0.0` version
+  statements, module counts, import orders, layout tables, roadmap status and
+  milestone titles, security risk surfaces and the README's claim about the
+  milestone register are corrected; `tools/README.md` describes every CI tool.
+- The dependency matrix of `tools/check_kpr_contract.py` also covers
+  `KPR_Demo_DirectVBA` (facade only) and `KPR_Dev_Import` (no module calls),
+  with a degraded self-test (96 cases). Repository integrity now runs the
+  `release_certification.py` and `_release_closeout.py` self-tests, and
+  `.editorconfig` no longer keeps Markdown trailing whitespace the
+  whitespace gate rejects.
 - The one-click Excel check's Ribbon step failed on the first real run ("Excel
   did not load the tab", and a bare "400" box) although the build passed: the
   loader opened a copy from inside a running macro, and Excel loads a

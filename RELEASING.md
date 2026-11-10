@@ -141,13 +141,18 @@ Use the exact candidate source in each advertised Excel environment:
 4. run applicable UI/lifecycle/platform/manual checks; and
 5. record environment, counts, failures, completeness and cleanup.
 
-For the migrated date layer, the primary human-facing regression entry point is
-`KPR_Tests_Run`, with focused host, shape and dynamic-array runners retained in
-`KPR_REGRESSION_TESTS`. Retained machine-readable host evidence uses
-`KPR_Tests_RunEvidence`, which delegates to the same all-suite dispatcher and
-only adapts its result into the evidence log format. Release evidence must bind
-the exact candidate to the actual suite/case results, failures/skips and tested
-Excel environment; historical KPR runs are not destination certification.
+For the date layer, the release-certification entry point is the durable
+runner `KPR_Test_RunAll`: run it twice on the exact candidate and validate each
+`kpr-test-evidence.json` with `tools/check_test_evidence.py`
+([`docs/KPR_TEST_EVIDENCE.md`](docs/KPR_TEST_EVIDENCE.md)). The one-click check
+`tools/Check-KPR.ps1` does both runs and the workbook build
+([`INSTALLATION.md`](INSTALLATION.md#one-click-excel-check)). `KPR_Test_RunSuite`
+reruns one suite. `KPR_Tests_Run` remains the interactive dispatcher of the pure
+suites, with focused host, shape, dynamic-array, CommandBars and Ribbon runners
+in `KPR_REGRESSION_TESTS`; `KPR_Tests_RunEvidence` is the historical #17
+host-evidence adapter. Release evidence must bind the exact candidate to the
+actual suite results, failures/skips and tested Excel environment; historical
+KPR runs are not destination certification.
 
 Source inspection is not Excel execution. If code changes, recertify.
 

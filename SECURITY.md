@@ -5,7 +5,7 @@
 ### Financial analytics and instrument pricing for Excel/VBA
 
 [![Reporting](https://img.shields.io/badge/Reporting-Private-d97706?style=for-the-badge)](#reporting-a-vulnerability)
-[![Support](https://img.shields.io/badge/Support-Development_%28no_release%29-6e7781?style=for-the-badge)](#supported-versions)
+[![Support](https://img.shields.io/badge/Support-Pre--release_candidate_0.0.4-d97706?style=for-the-badge)](#supported-versions)
 [![Scope](https://img.shields.io/badge/Scope-Source_%7C_Releases_%7C_Automation-0969da?style=for-the-badge)](#security-scope)
 [![Disclosure](https://img.shields.io/badge/Disclosure-Coordinated-6f42c1?style=for-the-badge)](#coordinated-disclosure)
 
@@ -40,10 +40,13 @@ Excel process are not isolated security sandboxes.
 The migrated date layer parses and calculates dates, inspects the calling
 workbook's date system and returns scalar or array results. The regression
 harness creates disposable host fixtures and must restore the Excel state it
-owns. See [the date contract](docs/DATE_LAYER_CONTRACT.md) and
-[test guidance](tests/README.md). Repository automation separately accesses
-GitHub and approved tool-download endpoints. Reassess this surface when changing
-host integration or introducing packaging/UI.
+owns. The menus (a temporary toolbar and a Ribbon tab) only call those
+functions, the demo builder and the registration entry points. See
+[the date contract](docs/DATE_LAYER_CONTRACT.md) and
+[test guidance](tests/README.md). Development tooling downloads source from
+GitHub, and repository automation accesses GitHub and approved tool-download
+endpoints. Reassess this surface when changing host integration, UI or
+packaging.
 
 The repository is public. CodeQL analyzes tooling languages, not VBA; Scorecard
 publishes the default-branch posture. See the dated
@@ -148,16 +151,33 @@ it creates concrete security impact.
 
 ### Project-specific risk surfaces
 
-Current project facts, to be reassessed when packaging, UI or host integration is added:
+Current project facts, as of the v0.0.4 candidate; reassess them when
+packaging, UI or host integration changes:
 
 - **Runtime surface** — worksheet and VBA date functions in `KPR_DATES_DAYS` that
   parse and calculate dates and read the calling workbook's date system. They
-  perform no file, network, native-API or UI access. The regression harness's
-  stateful runners create and close their own scratch workbooks.
-- **Artifact surface** — none yet. No workbook, add-in or release asset is distributed.
+  perform no file, network, native-API or UI access. The UI modules
+  (`KPR_UI_*`) add a temporary **KPR Dates** toolbar and the **K-PRICING**
+  Ribbon callbacks; their commands insert a function into the active cell,
+  build the demo sheet in the active workbook or run the registration and
+  development entry points. The regression harness's stateful runners create
+  and close their own scratch workbooks.
+- **Development surface** — `KPR_Dev_Import` downloads the module source of a
+  commit from `raw.githubusercontent.com` and replaces the K-PRICING modules of
+  an open workbook. `tools/Check-KPR.ps1` is fetched from GitHub, asks before
+  turning on *Trust access to the VBA project object model* (`AccessVBOM`) for
+  the Windows user, and remembers the clone path in
+  `HKCU\Software\K-PRICING\Check`. `tools/inject_ribbon.py` rewrites a
+  closed workbook or add-in after a backup. None of these is part of the
+  supported runtime.
+- **Artifact surface** — the tracked macro-free template
+  `src/workbook/KPR_Template.xlsx`, generated from source and checked byte for
+  byte. Any workbook attached to the `v0.0.4` pre-release is a release asset
+  bound to the tag by its evidence (#52).
 - **Automation surface** — GitHub Actions (static checks, CodeQL, Scorecard, label
-  sync and drift, external links, release closeout) with pinned actions and
-  checksum-verified tool downloads.
+  sync and drift, issue triage, milestone register, pull-request milestones,
+  external links, release closeout) with pinned actions and checksum-verified
+  tool downloads; pull-request milestones holds `pull-requests: write`.
 
 ### Out of scope
 

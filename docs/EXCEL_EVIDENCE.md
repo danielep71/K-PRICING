@@ -120,6 +120,11 @@ values, all digest markers, environment and timestamps with observed values:
     {"path": "src/core/KPR_Core_Err.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
     {"path": "src/core/KPR_Core_Parse.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
     {"path": "src/modules/KPR_DATES_DAYS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "src/modules/KPR_REGISTER_PUBLIC_UDFS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "src/modules/KPR_UI_Actions.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "src/modules/KPR_UI_CommandBars.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "src/modules/KPR_UI_Ribbon.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
+    {"path": "tests/modules/KPR_Dev_Import.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
     {"path": "tests/modules/KPR_REGRESSION_TESTS.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
     {"path": "tests/modules/KPR_Test_Fixtures_Generated.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"},
     {"path": "tests/modules/KPR_Test_Oracle.bas", "sha256": "REPLACE_WITH_SOURCE_DIGEST"}
@@ -140,6 +145,13 @@ values, all digest markers, environment and timestamps with observed values:
   }
 }
 ```
+
+`sources` is not chosen by the operator: the validator requires it to equal
+the list it computes from the candidate. That list is every VBA component in
+`.github/repository-profile.json` except the `example` role, sorted by path,
+with its SHA-256; at the current candidate it is the 13 paths above. It
+therefore includes `tests/modules/KPR_Dev_Import.bas`, which the import order
+does not, and leaves out the demo modules, which the import order includes.
 
 For automation set `execution: "automated"`, `runner.class: "trusted-interactive"`
 and replace `runner.workflow: null` with this exact shape:
@@ -195,9 +207,13 @@ top-level evidence cases.
    Account → About Excel** version/build and bitness, Windows version/build and
    architecture, and the existing Trust Center settings. Do not change trust
    settings to make the test run. Record start time with timezone.
-3. In the VBA editor, import the exact candidate inventory in the documented
-   order: the four `KPR_Core_*` modules, `KPR_DATES_DAYS`, `KPR_REGISTER_PUBLIC_UDFS`,
-   `KPR_UI_Actions`, `KPR_UI_CommandBars`, `KPR_UI_Ribbon`, `KPR_Test_Fixtures_Generated`, `KPR_Test_Oracle`, `KPR_Demo__Builder`, `KPR_Demo_Dates` and `KPR_REGRESSION_TESTS`. Review references, compile, and run
+3. In the VBA editor, import the exact candidate inventory in the order of
+   "Migrated date-layer import order" in [INSTALLATION.md](../INSTALLATION.md):
+   the four `KPR_Core_*` modules, `KPR_DATES_DAYS`, `KPR_REGISTER_PUBLIC_UDFS`,
+   `KPR_UI_Actions`, `KPR_UI_CommandBars`, `KPR_UI_Ribbon`,
+   `KPR_Test_Fixtures_Generated`, `KPR_Test_Oracle`, `KPR_REGRESSION_TESTS`,
+   optionally `KPR_Demo_DirectVBA`, then `KPR_Demo__Builder` and
+   `KPR_Demo_Dates`. Review references, compile, and run
    `KPR_Tests_RunEvidence`. Preserve its complete Immediate-window output as
    `harness.log`. The adapter delegates to the native all-suite dispatcher and
    emits the structured evidence records required by the validator. If it fails,

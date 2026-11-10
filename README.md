@@ -288,8 +288,10 @@ Generated inputs are regenerated, never edited by hand:
 `python3 tools/gen_fixtures.py --root . --write` rewrites the regression
 fixtures ([`tests/fixtures/README.md`](tests/fixtures/README.md)),
 `python3 tools/workbook_template.py --write` the workbook template, and
-`python3 tools/milestone_register.py --write` the milestone register; CI fails
-when any of them differs from its source. The demo sheet is not tracked: it is
+`python3 tools/milestone_register.py --write` the milestone register. The
+static checks fail when the fixtures or the template differ from their source;
+the register is compared with the live issues by the separate
+`Milestone register` workflow and must be `CURRENT` before tagging. The demo sheet is not tracked: it is
 built in Excel each time ([`examples/README.md`](examples/README.md)).
 
 For a release candidate, use [`RELEASING.md`](RELEASING.md); certification

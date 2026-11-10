@@ -12,11 +12,13 @@ Use subdirectories only when they contain real material:
 
 ## Migrated KPR regression harness
 
-Import `modules/KPR_REGRESSION_TESTS.bas` after all five production modules and
-compile the VBA project. The imported harness retains these entry points:
-`KPR_Tests_Run`, `KPR_Tests_RunSuite`, `KPR_Tests_RunAll`,
-`KPR_Tests_RunHost`, `KPR_Tests_RunShape`, and `KPR_Tests_RunArray`. K-PRICING
-also adds `KPR_Tests_RunEvidence`, a destination-only adapter that delegates to
+Import `modules/KPR_REGRESSION_TESTS.bas` in the order of "Migrated date-layer
+import order" in [`INSTALLATION.md`](../INSTALLATION.md): after the nine
+production modules, the generated fixtures and the oracle, and together with the
+demo modules its `worksheet-demo` suite builds. Then compile the VBA project.
+The imported harness retains these entry points: `KPR_Tests_Run`,
+`KPR_Tests_RunSuite`, `KPR_Tests_RunAll`, `KPR_Tests_RunHost`,
+`KPR_Tests_RunShape`, and `KPR_Tests_RunArray`. K-PRICING also adds `KPR_Tests_RunEvidence`, a destination-only adapter that delegates to
 `KPR_Tests_RunAll("all")` and emits the structured retained-evidence log format,
 and `KPR_Tests_RunMigrationEvidence`, the migration-only common-observation
 adapter used by the v0.0.2 parity run (#17).
@@ -33,7 +35,10 @@ only when every selected case passed. The record's schema is
 [`docs/kpr-test-evidence.schema.json`](../docs/kpr-test-evidence.schema.json),
 documented in [KPR_TEST_EVIDENCE.md](../docs/KPR_TEST_EVIDENCE.md), and
 `tools/check_test_evidence.py` validates it. The runner was verified in Windows
-Excel for #39, #40, #41 and the #42 `worksheet-registration` suite.
+Excel for #39, #40, #41, the #42 `worksheet-registration` suite, the #46
+`worksheet-demo` suite and, at `ba250a7`, the #47 `worksheet-ribbon` and #48
+`worksheet-commandbars` suites (two runs, 23 suites, 9,372 assertions, 0
+failures). [KPR_TEST_EVIDENCE.md](../docs/KPR_TEST_EVIDENCE.md) lists each run.
 
 The source expectations and condition identifiers are preserved. Historical KPR
 run counts are not destination certification. The authoritative

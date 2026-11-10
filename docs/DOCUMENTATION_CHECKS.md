@@ -39,13 +39,18 @@ they would otherwise drift silently. Complex/dynamic workflow names need a
 deliberate checker extension; the current registered-name syntax is literal.
 
 ```bash
-python3 tools/check_documentation.py --root . \
-  --output test-results/documentation.json --summary test-results/documentation.md
 python3 tools/test_documentation.py -v
+python3 tools/check_documentation.py --root .
 ```
 
-Both run under `Repository integrity`. A removed script, renamed flag/context,
-missing registered file, or changed registered policy value fails the gate.
+Both run, in that order, in the `Check maintained documentation contracts` step
+of `Repository integrity`; CI writes no documentation report file. Locally,
+`--output FILE.json` and `--summary FILE.md` optionally write a JSON report and
+a Markdown summary, for example
+`python3 tools/check_documentation.py --root . --output test-results/documentation.json --summary test-results/documentation.md`.
+The `Python tooling coverage` job runs both again under coverage. A removed
+script, renamed flag/context, missing registered file, or changed registered
+policy value fails the gate.
 Fix the implementation or documentation together; do not remove the reference
 merely to hide an inconsistency. Historical document exclusions have versioned
 reasons and apply only to command scanning; their local links still get checked.
@@ -53,7 +58,9 @@ reasons and apply only to command scanning; their local links still get checked.
 ## 🌐 External Observations
 
 The separate **External documentation links** workflow runs weekly on Monday
-at 06:17 UTC and through `workflow_dispatch`. It is not part of the required
+at 06:17 UTC, through `workflow_dispatch`, and on a push to `main` that changes
+its workflow, `.github/documentation-policy.json` or
+`tools/check_external_links.py`. It is not part of the required
 PR status check. GitHub [scheduled workflows run from the default branch](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule),
 so a workflow added only on a release branch has not started its weekly schedule.
 Dispatch it after publication, or run the same command locally:

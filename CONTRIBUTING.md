@@ -158,6 +158,12 @@ inspection cannot substitute for Excel execution. A skipped check is not a pass.
 Numerical or reference evidence must be independent of the implementation under
 test.
 
+Run the full regression with `KPR_Test_RunAll` (or the one-click check,
+`tools/Check-KPR.ps1`), which writes `kpr-test-evidence.json` for the exact
+source SHA; `KPR_Test_RunSuite` reruns one suite and `KPR_Tests_Run` runs the
+pure suites interactively ([`docs/KPR_TEST_EVIDENCE.md`](docs/KPR_TEST_EVIDENCE.md)).
+Release certification uses `KPR_Test_RunAll` too; see [`RELEASING.md`](RELEASING.md).
+
 For release-evidence schemas and exact-SHA binding, use
 [`docs/RELEASE_EVIDENCE.md`](docs/RELEASE_EVIDENCE.md).
 

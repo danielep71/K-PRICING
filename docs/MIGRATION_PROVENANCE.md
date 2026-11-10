@@ -128,6 +128,14 @@ section-banner comment lines were removed. Its source blob is
 is `07656d21f01770e2d74d9de77d5f956949ff1301`. No executable statement,
 declaration, attribute, signature, default, error rule or algorithm changed.
 
+As of 2026-11-10, the statements above on `KPR_Core_Parse.bas` and
+`KPR_DATES_DAYS.bas` describe those modules at migration.
+`KPR_Core_Parse.bas` was later changed by #68 (near-integer tolerance,
+executable code) and #86 (comments only). `KPR_DATES_DAYS.bas` was later
+changed by #67 and #86 (comments only) and #88 (executable code: `DateFromPillar`
+returns `PILLAR_AGGREGATE_RANGE`, #87). [`src/README.md`](../src/README.md)
+records the current boundary.
+
 `KPR_REGRESSION_TESTS.bas` has three destination-only test-infrastructure
 adaptations. The first two were identified during PR #28 review; the third
 is described after the #32 correction below. First, the two `CLngLng` regression

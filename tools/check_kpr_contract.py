@@ -77,6 +77,11 @@ ALLOWED_DEPENDENCIES = {
     # Each menu surface reaches every command through the shared actions.
     "kpr_ui_commandbars": frozenset({"kpr_ui_actions"}),
     "kpr_ui_ribbon": frozenset({"kpr_ui_actions"}),
+    # The direct-VBA consumer example calls the supported facade only.
+    "kpr_demo_directvba": frozenset({"kpr_dates_days"}),
+    # The development loader imports modules as files and runs the regression
+    # entry points by name; it calls no other module directly.
+    "kpr_dev_import": frozenset(),
 }
 REQUIRED_MEMBERS = {
     "kpr_core_err": frozenset({"ErrValue", "ErrNum", "ErrNA", "ErrForCondition"}),
@@ -398,7 +403,7 @@ def rule_components(data: dict[str, Any]) -> dict[str, Any]:
         "kpr-components",
         "Migrated KPR component roles",
         failures,
-        "All six migrated KPR components are registered with the intended roles and visibility",
+        f"All {len(EXPECTED_COMPONENTS)} migrated KPR components are registered with the intended roles and visibility",
     )
 
 
@@ -1754,6 +1759,10 @@ def self_test(root: Path) -> None:
     dependency = copy.deepcopy(base)
     dependency["sources"][err] += "\r\nPublic Function ProbeDependency() As Boolean\r\n    ProbeDependency = TryParseDateScalar(0, 0, 0)\r\nEnd Function\r\n"
     scenarios.append(("forbidden reverse dependency", "kpr-dependencies", dependency))
+    example = next(path for path in base["sources"] if Path(path).stem == "KPR_Demo_DirectVBA")
+    consumer = copy.deepcopy(base)
+    consumer["sources"][example] += "\r\nPublic Function ProbeConsumer() As Variant\r\n    ProbeConsumer = ErrNA()\r\nEnd Function\r\n"
+    scenarios.append(("example reaching past the facade", "kpr-dependencies", consumer))
     boundary = copy.deepcopy(base)
     boundary["sources"][dates] += "\r\nPublic Function ProbeBoundary(ByVal Y As Long, ByVal M As Long) As Date\r\n    ProbeBoundary = DateSerial(Y, M + 1, 0)\r\nEnd Function\r\n"
     scenarios.append(("day-zero DateSerial", "kpr-day-zero", boundary))

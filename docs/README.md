@@ -33,6 +33,7 @@ may summarize it, but must link here rather than restating a competing rule.
 | Release build records, workflow identity and optional signatures | [`RELEASE_PROVENANCE.md`](RELEASE_PROVENANCE.md) | Verification commands and trust boundaries |
 | Optional Windows/Excel execution interface and manual host evidence | [`EXCEL_EVIDENCE.md`](EXCEL_EVIDENCE.md) | Host prerequisites and validator commands |
 | Durable VBA test runner, structured evidence schema and #52 certification outcomes | [`KPR_TEST_EVIDENCE.md`](KPR_TEST_EVIDENCE.md) | Runner entry points and validator commands |
+| Native developer commands (`tools/kpr.py`): checks, workbook snapshots and comparisons, candidate inventories and the remaining Windows build work | [`NATIVE_DEVELOPER_TOOLS.md`](NATIVE_DEVELOPER_TOOLS.md) | A command summary and link only |
 | Maintained documentation drift and separate external-link observations | [`DOCUMENTATION_CHECKS.md`](DOCUMENTATION_CHECKS.md) | Local gate commands and network report interpretation |
 | Adopted template contract version, its SemVer policy and migration notes | [`TEMPLATE_CONTRACT.md`](TEMPLATE_CONTRACT.md) | The recorded version; never a competing policy |
 | Reusable workflow interface, immutable adoption, compatibility and rollback | [`REUSABLE_WORKFLOWS.md`](REUSABLE_WORKFLOWS.md) | A pinned caller example |
@@ -40,7 +41,7 @@ may summarize it, but must link here rather than restating a competing rule.
 | Private/public security-analysis eligibility and assurance gaps | [`SUPPLY_CHAIN_ASSURANCE.md`](SUPPLY_CHAIN_ASSURANCE.md) | Eligibility summary and result links |
 | Post-publication provider checks, asset partition and retained closeout evidence | [`RELEASE_CLOSEOUT.md`](RELEASE_CLOSEOUT.md) | Closeout navigation only |
 | Repository-local Action containment and tracked entry points | [`../tools/LOCAL_ACTIONS.md`](../tools/LOCAL_ACTIONS.md) | Link to the local Action gate contract |
-| Migrated date-layer behavior (runtime parity verified on one Windows 64-bit host, #17) | [`DATE_LAYER_CONTRACT.md`](DATE_LAYER_CONTRACT.md) | Behavioral summaries only |
+| Migrated date-layer behavior (runtime parity verified on one Windows 64-bit host, #17; full regression passed twice at `ba250a7`, #47, #48) | [`DATE_LAYER_CONTRACT.md`](DATE_LAYER_CONTRACT.md) | Behavioral summaries only |
 | VBA exchange format and character set | [`VBE_EXPORT.md`](VBE_EXPORT.md) | Link to format; procedures remain in Installation |
 | Frozen migration source and attribution | [`MIGRATION_PROVENANCE.md`](MIGRATION_PROVENANCE.md) | Source reference and migration status |
 | Migrated regression coverage, evidence boundary and source/destination parity procedure | [`MIGRATION_REGRESSION.md`](MIGRATION_REGRESSION.md) | Links to execution/parity requirements only |

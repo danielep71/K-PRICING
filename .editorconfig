@@ -144,8 +144,9 @@ trim_trailing_whitespace = true
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true
-# Preserve intentional Markdown hard line breaks.
-trim_trailing_whitespace = false
+# Trailing whitespace is rejected by the committed-whitespace gate (git diff
+# --check), so Markdown hard line breaks use a trailing backslash or <br>.
+trim_trailing_whitespace = true
 
 [*.txt]
 charset = utf-8

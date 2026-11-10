@@ -17,7 +17,13 @@ suites, 9,177 assertions). The #42 `worksheet-registration` suite was verified
 the same way on candidate `aa4aa0d` (20 suites, 9,263 assertions); a first run
 on `e4e0c75` passed every assertion but failed state restoration because the
 status bar read back as the text `FALSE`, and the runner now hands the bar back
-with a literal `False`, retried after `DoEvents`.
+with a literal `False`, retried after `DoEvents`. The #46 `worksheet-demo` suite
+was verified in two full runs on `cd0e1a1` (21 suites, 9,320 assertions). The
+#47 `worksheet-ribbon` and #48 `worksheet-commandbars` suites were verified in
+two full runs on `ba250a7` (Windows 11 Enterprise, Microsoft 365 Excel build
+16.0.20430.20180, 64-bit): 23 suites, 9,372 assertions, 0 failures, and
+`check_test_evidence.py` validated both records. The candidate's own
+certification is #52.
 
 ## Runner interface
 

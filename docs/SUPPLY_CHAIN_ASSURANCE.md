@@ -8,8 +8,8 @@ update policy; it does not replace either one.
 
 The repository is public. CodeQL and Scorecard are eligible and run under the
 committed workflow triggers; [setup verification](SETUP_VERIFICATION.md) records
-observed runs and current settings. CodeQL covers Python and JavaScript tooling,
-not VBA. PR analysis is read-only and does not upload SARIF; trusted analysis
+observed runs and current settings. CodeQL covers the Python and JavaScript
+tooling and the GitHub Actions workflows, not VBA. PR analysis is read-only and does not upload SARIF; trusted analysis
 uploads security results. Its weekly schedule is Tuesday at 04:17 UTC.
 Scorecard publishes from the default branch and on Thursday at 05:23 UTC,
 with exact-SHA publication verification.
@@ -23,8 +23,8 @@ settings record and release coverage without changing visibility implicitly.
 
 | Control | Purpose | Trusted execution boundary |
 | --- | --- | --- |
-| CodeQL | Static security analysis of maintained Python and JavaScript source | `push` to `main` / `release/**`, schedule, or explicit manual dispatch |
-| Dependabot | Weekly discovery of GitHub Actions updates | Proposal-only pull requests; no automatic approval or merge |
+| CodeQL | Static security analysis of maintained Python and JavaScript source and of the GitHub Actions workflows | `push` to `main` / `release/**`, schedule, or explicit manual dispatch |
+| Dependabot | Weekly discovery of GitHub Actions updates and of the hash-locked Python quality tools in `tools/requirements-quality-ci.txt` (pip) | Proposal-only pull requests; no automatic approval or merge |
 | OpenSSF Scorecard | Exact-commit release-candidate analysis plus public default-branch posture publication | CLI scan on trusted non-default branch push/manual dispatch; published Action on `main`, branch-protection changes, schedule, or main-branch manual dispatch |
 
 All external Actions remain pinned to full immutable commit SHAs with audited
@@ -33,7 +33,7 @@ proposal is not trusted merely because a bot opened it: the source/tag must be
 reviewed under [DEPENDENCY_UPDATES.md](DEPENDENCY_UPDATES.md), the resulting
 workflow must retain immutable pins, and merge remains manual.
 
-The published Scorecard path uses `ossf/scorecard-action` v2.4.4, resolved to its
+The published Scorecard path uses `ossf/scorecard-action` v2.5.0, resolved to its
 reviewed commit. OpenSSF restricts published workflows: they may not define
 top-level `env` or `defaults`, the publishing job may not define job-level
 `env` or `defaults`, and that job may use only OpenSSF-approved Actions.

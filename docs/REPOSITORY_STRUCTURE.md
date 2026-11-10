@@ -45,6 +45,7 @@ Create these `src/` subdirectories only when the project has corresponding compo
 | `src/core/` | Internal standard modules for calculations, parsing, validation, and shared implementation |
 | `src/classes/` | Production class modules, state managers, event sinks, and UI hook classes |
 | `src/forms/` | Production UserForms with each `.frm` adjacent to its `.frx` resource |
+| `src/ribbon/` | RibbonX source (`customUI14.xml`), written into a package by `tools/inject_ribbon.py` rather than imported through the VBE; its callbacks stay in `src/modules/` |
 | `src/workbook/` | Host-bound workbook and worksheet document-module source snapshots such as `ThisWorkbook` and sheet modules, and the macro-free workbook template `KPR_Template.xlsx` that `tools/workbook_template.py` generates |
 
 ### Public modules

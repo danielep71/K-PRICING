@@ -19,8 +19,8 @@ milestone are complete, run **Release closeout** manually. Supply:
 - `tag`: the published tag, for example `v0.0.4`;
 - `candidate_sha`: the exact 40-character SHA that was certified before tagging;
 - `milestone_number`: the GitHub milestone number used for that release;
-- `expect_prerelease`: normally `false`; set it only for an intentionally prerelease publication;
-- `allow_not_latest`: normally `false`; set it only when the release is intentionally not expected to be GitHub's current latest release.
+- `expect_prerelease`: normally `false`; set it only for an intentionally prerelease publication. v0.0.4 is to be published as a GitHub pre-release, so it is `true` for v0.0.4;
+- `allow_not_latest`: normally `false`; set it only when the release is intentionally not expected to be GitHub's current latest release. GitHub does not report a pre-release as the latest release, so it is also `true` for v0.0.4.
 
 The workflow checks out the exact candidate, captures GitHub REST facts, records Wiki scope as not applicable, tests GitHub-generated source archive retrieval, builds one retained snapshot, and evaluates that snapshot with `tools/_release_closeout.py`. The terminal workflow verdict is green only when the closeout report, readable summary, and retained evidence are all produced successfully.
 

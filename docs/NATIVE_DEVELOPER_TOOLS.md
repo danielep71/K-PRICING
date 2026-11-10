@@ -13,31 +13,35 @@ The initial portable implementation was prepared against `b415175` on 1 October
 2026 and reconciled with `dab4e5c` on 9 October. The demo builder (#46, PR #75)
 is now complete; PR #78 hardened the runner's status-bar restoration, PR #79
 renamed the demo modules and PR #81 adopted MPL-2.0. Those changes are preserved.
-The authoritative [roadmap](ROADMAP.md) and remaining dependency order are unchanged.
+The authoritative [roadmap](ROADMAP.md) owns the dependency order.
 
-| Capability | Existing authority | This increment / remaining work |
+As of 2026-11-10, #46 to #51 are complete and only #52, the exact-source
+certification and publication of v0.0.4, remains open:
+
+| Capability | Existing authority | Status and remaining work |
 | --- | --- | --- |
 | Deterministic demo (#46, complete) | `KPR_Demo__Builder`, `KPR_Demo_Dates` and the `worksheet-demo` suite | Add saved-content comparison to the existing builder/fingerprint tests; a fresh final-candidate host run is still required by #52 |
-| Staged build (#47, #52) | Host inventory, release provenance, package gates | Reuse candidate inventory and compare supplied VBE exports; Excel staging, Ribbon injection, save/reopen, smoke and promotion remain unimplemented |
-| Command interface (#50) | Existing focused validators | Thin `check`, `doctor`, `inventory`, `round-trip`, `snapshot`, `compare` commands |
+| Staged build (#47, #52) | Host inventory, release provenance, package gates, `tools/inject_ribbon.py`, `tools/Check-KPR.ps1` | Reuse candidate inventory and compare supplied VBE exports. `tools/Check-KPR.ps1` builds a development workbook from `src/workbook/KPR_Template.xlsx`, reopens it and checks that the Ribbon loads; the controlled staging, smoke and promotion workflow below remains unimplemented |
+| Command interface (#50, complete) | Existing focused validators | Thin `check`, `doctor`, `inventory`, `round-trip`, `snapshot`, `compare` commands |
 | Diagnostics | Host evidence environment contract | Read-only Git/OS/output-path observations; Excel, references, VBProject, locks and live state remain unknown |
 | Recovery | Existing host failure outcomes | No execution adapter in this increment; recovery procedure below is a requirement for its future implementation |
-| Scriptable actions (#46–#49) | Existing `KPR_Demo_BuildDates(OutputPath)` and `KPR_Demo_LastReport`; remaining UI acceptance criteria | Reuse the existing explicit-path operation; Ribbon/CommandBars and final classification remain open |
+| Scriptable actions (#46–#49, complete) | `KPR_Demo_BuildDates(OutputPath)`, `KPR_Demo_LastReport` and the shared commands in `KPR_UI_Actions` | Ribbon (#47, PR #97) and CommandBars (#48, PR #96) delegate to `KPR_UI_Actions`; the member classification (#49, PR #112) is `docs/API_INVENTORY.txt` |
 
-These tools complement the completed #46 and support #50 and #52 without
-closing either release issue. #47,
-#48 and #49 remain prerequisites for the final release inventory. #51 still
-owns candidate assembly; `VERSION` is unchanged. Optional automation does not
-become an additional dependency for the current functional release: manual
-exact-source certification remains available.
+These tools complement the completed #46 and #50 and support #52 without
+closing it. #51 assembled the candidate (PRs #115, #116): `VERSION` is `0.0.4`.
+Optional automation does not become an additional dependency for the current
+functional release: manual exact-source certification remains available.
 
 The separate `tools/dev-module-import` branch was reviewed at `576e72c` during
 reconciliation. Its `KPR_Dev_ImportModules` loader mutates a selected open VBA
 project and does not save it; these portable tools only inspect committed
-source and supplied exports. This change neither merges that branch nor adds
-a second importer. A later host adapter may reuse reviewed import tooling,
-but must independently establish the owned staging workbook, exact-source
-alignment, compilation, save/reopen, promotion and recovery controls below.
+source and supplied exports. This change neither merged that branch nor added
+a second importer. As of 2026-11-10, PR #80 has added the development loader
+`tests/modules/KPR_Dev_Import.bas`; #101 added its one-click Excel check and
+#106 runs that check unattended from `tools/Check-KPR.ps1`. A later host
+adapter may reuse reviewed import tooling, but must independently establish the
+owned staging workbook, exact-source alignment, compilation, save/reopen,
+promotion and recovery controls below.
 
 ## Commands and outcomes
 
@@ -203,9 +207,10 @@ claiming a complete deterministic build workflow, implement and validate:
    calculation and candidate. Check formula/input structure separately from
    freshly calculated typed results, including native errors and array shapes.
    The portable cached-result match alone cannot complete this step.
-4. **UI and packaging.** Implement #47/#48 callbacks as thin delegates to the
-   same operations, with observable cancellation. Apply the candidate RibbonX
-   using its reviewed package injector. Save, close, reopen and smoke-test the
+4. **UI and packaging.** The #47/#48 callbacks are thin delegates to the
+   same operations in `KPR_UI_Actions` (PRs #96, #97); their cancellation must
+   stay observable. `tools/inject_ribbon.py` is the reviewed package injector:
+   apply the candidate RibbonX with it. Save, close, reopen and smoke-test the
    package before atomic promotion to the requested output. Inject a locked
    output and failed smoke test: the previous successful artifact must survive.
    Retain build inputs, tools, environment and stage logs using existing contracts.
