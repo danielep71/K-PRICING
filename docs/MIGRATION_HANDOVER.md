@@ -69,17 +69,18 @@ each item was scheduled. Current planning lives in the [roadmap](ROADMAP.md).
 | Registration | MacroOptions manifest and registration/cleanup lifecycle | Not implemented by migration. Implemented after v0.0.2 by #42 (`KPR_REGISTER_PUBLIC_UDFS`). |
 | Independent fixtures | Independent Python fixture generator, canonical TSV and generated VBA fixture module | Not implemented by migration. Delivered after v0.0.2 by #38 (PR #54): `tools/gen_fixtures.py`, `tests/fixtures/date_layer_fixtures.tsv` and `KPR_Test_Fixtures_Generated`; the #39 durable runner executes them. |
 | Durable runner | Final durable regression interface and broad structured evidence schema | Partially overlapped by migration-specific K-PRICING evidence work; not complete at migration. Implemented after v0.0.2 by #39 (`KPR_Test_RunAll`, `KPR_Test_RunSuite`, [KPR_TEST_EVIDENCE.md](KPR_TEST_EVIDENCE.md)); verified on one Windows 64-bit Excel host (PR #58). |
-| Regression matrix | Complete contract/shape/parity/error/state regression matrix | Focused migrated suites exist, but the complete matrix remains future work. Scheduled in v0.0.3 as #40. |
+| Regression matrix | Complete contract/shape/parity/error/state regression matrix | Focused migrated suites existed, but the complete matrix was future work at migration. Scheduled in v0.0.3 as #40; delivered by PR #59. |
 | Cross-oracle | Native Excel cross-oracle module | Not implemented at migration. Implemented after v0.0.2 by #41 (`KPR_Test_Oracle`). |
-| Demo builder | Deterministic date-demo builder | Not implemented. The destination carries only a minimal direct-VBA consumer example. Scheduled in v0.0.4 as #46. |
-| Ribbon | Ribbon callbacks, RibbonX and safe package injection | Not implemented. Scheduled in v0.0.4 as #47. |
-| CommandBars | Idempotent classic CommandBars lifecycle | Not implemented. Scheduled in v0.0.4 as #48. |
-| Member classification | Final supported/infrastructure public-member classification | Partially satisfied for the migrated 22-function calculation API by `docs/PUBLIC_API.txt` and destination static checks. Future registration/UI/demo infrastructure remains absent, so the item is not complete. Scheduled in v0.0.4 as #49. |
-| Inventory controls | Final architecture inventory checks and live milestone-register drift monitoring | Partially overlapped by K-PRICING repository/KPR static gates. Final fixture/oracle/UI inventory and live register workflow remain future work. Scheduled in v0.0.4 as #50. |
-| Candidate assembly | Functional candidate documentation, VERSION/CHANGELOG assembly | Not a v0.0.2 functional-release commitment. K-PRICING v0.0.2 is a repository-migration milestone. Scheduled in v0.0.4 as #51. |
-| Certification | Full roadmap Windows certification and publication | Not completed by migration. K-PRICING #17 certifies only the implemented migrated candidate/parity boundary; future registration/UI/demo/oracle/package certification remains separate. Scheduled in v0.0.4 as #52. |
+| Demo builder | Deterministic date-demo builder | Not implemented at migration; the destination carried only a minimal direct-VBA consumer example. Scheduled in v0.0.4 as #46; delivered by PR #75. |
+| Ribbon | Ribbon callbacks, RibbonX and safe package injection | Not implemented at migration. Scheduled in v0.0.4 as #47; delivered by PR #97 (`KPR_UI_Ribbon`, `src/ribbon/customUI14.xml`, `tools/inject_ribbon.py`). |
+| CommandBars | Idempotent classic CommandBars lifecycle | Not implemented at migration. Scheduled in v0.0.4 as #48; delivered by PR #96 (`KPR_UI_Actions`, `KPR_UI_CommandBars`). |
+| Member classification | Final supported/infrastructure public-member classification | Partially satisfied for the migrated 22-function calculation API by `docs/PUBLIC_API.txt` and destination static checks. Registration/UI/demo infrastructure was absent at migration, so the item was not complete. Scheduled in v0.0.4 as #49; delivered by PR #112 (`docs/API_INVENTORY.txt`). |
+| Inventory controls | Final architecture inventory checks and live milestone-register drift monitoring | Partially overlapped by K-PRICING repository/KPR static gates. Final fixture/oracle/UI inventory and live register workflow were future work at migration. Scheduled in v0.0.4 as #50; delivered by PRs #113 and #114. |
+| Candidate assembly | Functional candidate documentation, VERSION/CHANGELOG assembly | Not a v0.0.2 functional-release commitment. K-PRICING v0.0.2 is a repository-migration milestone. Scheduled in v0.0.4 as #51; delivered by PRs #115 and #116 (`VERSION` `0.0.4`). |
+| Certification | Full roadmap Windows certification and publication | Not completed by migration. K-PRICING #17 certifies only the implemented migrated candidate/parity boundary; future registration/UI/demo/oracle/package certification remains separate. Scheduled in v0.0.4 as #52, which is still open. |
 
-Every carried-forward item is now scheduled. Detailed acceptance criteria are
+Every carried-forward item is now scheduled, and as of 2026-11-10 all but
+certification (#52) are delivered. Detailed acceptance criteria are
 recorded in the destination issues, and the [roadmap](ROADMAP.md) is the
 authority for current milestones and sequencing.
 
@@ -104,7 +105,7 @@ follows. The [roadmap](ROADMAP.md) owns any later change to it.
 
 At v0.0.2 acceptance (#18) the maintainer scheduled independent test hardening
 (#38–#41) followed by registration (#42) in milestone v0.0.3. The remaining
-items were later scheduled in milestone v0.0.4 — Date Primitives as #46–#52,
+items were later scheduled in milestone v0.0.4 — Date primitives as #46–#52,
 ending in the first functional release. Calendars (v0.0.5) and business-day
 arithmetic (v0.0.6) are new destination scope recorded only in the
 [roadmap](ROADMAP.md).

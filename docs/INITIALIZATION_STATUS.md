@@ -77,5 +77,6 @@ Use [DEVELOPER_SETUP.md](DEVELOPER_SETUP.md) for ongoing development and
 together with the active validation issue's scope and commands.
 The completed migration's inventory and issue mapping are in
 [MIGRATION_PLAN.md](MIGRATION_PLAN.md).
-v0.0.1 is a completed milestone-only checkpoint; VERSION remains 0.0.0 and no
-release tag was created.
+v0.0.1 is a completed milestone-only checkpoint; VERSION stayed 0.0.0 and no
+release tag was created. As of 2026-11-10, VERSION is 0.0.4, the v0.0.4
+candidate; its certification is #52 and no tag exists yet.

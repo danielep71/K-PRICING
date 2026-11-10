@@ -2,8 +2,9 @@
 
 Repository migration **v0.0.2** accepts the frozen KPR date-layer candidate into
 K-PRICING. This is a milestone record, not a published release: `VERSION`
-remains `0.0.0`, no tag or package is created, and no production-ready pricing
-product is claimed. Issue #18 owned this acceptance.
+stayed `0.0.0`, no tag or package was created, and no production-ready pricing
+product is claimed. Issue #18 owned this acceptance. As of 2026-11-10,
+`VERSION` is `0.0.4`, the v0.0.4 candidate (certification in #52, no tag yet).
 
 ## Accepted candidate
 
@@ -20,17 +21,19 @@ accepted production and test source.
 
 ## Inventory and deltas
 
-All six migrated components match the destination blob IDs recorded in
-[MIGRATION_PROVENANCE.md](MIGRATION_PROVENANCE.md):
+At acceptance (#18), all six migrated components matched the destination blob
+IDs recorded in [MIGRATION_PROVENANCE.md](MIGRATION_PROVENANCE.md). Production
+changes made after acceptance are listed in [`src/README.md`](../src/README.md).
 
-| Component | Relationship to the frozen source |
+| Component | Relationship to the frozen source at acceptance |
 | --- | --- |
 | `KPR_Core_Err`, `KPR_Core_Parse`, `KPR_Core_Array` | Byte-for-byte imports |
 | `KPR_Core_Dates` | #32 correction: oversized valid pillar quantities return `PILLAR_AGGREGATE_RANGE` (`#NUM!`) |
 | `KPR_DATES_DAYS` | Format-only: seven trailing spaces removed |
 | `KPR_REGRESSION_TESTS` | Three destination-only test adaptations: `Win64` guard, `KPR_Tests_RunEvidence`, and the migration observation instrumentation |
 
-`KPR_DateExample` is a destination-only example. The supported calculation API
+`KPR_DateExample` is a destination-only example; it has since been renamed
+`KPR_Demo_DirectVBA`. The supported calculation API
 is exactly the 22 functions in [PUBLIC_API.txt](PUBLIC_API.txt).
 
 ## Evidence
@@ -87,5 +90,5 @@ in milestone **v0.0.3 - Test Hardening and Registration**:
 
 The demo builder, Ribbon, CommandBars, member classification, inventory
 controls, candidate assembly and certification were unscheduled at acceptance.
-They were later scheduled in milestone **v0.0.4 — Date Primitives** as #46–#52.
+They were later scheduled in milestone **v0.0.4 — Date primitives** as #46–#52.
 The [roadmap](ROADMAP.md) owns the current plan.

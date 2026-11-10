@@ -186,15 +186,15 @@ separately implemented and evidenced.
 | Function registration | Open; defer new MacroOptions category/argument registration | #16; implemented after migration by #42 (`KPR_REGISTER_PUBLIC_UDFS`) |
 | Independent generated fixtures | Open at migration; defer generator/TSV/generated-module implementation | #16; delivered after migration by #38 (PR #54) |
 | Full runner and evidence | Open at migration; preserve current harness first | #14, #16; delivered after migration by #39 (PRs #56, #58; verified in Windows Excel) |
-| Complete regression matrix | Open; preserve implemented tests; broader coverage remains future | #14, #16; now #40 |
+| Complete regression matrix | Open; preserve implemented tests; broader coverage remains future | #14, #16; delivered after migration by #40 (PR #59) |
 | Native Excel cross-oracle | Open at migration; independent overlap checks deferred | #16; implemented after migration by #41 (`KPR_Test_Oracle`) |
-| Deterministic demo builder | Open; no workbook builder to import | #16; now #46 |
-| Ribbon integration | Open; no XML/callback/package implementation to import | #16; now #47 |
-| CommandBars lifecycle | Open; no install/remove implementation to import | #16; now #48 |
-| API/classification manifest | Open; migration records implemented subset; future UI/register surface deferred | #13, #16; now #49 |
-| Final static/live issue register | Open; port existing checks; future full inventory/live monitor deferred | #13, #16; now #50 |
-| Final documentation/version/candidate | Open; rewrite destination docs; do not claim release completion | #15, #16; now #51 |
-| Exact-source certification/release | Open; historical runs do not satisfy a final release | #17, #18; now #52 |
+| Deterministic demo builder | Open; no workbook builder to import | #16; delivered after migration by #46 (PR #75) |
+| Ribbon integration | Open; no XML/callback/package implementation to import | #16; delivered after migration by #47 (PR #97) |
+| CommandBars lifecycle | Open; no install/remove implementation to import | #16; delivered after migration by #48 (PR #96) |
+| API/classification manifest | Open; migration records implemented subset; future UI/register surface deferred | #13, #16; delivered after migration by #49 (PR #112) |
+| Final static/live issue register | Open; port existing checks; future full inventory/live monitor deferred | #13, #16; delivered after migration by #50 (PRs #113, #114) |
+| Final documentation/version/candidate | Open; rewrite destination docs; do not claim release completion | #15, #16; delivered after migration by #51 (PRs #115, #116) |
+| Exact-source certification/release | Open; historical runs do not satisfy a final release | #17, #18; now #52, still open |
 
 Issue 16 owned detailed reconciliation and successor traceability, not feature
 implementation. A successor feature issue is created only with an explicit

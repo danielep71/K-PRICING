@@ -13,9 +13,14 @@ its own copied `static-checks.yml` and has not adopted the upstream pin.
 
 `.github/workflows/static-checks.yml` is both the existing push/PR workflow and
 the `workflow_call` entry point. There is one implementation, not a second copy
-of the job. It runs the canonical repository gate, focused source/contract/release
-semantics gates, their self-tests, Python quality checks, authoritative workflow
-validation, evidence upload and the fail-closed final verdict.
+of the workflow. It has two jobs. `Repository integrity` runs the canonical
+repository gate, focused source/contract/release semantics gates, their
+self-tests, Python quality checks, authoritative workflow validation, evidence
+upload and the fail-closed final verdict. `Python tooling coverage`
+(`python-coverage`) reruns the self-tests and a subset of those checks under
+`coverage` and fails below the `fail_under` ratchet in `pyproject.toml`; it
+publishes only its job summary. The `candidate-sha` output and the retained
+evidence come from `Repository integrity` alone.
 
 Excel compilation, numerical regression, UI-state restoration, workbook builds,
 packaging and release certification remain separate caller-owned jobs. The

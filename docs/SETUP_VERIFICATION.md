@@ -112,20 +112,26 @@ inputs. No publishing token is supplied to source validation.
 | Milestone register | Pushes to main that change the register, its tool or workflow; issue events; manual. Never `pull_request` | Contents and issues read; checks out the default branch; CURRENT passes, DRIFT and UNVERIFIED fail and the summary says which; not a required status |
 | Detect issue-label drift | Relevant PR fixtures; daily 05:17 UTC, manual and changes to its workflow on main run live | Contents/ issues read only; Node 24.22.2; no mutation; reports 30 days |
 | External documentation links | Monday 06:17 UTC, manual and checker/policy/workflow changes on main | Anonymous probes, contents read; reports 14 days; restricted/transient observations remain non-green |
-| CodeQL | Existing PR/push/schedule/manual paths gated by visibility/explicit private opt-in | Public jobs active; tooling-language scans cover Actions, JavaScript and Python, not VBA; PR analysis is read-only without SARIF upload; trusted upload uses security-events write |
-| Scorecard | Existing paths require a public repository | Active here; publication verification requires successful publication job; the public path remains excluded for private repositories |
+| CodeQL security analysis | Existing PR/push/schedule/manual paths gated by visibility/explicit private opt-in | Public jobs active; tooling-language scans cover Actions, JavaScript and Python, not VBA; PR analysis is read-only without SARIF upload; trusted upload uses security-events write |
+| OpenSSF Scorecard | Existing paths require a public repository | Active here; publication verification requires successful publication job; the public path remains excluded for private repositories |
 | Release closeout | Manual verification of an already published release | Not applicable to setup; actions/contents/issues read only; validates candidate, tag, release and milestone facts without publishing |
 
 `Repository integrity` runs the retained verification-depth Python suite as an
 enforced step and retains its output. It also runs documentation tests, release/provenance/Excel
-record fixtures, release semantics, initializer fixtures, committed-whitespace,
+record fixtures, the native developer-tool fixtures, the issue-triage rules and
+issue-form configuration check, the RibbonX injector and Ribbon/callback check, the
+workbook-template freshness check, the milestone-register snapshot test,
+release semantics, initializer fixtures, committed-whitespace,
 VBA jump/conditional/public-API checks, KPR contract checks, the fixture-generator
-self-test and freshness check, migration-evidence fixtures, local Action checks,
-template-contract checks and the 21-rule repository gate. Step-level collection does not mask
+self-test and freshness check, the test-evidence and migration-evidence fixtures,
+local Action checks, template-contract checks and the 21-rule repository gate.
+Step-level collection does not mask
 failures: final enforcement fails on unsuccessful required outcomes. The source
 workflow is the authority for exact commands and pins; use
 [developer setup](DEVELOPER_SETUP.md) to reproduce them. Retained tests import
 only retained operational modules; hosted imports and full CI verify this.
+The separate `Python tooling coverage` job reruns the self-tests and a subset
+of these checks under coverage.
 
 Dependabot checks GitHub Actions and the hash-locked Python quality tools in
 `tools/requirements-quality-ci.txt` weekly on Monday at 06:00 Europe/Rome, up to
@@ -164,9 +170,11 @@ the final diff, then record the new adopted baseline and reconciled deviations.
 
 ## Completion boundary
 
-v0.0.1 is a **milestone-only setup checkpoint**. Keep `VERSION` at `0.0.0` and
-changes under Unreleased; no tag or release publication is authorized by the
-milestone name. All setup issues #2–#10 and the milestone are closed. The
+v0.0.1 was a **milestone-only setup checkpoint**. `VERSION` stayed at `0.0.0`
+and changes went under Unreleased; no tag or release publication was authorized
+by the milestone name. As of 2026-11-10, `VERSION` is `0.0.4`, the v0.0.4
+candidate (certification in #52, no tag yet); changes after the candidate go
+under Unreleased. All setup issues #2–#10 and the milestone are closed. The
 final setup correction merged at `715eda63365ba4a94e619976acc4721411c875f0`
 in PR #23; issue #10 closed on 2026-09-23 at 20:22:54 UTC. The later Python
 fixture fix in PR #24 does not change the accepted runtime source. Migration was

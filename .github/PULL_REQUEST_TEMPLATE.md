@@ -23,7 +23,7 @@
 ---
 
 > [!IMPORTANT]
-> Complete the evidence fields for this change. Delete optional review blocks that do not apply. The KPR date layer is the current migrated runtime surface; exact-source Excel parity passed on one Windows 64-bit host in issue #17; broader environments remain uncertified.
+> Complete the evidence fields for this change. Delete optional review blocks that do not apply. The KPR date layer is the current migrated runtime surface; exact-source Excel parity passed on one Windows 64-bit host in issue #17, and the full regression passed twice at `ba250a7` (#47, #48: Microsoft 365 Excel 16.0.20430.20180, 64-bit, 23 suites, 9,372 assertions, 0 failures); the v0.0.4 candidate's certification is #52; broader environments remain uncertified.
 
 ## 📌 Summary
 
@@ -194,7 +194,7 @@ Relevant entry points:
 - `KPR_Tests_Run` — primary migrated regression dispatcher
 - `KPR_Tests_RunEvidence` — retained-evidence adapter; delegates to the all-suite dispatcher and emits the validator format
 - `KPR_Test_RunAll`, `KPR_Test_RunSuite` — durable runner; writes `kpr-test-evidence.json` for an exact source SHA
-- `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, `KPR_Tests_RunArray`, `KPR_Tests_RunFixtureHost`, `KPR_Tests_RunOracle`, `KPR_Tests_RunRegistration`, `KPR_Tests_RunDemo`, `KPR_Tests_RunStateCheck` — focused host/shape/dynamic-array/worksheet-fixture/cross-oracle/registration/demo/state runners
+- `KPR_Tests_RunHost`, `KPR_Tests_RunShape`, `KPR_Tests_RunArray`, `KPR_Tests_RunFixtureHost`, `KPR_Tests_RunOracle`, `KPR_Tests_RunRegistration`, `KPR_Tests_RunDemo`, `KPR_Tests_RunCommandBars`, `KPR_Tests_RunRibbon`, `KPR_Tests_RunStateCheck` — focused host/shape/dynamic-array/worksheet-fixture/cross-oracle/registration/demo/CommandBars/Ribbon/state runners
 - `KPR_Demo_DirectVBA.RunDateExample` — minimal direct-VBA consumer smoke
 - `KPR_Demo_BuildDates` — Date Primitives demo sheet, built by the shared `KPR_Demo__Builder`
 
