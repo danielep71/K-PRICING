@@ -131,9 +131,13 @@ declaration, attribute, signature, default, error rule or algorithm changed.
 As of 2026-11-10, the statements above on `KPR_Core_Parse.bas` and
 `KPR_DATES_DAYS.bas` describe those modules at migration.
 `KPR_Core_Parse.bas` was later changed by #68 (near-integer tolerance,
-executable code) and #86 (comments only). `KPR_DATES_DAYS.bas` was later
-changed by #67 and #86 (comments only) and #88 (executable code: `DateFromPillar`
-returns `PILLAR_AGGREGATE_RANGE`, #87). [`src/README.md`](../src/README.md)
+executable code), #86 (comments only) and #117 (executable code:
+`LooksLocaleDate`). `KPR_DATES_DAYS.bas` was later changed by #67 and #86
+(comments only), #88 (executable code: `DateFromPillar` returns
+`PILLAR_AGGREGATE_RANGE`, #87) and #117 (executable code: a forwarded `Missing`
+Boolean control selects its default). `KPR_Core_Dates.bas`, besides the #32
+adaptation, was changed by #67 (executable code: the `KPR_MAX_MONTHIDX` gate and
+the `TryPillar_Format` error handler). [`src/README.md`](../src/README.md)
 records the current boundary.
 
 `KPR_REGRESSION_TESTS.bas` has three destination-only test-infrastructure

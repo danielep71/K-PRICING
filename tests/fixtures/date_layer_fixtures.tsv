@@ -58,6 +58,9 @@ date-input.text-numeric-6-1	date-input	KPR_Dates_EndOfMonth	direct	str:"61"	-	-	
 date-input.text-numeric-4-5-2-9-2	date-input	KPR_Dates_EndOfMonth	direct	str:"45292"	-	-	-	-	str	Error	err:#VALUE!	DATE_TEXT_NUMERIC	element	Section 3.1: '45292' is numeric-looking text, never a serial.
 date-input.text-numeric-4-5-2-9-2-dot-5	date-input	KPR_Dates_EndOfMonth	direct	str:"45292.5"	-	-	-	-	str	Error	err:#VALUE!	DATE_TEXT_NUMERIC	element	Section 3.1: '45292.5' is numeric-looking text, never a serial.
 date-input.text-numeric-2-9-5-8-4-6-5	date-input	KPR_Dates_EndOfMonth	direct	str:"2958465"	-	-	-	-	str	Error	err:#VALUE!	DATE_TEXT_NUMERIC	element	Section 3.1: '2958465' is numeric-looking text, never a serial.
+date-input.text-numeric-1-dot	date-input	KPR_Dates_EndOfMonth	direct	str:"1."	-	-	-	-	str	Error	err:#VALUE!	DATE_TEXT_NUMERIC	element	Section 3.1: '1.' is numeric-looking text, never a serial.
+date-input.text-numeric-dot-5	date-input	KPR_Dates_EndOfMonth	direct	str:".5"	-	-	-	-	str	Error	err:#VALUE!	DATE_TEXT_NUMERIC	element	Section 3.1: '.5' is numeric-looking text, never a serial.
+date-input.text-numeric-plus-dot-5	date-input	KPR_Dates_EndOfMonth	direct	str:"+.5"	-	-	-	-	str	Error	err:#VALUE!	DATE_TEXT_NUMERIC	element	Section 3.1: '+.5' is numeric-looking text, never a serial.
 integer-input.one	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:1	-	-	-	date,num	Date	date:2024-02-01			Section 3.2: integral numeric.
 integer-input.one-point-zero	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:1.0	-	-	-	date,num	Date	date:2024-02-01			Section 3.2: integral numeric written with a fraction digit.
 integer-input.minus-one	integer-input	KPR_Dates_AddDays	direct	date:2024-01-31	num:-1	-	-	-	date,num	Date	date:2024-01-30			Section 3.2: negative shift.

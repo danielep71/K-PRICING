@@ -83,7 +83,9 @@ Replace the example SHA with the exact candidate you imported.
 
 `KPR_Tests_RunAll("all")`, `KPR_Tests_RunEvidence` and the
 [Excel host-evidence policy](EXCEL_EVIDENCE.md) keep the migrated twelve-suite
-baseline unchanged. `fixtures` can also be run alone through
+case list unchanged. Their assertion count has grown since #17 (#68, #117 and
+#119 added assertions to the pure suites), so the policy's pinned counts no
+longer match; see [EXCEL_EVIDENCE.md](EXCEL_EVIDENCE.md). `fixtures` can also be run alone through
 `KPR_Tests_RunSuite "fixtures"`.
 
 Direct calls use the documented direct-VBA 1900 contract with no worksheet
@@ -263,8 +265,10 @@ menus `KPR_UI_RibbonMenuXml` builds for every functional module. It requires a
 function or catalog demo, unique ids starting with `KPR_`,
 `KPR_UI_Ribbon_OnAction` on every button and a known action in every tag; an
 unknown module or kind must give one disabled item, and `KPR_UI_RibbonRefresh`
-must be harmless without a loaded tab. It has 15 assertions, so an `all` run
-has 23 suites and 9,372 assertions. VBA cannot load RibbonX, so the suite does
+must be harmless without a loaded tab. It has 15 assertions; an `all` run has
+23 suites, and at `ba250a7` it had 9,372 assertions. Later candidates add
+assertions (#117, #119), so the count of a run is the one its evidence record
+reports. VBA cannot load RibbonX, so the suite does
 not set the `ribbonx` outcome: the certification operator records it after
 loading the tab in Excel.
 

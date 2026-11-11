@@ -48,9 +48,9 @@ Provenance boundary against that frozen source:
 | Component | Relationship to the frozen source |
 | --- | --- |
 | `KPR_Core_Err`, `KPR_Core_Array` | Byte-for-byte imports; source Git blob IDs unchanged |
-| `KPR_Core_Parse` | Byte-for-byte import at migration; later changed by #68 (near-integer tolerance, executable code) and #86 (comments only) |
-| `KPR_Core_Dates` | Destination-adapted: issue #32 corrects the pillar range classification so oversized valid quantities return `PILLAR_AGGREGATE_RANGE` (`#NUM!`) |
-| `KPR_DATES_DAYS` | Format-only delta at migration (seven trailing spaces removed from comment banners); later changed by #67 and #86 (comments only) and #88 (executable code: `DateFromPillar` returns `PILLAR_AGGREGATE_RANGE`, #87) |
+| `KPR_Core_Parse` | Byte-for-byte import at migration; later changed by #68 (near-integer tolerance, executable code), #86 (comments only) and #117 (executable code: `LooksLocaleDate` restricts `DATE_TEXT_LOCALE` to the locale-date shape) |
+| `KPR_Core_Dates` | Destination-adapted: issue #32 corrects the pillar range classification so oversized valid quantities return `PILLAR_AGGREGATE_RANGE` (`#NUM!`); later changed by #67 (executable code: the `KPR_MAX_MONTHIDX` gate and the `TryPillar_Format` error handler) |
+| `KPR_DATES_DAYS` | Format-only delta at migration (seven trailing spaces removed from comment banners); later changed by #67 and #86 (comments only), #88 (executable code: `DateFromPillar` returns `PILLAR_AGGREGATE_RANGE`, #87) and #117 (executable code: a forwarded `Missing` Boolean control selects its default) |
 
 The frozen source repository is unchanged; these are destination deltas, not
 source history. `docs/MIGRATION_PROVENANCE.md` holds the exact source and

@@ -179,7 +179,13 @@ arguments, which reject fractions outright.
 ISO text is exactly ten characters. It accepts no alternate separator, omitted
 zero, localized digit, time suffix, leading/trailing whitespace, or DateSerial
 rollover. Whitespace-padded and time-suffixed text are `DATE_TEXT_FORMAT`;
-`DATE_TEXT_LOCALE` is reserved for text shaped like a locale-formatted date.
+`DATE_TEXT_LOCALE` is reserved for text shaped like a locale-formatted date:
+exactly three runs of ASCII digits of one or two, one or two, and two to four
+digits, separated by `/` or `.`, as in `31/12/2026`, `12/31/2026` or
+`10.02.2024`. Any other text with those separators, such as the year-first
+`2024/02/10`, is `DATE_TEXT_FORMAT`. Numeric-looking text is an optional sign,
+ASCII digits and at most one decimal point, with at least one digit (`61`,
+`45292.5`, `1.`, `.5`).
 
 Component existence is decided before the window. Text whose year is inside
 1900 through 9999 but which names a date that does not exist is
@@ -498,7 +504,7 @@ Registry rules:
 
 | Condition ID | Condition | Excel error | Level |
 | --- | --- | --- | --- |
-| `DATE_TEXT_FORMAT` | Text is not exactly `YYYY-MM-DD`: alternate separator, omitted zero, time suffix, padding, empty text | `#VALUE!` | Element |
+| `DATE_TEXT_FORMAT` | Text is not exactly `YYYY-MM-DD` and neither locale-shaped nor numeric-looking (section 3.1): year-first or other non-locale separator, omitted zero, time suffix, padding, empty text | `#VALUE!` | Element |
 | `DATE_TEXT_LOCALE` | Locale-formatted date text | `#VALUE!` | Element |
 | `DATE_TEXT_NUMERIC` | Numeric-looking text offered as a date | `#VALUE!` | Element |
 | `DATE_TEXT_IMPOSSIBLE` | Syntactically exact ISO text naming a date that does not exist | `#VALUE!` | Element |

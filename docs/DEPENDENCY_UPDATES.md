@@ -16,9 +16,10 @@ release candidate is selected. Security advisories are triaged when received,
 without waiting for the weekly review. Record the review date, reviewer, sources
 checked, candidates, disposition and next action in a tracking issue; a no-change
 review must say so. Dependabot now performs weekly proposal discovery for GitHub
-Actions. It never auto-approves or auto-merges; provenance review and the manual
-merge decision below remain mandatory. Other dependency surfaces retain their
-explicit maintainer review cadence.
+Actions and for the hash-locked Python quality tools in
+`tools/requirements-quality-ci.txt`. It never auto-approves or auto-merges;
+provenance review and the manual merge decision below remain mandatory. Other
+dependency surfaces retain their explicit maintainer review cadence.
 
 | Dependency surface | Authoritative locations / discovery source | Update unit |
 | --- | --- | --- |

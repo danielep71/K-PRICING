@@ -217,7 +217,7 @@ Attribute VB_Name = "KPR_DATES_DAYS"
 '   - No dependency on registration, UI, tests or demo code.
 '
 ' UPDATED
-'   2026-09-27
+'   2026-11-10
 '
 ' AUTHOR
 '   Daniele Penza
@@ -254,7 +254,8 @@ Public Function KPR_Dates_DayOfWeek( _
 '   DateIn
 '     Date, numeric serial, or ISO YYYY-MM-DD text; single-cell Range or 1x1 wrapper accepted.
 '   Opt_WeekBaseMonday
-'     Optional. Omitted or Empty selects True. Native Boolean only.
+'     Optional. Omitted, Empty or a forwarded Missing selects True. Native
+'     Boolean only.
 '
 ' RETURNS
 '   Variant
@@ -2394,7 +2395,8 @@ Public Function KPR_Dates_AddMonths( _
 '   nMonths
 '     Native integral numeric, domain the Long range.
 '   Opt_KeepEOM
-'     Optional. Omitted or Empty selects False. Native Boolean only.
+'     Optional. Omitted, Empty or a forwarded Missing selects False. Native
+'     Boolean only.
 '
 ' RETURNS
 '   Variant
@@ -2551,7 +2553,8 @@ Public Function KPR_Dates_AddYears( _
 '   nYears
 '     Native integral numeric, domain the Long range.
 '   Opt_KeepEOM
-'     Optional. Omitted or Empty selects False. Native Boolean only.
+'     Optional. Omitted, Empty or a forwarded Missing selects False. Native
+'     Boolean only.
 '
 ' RETURNS
 '   Variant
@@ -2722,7 +2725,8 @@ Public Function KPR_Dates_NthWeekdayOfMonth( _
 '   n
 '     Native integral numeric, domain 1 through 5.
 '   Opt_WeekBaseMonday
-'     Optional. Omitted or Empty selects True. Native Boolean only.
+'     Optional. Omitted, Empty or a forwarded Missing selects True. Native
+'     Boolean only.
 '
 ' RETURNS
 '   Variant
@@ -2896,7 +2900,8 @@ Public Function KPR_Dates_LastWeekdayOfMonth( _
 '   WdIndex
 '     Native integral numeric, domain 1 through 7.
 '   Opt_WeekBaseMonday
-'     Optional. Omitted or Empty selects True. Native Boolean only.
+'     Optional. Omitted, Empty or a forwarded Missing selects True. Native
+'     Boolean only.
 '
 ' RETURNS
 '   Variant

@@ -267,7 +267,9 @@ def is_leap(year: int) -> bool:
 
 ISO = re.compile(r"([0-9]{4})-([0-9]{2})-([0-9]{2})")
 LOCALE = re.compile(r"[0-9]{1,2}[/.][0-9]{1,2}[/.][0-9]{2,4}")
-NUMERIC_TEXT = re.compile(r"[+-]?[0-9]+(?:\.[0-9]+)?")
+# The VBA parser's LooksNumeric rule: an optional sign, ASCII digits and at
+# most one decimal point, with at least one digit ("1.", ".5" and "+.5" count).
+NUMERIC_TEXT = re.compile(r"[+-]?(?:[0-9]+\.?[0-9]*|\.[0-9]+)")
 
 
 def parse_date(value: Val) -> dt.date | Fail:
@@ -853,7 +855,8 @@ def author_date_input(book: Book) -> None:
                     "2024.02.10", "20240210", "2024-02-10T00:00:00", "2024-02-10 00:00", "24-02-10",
                     "abc", "2024-02-10Z"], "is not exactly YYYY-MM-DD"),
         ("locale", ["31/12/2026", "12/31/2026", "10/02/2024", "10.02.2024"], "is locale-formatted"),
-        ("numeric", ["61", "45292", "45292.5", "2958465"], "is numeric-looking text, never a serial"),
+        ("numeric", ["61", "45292", "45292.5", "2958465", "1.", ".5", "+.5"],
+         "is numeric-looking text, never a serial"),
     ]
     for group, samples, why in texts:
         for sample in samples:

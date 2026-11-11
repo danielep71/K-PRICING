@@ -313,7 +313,7 @@ Private Function TryClassifyDateText( _
 '     conversion in this routine can fail.
 '
 ' UPDATED
-'   2026-08-31
+'   2026-11-10
 '==============================================================================
 '
 
@@ -624,9 +624,10 @@ Public Function TryParseBoolControl( _
 '     FALSE => ParsedBool untouched and Condition names the failure
 '
 ' BEHAVIOR
-'   - An omitted argument is handled by the caller, which cannot pass a missing
-'     Variant onward without losing that state. Omitted and Empty select the
-'     same documented default.
+'   - An omitted argument never reaches this routine: the public declaration
+'     supplies its default, and a forwarded Missing is resolved to the default
+'     by the caller (TryResolveBool in KPR_DATES_DAYS). Omitted, Missing and
+'     Empty select the same documented default.
 '   - An incoming Excel error is NOT classified here. A control carrying an
 '     error propagates verbatim as a call-level result, which is a decision for
 '     the boundary rather than the parser.
