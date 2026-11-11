@@ -118,7 +118,8 @@ inputs. No publishing token is supplied to source validation.
 
 `Repository integrity` runs the retained verification-depth Python suite as an
 enforced step and retains its output. It also runs documentation tests, release/provenance/Excel
-record fixtures, the native developer-tool fixtures, the issue-triage rules and
+record fixtures, the `release_certification.py` and `_release_closeout.py`
+self-tests, the native developer-tool fixtures, the issue-triage rules and
 issue-form configuration check, the RibbonX injector and Ribbon/callback check, the
 workbook-template freshness check, the milestone-register snapshot test,
 release semantics, initializer fixtures, committed-whitespace,
@@ -141,8 +142,8 @@ Auto-merge remains disabled. Follow [dependency review](DEPENDENCY_UPDATES.md).
 
 The four stale private-target classifications were removed after the visibility
 read-back. Three policy-clean targets now receive anonymous probes. The
-query-bearing README badge remains `ACCESS_RESTRICTED` by local URL policy and
-is not sent to the network. Restricted, transient or
+query-bearing README badges are probed anonymously because `img.shields.io` is
+listed in the policy's `query_domains` map. Restricted, transient or
 policy-blocked results remain non-green; public visibility alone is not proof
 that every external link passes. See [documentation checks](DOCUMENTATION_CHECKS.md).
 

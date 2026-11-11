@@ -14,7 +14,7 @@ contribution workflow.
 
 | Workflow | Purpose |
 | --- | --- |
-| Issue triage (`.github/workflows/issue-triage.yml`) | Audits every open issue on issue and milestone events and on manual runs. Reports a missing assignee, priority, open milestone, target end date or dependency section, a target end date not before the milestone's due date, labels outside the catalogue, and inconsistent `blocked` status. Read-only: it never changes an issue. |
+| Issue triage (`.github/workflows/issue-triage.yml`) | Audits every open issue on issue and milestone events and on manual runs. Reports a missing assignee, priority, open milestone, target end date or dependency section, `P1` on an issue without `bug`, a target end date not before the milestone's due date, labels outside the catalogue, and inconsistent `blocked` status. Read-only: it never changes an issue. |
 | Keep milestones issue-only (`.github/workflows/pr-milestones.yml`) | Removes any milestone set on a pull request, in a daily scan of every pull request, on a manual run of the default branch, and when the workflow changes on `main`. Each removal is read back, and the job summary lists the pull request and the removed milestone. It never checks out repository code. |
 | Static repository checks | Runs the triage tests and checks that the issue forms set the default priority, assign the maintainer and ask for the target end date and dependencies. |
 
@@ -26,6 +26,7 @@ until the next daily scan.
 
 - Assigned to `danielep71`, the maintainer the issue forms assign.
 - Exactly one priority: `P1`, `P2` or `P3`.
+- `P1` only together with `bug` (finding `p1-reserved`).
 - An open milestone with a due date.
 - A target end date earlier than that due date.
 - A dependency section, and `blocked` exactly while a prerequisite it names is

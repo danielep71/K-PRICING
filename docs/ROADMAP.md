@@ -15,6 +15,8 @@ K-PRICING. Neither is a current plan.
 
 - The closed milestones v0.0.1 and v0.0.2 are delivered and listed for context;
   their records are the setup and migration completion documents.
+- The closed milestone v0.0.3 is delivered; its record is its closed issues and
+  their merged pull requests.
 - Every open or future milestone listed here is planned, not delivered. Its
   delivery is recorded only by its closed issues, retained evidence and, for a
   release, a published tag.
@@ -31,7 +33,7 @@ K-PRICING. Neither is a current plan.
 | --- | --- | --- | --- |
 | v0.0.1 - Repo setup | Repository setup | Closed | Setup record, not a functional release |
 | v0.0.2 - Repo Migration | Repository migration of the frozen date layer | Closed | Migration record, not a functional release |
-| v0.0.3 - Test Hardening and Registration | Independent fixtures, durable runner and evidence schema, complete regression suites, Excel cross-oracle checks and scope hardening, MacroOptions registration | #38 (done, PR #54), #39 (done, PRs #56 and #58), #40 (done, PR #59), #41 (done, PR #60), #63 (done, PR #64), #42 (done, PR #65) | No release |
+| v0.0.3 - Test Hardening and Registration | Independent fixtures, durable runner and evidence schema, complete regression suites, Excel cross-oracle checks and scope hardening, MacroOptions registration | #38 (done, PR #54), #39 (done, PRs #56 and #58), #40 (done, PR #59), #41 (done, PR #60), #63 (done, PR #64), #42 (done, PR #65), #44 (done, PR #45) | No release |
 | v0.0.4 — Date primitives | Demo builder, Ribbon and CommandBars, public/infrastructure classification, final static controls and drift monitoring, candidate assembly, exact-source certification | #46–#51 done, with the fixes #77 and #87; #52 open | First functional release: tag `v0.0.4` |
 | v0.0.5 — Business calendars and holidays | Calendars, weekend masks and holiday sets in the reserved `KPR_Cal_*` namespace | Milestone created (due 2027-01-15); no issues yet | Planned |
 | v0.0.6 — Business-day arithmetic and roll conventions | Business-day arithmetic and roll conventions built on v0.0.5 calendars | Milestone created (due 2027-02-26); no issues yet | Planned |
@@ -48,6 +50,7 @@ acceptance (#18).
         └─> #41 Excel cross-oracle checks (done, PR #60)
               └─> #63 oracle-scope hardening (done, PR #64)
 #38, #39, #40, #41, #63 ─> #42 MacroOptions registration (done, PR #65)
+#44 predecessor-reference removal (done, PR #45)
 ```
 
 Boundary: test and evidence infrastructure plus registration. No change to the

@@ -59,7 +59,8 @@ jobs:
       PYTHON_VERSION: "3.13.18"
       # Ruff, mypy and coverage versions come only from the hash lock in
       # tools/requirements-quality-ci.txt, which Dependabot updates; the install
-      # step records the versions it installed.
+      # step records the Python, ruff and mypy versions it installed. The
+      # coverage job prints the coverage version in its log.
       ACTIONLINT_VERSION: "1.7.12"
       ACTIONLINT_LINUX_AMD64_SHA256: "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
 

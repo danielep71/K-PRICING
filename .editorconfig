@@ -9,8 +9,8 @@
 #   - Documentation, GitHub configuration, and cross-platform tooling use LF.
 #   - YAML, JSON, CFF, XML, JavaScript, and R use 2-space indentation.
 #   - Python and shell scripts use 4-space indentation.
-#   - Trailing whitespace is removed except in Markdown, where two trailing
-#     spaces can represent an explicit line break.
+#   - Trailing whitespace is removed everywhere, Markdown included. A Markdown
+#     hard line break uses a trailing backslash or <br>.
 #   - VBA source encoding is intentionally not forced. The VBE exports text
 #     using the Windows system code page; a repository should enable a Git
 #     working-tree encoding only after confirming that its source requires one.

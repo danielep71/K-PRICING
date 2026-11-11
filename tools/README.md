@@ -81,11 +81,20 @@ Appropriate contents include:
 
 `_gatelib.run_gate` additionally owns the orchestration shared by focused gates: `--self-test` dispatch, canonical JSON serialization, Markdown summary writing, console output, and the `0` (pass) / `1` (findings) / `2` (could not complete) exit mapping. Each gate keeps its own semantic checks, fixtures, report schema, Markdown renderer and operational-exception tuple; the runner never widens exception handling, so a programming error still raises rather than being reported as exit `2`.
 
-Focused report gates use the shared runner. Distinct CLI contracts retain their
-own entry points: release validation has atomic evidence writes and separate
+These focused gates use the shared runner: `check_committed_whitespace.py`,
+`check_documentation.py`, `check_excel_evidence.py`, `check_external_links.py`,
+`check_local_actions.py`, `check_release_semantics.py`,
+`check_template_contract.py`, `check_vba_conditionals.py`, `check_vba_jumps.py`
+and `check_vba_public_api.py`. `check_kpr_contract.py`,
+`check_test_evidence.py`, `check_migration_evidence.py` and `check_issues.py`
+do not: they keep their own command-line parsing and reports. Release validation has atomic evidence writes and separate
 console rendering; workflow validation emits text-only evidence; initialization
-provisions source. Disposable fixture creation and snapshot collection are
-canonical maintainer tooling removed from this generated repository. The canonical checker remains self-contained.
+provisions source. The canonical template's disposable-fixture and
+snapshot-collection maintainer tools are not shipped in this generated
+repository. `workbook_snapshot.py` and `kpr.py snapshot` are a different tool:
+they read the saved content of a K-PRICING workbook
+([below](#issue-triage-release-semantics-and-certification-bundles)). The
+canonical checker remains self-contained.
 
 
 ## Canonical repository-quality gate
@@ -297,8 +306,9 @@ compatibility view cannot hide an unsupported or unrecorded public declaration.
 
 `check_kpr_contract.py` is the project-specific additive guard for the migrated
 KPR date implementation. It does not replace the generic repository or complete
-public-API validators. It pins the seven migrated component roles and the frozen
-date-layer architecture: exact 22-function facade surface, Variant return types,
+public-API validators. It pins the seven core component roles (the six
+migrated modules and the registration module added after migration by #42) and
+the frozen date-layer architecture: exact 22-function facade surface, Variant return types,
 core dependency direction, strict locale-independent parsing, date-window
 constants, caller/date-system guard placement, volatility scope, caller-workbook
 authority, array-engine purity, required in-project members, and boundary-safe
@@ -452,10 +462,15 @@ Excel. It resolves the branch to its exact commit, starts its own Excel,
 saves the commit's `src/workbook/KPR_Template.xlsx` as a development `.xlsm`
 next to a scratch workbook holding that commit's
 `tests/modules/KPR_Dev_Import.bas`, and calls
-`KPR_Dev_CheckBuild(<sha>, "K-PRICING_Development.xlsm", True)`: import,
-compile, save and `KPR_Test_RunAll` twice; unattended, the loader leaves the
-Ribbon to the script, because Excel loads a workbook's Ribbon only while no
-macro runs. It then
+`KPR_Dev_CheckBuild(<sha>, "K-PRICING_Development.xlsm", True, <evidence root>)`:
+import, compile, save and `KPR_Test_RunAll` twice; unattended, the loader
+leaves the Ribbon to the script, because Excel loads a workbook's Ribbon only
+while no macro runs. The evidence root is `<clone>\build\evidence`, or
+`%LOCALAPPDATA%\K-PRICING\evidence` without a clone; Documents is not used,
+because it is often synced. The loader writes the evidence in a new folder
+`yyyymmdd-hhnnss-<first 8 SHA characters>` under that root. A commit whose
+loader predates `EvidenceRoot` is called with three arguments and writes where
+that older loader wrote, `Documents\KPR-evidence`. It then
 builds `K-PRICING-<commit>.xlsm` in the clone's ignored `build` folder (the
 clone is `-RepoRoot`, which is then remembered in
 `HKCU\Software\K-PRICING\Check`; otherwise the clone the script runs from;
@@ -683,14 +698,16 @@ python3 tools/initialize_repository.py --root . --self-test
   dependency status the issue forms cannot enforce, and with `--check-config`
   checks the forms and the label catalogue offline in Repository integrity
   ([`docs/ISSUE_TRIAGE.md`](../docs/ISSUE_TRIAGE.md)).
+  `test_check_issues.py` exercises its rules and runs in Repository integrity.
 - `check_release_semantics.py` enforces the SemVer, changelog cut/freeze-date
   and comparison-link contract; Repository integrity runs it with and without
   `--self-test` ([`docs/RELEASE_SEMANTICS.md`](../docs/RELEASE_SEMANTICS.md)).
 - `release_certification.py` builds and verifies the deterministic,
   candidate-bound certification bundle and plans the release assets
   ([`docs/RELEASE_EVIDENCE.md`](../docs/RELEASE_EVIDENCE.md)); its
-  `--self-test`, like that of `_release_closeout.py`, runs in Repository
-  integrity and needs `ssh-keygen`.
+  `--self-test` runs in Repository integrity and needs `ssh-keygen`.
+  `_release_closeout.py --self-test` also runs there and does not call
+  `ssh-keygen`.
 - `workbook_snapshot.py` is the library behind the native demo-workbook
   snapshot commands; it reads saved OOXML content and never runs Excel
   ([`docs/NATIVE_DEVELOPER_TOOLS.md`](../docs/NATIVE_DEVELOPER_TOOLS.md)).
