@@ -401,7 +401,14 @@ until the window says it is finished. `tools/Check-KPR.ps1`:
    commit's loader;
 4. runs `KPR_Dev_CheckBuild` unattended on it: it imports every module,
    compiles the project (**Debug > Compile**), saves it, runs
-   `KPR_Test_RunAll` twice;
+   `KPR_Test_RunAll` twice; when both pass, the script runs the #52
+   caller-context probe `KPR_Tests_RunCallerProbe` (`caller-probe.txt`:
+   `Application.Caller` and `KPR_Dates_HostDateSystem()` from direct VBA,
+   `Application.Run`, `Evaluate`, a defined name and worksheet cells in 1900
+   and 1904 workbooks, with the contexts a macro cannot drive recorded as
+   NOT TESTABLE) and the source round trip (`exports\` and `round-trip.txt`:
+   every component of the commit's profile exported again and compared with
+   the committed file, CRLF and LF alike);
 5. builds the workbook to use, `K-PRICING-<commit>.xlsm` in `<clone>\build`
    (or in `Documents\K-PRICING` when no clone is known):
    the template with the production and example modules, compiled, the commit
@@ -418,8 +425,13 @@ until the window says it is finished. `tools/Check-KPR.ps1`:
    (ignored by Git; `%LOCALAPPDATA%\K-PRICING\evidence` when no clone is
    known), not in `Documents`, which is often synced to OneDrive or
    SharePoint. A commit whose loader predates this choice (before #118) still
-   writes to `Documents\KPR-evidence`. It zips the folder, shows the workbook in Explorer and copies the summary and
-   evidence to the clipboard, ready to paste.
+   writes to `Documents\KPR-evidence`. It also writes
+   `certification\kpr-test-evidence.json`: run 1's record with the four
+   outcomes the runner cannot observe (`source_import`, `vba_compile`,
+   `ribbonx`, `source_round_trip`) filled in from what the check observed. It
+   zips the folder, shows the workbook in Explorer and copies the summary, the
+   probe, the round trip and both evidence files to the clipboard, ready to
+   paste.
 
 A commit without the template (before it was added) gets the earlier check on
 an empty `KPR.xlam` and no workbook; any other failure to download the

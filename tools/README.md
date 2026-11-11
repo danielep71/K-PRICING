@@ -481,10 +481,18 @@ commit on Home and builds the demo sheet with `KPR_Demo_BuildDates`; it is
 built in the temporary folder and copied out under a new, time-stamped name
 when the target already exists, so a saved workbook is never replaced. The
 script then reopens it and requires `KPR_UI_RibbonLoaded` and a Functions menu
-listing the `KPR_` functions within 20 seconds. Only a
+listing the `KPR_` functions within 20 seconds. When both runs pass, it also
+runs the #52 caller-context probe (`KPR_Tests_RunCallerProbe`, written to
+`caller-probe.txt`; a commit without it reports NOT RUN) and the source round
+trip (every component of the commit's `.github/repository-profile.json`
+exported from the workbook that holds it into `exports\` and compared exactly
+with the committed file, CRLF and LF alike, the rule of `kpr.py round-trip`,
+in `round-trip.txt`), and writes `certification\kpr-test-evidence.json`: run
+1's record with `source_import`, `vba_compile`, `ribbonx` and
+`source_round_trip` filled in from those observations. Only a
 404 for the template selects the earlier empty-`KPR.xlam` check. It adds
-`check.log` to the evidence folder, zips it and copies the summary and both
-evidence files to the clipboard.
+`check.log` to the evidence folder, zips it and copies the summary, the probe,
+the round trip and both evidence files to the clipboard.
 
 `workbook_template.py` generates the template from
 `src/ribbon/customUI14.xml` and the Home sheet text it holds: a stored ZIP

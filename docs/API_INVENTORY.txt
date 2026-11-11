@@ -141,6 +141,8 @@ KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunStateCheck	test	-
 KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunHost	test	-
 KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunShape	test	-
 KPR_REGRESSION_TESTS	Sub	KPR_Tests_RunArray	test	-
+KPR_REGRESSION_TESTS	Function	KPR_Test_CallerKind	test	-
+KPR_REGRESSION_TESTS	Function	KPR_Tests_RunCallerProbe	test	-
 KPR_Test_Fixtures_Generated	Const	KPR_FX_ID	test	-
 KPR_Test_Fixtures_Generated	Const	KPR_FX_SUITE	test	-
 KPR_Test_Fixtures_Generated	Const	KPR_FX_FUNCTION	test	-

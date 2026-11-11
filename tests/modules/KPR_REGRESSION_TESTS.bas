@@ -85,6 +85,14 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '       KPR_Tests_RunAll()            returns a two-column array for a worksheet
 '                                     or for programmatic use
 '
+'   The caller-context probe of #52 records Application.Caller and
+'   KPR_Dates_HostDateSystem in each Excel context it can drive:
+'
+'       KPR_Tests_RunCallerProbe file  writes one line per context to file and
+'                                      returns TRUE when every expected
+'                                      context answered as documented
+'       KPR_Test_CallerKind()          the worksheet-callable probe it uses
+'
 '   Eight stateful entry points are deliberately NOT reachable from the
 '   pure dispatcher above; the durable runner orchestrates them:
 '
@@ -6536,5 +6544,189 @@ Private Sub AssertMapperRaises( _
         If Not Raised Then
             Record Label, "expected a raise, got a mapped error value"
         End If
+
+End Sub
+
+'
+'------------------------------------------------------------------------------
+'
+'                       CALLER-CONTEXT PROBE (#52)
+'
+'------------------------------------------------------------------------------
+'
+
+Public Function KPR_Test_CallerKind() As String
+'
+'==============================================================================
+'                             KPR_Test_CallerKind
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Reports how Excel identifies the current caller and what the date-system
+'   diagnostic answers in that context, as "<TypeName of Application.Caller>|
+'   <KPR_Dates_HostDateSystem>". Test infrastructure for the #52 caller probe;
+'   it is callable from a worksheet so the probe can place it in a cell.
+'
+' ERROR POLICY
+'   Never raises: a failure to read the caller is reported as "raised <n>".
+'
+' UPDATED
+'   2026-11-11
+'==============================================================================
+'
+    Dim Kind        As String       'TypeName of Application.Caller
+    Dim Host        As Variant      'KPR_Dates_HostDateSystem in this context
+
+    On Error Resume Next
+    Kind = TypeName(Application.Caller)
+    If Err.Number <> 0 Then Kind = "raised " & CStr(Err.Number)
+    Err.Clear
+    Host = KPR_Dates_HostDateSystem()
+    If Err.Number <> 0 Then
+        KPR_Test_CallerKind = Kind & "|raised " & CStr(Err.Number)
+    ElseIf IsError(Host) Then
+        KPR_Test_CallerKind = Kind & "|error " & CStr(CLng(Host))
+    Else
+        KPR_Test_CallerKind = Kind & "|" & CStr(Host)
+    End If
+    Err.Clear
+
+End Function
+
+Public Function KPR_Tests_RunCallerProbe( _
+    ByVal OutputFile As String) _
+    As Boolean
+'
+'==============================================================================
+'                           KPR_Tests_RunCallerProbe
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The #52 caller-context probe. It drives every Excel context a macro can
+'   drive, records Application.Caller and KPR_Dates_HostDateSystem() for each,
+'   and records the contexts it cannot drive as NOT TESTABLE with the reason,
+'   never silently omitting them.
+'
+' CONTEXTS
+'   direct-vba, application-run, evaluate   no worksheet caller: 1900 expected
+'   worksheet-range-1900                    a cell formula: Range, 1900
+'   worksheet-range-1904                    a cell formula: Range, 1904
+'   recalculation-1904-to-1900              the same cell, entered again after
+'                                           the workbook returns to 1900, then
+'                                           an ordinary recalculation: Range,
+'                                           1900
+'   defined-name                            a cell formula through a name
+'   macro-shape, data-validation,           recorded as NOT TESTABLE
+'   conditional-format, chart-series
+'
+' RETURNS
+'   TRUE when the file was written and every context with an expectation
+'   answered as documented (contract section 4).
+'
+' STATE
+'   Uses one scratch workbook, closed without saving, and restores the
+'   calculation mode. Macro-only: it adds and closes a workbook.
+'
+' UPDATED
+'   2026-11-11
+'==============================================================================
+'
+    Dim Lines       As String       'Report text
+    Dim Passed      As Boolean      'Every expectation met
+    Dim Scratch     As Workbook     'Probe workbook
+    Dim Sheet       As Worksheet    'Its first sheet
+    Dim Source      As String       'This workbook, quoted for formulas
+    Dim PriorCalc   As XlCalculation 'Caller's calculation mode
+    Dim CalcChanged As Boolean      'TRUE once PriorCalc was captured
+    Dim FileNo      As Integer      'Output file
+
+    Passed = True
+    Source = "'" & Replace(ThisWorkbook.Name, "'", "''") & "'!"
+    On Error GoTo Fail
+
+'------------------------------------------------------------------------------
+' NO WORKSHEET CALLER
+'------------------------------------------------------------------------------
+    ProbeLine Lines, Passed, "direct-vba", KPR_Test_CallerKind(), "|1900"
+    ProbeLine Lines, Passed, "application-run", _
+              CStr(Application.Run(Source & "KPR_Test_CallerKind")), "|1900"
+    ProbeLine Lines, Passed, "evaluate", _
+              CStr(Application.Evaluate(Source & "KPR_Test_CallerKind()")), ""
+
+'------------------------------------------------------------------------------
+' WORKSHEET RANGE CALLERS
+'------------------------------------------------------------------------------
+    PriorCalc = Application.Calculation
+    CalcChanged = True
+    Application.Calculation = xlCalculationManual
+    Set Scratch = Application.Workbooks.Add
+    Set Sheet = Scratch.Worksheets(1)
+    Scratch.Date1904 = False
+    Sheet.Range("A1").Formula = "=" & Source & "KPR_Test_CallerKind()"
+    Scratch.Names.Add Name:="KprCallerProbe", RefersTo:="=" & Source & "KPR_Test_CallerKind()"
+    Sheet.Range("A2").Formula = "=KprCallerProbe"
+    Application.Calculate
+    ProbeLine Lines, Passed, "worksheet-range-1900", CStr(Sheet.Range("A1").Value), "Range|1900"
+    ProbeLine Lines, Passed, "defined-name", CStr(Sheet.Range("A2").Value), ""
+    'The probe is not volatile, so the formula is entered again to make the
+    'cell dirty; the ordinary recalculation then re-evaluates it
+    Scratch.Date1904 = True
+    Sheet.Range("A1").Formula = "=" & Source & "KPR_Test_CallerKind()"
+    Application.Calculate
+    ProbeLine Lines, Passed, "worksheet-range-1904", CStr(Sheet.Range("A1").Value), "Range|1904"
+    Scratch.Date1904 = False
+    Sheet.Range("A1").Formula = "=" & Source & "KPR_Test_CallerKind()"
+    Application.Calculate
+    ProbeLine Lines, Passed, "recalculation-1904-to-1900", CStr(Sheet.Range("A1").Value), "Range|1900"
+
+'------------------------------------------------------------------------------
+' CONTEXTS A MACRO CANNOT DRIVE
+'------------------------------------------------------------------------------
+    Lines = Lines & "macro-shape=NOT TESTABLE|Application.Caller names the shape only when a user clicks it; Application.Run does not set it" & vbCrLf
+    Lines = Lines & "data-validation=NOT TESTABLE|Excel evaluates a validation formula only on user entry, and its result cannot be read back" & vbCrLf
+    Lines = Lines & "conditional-format=NOT TESTABLE|Excel evaluates a conditional-format formula only when it draws the sheet, and its result cannot be read back" & vbCrLf
+    Lines = Lines & "chart-series=NOT TESTABLE|A chart series formula cannot call a user-defined function" & vbCrLf
+
+Finish:
+    On Error Resume Next
+    If Not Scratch Is Nothing Then Scratch.Close SaveChanges:=False
+    If CalcChanged Then Application.Calculation = PriorCalc
+    Lines = Lines & "result=" & IIf(Passed, "PASS", "FAIL") & vbCrLf
+    FileNo = FreeFile
+    Open OutputFile For Output As #FileNo
+    Print #FileNo, Lines;
+    Close #FileNo
+    KPR_Tests_RunCallerProbe = Passed And (Err.Number = 0)
+    Err.Clear
+    Exit Function
+
+Fail:
+    Lines = Lines & "probe=FAIL|runtime error " & CStr(Err.Number) & ": " & Err.Description & vbCrLf
+    Passed = False
+    Resume Finish
+
+End Function
+
+Private Sub ProbeLine( _
+    ByRef Lines As String, _
+    ByRef Passed As Boolean, _
+    ByVal Context As String, _
+    ByVal Observed As String, _
+    ByVal Expected As String)
+'
+' Appends "<context>=<observed>" and, when Expected is not empty, checks that
+' Observed ends with it ("|1900") or equals it ("Range|1900").
+'
+    Dim Met         As Boolean      'The observation meets the expectation
+
+    If Len(Expected) = 0 Then
+        Lines = Lines & Context & "=" & Observed & "|recorded" & vbCrLf
+        Exit Sub
+    End If
+    If Left$(Expected, 1) = "|" Then
+        Met = (Right$(Observed, Len(Expected)) = Expected) And (Left$(Observed, 6) <> "Range|")
+    Else
+        Met = (Observed = Expected)
+    End If
+    If Not Met Then Passed = False
+    Lines = Lines & Context & "=" & Observed & "|" & IIf(Met, "PASS", "FAIL expected " & Expected) & vbCrLf
 
 End Sub
