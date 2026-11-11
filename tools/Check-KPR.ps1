@@ -23,12 +23,16 @@ it creates on the first run, or with tools\Check-KPR.cmd from a clone. It:
    by KPR_Demo_BuildDates; it then opens the workbook again, once no macro
    runs, and checks that Excel loads its K-PRICING tab and builds the
    Functions menu (Excel loads a workbook's Ribbon only while no macro runs);
+   when both runs pass, it also runs the #52 caller-context probe
+   (caller-probe.txt) and the source round trip (exports\, round-trip.txt) and
+   writes certification\kpr-test-evidence.json, run 1's record with the
+   outcomes it observed;
 6. adds check.log (Windows, Excel, branch, commit, each step) to the evidence
    folder <clone>\build\evidence\<yyyymmdd-hhnnss>-<first 8 SHA characters>
    (%LOCALAPPDATA%\K-PRICING\evidence without a clone; not Documents, which
    is often synced to OneDrive or SharePoint, except for a commit whose loader
-   predates this choice), zips it, copies the summary
-   and both evidence files to the clipboard and shows the workbook in
+   predates this choice), zips it, copies the summary, the probe, the round
+   trip and both evidence files to the clipboard and shows the workbook in
    Explorer.
 A watchdog closes this run's Excel after -TimeoutMinutes, so a dialog nobody
 answers cannot hang the check. The script never pushes, and changes no other
@@ -261,7 +265,7 @@ function New-DesktopShortcut {
 function Send-ToClipboard {
     param([string]$Folder)
     $parts = New-Object System.Collections.Generic.List[string]
-    foreach ($name in @("summary.txt", "check.log", "run-1\kpr-test-evidence.json", "run-2\kpr-test-evidence.json")) {
+    foreach ($name in @("summary.txt", "check.log", "caller-probe.txt", "round-trip.txt", "run-1\kpr-test-evidence.json", "run-2\kpr-test-evidence.json")) {
         $file = Join-Path $Folder $name
         if (Test-Path -LiteralPath $file) {
             $parts.Add("===== $name =====")
@@ -276,6 +280,108 @@ function Send-ToClipboard {
     Set-Clipboard -Value $text
 }
 
+function Get-RawText {
+    # One file of the checked commit from GitHub, as text with LF line ends
+    param([string]$Sha, [string]$Path)
+    $content = (Invoke-WebRequest -UseBasicParsing -Uri "$rawBase/$Sha/$Path").Content
+    if ($content -is [byte[]]) {
+        $content = [System.Text.Encoding]::ASCII.GetString($content)
+    }
+    return ($content -replace "`r`n", "`n")
+}
+
+function Test-SourceRoundTrip {
+    # #52: every component of the commit's repository profile is exported
+    # again from the workbooks the check imported it into, and must equal the
+    # committed source exactly once CRLF and LF are treated alike (the rule of
+    # tools/kpr.py round-trip). Writes exports\ and round-trip.txt.
+    param($Target, $Scratch, [string]$Sha, [string]$Folder)
+    $exports = Join-Path $Folder "exports"
+    New-Item -ItemType Directory -Force -Path $exports | Out-Null
+    $repoProfile = (Get-RawText -Sha $Sha -Path ".github/repository-profile.json") | ConvertFrom-Json
+    $paths = @($repoProfile.vba.components.PSObject.Properties.Name | Sort-Object)
+    $report = New-Object System.Collections.Generic.List[string]
+    $failed = 0
+    foreach ($path in $paths) {
+        $name = [System.IO.Path]::GetFileNameWithoutExtension($path)
+        $book = $(if ($name -eq "KPR_Dev_Import") { $Scratch } else { $Target })
+        $exportPath = Join-Path $exports ([System.IO.Path]::GetFileName($path))
+        try {
+            $book.VBProject.VBComponents.Item($name).Export($exportPath)
+        }
+        catch {
+            $report.Add("$path=FAIL|not found in the workbook")
+            $failed++
+            continue
+        }
+        $expected = Get-RawText -Sha $Sha -Path $path
+        $actual = [System.IO.File]::ReadAllText($exportPath, [System.Text.Encoding]::ASCII) -replace "`r`n", "`n"
+        if ($actual -ceq $expected) {
+            $report.Add("$path=PASS")
+            continue
+        }
+        $left = $expected -split "`n"
+        $right = $actual -split "`n"
+        $line = 0
+        while ($line -lt [Math]::Min($left.Count, $right.Count) -and $left[$line] -ceq $right[$line]) {
+            $line++
+        }
+        $report.Add("$path=FAIL|first difference at line " + ($line + 1))
+        $failed++
+    }
+    $result = $(if ($failed -eq 0) { "PASS" } else { "FAIL" })
+    $report.Add("result=$result")
+    [System.IO.File]::WriteAllText((Join-Path $Folder "round-trip.txt"), (($report -join "`r`n") + "`r`n"), $utf8NoBom)
+    if ($failed -eq 0) {
+        return "PASS ($($paths.Count) components exported and equal to the commit)"
+    }
+    return "FAIL ($failed of $($paths.Count) components differ; see round-trip.txt)"
+}
+
+function Invoke-CallerProbe {
+    # #52: Application.Caller and HostDateSystem in every context a macro can
+    # drive; KPR_Tests_RunCallerProbe writes caller-probe.txt
+    param($Excel, $Target, [string]$Folder)
+    $module = $Target.VBProject.VBComponents.Item("KPR_REGRESSION_TESTS").CodeModule
+    if ($module.Lines(1, $module.CountOfLines) -notmatch 'Function KPR_Tests_RunCallerProbe') {
+        return "NOT RUN (this commit has no caller probe)"
+    }
+    $qualified = "'" + $Target.Name.Replace("'", "''") + "'!"
+    $ok = [bool]$Excel.Run($qualified + "KPR_Tests_RunCallerProbe", (Join-Path $Folder "caller-probe.txt"))
+    return $(if ($ok) { "PASS (see caller-probe.txt)" } else { "FAIL (see caller-probe.txt)" })
+}
+
+function ConvertTo-JsonText {
+    param([string]$Text)
+    return '"' + ($Text -replace '\\', '\\' -replace '"', '\"') + '"'
+}
+
+function Write-CertificationRecord {
+    # The #52 certification record: run 1's record with the four outcomes the
+    # runner cannot observe filled in from what this check observed. The
+    # runner's own fields are left as written.
+    param([string]$Folder, [hashtable]$Outcomes)
+    $source = Join-Path $Folder "run-1\kpr-test-evidence.json"
+    if (-not (Test-Path -LiteralPath $source)) {
+        return "NOT WRITTEN (run 1 wrote no record)"
+    }
+    $text = [System.IO.File]::ReadAllText($source)
+    $operator = '{"status": "NOT_RUN", "detail": null, "reason": "Outside the regression runner; the certification operator records this outcome."}'
+    foreach ($key in $Outcomes.Keys) {
+        $status = $Outcomes[$key][0]
+        $detail = $Outcomes[$key][1]
+        $old = '"' + $key + '": ' + $operator
+        if (-not $text.Contains($old)) {
+            return "NOT WRITTEN ($key is not an operator outcome in run 1's record)"
+        }
+        $text = $text.Replace($old, '"' + $key + '": {"status": "' + $status + '", "detail": ' + (ConvertTo-JsonText $detail) + ', "reason": null}')
+    }
+    $target = Join-Path $Folder "certification"
+    New-Item -ItemType Directory -Force -Path $target | Out-Null
+    [System.IO.File]::WriteAllText((Join-Path $target "kpr-test-evidence.json"), $text, $utf8NoBom)
+    return "certification\kpr-test-evidence.json"
+}
+
 # ----------------------------------------------------------------------------
 # Main
 # ----------------------------------------------------------------------------
@@ -285,6 +391,10 @@ $work = $null
 $folder = ""
 $workbookPath = $null
 $ribbonResult = "NOT RUN (no workbook was built)"
+$roundTripResult = "NOT RUN (the regression did not pass)"
+$probeResult = "NOT RUN (the regression did not pass)"
+$importLine = ""
+$bookCompile = "NOT RUN (the workbook was not built)"
 $watchdog = $null
 $doneFlag = $null
 $timeoutFlag = $null
@@ -403,6 +513,18 @@ try {
     $folder = [string]$excel.Run($qualified + "KPR_Dev_LastCheckFolder")
     Say ("KPR_Dev_CheckBuild: " + $(if ($passed) { "PASS" } else { "FAIL" })) $(if ($passed) { "Green" } else { "Red" })
     $code = $(if ($passed) { 0 } else { 1 })
+
+    # The #52 evidence the regression runner cannot observe
+    if ($passed -and -not [string]::IsNullOrWhiteSpace($folder)) {
+        $probeResult = Invoke-CallerProbe -Excel $excel -Target $target -Folder $folder
+        Say ("Caller probe: " + $probeResult) $(if ($probeResult -like "PASS*") { "Green" } elseif ($probeResult -like "FAIL*") { "Red" } else { "Yellow" })
+        $roundTripResult = Test-SourceRoundTrip -Target $target -Scratch $scratch -Sha $sha -Folder $folder
+        Say ("Source round trip: " + $roundTripResult) $(if ($roundTripResult -like "PASS*") { "Green" } else { "Red" })
+        if ($probeResult -like "FAIL*" -or $roundTripResult -notlike "PASS*") {
+            $code = 1
+        }
+        $importLine = ([System.IO.File]::ReadAllLines((Join-Path $folder "summary.txt")) | Where-Object { $_ -like "Import:*" } | Select-Object -First 1)
+    }
     $target.Close($false)
 
     # The workbook to use: production and example modules, commit, demo sheet
@@ -417,9 +539,11 @@ try {
         if ($imported -lt 0) {
             throw "The workbook's modules could not be imported."
         }
+        $bookCompile = "FAIL (the built workbook does not compile)"
         if (-not (Invoke-Compile -Excel $excel -Book $book)) {
             throw "The workbook does not compile with the production and example modules; the VBA editor shows the line."
         }
+        $bookCompile = "PASS"
         $book.Worksheets.Item("Home").Range($templateCell).Value2 = $sha
         [void]$book.Activate()
         $own = "'" + $bookName.Replace("'", "''") + "'!"
@@ -490,8 +614,19 @@ Say ("Finished in {0:N0} minutes" -f ((Get-Date) - $startedAt).TotalMinutes)
 if (-not [string]::IsNullOrWhiteSpace($folder) -and (Test-Path -LiteralPath $folder)) {
     [System.IO.File]::WriteAllText((Join-Path $folder "check.log"), (($script:log -join "`r`n") + "`r`n"), $utf8NoBom)
     $workbookLine = $(if ($null -ne $workbookPath) { "Workbook: PASS ($workbookPath)" } else { "Workbook: NOT BUILT (see check.log)" })
+    $certification = "NOT WRITTEN (the regression did not pass)"
+    if ($roundTripResult -notlike "NOT RUN*") {
+        $certification = Write-CertificationRecord -Folder $folder -Outcomes @{
+            "source_import" = @("PASS", ("KPR_Dev_CheckBuild imported the commit's modules into the development workbook and KPR_Dev_Import into the scratch workbook: " + "$importLine".Trim()))
+            "vba_compile" = @($(if ($bookCompile -eq "PASS" -or $null -eq $templatePath) { "PASS" } else { "FAIL" }), ("Development workbook (KPR_Dev_CheckBuild): PASS; built workbook: " + $(if ($null -eq $templatePath) { "none (this commit has no template)" } else { $bookCompile })))
+            "ribbonx" = @($(if ($ribbonResult -like "PASS*") { "PASS" } else { "FAIL" }), ("Built workbook: " + $ribbonResult))
+            "source_round_trip" = @($(if ($roundTripResult -like "PASS*") { "PASS" } else { "FAIL" }), $roundTripResult)
+        }
+    }
     [System.IO.File]::AppendAllText((Join-Path $folder "summary.txt"),
-        $workbookLine + "`r`n" + "Ribbon (workbook): " + $ribbonResult + "`r`n", $utf8NoBom)
+        $workbookLine + "`r`n" + "Ribbon (workbook): " + $ribbonResult + "`r`n" +
+        "Caller probe: " + $probeResult + "`r`n" + "Round trip: " + $roundTripResult + "`r`n" +
+        "Certification record: " + $certification + "`r`n", $utf8NoBom)
     $zip = $folder.TrimEnd("\") + ".zip"
     Compress-Archive -Path (Join-Path $folder "*") -DestinationPath $zip -Force
     Write-Host ""

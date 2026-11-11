@@ -355,7 +355,12 @@ suite, `commandbars` from the `worksheet-commandbars` suite and
 when that suite ran, `NOT_RUN` when it was not selected. Every other outcome is `NOT_RUN`, because the runner
 cannot observe it. The certification operator
 completes those outcomes in the same file after observing them, and never
-edits a field the runner wrote.
+edits a field the runner wrote. `tools/Check-KPR.ps1` is that operator for an
+automated check: from what it observed (the import, both compilations, the
+built workbook's Ribbon and the source round trip) it writes
+`certification/kpr-test-evidence.json`, a copy of run 1's record in which only
+`source_import`, `vba_compile`, `ribbonx` and `source_round_trip` change from
+`NOT_RUN` (see [INSTALLATION.md](../INSTALLATION.md#one-click-excel-check)).
 
 ## Validation
 

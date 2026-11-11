@@ -116,6 +116,17 @@ Windows Excel is recorded in #52.
 
 ### Added
 
+- The one-click Excel check produces the complete #52 certification evidence.
+  When both regression runs pass it runs the new caller-context probe
+  `KPR_Tests_RunCallerProbe` (`Application.Caller` and `HostDateSystem()` from
+  direct VBA, `Application.Run`, `Evaluate`, a defined name and worksheet
+  cells in 1900 and 1904 workbooks, including an ordinary recalculation after
+  the date system changes; shapes, data validation, conditional formats and
+  chart series are recorded as NOT TESTABLE with the reason), exports every
+  component of the commit's profile again and compares it exactly with the
+  committed source, and writes `certification/kpr-test-evidence.json` with the
+  import, compilation, RibbonX and round-trip outcomes it observed.
+
 - The v0.0.4 release candidate (#51): `VERSION` is `0.0.4`, this section is cut
   from the reviewed Unreleased entries, and the README, installation guide and
   security policy describe the 22-function surface, its compatibility claim and
@@ -138,9 +149,9 @@ Windows Excel is recorded in #52.
   its frozen-snapshot tests. A fresh `CURRENT` is required at candidate assembly
   and immediately before tagging (`RELEASING.md`).
 
-- `docs/API_INVENTORY.txt` classifies all 150 technically public VBA members
-  (#49): the 22 supported `KPR_Dates_*` functions with their vectorization, and
-  128 unsupported infrastructure members in the `internal`, `registration`,
+- `docs/API_INVENTORY.txt` classifies every technically public VBA member
+  (#49; 152 at this release): the 22 supported `KPR_Dates_*` functions with
+  their vectorization, and 130 unsupported infrastructure members in the `internal`, `registration`,
   `ui`, `test`, `development` and `demo` classes. It records `KPR_Cal_*` as
   reserved for v0.0.5 and the calendar-aware v0.0.6 boundary. The new
   `kpr-api-inventory` rule of `tools/check_kpr_contract.py` keeps it complete
