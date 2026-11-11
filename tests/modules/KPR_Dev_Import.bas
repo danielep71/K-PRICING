@@ -670,6 +670,11 @@ Private Function EvidenceFolder( _
     If Right$(Base, 1) = Application.PathSeparator Then Base = Left$(Base, Len(Base) - 1)
     Parts = Split(Base, Application.PathSeparator)
     Path = Parts(0)
+    'A drive ("C:") or the empty start of an absolute or UNC path fails here
+    'harmlessly; the first folder of a relative path is created
+    If Len(Path) > 0 Then
+        If Len(Dir$(Path, vbDirectory)) = 0 Then MkDir Path
+    End If
     For I = 1 To UBound(Parts)
         Path = Path & Application.PathSeparator & Parts(I)
         If Len(Dir$(Path, vbDirectory)) = 0 Then MkDir Path

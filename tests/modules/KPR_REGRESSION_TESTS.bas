@@ -17,7 +17,7 @@ Attribute VB_Name = "KPR_REGRESSION_TESTS"
 '       date-text     ISO acceptance, locale and numeric text, impossible dates
 '       date-window   the supported window and the values adjacent to it
 '       integer       fractions, Boolean, text, and range before integrality
-'       control       optional Boolean controls and their defaults
+'       control       optional controls, their defaults and forwarded Missing
 '       boundary      window mapping, propagation and composition, via the facade
 '       mapper        ErrForCondition mappings and its refusals
 '       host          the date-system guard and diagnostic from direct VBA,
@@ -6121,6 +6121,7 @@ Private Sub Run_DateTextCases()
         AssertDateCondition "text/two decimal points", "1.2.3", False, "DATE_TEXT_FORMAT"
         AssertDateCondition "text/sign only", "-", False, "DATE_TEXT_FORMAT"
         AssertDateCondition "text/signed serial", "-61", False, "DATE_TEXT_NUMERIC"
+        AssertDateCondition "text/signed trailing point", "-1.", False, "DATE_TEXT_NUMERIC"
         AssertDateCondition "text/thousands separator", "46,096", False, "DATE_TEXT_FORMAT"
 
     'Century leap rule: 2000 is a leap year
@@ -6249,7 +6250,8 @@ End Sub
 
 Private Sub Run_ControlCases()
 '
-' Optional controls accept a native Boolean or a default-selecting blank only.
+' Optional controls accept a native Boolean or a default-selecting blank only,
+' and a Missing forwarded by a VBA wrapper selects the default too.
 '
 
 '------------------------------------------------------------------------------
@@ -6307,8 +6309,12 @@ Private Sub Run_ControlCases()
                      ForwardDayOfWeek(DateSerial(2026, 3, 15)), "Long", CLng(7)
         AssertDateResult "control/forwarded missing keep eom", _
                          ForwardAddMonths(DateSerial(2024, 2, 29), 1), DateSerial(2024, 3, 29)
-        AssertResult "control/forwarded missing rounding", _
-                     ForwardPillarFromDates(DateSerial(2026, 1, 1), DateSerial(2026, 1, 8)), "String", "1W"
+    'Two spans tell NEAREST apart: 10 days is 1W (CEILING gives 2W) and 11 days
+    'is 2W (FLOOR gives 1W)
+        AssertResult "control/forwarded missing rounding below half", _
+                     ForwardPillarFromDates(DateSerial(2026, 1, 1), DateSerial(2026, 1, 11)), "String", "1W"
+        AssertResult "control/forwarded missing rounding above half", _
+                     ForwardPillarFromDates(DateSerial(2026, 1, 1), DateSerial(2026, 1, 12)), "String", "2W"
 
 End Sub
 

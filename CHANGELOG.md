@@ -176,7 +176,9 @@ Windows Excel is recorded in #52.
   (Alt+F8) resolves `main` to its exact commit, imports it into `KPR.xlam`,
   compiles and saves it, runs `KPR_Test_RunAll` twice, checks on Windows that
   Excel loads the K-PRICING Ribbon in a throwaway copy, and leaves the two
-  evidence files and a `summary.txt` in `Documents\KPR-evidence`.
+  evidence files and a `summary.txt` in an evidence folder (first
+  `Documents\KPR-evidence`; since #118 the clone's `build\evidence` or
+  `%LOCALAPPDATA%\K-PRICING\evidence`, see Changed).
   `KPR_Dev_CheckBuild` does the same for any branch, commit or build, and the
   Ribbon module gains `KPR_UI_RibbonLoaded` for that check. Run in Windows
   Excel at `ba250a7` (#47, #48).
@@ -442,8 +444,8 @@ Windows Excel is recorded in #52.
   script can no longer change the live labels. The repository gate rejects any
   workflow job with `issues: write` that lacks this default-branch guard.
 - CodeQL also analyzes the workflows themselves (Actions language). CI pins
-  Python 3.10.22 (since 3.13.18) and Node.js 24.22.2 instead of the runner's
-  choice, and
+  the Python and Node.js versions instead of the runner's choice (first Python
+  3.10.22, now 3.13.18; Node.js 24.22.2), and
   Dependabot also proposes updates to the hash-locked Python quality tools;
   its pull requests carry a `P3` priority and an assignee.
 
@@ -453,6 +455,18 @@ Windows Excel is recorded in #52.
   host details publicly, as documented in setup verification and issue #29.
 
 ### Fixed
+
+- Before certification, a second audit aligned the remaining texts and models:
+  the fixture generator's numeric-text rule now matches the parser (`1.`,
+  `.5` and `+.5` are `DATE_TEXT_NUMERIC`; three fixture cases, 1,361 in all,
+  and a `-1.` regression assertion), and contract section 3.1 states the
+  locale-date and numeric-text shapes both use. The forwarded-`Opt_Rounding`
+  regression test uses two spans (10 and 11 days) that, together, only `NEAREST`
+  maps to `1W` and `2W`.
+  `tools/Check-KPR.ps1` chooses the loader's arguments from its source instead
+  of retrying after any error, so a failed run is reported, not repeated. The
+  candidate's README, installation guide, test-evidence notes and provenance
+  tables, and the internal documentation, are corrected.
 
 - Date text is reported as `DATE_TEXT_LOCALE` only when it is shaped like a
   locale-formatted date (one or two digits, one or two digits, then two to four
@@ -472,10 +486,11 @@ Windows Excel is recorded in #52.
   stale "not yet run in Excel" notes in this section, `0.0.0` version
   statements, module counts, import orders, layout tables, roadmap status and
   milestone titles, security risk surfaces and the README's claim about the
-  milestone register are corrected; `tools/README.md` describes every CI tool.
+  milestone register are corrected; `tools/README.md` describes the CI tools.
 - The dependency matrix of `tools/check_kpr_contract.py` also covers
   `KPR_Demo_DirectVBA` (facade only) and `KPR_Dev_Import` (no module calls),
-  with a degraded self-test (96 cases). Repository integrity now runs the
+  with two degraded self-test cases (96 in the whole self-test). Repository
+  integrity now runs the
   `release_certification.py` and `_release_closeout.py` self-tests, and
   `.editorconfig` no longer keeps Markdown trailing whitespace the
   whitespace gate rejects.

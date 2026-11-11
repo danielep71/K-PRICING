@@ -34,8 +34,9 @@ Version `0.0.4` is the first functional release candidate: the 22
 `KPR_Dates_*` date primitives ([README](README.md#date-primitives)). It is
 distributed as **tagged source**: import the components below into your own
 workbook or add-in, or build the K-PRICING workbook from the template with the
-[one-click Excel check](#one-click-excel-check). No workbook or add-in package
-is tracked. The candidate is certified only by the exact-source Windows Excel
+[one-click Excel check](#one-click-excel-check). No built workbook or add-in is
+tracked; the macro-free template `src/workbook/KPR_Template.xlsx` is the one
+tracked Office package. The candidate is certified only by the exact-source Windows Excel
 run recorded in #52; until then the target and evidence status are:
 
 | Target | Status |
@@ -97,6 +98,8 @@ Use one documented deployment model per supported installation path:
 
 Never mix components from different tags, commits, local exports or release
 assets.
+
+<a id="import-order"></a>
 
 ## 📂 Migrated date-layer import order
 
@@ -410,10 +413,12 @@ until the window says it is finished. `tools/Check-KPR.ps1`:
    builds the Functions menu;
 6. writes `check.log` (Windows, Excel, branch, commit, each step) next to
    `summary.txt`, `run-1\kpr-test-evidence.json` and
-   `run-2\kpr-test-evidence.json` in `<clone>\build\evidence\<date>-<commit>`
+   `run-2\kpr-test-evidence.json` in
+   `<clone>\build\evidence\<yyyymmdd-hhnnss>-<first 8 SHA characters>`
    (ignored by Git; `%LOCALAPPDATA%\K-PRICING\evidence` when no clone is
-   known), never in `Documents`, which is often synced to OneDrive or
-   SharePoint; it zips the folder, shows the workbook in Explorer and copies the summary and
+   known), not in `Documents`, which is often synced to OneDrive or
+   SharePoint. A commit whose loader predates this choice (before #118) still
+   writes to `Documents\KPR-evidence`. It zips the folder, shows the workbook in Explorer and copies the summary and
    evidence to the clipboard, ready to paste.
 
 A commit without the template (before it was added) gets the earlier check on

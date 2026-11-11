@@ -567,7 +567,7 @@ Private Sub LoadManifest()
         AddRecord "KPR_Dates_DateFromPillar", "StartDate|Pillar", _
             "Returns StartDate moved by a pillar token such as ON, 1W, 3M, 2Y6M or -1D. Scalar input gives one value; a range or array spills one result per cell (dynamic-array Excel). Invalid input: #VALUE!; date out of range: #NUM!.", _
             "StartDate: anchor date; a date, date serial or ISO text yyyy-mm-dd. A range or array gives one result per cell (dynamic-array Excel).", _
-            "Pillar: token such as ON, TN, 1W, 3M, 2Y6M or -1D; units Y, M, W and D, each at most once, no spaces. A range or array gives one result per cell (dynamic-array Excel). A malformed token gives #VALUE!."
+            "Pillar: token such as ON, TN, 1W, 3M, 2Y6M or -1D; units Y, M, W and D, each at most once, no inner spaces. A range or array gives one result per cell (dynamic-array Excel). A malformed token gives #VALUE!."
 
     'Host diagnostic
         AddRecord "KPR_Dates_HostDateSystem", "", _

@@ -24,9 +24,10 @@ it creates on the first run, or with tools\Check-KPR.cmd from a clone. It:
    runs, and checks that Excel loads its K-PRICING tab and builds the
    Functions menu (Excel loads a workbook's Ribbon only while no macro runs);
 6. adds check.log (Windows, Excel, branch, commit, each step) to the evidence
-   folder <clone>\build\evidence\<date>-<commit> (%LOCALAPPDATA%\K-PRICING\
-   evidence without a clone; never Documents, which is often synced to
-   OneDrive or SharePoint), zips it, copies the summary
+   folder <clone>\build\evidence\<yyyymmdd-hhnnss>-<first 8 SHA characters>
+   (%LOCALAPPDATA%\K-PRICING\evidence without a clone; not Documents, which
+   is often synced to OneDrive or SharePoint, except for a commit whose loader
+   predates this choice), zips it, copies the summary
    and both evidence files to the clipboard and shows the workbook in
    Explorer.
 A watchdog closes this run's Excel after -TimeoutMinutes, so a dialog nobody
@@ -389,12 +390,14 @@ try {
     Say "Importing, compiling and running the regression twice: this takes a few minutes."
     Say "If a 'Compile error' box appears in the VBA editor, click OK: the check then reports it."
     $qualified = "'" + $scratch.Name + "'!"
-    try {
+    # The commit's own loader decides the arguments: one that predates
+    # EvidenceRoot takes three and writes where it always wrote. Any error
+    # from the run itself is reported, never retried.
+    if ($loader -match 'ByVal EvidenceRoot As String') {
         $passed = [bool]$excel.Run($qualified + "KPR_Dev_CheckBuild", $sha, $devName, $true, $evidenceRoot)
     }
-    catch {
-        # A commit whose loader predates EvidenceRoot takes three arguments
-        Say "This commit's loader chooses its own evidence folder." "Yellow"
+    else {
+        Say "This commit's loader predates EvidenceRoot: it writes the evidence to Documents\KPR-evidence." "Yellow"
         $passed = [bool]$excel.Run($qualified + "KPR_Dev_CheckBuild", $sha, $devName, $true)
     }
     $folder = [string]$excel.Run($qualified + "KPR_Dev_LastCheckFolder")

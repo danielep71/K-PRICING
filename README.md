@@ -96,14 +96,17 @@ assurance, and release certification.
 
 ### 1. Review the source contract
 
-The migrated date layer contains:
+The source contains the 16 VBA components of the approved architecture
+([`INSTALLATION.md`](INSTALLATION.md#import-order) gives
+their import order):
 
 - four internal [`KPR_Core_*`](src/core/) modules for errors, parsing, dates and arrays;
 - [`KPR_DATES_DAYS`](src/modules/KPR_DATES_DAYS.bas) — the supported 22-function worksheet façade;
-- [`KPR_REGRESSION_TESTS`](tests/modules/KPR_REGRESSION_TESTS.bas) — the imported focused regression harness;
-- [`KPR_Test_Fixtures_Generated`](tests/modules/KPR_Test_Fixtures_Generated.bas) — independently generated fixtures (see [`tests/fixtures/`](tests/fixtures/README.md)); and
-- [`KPR_Demo_DirectVBA`](examples/modules/KPR_Demo_DirectVBA.bas) — a minimal direct-VBA consumer example; and
-- [`KPR_Demo__Builder`](examples/modules/KPR_Demo__Builder.bas) — the shared builder of demonstration sheets, and [`KPR_Demo_Dates`](examples/modules/KPR_Demo_Dates.bas) — the Date Primitives demo built with it.
+- [`KPR_REGISTER_PUBLIC_UDFS`](src/modules/KPR_REGISTER_PUBLIC_UDFS.bas) — the Insert Function help of the 22 functions;
+- [`KPR_UI_Actions`](src/modules/KPR_UI_Actions.bas), [`KPR_UI_CommandBars`](src/modules/KPR_UI_CommandBars.bas) and [`KPR_UI_Ribbon`](src/modules/KPR_UI_Ribbon.bas) — the menu commands, the **KPR Dates** toolbar and the **K-PRICING** Ribbon callbacks;
+- [`KPR_REGRESSION_TESTS`](tests/modules/KPR_REGRESSION_TESTS.bas) — the regression harness and durable runner, with [`KPR_Test_Fixtures_Generated`](tests/modules/KPR_Test_Fixtures_Generated.bas) (independently generated fixtures, see [`tests/fixtures/`](tests/fixtures/README.md)) and [`KPR_Test_Oracle`](tests/modules/KPR_Test_Oracle.bas) (Excel cross-oracle cases);
+- [`KPR_Dev_Import`](tests/modules/KPR_Dev_Import.bas) — the development loader used by the one-click check; and
+- [`KPR_Demo_DirectVBA`](examples/modules/KPR_Demo_DirectVBA.bas) — a minimal direct-VBA consumer example, [`KPR_Demo__Builder`](examples/modules/KPR_Demo__Builder.bas) — the shared builder of demonstration sheets, and [`KPR_Demo_Dates`](examples/modules/KPR_Demo_Dates.bas) — the Date Primitives demo built with it.
 
 The source is migrated from the frozen KPR candidate identified in
 [`docs/MIGRATION_PROVENANCE.md`](docs/MIGRATION_PROVENANCE.md). The exact
@@ -129,8 +132,10 @@ python3 tools/check_release.py --root . --self-test \
 
 Then import the applicable VBA components into a Windows Excel host, run
 **Debug → Compile VBAProject**, and execute the migrated regression entry points.
-The primary imported runner is `KPR_Tests_Run`; focused host, shape and
-dynamic-array runners are also retained. Compilation and parity for the migrated
+The full regression and certification runner is `KPR_Test_RunAll`, which
+writes `kpr-test-evidence.json`; `KPR_Tests_Run` runs the pure suites
+interactively, and focused host, shape, dynamic-array, CommandBars and Ribbon
+runners are also retained. Compilation and parity for the migrated
 candidate were recorded in #17 ([evidence](evidence/migration-2026-09-24/session.txt));
 record any new host run against its exact candidate.
 
@@ -215,8 +220,9 @@ security, action pinning or release provenance.
 Today the source is the migrated date layer, its test infrastructure, the
 Ribbon (`src/ribbon/`) and the macro-free workbook template
 (`src/workbook/KPR_Template.xlsx`). There are no class, form or
-workbook-document modules, and no tracked workbook or add-in package: the
-workbook is built from the template by `tools/Check-KPR.ps1`.
+workbook-document modules, and no built workbook or add-in is tracked: the
+template is the one tracked Office package, and the workbook is built from it
+by `tools/Check-KPR.ps1`.
 
 Profile exception: Office packages are never tracked, except
 `src/workbook/KPR_Template.xlsx`, re-included by its exact path in
@@ -346,7 +352,7 @@ These are the current limitations. The
 2026-09-23 setup inputs and is provenance, not a live copy of this section.
 
 - Windows Excel evidence exists for 64-bit Microsoft 365 Excel only; 32-bit Office, other builds and other locales, Mac and Excel for the web are untested and not claimed.
-- v0.0.4 is a candidate until its exact-source certification and the `v0.0.4` tag and GitHub pre-release are complete (#52). It is distributed as tagged source; the workbook is built from it by `tools/Check-KPR.ps1`, and no workbook or add-in package is tracked.
+- v0.0.4 is a candidate until its exact-source certification and the `v0.0.4` tag and GitHub pre-release are complete (#52). It is distributed as tagged source; the workbook is built from it by `tools/Check-KPR.ps1`; no built workbook or add-in is tracked, only the macro-free template.
 - Only the 22 `KPR_Dates_*` date primitives are supported. Calendars and holidays are planned for v0.0.5, business-day arithmetic and roll conventions for v0.0.6; broader pricing capabilities remain unscheduled ([roadmap](docs/ROADMAP.md)).
 - The historical neutral-starter run certifies repository setup only.
 
