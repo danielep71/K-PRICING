@@ -394,6 +394,7 @@ $ribbonResult = "NOT RUN (no workbook was built)"
 $roundTripResult = "NOT RUN (the regression did not pass)"
 $probeResult = "NOT RUN (the regression did not pass)"
 $importLine = ""
+$bookCompile = "NOT RUN (the workbook was not built)"
 $watchdog = $null
 $doneFlag = $null
 $timeoutFlag = $null
@@ -538,9 +539,11 @@ try {
         if ($imported -lt 0) {
             throw "The workbook's modules could not be imported."
         }
+        $bookCompile = "FAIL (the built workbook does not compile)"
         if (-not (Invoke-Compile -Excel $excel -Book $book)) {
             throw "The workbook does not compile with the production and example modules; the VBA editor shows the line."
         }
+        $bookCompile = "PASS"
         $book.Worksheets.Item("Home").Range($templateCell).Value2 = $sha
         [void]$book.Activate()
         $own = "'" + $bookName.Replace("'", "''") + "'!"
@@ -615,7 +618,7 @@ if (-not [string]::IsNullOrWhiteSpace($folder) -and (Test-Path -LiteralPath $fol
     if ($roundTripResult -notlike "NOT RUN*") {
         $certification = Write-CertificationRecord -Folder $folder -Outcomes @{
             "source_import" = @("PASS", ("KPR_Dev_CheckBuild imported the commit's modules into the development workbook and KPR_Dev_Import into the scratch workbook: " + "$importLine".Trim()))
-            "vba_compile" = @("PASS", "Debug > Compile passed for the development workbook (KPR_Dev_CheckBuild) and for the built workbook")
+            "vba_compile" = @($(if ($bookCompile -eq "PASS" -or $null -eq $templatePath) { "PASS" } else { "FAIL" }), ("Development workbook (KPR_Dev_CheckBuild): PASS; built workbook: " + $(if ($null -eq $templatePath) { "none (this commit has no template)" } else { $bookCompile })))
             "ribbonx" = @($(if ($ribbonResult -like "PASS*") { "PASS" } else { "FAIL" }), ("Built workbook: " + $ribbonResult))
             "source_round_trip" = @($(if ($roundTripResult -like "PASS*") { "PASS" } else { "FAIL" }), $roundTripResult)
         }
