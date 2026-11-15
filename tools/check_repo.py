@@ -2152,6 +2152,91 @@ def _check_external_action_references(
     return checked
 
 
+# The repository's default branch. A workflow whose push or pull_request branch
+# filter omits it never runs there, which silently drops a gate (or the push
+# run that release tooling reads on a tag's commit).
+DEFAULT_BRANCH = "main"
+
+
+def _branch_pattern_matches(pattern: str, branch: str) -> bool:
+    """GitHub filter glob: ** spans "/", * and ? do not, other characters are literal."""
+    regex = ""
+    index = 0
+    while index < len(pattern):
+        if pattern.startswith("**", index):
+            regex += ".*"
+            index += 2
+        elif pattern[index] == "*":
+            regex += "[^/]*"
+            index += 1
+        elif pattern[index] == "?":
+            regex += "[^/]"
+            index += 1
+        else:
+            regex += re.escape(pattern[index])
+            index += 1
+    return re.fullmatch(regex, branch) is not None
+
+
+def _filter_values(lines: list[str], start: int, indent: int) -> list[str]:
+    """The items of a block or flow list whose key line is lines[start]."""
+    key_line = _strip_yaml_comment(lines[start]).strip()
+    flow = re.fullmatch(r"[A-Za-z_-]+:\s*\[(.*)\]\s*", key_line)
+    if flow is not None:
+        return [item.strip().strip("'\"") for item in flow.group(1).split(",") if item.strip()]
+    values: list[str] = []
+    for line in lines[start + 1:]:
+        stripped = _strip_yaml_comment(line).strip()
+        if not stripped:
+            continue
+        if len(line) - len(line.lstrip(" ")) <= indent:
+            break
+        item = re.fullmatch(r"-\s*(.+)", stripped)
+        if item is not None:
+            values.append(item.group(1).strip().strip("'\""))
+    return values
+
+
+def _check_default_branch_filters(
+    path: str,
+    lines: list[str],
+    failures: list[dict[str, Any]],
+) -> None:
+    event = ""
+    for number, line in enumerate(lines, start=1):
+        if re.fullmatch(r"\S.*", line):
+            event = "" if not line.startswith("on:") else event
+            continue
+        match = re.fullmatch(r"  (push|pull_request):\s*(?:#.*)?", line)
+        if match is not None:
+            event = match.group(1)
+            continue
+        if re.fullmatch(r"  \S.*", line):
+            event = ""
+            continue
+        key = re.fullmatch(r"    (branches|branches-ignore):.*", line)
+        if not event or key is None:
+            continue
+        values = _filter_values(lines, number - 1, 4)
+        listed = any(_branch_pattern_matches(value, DEFAULT_BRANCH) for value in values)
+        if key.group(1) == "branches" and not listed:
+            failures.append(
+                finding(
+                    path,
+                    f"The {event} branch filter omits the default branch {DEFAULT_BRANCH}.",
+                    number,
+                )
+            )
+        if key.group(1) == "branches-ignore" and listed:
+            failures.append(
+                finding(
+                    path,
+                    f"The {event} branches-ignore filter excludes the default branch {DEFAULT_BRANCH}.",
+                    number,
+                )
+            )
+
+
 def check_workflow_actions(
     repo: Repository, config: dict[str, Any]
 ) -> dict[str, Any]:
@@ -2171,6 +2256,7 @@ def check_workflow_actions(
             continue
         _check_pr_workflow_permissions(path, lines, failures)
         _check_issue_write_default_branch(path, lines, failures)
+        _check_default_branch_filters(path, lines, failures)
         checked += _check_external_action_references(path, lines, failures)
     return rule_result(
         "workflow-actions",
@@ -3405,6 +3491,19 @@ def _degrade_workflow_pull_request_target_flow_map(root: Path) -> None:
     )
 
 
+def _degrade_workflow_default_branch_filter(root: Path) -> None:
+    path = root / ".github/workflows/static-checks.yml"
+    text = path.read_text(encoding="utf-8")
+    _write_fixture(
+        path,
+        text.replace(
+            "on:\n  pull_request:\n",
+            "on:\n  pull_request:\n  push:\n    branches:\n      - trunk\n      - \"release/**\"\n",
+            1,
+        ),
+    )
+
+
 def _degrade_workflow_pr_write(root: Path) -> None:
     path = root / ".github/workflows/static-checks.yml"
     text = path.read_text(encoding="utf-8")
@@ -3610,6 +3709,11 @@ BRANCH_SELF_TEST_CASES: tuple[
         _degrade_workflow_pull_request_target_flow_map,
     ),
     ("workflow-pr-write", "workflow-actions", _degrade_workflow_pr_write),
+    (
+        "workflow-default-branch-filter",
+        "workflow-actions",
+        _degrade_workflow_default_branch_filter,
+    ),
     (
         "workflow-pr-scalar-flow-write",
         "workflow-actions",

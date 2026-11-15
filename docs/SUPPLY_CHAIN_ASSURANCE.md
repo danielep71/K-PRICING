@@ -68,7 +68,10 @@ CLI job receives only `contents: read`. The default-branch publication job
 receives `contents: read`, `security-events: write`, and `id-token: write`; the
 last permission is used only for authenticated Scorecard result publication.
 The repository-quality gate rejects `pull_request_target` and rejects
-write-capable permissions in any workflow that runs on `pull_request`. Event
+write-capable permissions in any workflow that runs on `pull_request`. It also
+rejects a `push` or `pull_request` branch filter that omits the default branch
+`main` (or a `branches-ignore` filter that excludes it), so a gate or the push
+run release tooling reads cannot silently stop running there. Event
 detection, workflow-level permission analysis, job-level permission analysis,
 and immutable Action pin validation remain separate checker routines so each
 finding is independently testable and the canonical gate stays within its

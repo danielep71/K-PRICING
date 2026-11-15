@@ -102,6 +102,16 @@ Use only the categories needed by a release.
 
 <!-- Add only user-visible changes made in this generated project. -->
 
+### Changed
+
+- The required `Repository integrity` check runs on every pull request,
+  whatever its base, so a pull request stacked on another branch is gated too;
+  pushes still run it only on `main`, release branches and release tags, so a
+  task-branch push never repeats its pull request's run. The `workflow-actions`
+  rule of `tools/check_repo.py` now rejects a `push` or `pull_request` branch
+  filter that omits `main`, or a `branches-ignore` filter that excludes it,
+  with a degraded self-test.
+
 ## [0.0.4] - 2026-11-10
 
 The first functional release of K-PRICING: the Date Primitives layer. It
