@@ -6,10 +6,12 @@ run-name: Static checks — ${{ github.ref_name }} @ ${{ github.sha }}
 # regression, numerical-accuracy, UI-state, packaging, or release certification.
 
 on:
+  # Every pull request gets the required check, whatever its base, so a
+  # pull request stacked on another branch is gated too. Pushes run only where
+  # they land: the default branch, release branches and release tags; a task
+  # branch's push would only repeat its pull request's run. A job-level `if`
+  # must not replace this filter: a skipped required check counts as passing.
   pull_request:
-    branches:
-      - main
-      - "release/**"
   push:
     branches:
       - main
