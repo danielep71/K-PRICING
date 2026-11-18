@@ -296,6 +296,7 @@ function Test-SourceRoundTrip {
     # committed source exactly once CRLF and LF are treated alike (the rule of
     # tools/kpr.py round-trip). Writes exports\ and round-trip.txt.
     param($Target, $Scratch, [string]$Sha, [string]$Folder)
+    $macroOptionsAttributes = '(?m)^Attribute [A-Za-z_][A-Za-z0-9_]*\.VB_(?:Description|ProcData\.VB_Invoke_Func) = .*\n'
     $exports = Join-Path $Folder "exports"
     New-Item -ItemType Directory -Force -Path $exports | Out-Null
     $repoProfile = (Get-RawText -Sha $Sha -Path ".github/repository-profile.json") | ConvertFrom-Json
@@ -316,6 +317,11 @@ function Test-SourceRoundTrip {
         }
         $expected = Get-RawText -Sha $Sha -Path $path
         $actual = [System.IO.File]::ReadAllText($exportPath, [System.Text.Encoding]::ASCII) -replace "`r`n", "`n"
+        # The regression run registers the functions with Application.MacroOptions, which makes
+        # Excel add an Attribute VB_Description and VB_ProcData line to each registered procedure
+        # of the exported module. The committed source has none (docs/VBE_EXPORT.md), so these
+        # lines are dropped from the export; a source that carries them still differs.
+        $actual = [regex]::Replace($actual, $macroOptionsAttributes, "")
         if ($actual -ceq $expected) {
             $report.Add("$path=PASS")
             continue

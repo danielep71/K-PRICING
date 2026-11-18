@@ -360,6 +360,20 @@ Windows Excel is recorded in #52.
   sections with labels in column C and text in column D (what K-PRICING does,
   how to use it, its sheets and the commit, now written in `D22`).
 
+- The source round trip of the one-click check passes on the committed source.
+  The first run of it, on `fa7c490`, found two components that Excel exports
+  differently: Excel adds an `Attribute VB_Description` and
+  `VB_ProcData` line to each function that `Application.MacroOptions`
+  registers, and the VBE conforms the case of identifiers that differ only by
+  case. The check now drops exactly those attribute lines from the export (a
+  source that carries them still differs), and the source spells each
+  identifier one way: the local `N` of `Elem_AddDays`, `Elem_AddWeeks`,
+  `Elem_AddMonths` and `Elem_AddYears` is `Delta`, the local `EOM` of
+  `Elem_LastWeekdayOfMonth` is `LastDay`, and the constant `DEMO_SHEET` of the
+  demo and the regression is `DEMO_SHEET_NAME` (it made the VBE rewrite
+  `Demo_Sheet`). Case-only renames of locals and constants; no behaviour
+  changes. `tools/test_vba_round_trip.py` guards both.
+
 - The navigation bar and the KPR Dates Demo sheet follow the K-SACCR template
   more closely. The bar is the K-SACCR one: two groups of linked shapes in
   column A (`NavBarTop` in the frozen rows with the DEMO section, `NavBar`

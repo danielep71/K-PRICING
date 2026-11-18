@@ -1174,7 +1174,7 @@ Private Sub NavGroup( _
     BarWidth = NAV_BAR_W * 0.75
     BtnTop = BlockTop + (NAV_PAD_TOP + NAV_HEAD_H) * 0.75
 
-    Set Head = NavShape("Nav_Section_" & Section, BarLeft, BlockTop + NAV_PAD_TOP * 0.75, BarWidth, NAV_HEAD_H * 0.75, _
+    Set Head = NavShape("Nav_Section_" & StrConv(Section, vbProperCase), BarLeft, BlockTop + NAV_PAD_TOP * 0.75, BarWidth, NAV_HEAD_H * 0.75, _
                         -1, Section, RGB(255, 192, 0), True, NAV_HEAD_SIZE, MSO_ANCHOR_BASE, 4)
     If Here Then
         Set Button = NavShape("Nav_" & Target, BarLeft, BtnTop, BarWidth, NAV_BTN_H * 0.75, _
