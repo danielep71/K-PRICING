@@ -361,6 +361,43 @@ file is fetched and checked before the target changes. The call returns the
 number of modules imported, or `-1` with the reason in the Immediate window.
 The target is not saved: compile it, then save it.
 
+<a id="build-the-workbook"></a>
+
+#### Build the workbook (no check)
+
+To get the K-PRICING workbook without running the regression, as
+`tools/Sync-SACCR-VBA.cmd` does in K-SACCR, double-click
+`tools\Build-KPR.cmd` in your clone (or run it with `Development` to also
+import the regression and test modules). `tools/Build-KPR.ps1` works from the
+**files of your clone**, so the workbook comes from the commit and the changes
+you have checked out, with no GitHub download. In about a minute it:
+
+1. finds the clone (the one it lives in, `-RepoRoot`, or the one remembered by
+   an earlier run of it or of `Check-KPR.ps1`), and reads the commit it has
+   checked out; a clone with uncommitted changes is built as it is and the
+   **Home** sheet says so (without git installed it reads the commit from
+   `.git` and the sheet says the working tree was not checked);
+2. starts its own Excel, checks *Trust access to the VBA project object model*
+   (it asks before turning it on, as the check does) and saves
+   `src/workbook/KPR_Template.xlsx` as a macro-enabled workbook in a temporary
+   folder;
+3. imports the modules of the clone: public, internal, ui and example
+   (Production, the default) or also the test modules (Development);
+4. compiles it (**Debug > Compile**), writes the commit on the **Home** sheet
+   and builds the **KPR Dates Demo** sheet;
+5. saves `K-PRICING-<first 8 SHA characters>.xlsm` (Development:
+   `K-PRICING-Development-<...>.xlsm`) in `<clone>\build`, which Git ignores,
+   and never replaces a file of that name: the new one gets the time in its
+   name;
+6. opens it again once no macro runs and checks that Excel loads the
+   **K-PRICING** tab and its Functions menu (`-NoRibbonCheck` skips it).
+
+It shows the path of the workbook and selects it in Explorer; `-Open` opens it.
+Where scripts are disabled, run it inside an open PowerShell window:
+`&([scriptblock]::Create((Get-Content -Raw 'C:\path\to\K-PRICING\tools\Build-KPR.ps1'))) -RepoRoot 'C:\path\to\K-PRICING'`.
+The build is not a check: it runs no regression and proves nothing about the
+commit. Use the check below for that.
+
 <a id="one-click-excel-check"></a>
 
 #### One-click Excel check

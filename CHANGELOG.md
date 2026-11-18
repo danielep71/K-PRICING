@@ -116,6 +116,20 @@ Windows Excel is recorded in #52.
 
 ### Added
 
+- `tools/Build-KPR.cmd` and `tools/Build-KPR.ps1` build the K-PRICING workbook
+  from your clone, as `Sync-SACCR-VBA` does in K-SACCR, without the regression
+  of the one-click check. Double-click the launcher (or run it with
+  `Development` to also import the test modules): in about a minute it saves
+  the macro-free template as a workbook in a private Excel, imports the
+  modules of the clone with the development loader, compiles it, writes the
+  checked-out commit (and any uncommitted changes) on the **Home** sheet,
+  builds the **KPR Dates Demo** sheet and saves `K-PRICING-<commit>.xlsm` in
+  the clone's ignored `build` folder, never replacing an existing file. It then
+  reopens the workbook to check that Excel loads the **K-PRICING** tab. No
+  GitHub download; the clone is only read. `tools/test_build_kpr.py` keeps the
+  Excel helpers shared with `Check-KPR.ps1` identical and checks the roles
+  and the launcher.
+
 - The one-click Excel check produces the complete #52 certification evidence.
   When both regression runs pass it runs the new caller-context probe
   `KPR_Tests_RunCallerProbe` (`Application.Caller` and `HostDateSystem()` from

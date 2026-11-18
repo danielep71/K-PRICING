@@ -1490,6 +1490,8 @@ CANDIDATE_FILES = (
     "docs/PUBLIC_API.txt",
     "docs/ROADMAP.md",
     "docs/kpr-test-evidence.schema.json",
+    "tools/Build-KPR.cmd",
+    "tools/Build-KPR.ps1",
     "tools/Check-KPR.cmd",
     "tools/Check-KPR.ps1",
     "tools/check_kpr_contract.py",

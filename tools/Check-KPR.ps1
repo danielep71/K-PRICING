@@ -118,17 +118,17 @@ function Confirm-VbaProjectAccess {
     }
     Write-Host ""
     Write-Host "Excel's option 'Trust access to the VBA project object model' is off."
-    Write-Host "The check needs it to import the modules. It is the same switch as"
+    Write-Host "This tool needs it to import the modules. It is the same switch as"
     Write-Host "File > Options > Trust Center > Trust Center Settings > Macro Settings."
     $answer = Read-Host "Turn it on now for your Windows user? (Y/N)"
     if ($answer -notmatch '^\s*[yYsS]') {
-        throw "Stopped: the VBA project access stays off, so nothing was checked."
+        throw "Stopped: the VBA project access stays off, so no module was imported."
     }
     if (-not (Test-Path -LiteralPath $userKey)) {
         New-Item -Path $userKey -Force | Out-Null
     }
     Set-ItemProperty -LiteralPath $userKey -Name "AccessVBOM" -Value 1 -Type DWord
-    return "On (turned on by this check, at the operator's request)"
+    return "On (turned on by this run, at the operator's request)"
 }
 
 function Get-ExcelProcessId {
