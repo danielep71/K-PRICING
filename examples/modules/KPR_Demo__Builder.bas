@@ -16,7 +16,14 @@ Attribute VB_Name = "KPR_Demo__Builder"
 '   change here.
 '
 ' SHEET LAYOUT
-'   Row 1-2     title band and subtitle band across B:M
+'   Row 1-2     title band and subtitle band across B:M, 24 and 26.1 points
+'               high as on the Home sheet
+'   Column A    with the K-PRICING Home sheet in the workbook: the black
+'               navigation column of Home (21.7 wide, B a 4-wide gutter),
+'               rows 1 to 3 and column A frozen, and the navigation bar of
+'               Home as two shape groups (NavBarTop with this sheet
+'               highlighted, NavBar with the link to Home); without it, a
+'               narrow margin and no bar
 '   Main column C:G, top to bottom:
 '     inputs    labels in C, editable values in D (orange), notes in E;
 '               each value gets a sheet-level name used by the formulas
@@ -79,7 +86,7 @@ Attribute VB_Name = "KPR_Demo__Builder"
 '   catalog entries are run by name.
 '
 ' UPDATED
-'   2026-11-03
+'   2026-11-18
 '
 ' AUTHOR
 '   Daniele Penza
@@ -133,6 +140,31 @@ Attribute VB_Name = "KPR_Demo__Builder"
         Private Const XL_OPEN_XML_WORKBOOK As Long = 51
         Private Const SHEET_NAME_MAX       As Long = 31
 
+    'Layout shared with the Home sheet of the template (tools/workbook_template.py)
+        Private Const HOME_SHEET       As String = "Home"       'Sheet that holds the navigation bar
+        Private Const HOME_WORDMARK    As String = "K-PRICING"  'Home!B1, to tell the K-PRICING Home
+        Private Const ROW_1_HEIGHT     As Double = 24           'Black title band, points
+        Private Const ROW_2_HEIGHT     As Double = 26.1         'Navy subtitle band, points
+        Private Const FROZEN_ROWS      As Long = 3              'Rows frozen with column A
+        Private Const NAV_COL_A        As Double = 21.7         'Navigation column, characters
+        Private Const NAV_COL_B        As Double = 4            'Gutter, characters
+    'Navigation bar, in pixels at 96 dpi (a pixel is 0.75 point)
+        Private Const NAV_BAR_X        As Long = 8              'Left margin inside column A
+        Private Const NAV_BAR_W        As Long = 141            'Width of the bar
+        Private Const NAV_PAD_TOP      As Long = 6              'Above the section title
+        Private Const NAV_HEAD_H       As Long = 17             'Section title height
+        Private Const NAV_BTN_H        As Long = 21             'Button height
+        Private Const NAV_STRIP_W      As Long = 3              'Coloured strip of a button
+        Private Const NAV_GROUP_TOP    As String = "NavBarTop"  'Group in the frozen rows
+        Private Const NAV_GROUP_REST   As String = "NavBar"     'Group below the frozen rows
+        Private Const NAV_TEXT_SIZE    As Double = 9
+        Private Const NAV_HEAD_SIZE    As Double = 7
+    'Office constants used by the navigation bar
+        Private Const MSO_RECTANGLE    As Long = 1
+        Private Const MSO_ANCHOR_MID   As Long = 3
+        Private Const MSO_ANCHOR_BASE  As Long = 4
+        Private Const MSO_ALIGN_LEFT   As Long = 1
+
 '------------------------------------------------------------------------------
 ' BUILD STATE
 '------------------------------------------------------------------------------
@@ -146,6 +178,7 @@ Attribute VB_Name = "KPR_Demo__Builder"
     Private mTempPath       As String       'Temporary file before the rename
     Private mPrefix         As String       'Qualifier inserted before KPR_
     Private mDynamic        As Boolean      'Excel provides Range.Formula2
+    Private mNav            As Boolean      'The workbook has the K-PRICING Home: draw the navigation bar
     Private mRow            As Long         'Next free row of the main column
     Private mSideRow        As Long         'Next free row of the side panel
     Private mSummaryRow     As Long         'First row of the checks summary
@@ -344,6 +377,7 @@ Public Function Demo_Begin( _
     End If
     mSh.Name = FreeSheetName(mWb, SheetName)
     mPrefix = HostQualifier(mWb)
+    mNav = HasKprHome(mWb)
     mDynamic = HasFormula2(mSh.Range("A1"))
     Set mStatus = New Collection
     mSpillOpen = False
@@ -398,6 +432,8 @@ Public Function Demo_Finish() As Boolean
     WriteSummary
     Stage = "lay out the sheet"
     mSh.UsedRange.Rows.AutoFit
+    AlignTitleRows
+    DrawNavigation
     Stage = "calculate the sheet"
     mSh.Calculate
     mSh.Calculate
@@ -873,8 +909,14 @@ Private Sub PrepareSheet()
         .Font.Size = SIZE_BODY
         .VerticalAlignment = xlCenter
     End With
-    mSh.Columns(1).ColumnWidth = 2.6
-    mSh.Columns(COL_TITLE).ColumnWidth = 2.6
+    If mNav Then
+        mSh.Columns(1).ColumnWidth = NAV_COL_A
+        mSh.Columns(1).Interior.Color = RGB(0, 0, 0)
+        mSh.Columns(COL_TITLE).ColumnWidth = NAV_COL_B
+    Else
+        mSh.Columns(1).ColumnWidth = 2.6
+        mSh.Columns(COL_TITLE).ColumnWidth = 2.6
+    End If
     mSh.Columns(COL_FORMULA).ColumnWidth = 44
     mSh.Columns(COL_KPR).ColumnWidth = 15.6
     mSh.Columns(COL_EXCEL).ColumnWidth = 15.6
@@ -1075,6 +1117,159 @@ Private Sub SummaryLine( _
 
 End Sub
 
+Private Sub AlignTitleRows()
+'
+' The two title bands have the same heights on every sheet of the workbook,
+' as on the Home sheet, instead of the heights AutoFit gives their fonts.
+'
+    mSh.Rows(1).RowHeight = ROW_1_HEIGHT
+    mSh.Rows(2).RowHeight = ROW_2_HEIGHT
+
+End Sub
+
+Private Sub DrawNavigation()
+'
+' Draws the navigation bar of the Home sheet: NavBarTop in the frozen rows,
+' with the button of this sheet highlighted and not linked, and NavBar below
+' them, with a button to Home. Purely cosmetic: a failure here removes what
+' was drawn and never fails the build.
+'
+    If Not mNav Then Exit Sub
+    On Error GoTo Failed
+    mSh.Tab.Color = RGB(84, 130, 53)
+    NavGroup NAV_GROUP_TOP, 0, "DEMO", mSh.Name, RGB(255, 192, 0), _
+             "Each function next to Excel's own formula, with a status per row."
+    NavGroup NAV_GROUP_REST, mSh.Rows(FROZEN_ROWS + 1).Top, "START", HOME_SHEET, RGB(143, 170, 220), _
+             "What K-PRICING provides, how to use it and the commit it was built from."
+    Exit Sub
+
+Failed:
+    Err.Clear
+    RemoveNavigation
+
+End Sub
+
+Private Sub NavGroup( _
+    ByVal GroupName As String, _
+    ByVal BlockTop As Double, _
+    ByVal Section As String, _
+    ByVal Target As String, _
+    ByVal Strip As Long, _
+    ByVal Tip As String)
+'
+' One block of the bar: a section title and one button, grouped and named as
+' in the template. The button of the sheet itself is blue and not linked.
+'
+    Dim Here   As Boolean   'The button is for this sheet
+    Dim BarLeft  As Double  'Left of the bar, points
+    Dim BarWidth As Double  'Width of the bar, points
+    Dim BtnTop   As Double  'Top of the button, points
+    Dim Head   As Shape     'Section title
+    Dim Button As Shape     'Button
+    Dim Mark   As Shape     'Strip at the left of the button
+    Dim Whole  As Shape     'The group
+
+    Here = (StrComp(Target, mSh.Name, vbBinaryCompare) = 0)
+    BarLeft = NAV_BAR_X * 0.75
+    BarWidth = NAV_BAR_W * 0.75
+    BtnTop = BlockTop + (NAV_PAD_TOP + NAV_HEAD_H) * 0.75
+
+    Set Head = NavShape("Nav_Section_" & Section, BarLeft, BlockTop + NAV_PAD_TOP * 0.75, BarWidth, NAV_HEAD_H * 0.75, _
+                        -1, Section, RGB(255, 192, 0), True, NAV_HEAD_SIZE, MSO_ANCHOR_BASE, 4)
+    If Here Then
+        Set Button = NavShape("Nav_" & Target, BarLeft, BtnTop, BarWidth, NAV_BTN_H * 0.75, _
+                              RGB(38, 90, 153), Target, RGB(255, 255, 255), True, NAV_TEXT_SIZE, MSO_ANCHOR_MID, 12)
+    Else
+        Set Button = NavShape("Nav_" & Target, BarLeft, BtnTop, BarWidth, NAV_BTN_H * 0.75, _
+                              RGB(38, 38, 38), Target, RGB(217, 217, 217), False, NAV_TEXT_SIZE, MSO_ANCHOR_MID, 12)
+        mSh.Hyperlinks.Add Anchor:=Button, Address:="", _
+            SubAddress:="'" & Replace(Target, "'", "''") & "'!A1", ScreenTip:=Tip
+    End If
+    Set Mark = NavShape("Nav_" & Target & "_Mark", BarLeft, BtnTop, NAV_STRIP_W * 0.75, NAV_BTN_H * 0.75, _
+                        IIf(Here, RGB(255, 192, 0), Strip), "", 0, False, 0, MSO_ANCHOR_MID, 0)
+
+    Set Whole = mSh.Shapes.Range(Array(Head.Name, Button.Name, Mark.Name)).Group
+    Whole.Name = GroupName
+    Whole.Placement = xlMove
+
+End Sub
+
+Private Function NavShape( _
+    ByVal ShapeName As String, _
+    ByVal ShapeLeft As Double, _
+    ByVal ShapeTop As Double, _
+    ByVal ShapeWidth As Double, _
+    ByVal ShapeHeight As Double, _
+    ByVal Fill As Long, _
+    ByVal Caption As String, _
+    ByVal TextColour As Long, _
+    ByVal Bold As Boolean, _
+    ByVal Size As Double, _
+    ByVal Anchor As Long, _
+    ByVal Inset As Long) _
+    As Shape
+'
+' A borderless rectangle; Fill is -1 for none. The text is left aligned and
+' never wraps; Inset is its left margin in pixels.
+'
+    Dim Item As Shape   'The new shape
+
+    Set Item = mSh.Shapes.AddShape(MSO_RECTANGLE, ShapeLeft, ShapeTop, ShapeWidth, ShapeHeight)
+    Item.Name = ShapeName
+    Item.Line.Visible = False
+    If Fill < 0 Then
+        Item.Fill.Visible = False
+    Else
+        Item.Fill.Visible = True
+        Item.Fill.Solid
+        Item.Fill.ForeColor.RGB = Fill
+    End If
+    If Len(Caption) > 0 Then
+        With Item.TextFrame2
+            .WordWrap = False
+            .MarginLeft = Inset * 0.75
+            .MarginRight = 0
+            .MarginTop = 0
+            .MarginBottom = IIf(Anchor = MSO_ANCHOR_BASE, 1.5, 0)
+            .VerticalAnchor = Anchor
+            .TextRange.Text = Caption
+            .TextRange.ParagraphFormat.Alignment = MSO_ALIGN_LEFT
+            .TextRange.Font.Name = FONT_NAME
+            .TextRange.Font.Size = Size
+            .TextRange.Font.Bold = Bold
+            .TextRange.Font.Fill.ForeColor.RGB = TextColour
+        End With
+    End If
+    Set NavShape = Item
+
+End Function
+
+Private Sub RemoveNavigation()
+'
+' Deletes every shape of the navigation bar, whole or half drawn.
+'
+    Dim Index As Long   'Shape cursor, from the last
+
+    On Error Resume Next
+    For Index = mSh.Shapes.Count To 1 Step -1
+        If Left$(mSh.Shapes(Index).Name, 3) = "Nav" Then mSh.Shapes(Index).Delete
+    Next Index
+    Err.Clear
+
+End Sub
+
+Private Function HasKprHome(ByVal Wb As Workbook) As Boolean
+'
+' TRUE when the workbook holds the K-PRICING Home sheet, the one that carries
+' the navigation bar.
+'
+    On Error Resume Next
+    HasKprHome = (StrComp(CStr(Wb.Worksheets(HOME_SHEET).Range("B1").Value), HOME_WORDMARK, vbBinaryCompare) = 0)
+    If Err.Number <> 0 Then HasKprHome = False
+    Err.Clear
+
+End Function
+
 Private Sub ShowSheet()
 '
 ' Activates the demo sheet at its top-left corner without gridlines. Purely
@@ -1086,6 +1281,12 @@ Private Sub ShowSheet()
     ActiveWindow.DisplayGridlines = False
     ActiveWindow.ScrollRow = 1
     ActiveWindow.ScrollColumn = 1
+    If mNav Then
+        ActiveWindow.FreezePanes = False
+        ActiveWindow.SplitColumn = 1
+        ActiveWindow.SplitRow = FROZEN_ROWS
+        ActiveWindow.FreezePanes = True
+    End If
     Err.Clear
 
 End Sub

@@ -2,7 +2,7 @@
 """Generate or check the macro-free workbook template src/workbook/KPR_Template.xlsx.
 
 The template is the sheets of the K-PRICING workbook without any code: a Home
-sheet and the K-PRICING Ribbon (src/ribbon/customUI14.xml, byte for byte, as
+sheet with its navigation bar and the K-PRICING Ribbon (src/ribbon/customUI14.xml, byte for byte, as
 customUI/customUI14.xml with exactly one Ribbon relationship). It has no VBA
 project and no document properties. tools/Check-KPR.ps1 saves it as an .xlsm,
 imports one commit's modules, compiles them and builds the demo sheet into it.
@@ -19,7 +19,7 @@ import argparse
 import io
 import sys
 import zipfile
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from pathlib import Path
 from xml.sax.saxutils import escape
 
@@ -51,17 +51,47 @@ DECLARATION = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
 # title, row 3 the grey subtitle; rows 1 to 3 and column A are frozen.
 # Style indexes into cellXfs below.
 (NORMAL, NAV, WORDMARK, BLACK_BAND, SHEET_TITLE, BLUE_BAND, SUBTITLE, SECTION, LABEL, TEXT,
- LINK, NAV_CURRENT, NAV_BUTTON) = range(13)
+ LINK) = range(11)
+
+# The navigation bar is the K-SACCR one (tools/navigation_bar.py there): two
+# groups of linked shapes in column A. NavBarTop sits in the frozen rows 1 to
+# 3 and never scrolls; NavBar is anchored on the first row below them. The
+# current sheet is highlighted and not linked. The demo builder
+# (examples/modules/KPR_Demo__Builder.bas) draws the same bar, in points, on
+# the demo sheet; tools/test_workbook_template.py keeps the numbers equal.
+PX = 9525                      # EMU per pixel at 96 dpi
+BAR_X = 8                      # left margin of the bar inside column A, px
+BAR_W = 141                    # bar width, px
+PAD_TOP = 6                    # px above the section title
+PAD_BOTTOM = 3                 # px below the last button
+HEAD_H = 17                    # section title height, px
+BTN_H = 21                     # button height, px
+STRIP_W = 3                    # coloured strip at the left of a button, px
+FROZEN_ROWS = 3
+ROW_HEIGHTS = (24.0, 26.1, 33.95)      # rows 1 to 3 of the Home sheet, points
+FONT = "Aptos"
+HEAD_COLOUR = "FFC000"         # gold of the wordmark
+BUTTON_FILL = "262626"
+BUTTON_TEXT = "D9D9D9"
+CURRENT_FILL = "265A99"        # blue of the sheet-title band
+CURRENT_TEXT = "FFFFFF"
+CURRENT_STRIP = "FFC000"
+DARK_STRIP = "8FAADC"          # used when a tab colour would vanish on the button
+GROUP_TOP = "NavBarTop"
+GROUP_REST = "NavBar"
+TAB_COLOURS = {HOME_SHEET: "1F3864", DEMO_SHEET: "548235"}   # tab colours; the strip repeats them
+# (section title, ((sheet, tooltip), ...)) per group
+NavBlock = tuple[tuple[str, tuple[tuple[str, str], ...]], ...]
+NAV_TOP: NavBlock = (("Demo", ((DEMO_SHEET, "Each function next to Excel's own formula, with a status per row."),)),)
+NAV_REST: NavBlock = (("Start", ((HOME_SHEET, "What K-PRICING provides, how to use it and the commit it was built from."),)),)
 
 # (row, height in points, ((column, text, style, internal link or ""), ...))
 HomeCell = tuple[str, str, int, str]
 HOME_ROWS: tuple[tuple[int, float, tuple[HomeCell, ...]], ...] = (
-    (1, 24, (("B", "K-PRICING", WORDMARK, ""), ("C", "", BLACK_BAND, ""), ("D", "", BLACK_BAND, ""))),
-    (2, 26.1, (("A", "Home", NAV_CURRENT, ""), ("B", "Home", SHEET_TITLE, ""),
-               ("C", "", BLUE_BAND, ""), ("D", "", BLUE_BAND, ""))),
-    (3, 33.95, (("A", DEMO_SHEET, NAV_BUTTON, f"'{DEMO_SHEET}'!A1"),
-                ("C", "Start here: what K-PRICING provides, how to use it and a link to every sheet."
-                      " The commit this workbook was built from is at the bottom.", SUBTITLE, ""))),
+    (1, ROW_HEIGHTS[0], (("B", "K-PRICING", WORDMARK, ""), ("C", "", BLACK_BAND, ""), ("D", "", BLACK_BAND, ""))),
+    (2, ROW_HEIGHTS[1], (("B", "Home", SHEET_TITLE, ""), ("C", "", BLUE_BAND, ""), ("D", "", BLUE_BAND, ""))),
+    (3, ROW_HEIGHTS[2], (("C", "Start here: what K-PRICING provides, how to use it and a link to every sheet."
+                           " The commit this workbook was built from is at the bottom.", SUBTITLE, ""),)),
     (5, 30, (("C", "What K-PRICING does", SECTION, ""),)),
     (6, 46, (("C", "Provides", LABEL, ""),
              ("D", "The KPR_Dates_* worksheet and VBA functions: Gregorian date primitives for pricing,"
@@ -113,6 +143,8 @@ def content_types() -> bytes:
         ' ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
         '<Override PartName="/xl/styles.xml"'
         ' ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+        '<Override PartName="/xl/drawings/drawing1.xml"'
+        ' ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>'
         "</Types>")
 
 
@@ -154,21 +186,18 @@ def styles() -> bytes:
         font("<b/>", "10", "000000"),        # 5 label
         font("", "9", "000000"),             # 6 text
         font("<u/>", "9", "0563C1"),         # 7 link
-        font("<b/>", "10", "FFFFFF"),        # 8 navigation
     )
     fills = ('<fill><patternFill patternType="none"/></fill>'
              '<fill><patternFill patternType="gray125"/></fill>'
              + "".join(f'<fill><patternFill patternType="solid"><fgColor rgb="FF{rgb}"/>'
                        '<bgColor indexed="64"/></patternFill></fill>'
-                       for rgb in ("000000", "265A99", "262626")))
+                       for rgb in ("000000", "265A99")))
     left = '<alignment horizontal="left" vertical="center" indent="1"/>'
-    centre = '<alignment horizontal="center" vertical="center" wrapText="1"/>'
     middle = '<alignment vertical="center"/>'
     wrap = '<alignment vertical="center" wrapText="1"/>'
     # (font, fill, alignment) per style index, in the order of the constants above
     xfs = ((0, 0, ""), (0, 2, ""), (1, 2, left), (0, 2, middle), (2, 3, left), (0, 3, middle),
-           (3, 0, middle), (4, 0, wrap), (5, 0, wrap), (6, 0, wrap), (7, 0, wrap),
-           (8, 3, centre), (8, 4, centre))
+           (3, 0, middle), (4, 0, wrap), (5, 0, wrap), (6, 0, wrap), (7, 0, wrap))
     cell_xfs = ""
     for f, fill, align in xfs:
         flags = (' applyFont="1"' if f else "") + (' applyFill="1"' if fill else "")
@@ -177,7 +206,7 @@ def styles() -> bytes:
     return _xml(
         f'<styleSheet xmlns="{MAIN_NS}">'
         f'<fonts count="{len(fonts)}">{"".join(fonts)}</fonts>'
-        f'<fills count="5">{fills}</fills>'
+        f'<fills count="4">{fills}</fills>'
         '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
         '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
         f'<cellXfs count="{len(xfs)}">{cell_xfs}</cellXfs>'
@@ -203,6 +232,7 @@ def home_sheet() -> bytes:
         rows.append(f'<row r="{row}" ht="{height}" customHeight="1">{body}</row>')
     return _xml(
         f'<worksheet xmlns="{MAIN_NS}" xmlns:r="{DOC_REL_NS}">'
+        f'<sheetPr><tabColor rgb="FF{TAB_COLOURS[HOME_SHEET]}"/></sheetPr>'
         '<sheetViews><sheetView showGridLines="0" tabSelected="1" zoomScaleNormal="100" workbookViewId="0">'
         '<pane xSplit="1" ySplit="3" topLeftCell="B4" activePane="bottomRight" state="frozen"/>'
         '<selection pane="topRight" activeCell="B1" sqref="B1"/>'
@@ -219,7 +249,92 @@ def home_sheet() -> bytes:
         f"<sheetData>{''.join(rows)}</sheetData>"
         f"<hyperlinks>{''.join(links)}</hyperlinks>"
         '<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>'
+        '<drawing r:id="rId1"/>'
         "</worksheet>")
+
+
+def _strip_colour(rgb: str) -> str:
+    red, green, blue = (int(rgb[i : i + 2], 16) for i in (0, 2, 4))
+    return DARK_STRIP if 0.2126 * red + 0.7152 * green + 0.0722 * blue < 70 else rgb
+
+
+def _shape(shape_id: int, name: str, x: int, y: int, width: int, height: int, fill: str | None, text: str = "",
+           colour: str = "", bold: bool = False, size: int = 900, link: str = "", tip: str = "",
+           bottom: bool = False, inset: int = 0, spacing: int = 0) -> str:
+    click = ""
+    if link:
+        click = (f'<a:hlinkClick xmlns:r="{DOC_REL_NS}" r:id="{link}"'
+                 f' tooltip="{escape(tip, {chr(34): "&quot;"})}"/>')
+    fill_xml = f'<a:solidFill><a:srgbClr val="{fill}"/></a:solidFill>' if fill else "<a:noFill/>"
+    body = ""
+    if text:
+        run = (f'<a:rPr lang="en-GB" sz="{size}" b="{int(bold)}"{f" spc={chr(34)}{spacing}{chr(34)}" if spacing else ""}>'
+               f'<a:solidFill><a:srgbClr val="{colour}"/></a:solidFill>'
+               f'<a:latin typeface="{FONT}"/><a:cs typeface="{FONT}"/></a:rPr>')
+        body = (f'<xdr:txBody><a:bodyPr vertOverflow="clip" horzOverflow="clip" wrap="none" lIns="{inset * PX}"'
+                f' tIns="0" rIns="0" bIns="{2 * PX if bottom else 0}" rtlCol="0" anchor="{"b" if bottom else "ctr"}"/>'
+                f'<a:lstStyle/><a:p><a:pPr algn="l"/><a:r>{run}<a:t>{escape(text)}</a:t></a:r></a:p></xdr:txBody>')
+    return (f'<xdr:sp macro="" textlink=""><xdr:nvSpPr><xdr:cNvPr id="{shape_id}" name="{escape(name)}">{click}'
+            f'</xdr:cNvPr><xdr:cNvSpPr/></xdr:nvSpPr><xdr:spPr><a:xfrm><a:off x="{x}" y="{y}"/>'
+            f'<a:ext cx="{width}" cy="{height}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
+            f'{fill_xml}<a:ln><a:noFill/></a:ln></xdr:spPr>{body}</xdr:sp>')
+
+
+def _group(name: str, block: NavBlock, current: str, row: int, top: int, links: dict[str, str],
+           ids: Iterator[int]) -> str:
+    """One block of the bar, anchored at the top of `row` (0-based), `top` EMU down the sheet."""
+    x0, y, children = BAR_X * PX, PAD_TOP, []
+    for index, (title, items) in enumerate(block):
+        if index:
+            raise ValueError("a block holds one section")
+        children.append(_shape(next(ids), "Nav_Section_" + title, x0, top + y * PX, BAR_W * PX, HEAD_H * PX, None,
+                               title.upper(), HEAD_COLOUR, True, 700, bottom=True, inset=4, spacing=60))
+        y += HEAD_H
+        for target, tip in items:
+            here = target == current
+            children.append(_shape(next(ids), "Nav_" + target, x0, top + y * PX, BAR_W * PX, BTN_H * PX,
+                                   CURRENT_FILL if here else BUTTON_FILL, target,
+                                   CURRENT_TEXT if here else BUTTON_TEXT, here, 900,
+                                   "" if here else links[target], tip, inset=12))
+            children.append(_shape(next(ids), "Nav_" + target + "_Mark", x0, top + y * PX, STRIP_W * PX,
+                                   BTN_H * PX, CURRENT_STRIP if here else _strip_colour(TAB_COLOURS[target])))
+            y += BTN_H
+    height = (y + PAD_BOTTOM) * PX
+    group = (f'<xdr:grpSp><xdr:nvGrpSpPr><xdr:cNvPr id="{next(ids)}" name="{name}" descr="Sheet navigation"/>'
+             f'<xdr:cNvGrpSpPr/></xdr:nvGrpSpPr><xdr:grpSpPr><a:xfrm><a:off x="{x0}" y="{top}"/>'
+             f'<a:ext cx="{BAR_W * PX}" cy="{height}"/><a:chOff x="{x0}" y="{top}"/>'
+             f'<a:chExt cx="{BAR_W * PX}" cy="{height}"/></a:xfrm></xdr:grpSpPr>{"".join(children)}</xdr:grpSp>')
+    return (f'<xdr:oneCellAnchor><xdr:from><xdr:col>0</xdr:col><xdr:colOff>{x0}</xdr:colOff><xdr:row>{row}</xdr:row>'
+            f'<xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="{BAR_W * PX}" cy="{height}"/>{group}'
+            '<xdr:clientData fPrintsWithSheet="0"/></xdr:oneCellAnchor>')
+
+
+def _nav_links() -> dict[str, str]:
+    """Relationship id of each sheet the Home bar links to."""
+    return {target: f"rId{number}" for number, target in enumerate(
+        [item[0] for block in (NAV_TOP, NAV_REST) for _, items in block for item in items if item[0] != HOME_SHEET], 1)}
+
+
+def drawing() -> bytes:
+    ids = iter(range(2, 1000))
+    links = _nav_links()
+    frozen = round(sum(ROW_HEIGHTS[:FROZEN_ROWS]) * 12700)
+    anchors = (_group(GROUP_TOP, NAV_TOP, HOME_SHEET, 0, 0, links, ids)
+               + _group(GROUP_REST, NAV_REST, HOME_SHEET, FROZEN_ROWS, frozen, links, ids))
+    return _xml('<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"'
+                f' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">{anchors}</xdr:wsDr>')
+
+
+def drawing_relationships() -> bytes:
+    body = "".join(f'<Relationship Id="{rid}" Type="{DOC_REL_NS}/hyperlink" Target="#\'{escape(sheet)}\'!A1"/>'
+                   for sheet, rid in _nav_links().items())
+    return _xml(f'<Relationships xmlns="{PACKAGE_REL_NS}">{body}</Relationships>')
+
+
+def sheet_relationships() -> bytes:
+    return _xml(f'<Relationships xmlns="{PACKAGE_REL_NS}">'
+                f'<Relationship Id="rId1" Type="{DOC_REL_NS}/drawing" Target="../drawings/drawing1.xml"/>'
+                "</Relationships>")
 
 
 def entries(customui: bytes) -> list[tuple[str, bytes]]:
@@ -231,6 +346,9 @@ def entries(customui: bytes) -> list[tuple[str, bytes]]:
         ("xl/_rels/workbook.xml.rels", workbook_relationships()),
         ("xl/styles.xml", styles()),
         ("xl/worksheets/sheet1.xml", home_sheet()),
+        ("xl/worksheets/_rels/sheet1.xml.rels", sheet_relationships()),
+        ("xl/drawings/drawing1.xml", drawing()),
+        ("xl/drawings/_rels/drawing1.xml.rels", drawing_relationships()),
         (CUSTOMUI_PART, customui),
     ]
 

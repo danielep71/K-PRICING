@@ -5,10 +5,14 @@
 for byte). It holds no VBA project and no document properties.
 
 The Home sheet follows the K-SACCR workbook template: Aptos; column A is the
-black navigation column, with **Home** highlighted and a link to **KPR Dates
-Demo**; row 1 is the black band with the gold wordmark, row 2 the blue band
-(`#265A99`) with the sheet title and row 3 the grey subtitle; rows 1 to 3 and
-column A are frozen. Sections in navy (`#1F3864`) hold bold labels in column C
+black navigation column holding the K-SACCR navigation bar, two groups of
+linked shapes: `NavBarTop` in the frozen rows (section **DEMO**, a link to
+**KPR Dates Demo**) and `NavBar` below them (section **START**, **Home**
+highlighted); row 1 is the black band with the gold wordmark, row 2 the blue
+band (`#265A99`) with the sheet title and row 3 the grey subtitle; rows 1 to 3
+and column A are frozen. The demo sheet that `KPR_Demo_BuildDates` adds to
+this workbook has the same column A, frozen rows, title-band heights and bar,
+with **KPR Dates Demo** highlighted and a link to **Home**. Sections in navy (`#1F3864`) hold bold labels in column C
 and wrapped text in column D: what K-PRICING does, how to use it, its sheets
 and the commit it was built from.
 
