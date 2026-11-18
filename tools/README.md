@@ -453,6 +453,30 @@ file is removed. Exit status `0` means success, `1` a validation failure
 reported on stderr, and `2` a usage error. Restore by copying the backup over
 the target.
 
+## Build the workbook
+
+`Build-KPR.cmd` (double-click, or `Build-KPR.cmd Development`) runs
+`Build-KPR.ps1`, the K-PRICING counterpart of K-SACCR's `Sync-SACCR-VBA`: it
+builds the workbook from the **files of the clone** (`-RepoRoot`, the clone the
+script lives in, or the one remembered in `HKCU\Software\K-PRICING\Check`,
+shared with `Check-KPR.ps1`), with no GitHub download and no regression run.
+It reads the checked-out commit with `git` (or from `.git` where git is not
+installed) and marks uncommitted changes on the **Home** sheet. It saves
+`src/workbook/KPR_Template.xlsx` as a macro-enabled workbook in a temporary
+folder of a private Excel, imports the clone's modules with
+`KPR_Dev_ImportModules` (roles `public,internal,ui,example`; `-Mode
+Development` adds `test`), compiles it, writes the commit and builds the demo
+with `KPR_Demo_BuildDates`, then copies it to `<clone>\build` as
+`K-PRICING-<commit8>.xlsm` (`K-PRICING-Development-<commit8>.xlsm`) under a new,
+time-stamped name when that file exists, and reopens it to check that Excel
+loads the Ribbon and its Functions menu (`-NoRibbonCheck` skips this). A
+watchdog closes its Excel after `-TimeoutMinutes` (10). The Excel helpers it
+shares with `Check-KPR.ps1` are copied, since each script must run as one file;
+`test_build_kpr.py` keeps them identical, checks that the roles follow
+`.github/repository-profile.json`, that no loop variable shadows a parameter
+(PowerShell ignores case) and the launcher's arguments. PowerShell is not run in
+CI: the build is exercised on Windows with Excel.
+
 ## One-click Excel check
 
 `Check-KPR.ps1` (or `Check-KPR.cmd`, double-clicked, or the one line for
