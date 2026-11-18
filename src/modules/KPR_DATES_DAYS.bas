@@ -4294,7 +4294,7 @@ Private Function Elem_AddDays( _
 ' DECLARE
 '------------------------------------------------------------------------------
     Dim D               As Date     'Resolved DateIn
-    Dim N               As Long     'Resolved nDays
+    Dim Delta           As Long     'Resolved nDays
     Dim ResultD         As Double    'Shifted serial, gated before conversion
     Dim ErrOut          As Variant   'Element-level error value from a resolver
 
@@ -4310,12 +4310,12 @@ Private Function Elem_AddDays( _
     'Resolve DateIn: unwrap, propagate an incoming error, parse strictly
         If Not TryResolveDate(DateIn, D, ErrOut) Then Elem_AddDays = ErrOut: Exit Function
     'Resolve nDays: unwrap, propagate an incoming error, parse strictly
-        If Not TryResolveLong(nDays, N, ErrOut) Then Elem_AddDays = ErrOut: Exit Function
+        If Not TryResolveLong(nDays, Delta, ErrOut) Then Elem_AddDays = ErrOut: Exit Function
 
 '------------------------------------------------------------------------------
 ' COMPUTE
 '------------------------------------------------------------------------------
-        ResultD = CDbl(D) + CDbl(N)
+        ResultD = CDbl(D) + CDbl(Delta)
         If (ResultD < CDbl(KPR_MIN_DATE)) Or (ResultD > CDbl(KPR_MAX_DATE)) Then
             Elem_AddDays = ErrForCondition(KPR_COND_RESULT_WINDOW): Exit Function
         End If
@@ -4370,7 +4370,7 @@ Private Function Elem_AddWeeks( _
 ' DECLARE
 '------------------------------------------------------------------------------
     Dim D               As Date     'Resolved DateIn
-    Dim N               As Long     'Resolved nWeeks
+    Dim Delta           As Long     'Resolved nWeeks
     Dim ResultD         As Double    'Shifted serial, gated before conversion
     Dim ErrOut          As Variant   'Element-level error value from a resolver
 
@@ -4386,12 +4386,12 @@ Private Function Elem_AddWeeks( _
     'Resolve DateIn: unwrap, propagate an incoming error, parse strictly
         If Not TryResolveDate(DateIn, D, ErrOut) Then Elem_AddWeeks = ErrOut: Exit Function
     'Resolve nWeeks: unwrap, propagate an incoming error, parse strictly
-        If Not TryResolveLong(nWeeks, N, ErrOut) Then Elem_AddWeeks = ErrOut: Exit Function
+        If Not TryResolveLong(nWeeks, Delta, ErrOut) Then Elem_AddWeeks = ErrOut: Exit Function
 
 '------------------------------------------------------------------------------
 ' COMPUTE
 '------------------------------------------------------------------------------
-        ResultD = CDbl(D) + (7# * CDbl(N))
+        ResultD = CDbl(D) + (7# * CDbl(Delta))
         If (ResultD < CDbl(KPR_MIN_DATE)) Or (ResultD > CDbl(KPR_MAX_DATE)) Then
             Elem_AddWeeks = ErrForCondition(KPR_COND_RESULT_WINDOW): Exit Function
         End If
@@ -4447,7 +4447,7 @@ Private Function Elem_AddMonths( _
 ' DECLARE
 '------------------------------------------------------------------------------
     Dim D               As Date     'Resolved DateIn
-    Dim N               As Long     'Resolved nMonths
+    Dim Delta           As Long     'Resolved nMonths
     Dim R               As Date      'Shifted date from the calendar core
     Dim ErrOut          As Variant   'Element-level error value from a resolver
 
@@ -4463,12 +4463,12 @@ Private Function Elem_AddMonths( _
     'Resolve DateIn: unwrap, propagate an incoming error, parse strictly
         If Not TryResolveDate(DateIn, D, ErrOut) Then Elem_AddMonths = ErrOut: Exit Function
     'Resolve nMonths: unwrap, propagate an incoming error, parse strictly
-        If Not TryResolveLong(nMonths, N, ErrOut) Then Elem_AddMonths = ErrOut: Exit Function
+        If Not TryResolveLong(nMonths, Delta, ErrOut) Then Elem_AddMonths = ErrOut: Exit Function
 
 '------------------------------------------------------------------------------
 ' COMPUTE
 '------------------------------------------------------------------------------
-        If Not TryAddMonths(D, N, KeepEOM, R) Then
+        If Not TryAddMonths(D, Delta, KeepEOM, R) Then
             Elem_AddMonths = ErrForCondition(KPR_COND_RESULT_WINDOW): Exit Function
         End If
         Elem_AddMonths = R
@@ -4523,7 +4523,7 @@ Private Function Elem_AddYears( _
 ' DECLARE
 '------------------------------------------------------------------------------
     Dim D               As Date     'Resolved DateIn
-    Dim N               As Long     'Resolved nYears
+    Dim Delta           As Long     'Resolved nYears
     Dim MonthsD         As Double    'Year count as months, range-gated before CLng
     Dim R               As Date      'Shifted date from the calendar core
     Dim ErrOut          As Variant   'Element-level error value from a resolver
@@ -4540,12 +4540,12 @@ Private Function Elem_AddYears( _
     'Resolve DateIn: unwrap, propagate an incoming error, parse strictly
         If Not TryResolveDate(DateIn, D, ErrOut) Then Elem_AddYears = ErrOut: Exit Function
     'Resolve nYears: unwrap, propagate an incoming error, parse strictly
-        If Not TryResolveLong(nYears, N, ErrOut) Then Elem_AddYears = ErrOut: Exit Function
+        If Not TryResolveLong(nYears, Delta, ErrOut) Then Elem_AddYears = ErrOut: Exit Function
 
 '------------------------------------------------------------------------------
 ' COMPUTE
 '------------------------------------------------------------------------------
-        MonthsD = 12# * CDbl(N)
+        MonthsD = 12# * CDbl(Delta)
         If (MonthsD < -2147483648#) Or (MonthsD > 2147483647#) Then
             Elem_AddYears = ErrForCondition(KPR_COND_RESULT_WINDOW): Exit Function
         End If
@@ -4714,7 +4714,7 @@ Private Function Elem_LastWeekdayOfMonth( _
     Dim M               As Long     'Resolved MonthIn
     Dim W               As Long     'Resolved WdIndex
     Dim WkBase          As VbDayOfWeek 'Weekday base selected by the control
-    Dim EOM             As Date      'Last day of the requested month
+    Dim LastDay         As Date      'Last day of the requested month
     Dim Diff            As Long      'Days back from EOM to the weekday
     Dim OutSerial       As Double    'Candidate serial, gated before conversion
     Dim ErrOut          As Variant   'Element-level error value from a resolver
@@ -4745,9 +4745,9 @@ Private Function Elem_LastWeekdayOfMonth( _
 ' COMPUTE
 '------------------------------------------------------------------------------
         If WkMonday Then WkBase = vbMonday Else WkBase = vbSunday
-        EOM = DateSerial(Y, M, DaysInMonth(Y, M))
-        Diff = (Weekday(EOM, WkBase) - W + 7) Mod 7
-        OutSerial = CDbl(EOM) - CDbl(Diff)
+        LastDay = DateSerial(Y, M, DaysInMonth(Y, M))
+        Diff = (Weekday(LastDay, WkBase) - W + 7) Mod 7
+        OutSerial = CDbl(LastDay) - CDbl(Diff)
         If (OutSerial < CDbl(KPR_MIN_DATE)) Or (OutSerial > CDbl(KPR_MAX_DATE)) Then
             Elem_LastWeekdayOfMonth = ErrForCondition(KPR_COND_RESULT_WINDOW): Exit Function
         End If

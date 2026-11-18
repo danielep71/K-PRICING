@@ -54,7 +54,7 @@ Attribute VB_Name = "KPR_Demo_Dates"
 '------------------------------------------------------------------------------
 ' CONSTANTS
 '------------------------------------------------------------------------------
-    Private Const DEMO_SHEET As String = "KPR Dates Demo"
+    Private Const DEMO_SHEET_NAME As String = "KPR Dates Demo"
 
     'Gregorian leap-year test of the year of DateIn
         Private Const LEAP_DATEIN As String = _
@@ -101,7 +101,7 @@ Public Function KPR_Demo_BuildDates(Optional ByVal OutputPath As String = "") As
     Dim LastRef As String   'Reference date of the last weekday
 
     KPR_Demo_BuildDates = False
-    If Not Demo_Begin(DEMO_SHEET, "DATE PRIMITIVES", _
+    If Not Demo_Begin(DEMO_SHEET_NAME, "DATE PRIMITIVES", _
                       "Calendar-day date functions beside native Excel. Edit the orange cells.", _
                       OutputPath) Then Exit Function
     On Error GoTo Fail

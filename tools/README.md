@@ -512,7 +512,8 @@ runs the #52 caller-context probe (`KPR_Tests_RunCallerProbe`, written to
 trip (every component of the commit's `.github/repository-profile.json`
 exported from the workbook that holds it into `exports\` and compared exactly
 with the committed file, CRLF and LF alike, the rule of `kpr.py round-trip`,
-in `round-trip.txt`), and writes `certification\kpr-test-evidence.json`: run
+except the `VB_Description` and `VB_ProcData` attribute lines that
+`Application.MacroOptions` makes Excel add, in `round-trip.txt`), and writes `certification\kpr-test-evidence.json`: run
 1's record with `source_import`, `vba_compile`, `ribbonx` and
 `source_round_trip` filled in from those observations. Only a
 404 for the template selects the earlier empty-`KPR.xlam` check. It adds

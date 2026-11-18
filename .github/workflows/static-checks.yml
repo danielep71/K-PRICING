@@ -206,6 +206,7 @@ jobs:
           python3 tools/test_workbook_template.py -v
           python3 tools/workbook_template.py --check
           python3 tools/test_build_kpr.py -v
+          python3 tools/test_vba_round_trip.py -v
 
       # Offline: a frozen snapshot only. The live comparison with GitHub issues
       # runs in milestone-register.yml, never in this deterministic gate.
@@ -586,6 +587,7 @@ jobs:
           tools/test_workbook_template.py
           tools/workbook_template.py --check
           tools/test_build_kpr.py
+          tools/test_vba_round_trip.py
           tools/test_milestone_register.py
           tools/check_documentation.py --root .
           tools/check_release_semantics.py --root . --self-test

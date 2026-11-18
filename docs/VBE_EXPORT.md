@@ -66,6 +66,19 @@ this document alone does not establish that every rule is already enforced:
 > These attributes are invisible in the editor but survive export, creating a
 > second description mechanism that can silently disagree with the manifest.
 
+> [!NOTE]
+> `Application.MacroOptions` itself makes Excel add these two attributes to
+> the exported module of every registered function, so an export taken after
+> the registration procedures ran carries them although the source does not.
+> `tools/Check-KPR.ps1` drops exactly those lines from the export before the
+> comparison; a source that carries them still differs. When exporting by
+> hand, export before registering or delete those lines.
+>
+> The VBE also conforms the case of identifiers that differ only by case
+> (`N` and `n`, `EOM` and a library's `Eom`), which makes an export differ
+> from the source. `tools/test_vba_round_trip.py` fails when the source spells
+> one identifier two ways.
+
 ### 🔤 Encoding and line endings
 
 Encoding and line endings follow `.gitattributes` and `.editorconfig`:

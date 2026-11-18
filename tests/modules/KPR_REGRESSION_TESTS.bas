@@ -2636,7 +2636,7 @@ Public Sub KPR_Tests_RunDemo()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const DEMO_SHEET    As String = "KPR Dates Demo"    'Sheet name the demo asks for
+    Const DEMO_SHEET_NAME    As String = "KPR Dates Demo"    'Sheet name the demo asks for
     Const DEMO_CHECKS   As Long = 57                    'Status cells with dynamic arrays
     Const DEMO_DIFFERS  As Long = 1                     'Documented differences at the defaults
     Const MARKER        As String = "kpr-demo-marker"   'Content of the scratch sheet
@@ -2757,7 +2757,7 @@ Public Sub KPR_Tests_RunDemo()
     Else
         PrintA = DemoFingerprint(WbA)
         PrintB = DemoFingerprint(WbB)
-        CheckDemo "demo/sheets", DemoSheetList(WbA) = DEMO_SHEET, "sheets were " & DemoSheetList(WbA)
+        CheckDemo "demo/sheets", DemoSheetList(WbA) = DEMO_SHEET_NAME, "sheets were " & DemoSheetList(WbA)
         CheckDemo "demo/deterministic", PrintA = PrintB, DemoFirstDifference(PrintA, PrintB)
         CheckDemo "demo/check count", DemoCount(WbA.Worksheets(1), "Demo_Checks") = DEMO_CHECKS, _
                   "expected " & CStr(DEMO_CHECKS) & " status cells, found " & _
@@ -2790,9 +2790,9 @@ Public Sub KPR_Tests_RunDemo()
     CheckDemo "demo/host adds one sheet", Scratch.Sheets.Count = 2, _
               "the workbook has " & CStr(Scratch.Sheets.Count) & " sheet(s)"
     If Scratch.Sheets.Count >= 2 Then
-        CheckDemo "demo/host sheet name", Scratch.Sheets(2).Name = DEMO_SHEET, "sheet was " & Scratch.Sheets(2).Name
+        CheckDemo "demo/host sheet name", Scratch.Sheets(2).Name = DEMO_SHEET_NAME, "sheet was " & Scratch.Sheets(2).Name
         CheckDemo "demo/host sheet shown", RegistrationActiveBook() = Scratch.Name And _
-                  RegistrationActiveSheet() = DEMO_SHEET, "the demo sheet is not active"
+                  RegistrationActiveSheet() = DEMO_SHEET_NAME, "the demo sheet is not active"
         CheckDemo "demo/host no failing row", Len(DemoFailingRows(Scratch.Sheets(2))) = 0, _
                   DemoFailingRows(Scratch.Sheets(2))
         CheckDemo "demo/host fail count", DemoCount(Scratch.Sheets(2), "Demo_Fails") = 0, _
@@ -2804,7 +2804,7 @@ Public Sub KPR_Tests_RunDemo()
     CheckDemo "demo/host second sheet", Scratch.Sheets.Count = 3, _
               "the workbook has " & CStr(Scratch.Sheets.Count) & " sheet(s)"
     If Scratch.Sheets.Count >= 3 Then
-        CheckDemo "demo/host second name", Scratch.Sheets(3).Name = DEMO_SHEET & " (2)", _
+        CheckDemo "demo/host second name", Scratch.Sheets(3).Name = DEMO_SHEET_NAME & " (2)", _
                   "sheet was " & Scratch.Sheets(3).Name
         CheckDemo "demo/host first demo unchanged", DemoSheetPrint(Scratch.Sheets(2)) = PrintFirst, _
                   "the first demo sheet changed"
@@ -2832,7 +2832,7 @@ Public Sub KPR_Tests_RunDemo()
               "expected one new workbook, found " & CStr(Workbooks.Count - Books)
     If Workbooks.Count = Books + 1 And Not ActiveWorkbook Is Old1904 Then
         Set Fallback = ActiveWorkbook
-        CheckDemo "demo/1904 demo sheet", RegistrationActiveSheet() = DEMO_SHEET, _
+        CheckDemo "demo/1904 demo sheet", RegistrationActiveSheet() = DEMO_SHEET_NAME, _
                   "active sheet was " & RegistrationActiveSheet()
         CheckDemo "demo/1904 no failing row", Len(DemoFailingRows(Fallback.Worksheets(1))) = 0, _
                   DemoFailingRows(Fallback.Worksheets(1))
