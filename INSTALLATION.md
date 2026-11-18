@@ -375,7 +375,8 @@ you have checked out, with no GitHub download. In about a minute it:
 1. finds the clone (the one it lives in, `-RepoRoot`, or the one remembered by
    an earlier run of it or of `Check-KPR.ps1`), and reads the commit it has
    checked out; a clone with uncommitted changes is built as it is and the
-   **Home** sheet says so;
+   **Home** sheet says so (without git installed it reads the commit from
+   `.git` and the sheet says the working tree was not checked);
 2. starts its own Excel, checks *Trust access to the VBA project object model*
    (it asks before turning it on, as the check does) and saves
    `src/workbook/KPR_Template.xlsx` as a macro-enabled workbook in a temporary

@@ -26,7 +26,8 @@ both). Double-click tools\Build-KPR.cmd, or run this script. It:
 7. opens it again, once no macro runs, and checks that Excel loads its
    K-PRICING tab and builds the Functions menu (-NoRibbonCheck skips this).
 The clone is only read. A clone with uncommitted changes is built as it is and
-the Home sheet says so.
+the Home sheet says so; where git is not installed the commit is read from
+.git and the Home sheet says the working tree was not checked.
 .PARAMETER Mode
 Production (default) or Development.
 .PARAMETER RepoRoot
@@ -250,20 +251,21 @@ function Resolve-Clone {
 }
 
 function Get-CloneCommit {
-    # The commit the clone has checked out, and whether it has uncommitted
-    # changes. git when it is installed, else the files of .git; the commit is
-    # empty when neither answers.
+    # The commit the clone has checked out, and the state of its working tree:
+    # clean, modified, or unknown. git answers both; without git the files of
+    # .git give the commit but cannot say whether any file was changed, so the
+    # state is unknown. The commit is empty when neither answers.
     param([string]$Root)
     $ErrorActionPreference = "Continue"
     $sha = ""
-    $dirty = $false
+    $state = "unknown"
     $git = Get-Command git.exe -ErrorAction SilentlyContinue
     if ($null -ne $git) {
         $head = (& $git.Source -C $Root rev-parse HEAD 2>$null | Out-String).Trim()
         if ($head -match '^[0-9a-f]{40}$') {
             $sha = $head
             $status = (& $git.Source -C $Root status --porcelain 2>$null | Out-String).Trim()
-            $dirty = ($status.Length -gt 0)
+            $state = $(if ($LASTEXITCODE -ne 0) { "unknown" } elseif ($status.Length -gt 0) { "modified" } else { "clean" })
         }
     }
     if ($sha.Length -eq 0) {
@@ -293,7 +295,7 @@ function Get-CloneCommit {
             }
         }
     }
-    return @{ Sha = $sha; Dirty = $dirty }
+    return @{ Sha = $sha; State = $state }
 }
 
 function Write-Loader {
@@ -325,8 +327,11 @@ try {
     $commit = Get-CloneCommit -Root $root
     $outDir = Join-Path $root "build"
     $label = $(if ($commit.Sha.Length -gt 0) { $commit.Sha } else { "unknown (neither git nor .git could name the commit)" })
-    if ($commit.Dirty) {
+    if ($commit.State -eq "modified") {
         $label = $label + " + uncommitted changes"
+    }
+    elseif ($commit.State -eq "unknown" -and $commit.Sha.Length -gt 0) {
+        $label = $label + " (working tree not checked: git was not found)"
     }
     $short = $(if ($commit.Sha.Length -gt 0) { $commit.Sha.Substring(0, 8) } else { "unknown" })
     Say "Clone: $root"

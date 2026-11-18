@@ -86,6 +86,13 @@ class BuildScriptTests(unittest.TestCase):
         self.assertNotIn("raw.githubusercontent.com", BUILD)
         self.assertNotIn("api.github.com", BUILD)
 
+    def test_working_tree_state_is_unknown_without_git(self) -> None:
+        block = function_block(BUILD, "Get-CloneCommit")
+        self.assertIn('$state = "unknown"', block)
+        self.assertNotIn("$dirty", block)
+        self.assertIn("State = $state", block)
+        self.assertIn("working tree not checked: git was not found", BUILD)
+
     def test_launcher_runs_the_script_with_the_clone_and_both_modes(self) -> None:
         self.assertIn('set "SCRIPT=%~dp0Build-KPR.ps1"', LAUNCHER)
         self.assertIn('-File "%SCRIPT%" -Mode "%MODE%" -RepoRoot "%REPO_ROOT%" -NoPause', LAUNCHER)

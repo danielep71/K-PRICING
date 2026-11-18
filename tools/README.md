@@ -461,7 +461,8 @@ builds the workbook from the **files of the clone** (`-RepoRoot`, the clone the
 script lives in, or the one remembered in `HKCU\Software\K-PRICING\Check`,
 shared with `Check-KPR.ps1`), with no GitHub download and no regression run.
 It reads the checked-out commit with `git` (or from `.git` where git is not
-installed) and marks uncommitted changes on the **Home** sheet. It saves
+installed) and marks uncommitted changes on the **Home** sheet; without git the
+state of the working tree is unknown and the sheet says it was not checked. It saves
 `src/workbook/KPR_Template.xlsx` as a macro-enabled workbook in a temporary
 folder of a private Excel, imports the clone's modules with
 `KPR_Dev_ImportModules` (roles `public,internal,ui,example`; `-Mode
