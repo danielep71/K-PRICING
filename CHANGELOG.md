@@ -63,4 +63,19 @@ Use only the categories an entry needs.
 
 ## [Unreleased]
 
+### Added
+
+- The date-layer methodology, ahead of its code: how the arguments of the 22
+  `KPR_Dates_*` worksheet functions are read and which Excel error each
+  rejection returns, with a stable condition identifier
+  ([data contract](docs/methodology/DATA_CONTRACT.md#function-arguments)); the
+  calculation contracts `CALC-02` to `CALC-10`, with the host, array and
+  tolerance rules they share
+  ([calculation contracts](docs/methodology/CALCULATION_CONTRACTS.md#date-layer-contracts));
+  their sources; and the cases, relation tests and Excel host checks that
+  will validate them
+  ([validation plan](docs/methodology/VALIDATION_PLAN.md#date-layer-coverage)).
+  No function exists yet and nothing was run in Excel
+  ([#4](https://github.com/danielep71/K-PRICING/issues/4)).
+
 [Unreleased]: https://github.com/danielep71/K-PRICING/commits/main

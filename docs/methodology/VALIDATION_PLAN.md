@@ -43,6 +43,15 @@ its derivation and its tolerance
 | Calculation | Reference values | Evidence | Status |
 | --- | --- | --- | --- |
 | *Illustrative:* `CALC-01` | `illustrative` cross-checks only: two `nominal` cases, a JSON fixture and a file-based case, whose total of two synthetic notional amounts a derivation script computes; empty input and invalid input rejected are still to cover; no `published` or `independent` value yet | Evidence record per release candidate | Not implemented |
+| `CALC-02` Day of week | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
+| `CALC-03` Month and year lengths | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
+| `CALC-04` Period boundaries | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
+| `CALC-05` Period-end tests | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
+| `CALC-06` Date shifts | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
+| `CALC-07` Weekday locators | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
+| `CALC-08` Date from pillar | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11); no external implementation defines pillars ([open decisions](#open-decisions)) | Evidence record per release candidate | Not implemented |
+| `CALC-09` Pillar from dates | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11); no external implementation defines pillars ([open decisions](#open-decisions)) | Evidence record per release candidate | Not implemented |
+| `CALC-10` Host date system | None: Excel host checks only ([host behaviour](#host-behaviour)) | Evidence record per release candidate | Not implemented |
 
 The *Status* of a calculation is the least advanced
 [traceability](#traceability) status of its rules: *Validated* only when every
@@ -64,6 +73,54 @@ Cover with VBA tests, which add no category
 
 A relation test or the end-to-end case runner of the
 [harness guide](TEST_HARNESS.md) can check either.
+
+<a id="date-layer-coverage"></a>
+
+### Date-layer coverage
+
+The cases of the 22 `KPR_Dates_*` functions ([#11](https://github.com/danielep71/K-PRICING/issues/11)) cover each contract
+with the [case categories](TEST_CASES.md#categories):
+
+| Category | Covers, for the date layer |
+| --- | --- |
+| `nominal` | Dates across the window and in every month, quarter and weekday; leap and common years; both weekday bases; `Opt_KeepEOM` both ways; every `Opt_Rounding` mode; every pillar unit, alias and order |
+| `boundary` | The window's edges: 1900-03-01, 9999-12-31, serial 61, and one day beyond each; 1900-02-28 and `1900-02-29` as text; leap days in 2000, 1900 and 2100; month ends of 28, 29, 30 and 31 days; quarter and year ends; shifts whose result lands on an edge and one day past it; `CALC-04` step 4 in 1900; fifth weekdays present and absent; `CALC-07` results in early 1900; pillar intervals of 6 and 7 days and of 24 to 27 days, a 31 January start, and the last fortnight of 9999; whole numbers at `1E-9` from an integer and just beyond, and at the edges of `Long` |
+| `invalid` | Every [condition](DATA_CONTRACT.md#conditions) of every argument a function takes, each with at least one case, as a fixture where JSON can express the input, otherwise as a VBA test |
+
+Inputs that JSON cannot express are VBA tests, run by the harness
+([#13](https://github.com/danielep71/K-PRICING/issues/13)): a VBA `Date`, `Empty`, `Null`, an Excel error, an object, a
+Range of several areas, a jagged or empty array, a `Decimal`, and the
+100,000 and 100,001 element results. So are the array rules of
+[arrays and evaluation](CALCULATION_CONTRACTS.md#arrays-and-evaluation): a
+kept shape, a scalar repeated over an array, a one-dimensional array read as a
+row, `SHAPE_MISMATCH`, an element-level error beside valid neighbours, the
+first failing argument at a position, and the order of evaluation.
+
+[Relation tests](TEST_HARNESS.md#relation-tests) check properties, each with
+its corruption check, over the dates whose inputs and intermediate results
+all stay in the window. Each relation holds only there: `BeginOfYear` of a
+1900 date, `BeginOfQuarter` of a date in the first quarter of 1900, `d + 7`
+beyond 9999-12-31 and a shift that leaves the window return their documented
+error (`CALC-04` step 4, `RESULT_WINDOW`, `DATE_WINDOW`), and those edges are
+`boundary` cases that expect that error, not relation tests:
+
+- `DayOfWeek(d + 7) = DayOfWeek(d)`;
+- `BeginOfMonth(d) ≤ d ≤ EndOfMonth(d)`, and the same for quarters and years;
+- `IsMonthEnd(EndOfMonth(d))`, `IsQuarterEnd(EndOfQuarter(d))` and
+  `IsYearEnd(EndOfYear(d))` are `TRUE`;
+- `DaysInMonth(d) = EndOfMonth(d) − BeginOfMonth(d) + 1`, and
+  `DaysInYear(y) = 365 + IsLeapYear(y)`, counting `TRUE` as 1;
+- `AddWeeks(d, n) = AddDays(d, 7n)` and `AddYears(d, n) = AddMonths(d, 12n)`,
+  with the same `Opt_KeepEOM`;
+- `DateFromPillar(s, PillarFromDates(s, e)) = e` when `e` is an exact anchor
+  of `s`, and never assumed otherwise (`CALC-09`).
+
+The host checks run in Excel only, as probes that record the
+[host behaviour](#host-behaviour) entries `HB-08` to `HB-14`: a worksheet
+caller in a 1900 and in a 1904 workbook, a call from VBA, from
+`Application.Run` and from the Immediate window, the contexts that give a
+caller that is not a Range, the recalculation of `KPR_Dates_HostDateSystem`,
+and a multi-cell result spilled by dynamic-array Excel.
 
 ## Traceability
 
@@ -171,6 +228,13 @@ whether it was measured:
 | `HB-05` | The project that `tools/devbuild/vba_project.py` writes holds no compiled code (`_VBA_PROJECT` version `0xFFFF`, no performance cache), so Excel reads it from source and compiles each module when it is first used: the code that runs is the source the build wrote, and no Trust access to the VBA project object model is needed | `assumed` | By hand: open a development build in Excel, check that `? TEST_Harness.LastResult` runs in the Immediate window, which compiles that module on its first use, then check that **Debug → Compile VBAProject**, which compiles the other modules, completes | — | — | Not measured by a probe of its own. `tools/devbuild/build_workbook.py` relies on it, and so does the identity by rebuild of `tools/check_excel_run.py`, which proves that the workbook Excel ran holds the source of the commit, not that Excel compiled it | — |
 | `HB-06` | **End** in an error dialog, or **Run → Reset** in the VBE, resets the project and clears every module-level variable, so the harness's active run and recovery flag are lost and the stop is not detected | `assumed` | By hand: set a breakpoint on the line `TEST_Harness.BeginCase "text-exact"` of `TEST_Examples.CaseExactText`, type `TEST_Examples.RunExampleTests "<fixtures>"` with the full path of `tests/fixtures/` in the Immediate window, and when the run pauses there, choose **Run → Reset**; then check that `? TEST_Harness.LastResult` is empty and that the next run is not refused | — | — | Not measured. The harness guides tell you to check Excel's state by hand after such a stop | — |
 | `HB-07` | The Immediate window keeps only its last 200 lines | `assumed` | By hand: print 250 numbered lines with `Debug.Print`, then check that the first line left is line 51 | — | — | Not measured. The installation guide tells you to save the whole log with `TEST_Harness.SaveLog` | — |
+| `HB-08` | In a worksheet formula, `Application.Caller` is the calling Range, and its `Parent.Parent` is the workbook that holds the formula, even when another workbook is active | `assumed` | A probe of [#13](https://github.com/danielep71/K-PRICING/issues/13): a formula calling a test UDF in two open workbooks, the other one active | — | — | Not measured here. The [host rule](CALCULATION_CONTRACTS.md#host-and-date-system) relies on it ([SRC-05](SOURCES.md#register)) | — |
+| `HB-09` | `Workbook.Date1904` reads that workbook's date system, and the 1904 system numbers the same day 1,462 lower | `assumed` | A probe of [#13](https://github.com/danielep71/K-PRICING/issues/13): the same date entered in a 1900 and in a 1904 workbook, and `Date1904` of each read through the caller | — | — | Not measured here ([SRC-03](SOURCES.md#register), [SRC-06](SOURCES.md#register)) | — |
+| `HB-10` | Called from VBA, from the Immediate window or through `Application.Run`, `Application.Caller` is not a Range, and reading it raises no error | `assumed` | A probe of [#13](https://github.com/danielep71/K-PRICING/issues/13) that records the caller's `TypeName` in each context | — | — | Not measured here. The [host rule](CALCULATION_CONTRACTS.md#host-and-date-system) treats each as no worksheet host | — |
+| `HB-11` | A macro attached to a shape, data validation, a chart series and a defined name give a caller that is not a Range: text, an error or another form | `assumed` | By hand: call a probe UDF from each context and record the caller's `TypeName` | — | — | Not measured here. These contexts are not supported | — |
+| `HB-12` | A function that calls `Application.Volatile True` is evaluated again by an ordinary recalculation, F9, after the workbook's date system changes, without a full rebuild | `assumed` | By hand: enter `=KPR_Dates_HostDateSystem()`, switch the workbook to the 1904 date system, press F9, and read the cell | — | — | Not measured here ([SRC-07](SOURCES.md#register)) | — |
+| `HB-13` | Excel's 1900 date system and VBA's `Date` name the same day from serial 61, 1900-03-01, on; below it they differ by one day, and Excel's serial 60 is 1900-02-29 | `assumed` | A probe of [#13](https://github.com/danielep71/K-PRICING/issues/13): `CDbl(DateSerial(1900, 3, 1))` in VBA against `DATE(1900,3,1)` and the serials 59 to 61 in a cell | — | — | Not measured here ([SRC-04](SOURCES.md#register), [SRC-11](SOURCES.md#register)). The supported window starts at 1900-03-01 because of it | — |
+| `HB-14` | In dynamic-array Excel, a two-dimensional `Variant` array returned by a worksheet function spills into the cells beside its formula, and a blocked spill shows `#SPILL!` | `assumed` | By hand: enter `=KPR_Dates_EndOfMonth(A1:A3)` with free cells below, then with one blocked | — | — | Not measured here ([SRC-10](SOURCES.md#register)) | — |
 
 - **Status:** `measured` when a probe ran on the named host and its output is
   kept; `assumed` otherwise.
@@ -191,4 +255,7 @@ measured.
 
 | Decision | Options | Issue |
 | --- | --- | --- |
-| *Illustrative:* where the reference values that validate `CALC-01` come from | A worked example of a registered source (`published`); an external implementation by another author (`independent`, `IMPL-`) | Link |
+| Where the values that validate `CALC-02` to `CALC-07` come from | Excel's own functions, such as `WEEKDAY`, `EOMONTH` and `EDATE`, as an independent implementation (`IMPL-`); Python's `datetime`, by another author, as a second one; worked examples printed in a registered source (`published`) | [#14](https://github.com/danielep71/K-PRICING/issues/14) |
+| How `CALC-08` and `CALC-09`, whose rules no external implementation defines, can reach *Validated* | Accept them as *Exercised* with `illustrative` values and list them as not validated in the release certification; register an external implementation of the same grammar, if one is found | [#12](https://github.com/danielep71/K-PRICING/issues/12) |
+| How a traceability row cites a rule whose source is `Decision (#4)`, since the check accepts only an `SRC-` ID | Register each methodology guide's decisions as a source; let the check accept a decision reference | [#11](https://github.com/danielep71/K-PRICING/issues/11) |
+| How a case expresses a date result, a Boolean and an Excel error in the case format, whose numbers carry a currency, `1` or `years` as unit | Dates as ISO text outputs and errors as `_status` texts holding the condition; a new unit for dates and whole numbers in the format | [#11](https://github.com/danielep71/K-PRICING/issues/11) |
