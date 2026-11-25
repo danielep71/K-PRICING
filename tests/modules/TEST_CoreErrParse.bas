@@ -53,7 +53,7 @@ Option Private Module
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "core-err-parse"    'Suite name in the run log
     Private Const EXPECTED_CASES        As Long = 11                  'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 455                 'Assertions a complete run evaluates
+    Private Const EXPECTED_ASSERTIONS   As Long = 467                 'Assertions a complete run evaluates
 
     'The native error numbers that the Conditions table lists
     Private Const ERROR_VALUE_CODE      As Long = 2015                  '#VALUE!
@@ -83,7 +83,7 @@ Public Sub RunCoreErrParseTests()
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends
 '   with RESULT=PASS; suite=core-err-parse; operation=PASS; completeness=COMPLETE;
-'   cases=11; assertions=455; failures=0; cleanup=PASS; recovery=NONE
+'   cases=11; assertions=467; failures=0; cleanup=PASS; recovery=NONE
 '
 ' WHY THIS EXISTS
 '   One entry point runs the suite and reports it through the harness, so that a run
@@ -411,7 +411,7 @@ Private Sub CaseDateAccepted()
 '                           CHECK THE ACCEPTED DATES
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Dates in every accepted form give their date-only serial. 45 assertions.
+'   Dates in every accepted form give their date-only serial. 48 assertions.
 '
 ' WHY THIS EXISTS
 '   Part of the evidence that the date layer reads its arguments as the data contract says
@@ -443,6 +443,7 @@ Private Sub CaseDateAccepted()
 ' DECLARE
 '------------------------------------------------------------------------------
     Dim WithTime      As Variant  'A date with a time of day
+    Dim BelowNextDay   As Variant  'A Decimal serial 1E-14 below 46388
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -468,6 +469,9 @@ Private Sub CaseDateAccepted()
         CheckDate "currency", CCur(46387), 46387#, cdNone
         CheckDate "byte", CByte(100), 100#, cdNone
         CheckDate "decimal", CDec(46387.25), 46387#, cdNone
+    'A Decimal a hair below the next day keeps the day before; a Double conversion would not
+        BelowNextDay = CDec(46388) - CDec(1) / CDec(100000000000000#)
+        CheckDate "decimal-below-next-day", BelowNextDay, 46387#, cdNone
     'Exact ISO text, with the edges of the window and leap days
         CheckDate "iso-text", "2026-12-31", 46387#, cdNone
         CheckDate "iso-leap-day", "2024-02-29", 45351#, cdNone
@@ -672,7 +676,7 @@ Private Sub CaseDateWindow()
 '                            CHECK THE DATE WINDOW
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Dates outside 1900-03-01 to 9999-12-31 are rejected, and the edges are accepted. 42 assertions.
+'   Dates outside 1900-03-01 to 9999-12-31 are rejected, and the edges are accepted. 45 assertions.
 '
 ' WHY THIS EXISTS
 '   Part of the evidence that the date layer reads its arguments as the data contract says
@@ -701,6 +705,11 @@ Private Sub CaseDateWindow()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim BelowMin      As Variant  'A Decimal serial 1E-14 below 61
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -726,6 +735,9 @@ Private Sub CaseDateWindow()
         CheckDate "text-year-50", "0050-01-01", 0#, cdDateWindow
         CheckDate "text-1900-02-28", "1900-02-28", 0#, cdDateWindow
         CheckDate "text-1900-01-01", "1900-01-01", 0#, cdDateWindow
+    'A Decimal a hair below serial 61 floors to 60, outside the window
+        BelowMin = CDec(61) - CDec(1) / CDec(100000000000000#)
+        CheckDate "decimal-below-min", BelowMin, 0#, cdDateWindow
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -838,7 +850,7 @@ Private Sub CaseLongRejected()
 '                         CHECK THE REJECTED INTEGERS
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   A fraction, a value outside Long, a rejected type and a blank each have their own condition. 54 assertions.
+'   A fraction, a value outside Long, a rejected type and a blank each have their own condition. 60 assertions.
 '
 ' WHY THIS EXISTS
 '   Part of the evidence that the date layer reads its arguments as the data contract says
@@ -871,6 +883,8 @@ Private Sub CaseLongRejected()
 '------------------------------------------------------------------------------
     Dim Item             As Collection   'An object, which is never an integer
     Dim DecimalOutside   As Variant      'A Decimal 1E-8 above 3
+    Dim DecimalAboveMax  As Variant      'A Decimal 1E-10 above the largest Long
+    Dim DecimalBelowMin  As Variant      'A Decimal 1E-10 below the smallest Long
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -886,6 +900,8 @@ Private Sub CaseLongRejected()
     'An object and a Decimal just outside the tolerance
         Set Item = New Collection
         DecimalOutside = CDec(3) + CDec(1) / CDec(100000000)
+        DecimalAboveMax = CDec(2147483647) + CDec(1) / CDec(10000000000#)
+        DecimalBelowMin = CDec(-2147483648#) - CDec(1) / CDec(10000000000#)
     'A real fraction is never truncated or rounded, and the range is tested first
         CheckLong "fraction-half", 2.5, 0, cdIntegerFraction
         CheckLong "fraction-small", 3.00000001, 0, cdIntegerFraction
@@ -896,6 +912,8 @@ Private Sub CaseLongRejected()
         CheckLong "range-below-min", -2147483649#, 0, cdIntegerRange
         CheckLong "range-over-max-with-fraction", 2147483647.5, 0, cdIntegerRange
         CheckLong "range-below-min-with-fraction", -2147483648.5, 0, cdIntegerRange
+        CheckLong "range-decimal-above-max", DecimalAboveMax, 0, cdIntegerRange
+        CheckLong "range-decimal-below-min", DecimalBelowMin, 0, cdIntegerRange
         CheckLong "range-huge", (10000000000# * 10000000000#), 0, cdIntegerRange
         CheckLong "type-boolean", True, 0, cdIntegerTypeRejected
         CheckLong "type-date", DateSerial(2026, 1, 5), 0, cdIntegerTypeRejected

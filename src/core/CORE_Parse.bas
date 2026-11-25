@@ -156,7 +156,8 @@ Public Function TryParseDateScalar( _
 '     serial written as text is never silently reinterpreted.
 '   - A native Date or numeric serial has its time component removed by flooring
 '     the serial, then the supported window is applied to the resulting
-'     date-only value.
+'     date-only value. A Decimal is floored in Decimal precision before it is
+'     converted, so that a serial just below a whole day is not rounded up.
 '   - No locale-sensitive text conversion is used. IsDate, DateValue, CVDate and
 '     IsNumeric do not appear; CDate is reached only after a numeric serial has
 '     been normalized and window-validated.
@@ -181,7 +182,7 @@ Public Function TryParseDateScalar( _
 '   - The window bounds are this module's own public constants
 '
 ' UPDATED
-'   2026-09-28
+'   2026-11-25
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
@@ -231,8 +232,13 @@ Public Function TryParseDateScalar( _
                 If Not TryClassifyDateText(S, Serial, Condition) Then Exit Function
 
             'Native numeric serial => remove the time component
-            Case vbInteger, vbLong, vbSingle, vbDouble, vbCurrency, vbDecimal, vbByte
+            Case vbInteger, vbLong, vbSingle, vbDouble, vbCurrency, vbByte
                 Serial = FloorSerial(VBA.CDbl(ScalarIn))
+
+            'A Decimal is floored in its own precision: a Double conversion could round
+            'a serial a hair below a whole day up to it, moving the date by one day
+            Case vbDecimal
+                Serial = VBA.CDbl(VBA.Int(VBA.CDec(ScalarIn)))
 
             'LongLong is a native numeric subtype on VBA7. The test lives inside
             'the Case body rather than as its own Case, so the conditional
@@ -503,9 +509,10 @@ Public Function TryParseLongScalar( _
 '   Condition  (ByRef)   always assigned
 '
 ' BEHAVIOR
-'   - Range is tested BEFORE integrality, per the data contract: a value
-'     outside the Long range returns INTEGER_RANGE and #NUM! even when it also
-'     has a fractional part.
+'   - Range is tested BEFORE integrality, per the data contract: a value outside
+'     the Long range returns INTEGER_RANGE and #NUM! even when it also has a
+'     fractional part. A Decimal is compared in its own precision, so that a
+'     value just outside the range is not rounded onto its bound.
 '   - The nearest integer is Int(X + 0.5); a value within the tolerance is
 '     never near a half, so no tie rule is involved. CLng is reached only on
 '     that whole number, so its round-half-to-even behaviour is never
@@ -524,7 +531,7 @@ Public Function TryParseLongScalar( _
 '     rule that numeric-looking text is never reinterpreted.
 '
 ' UPDATED
-'   2026-09-28
+'   2026-11-25
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
@@ -585,8 +592,16 @@ Public Function TryParseLongScalar( _
 '------------------------------------------------------------------------------
 ' VALIDATE RANGE THEN INTEGRALITY
 '------------------------------------------------------------------------------
-    'Range precedes integrality when both apply (data contract, Integer values)
-        If (X < LONG_MIN_VALUE) Or (X > LONG_MAX_VALUE) Then
+    'Range precedes integrality when both apply (data contract, Integer values). A
+    'Decimal is compared in its own precision: a Double conversion could round a
+    'value just outside the range onto its bound
+        If VT = vbDecimal Then
+            DecIn = VBA.CDec(ScalarIn)
+            If (DecIn < VBA.CDec(LONG_MIN_VALUE)) Or (DecIn > VBA.CDec(LONG_MAX_VALUE)) Then
+                Condition = cdIntegerRange
+                Exit Function
+            End If
+        ElseIf (X < LONG_MIN_VALUE) Or (X > LONG_MAX_VALUE) Then
             Condition = cdIntegerRange
             Exit Function
         End If
@@ -597,7 +612,6 @@ Public Function TryParseLongScalar( _
     'in Decimal; converting first could push a value just inside the
     'tolerance outside it.
         If VT = vbDecimal Then
-            DecIn = VBA.CDec(ScalarIn)
             DecNearest = VBA.Int(DecIn + VBA.CDec(0.5))
             If VBA.Abs(DecIn - DecNearest) > VBA.CDec(1) / VBA.CDec(1000000000) Then
                 Condition = cdIntegerFraction

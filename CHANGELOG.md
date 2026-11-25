@@ -83,10 +83,10 @@ Use only the categories an entry needs.
   raised error `ERR_UNMAPPED_CONDITION`, the supported date window, and the
   strict parsers of dates, whole numbers, Boolean controls and `Opt_Rounding`.
   They use no Excel object model and are not supported API. A VBA suite,
-  `TEST_CoreErrParse` (455 assertions), and a Python test that keeps the code
+  `TEST_CoreErrParse` (467 assertions), and a Python test that keeps the code
   equal to the data contract check them. Only the static checks and, as an early
-  warning that is not Excel evidence, a LibreOffice run were done: 452 of the
-  455 assertions passed, and the three that failed need a `Decimal`, which
+  warning that is not Excel evidence, a LibreOffice run were done: 457 of the
+  467 assertions passed, and the ten that failed need a `Decimal`, which
   LibreOffice lacks. Nothing was run in Excel
   ([#5](https://github.com/danielep71/K-PRICING/issues/5)).
 
