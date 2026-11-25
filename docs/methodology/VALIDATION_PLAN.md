@@ -43,14 +43,14 @@ its derivation and its tolerance
 | Calculation | Reference values | Evidence | Status |
 | --- | --- | --- | --- |
 | *Illustrative:* `CALC-01` | `illustrative` cross-checks only: two `nominal` cases, a JSON fixture and a file-based case, whose total of two synthetic notional amounts a derivation script computes; empty input and invalid input rejected are still to cover; no `published` or `independent` value yet | Evidence record per release candidate | Not implemented |
-| `CALC-02` Day of week | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
-| `CALC-03` Month and year lengths | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
-| `CALC-04` Period boundaries | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
-| `CALC-05` Period-end tests | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
-| `CALC-06` Date shifts | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
-| `CALC-07` Weekday locators | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not implemented |
-| `CALC-08` Date from pillar | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11); no external implementation defines pillars ([open decisions](#open-decisions)) | Evidence record per release candidate | Not implemented |
-| `CALC-09` Pillar from dates | None yet: cases in [#11](https://github.com/danielep71/K-PRICING/issues/11); no external implementation defines pillars ([open decisions](#open-decisions)) | Evidence record per release candidate | Not implemented |
+| `CALC-02` Day of week | The VBA suite `TEST_CoreDates`, whose values come from a Python reference and are not `published` or `independent`; cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not validated |
+| `CALC-03` Month and year lengths | The VBA suite `TEST_CoreDates`, whose values come from a Python reference and are not `published` or `independent`; cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not validated |
+| `CALC-04` Period boundaries | The VBA suite `TEST_CoreDates`, whose values come from a Python reference and are not `published` or `independent`; cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not validated |
+| `CALC-05` Period-end tests | The VBA suite `TEST_CoreDates`, whose values come from a Python reference and are not `published` or `independent`; cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not validated |
+| `CALC-06` Date shifts | The VBA suite `TEST_CoreDates`, whose values come from a Python reference and are not `published` or `independent`; cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not validated |
+| `CALC-07` Weekday locators | The VBA suite `TEST_CoreDates`, whose values come from a Python reference and are not `published` or `independent`; cases in [#11](https://github.com/danielep71/K-PRICING/issues/11), `independent` values from the Excel oracle in [#14](https://github.com/danielep71/K-PRICING/issues/14) | Evidence record per release candidate | Not validated |
+| `CALC-08` Date from pillar | The VBA suite `TEST_CoreDates`, whose values come from a Python reference and are not `published` or `independent`; cases in [#11](https://github.com/danielep71/K-PRICING/issues/11); no external implementation defines pillars ([open decisions](#open-decisions)) | Evidence record per release candidate | Not validated |
+| `CALC-09` Pillar from dates | The VBA suite `TEST_CoreDates`, whose values come from a Python reference and are not `published` or `independent`; cases in [#11](https://github.com/danielep71/K-PRICING/issues/11); no external implementation defines pillars ([open decisions](#open-decisions)) | Evidence record per release candidate | Not validated |
 | `CALC-10` Host date system | None: Excel host checks only ([host behaviour](#host-behaviour)) | Evidence record per release candidate | Not implemented |
 
 The *Status* of a calculation is the least advanced
@@ -131,6 +131,12 @@ and to the test cases that test it, with its validation status:
 | Source | Paragraph | Calculation step | VBA procedure | Test cases | Status |
 | --- | --- | --- | --- | --- | --- |
 | *Illustrative:* `SRC-01` | Article 1(1) | `CALC-01.1` | — | `illustrative-format-example`, `illustrative-file-import-example` | Not implemented |
+| `SRC-09` | Return type 1 | `CALC-02.2` | `CORE_Dates.DayOfWeek` | — | Not validated |
+| `SRC-02` | Gregorian calendar, leap year | `CALC-03.1` | `CORE_Dates.IsLeapYear` | — | Not validated |
+| `SRC-02` | Gregorian calendar | `CALC-03.2` | `CORE_Dates.DaysInMonth` | — | Not validated |
+| `SRC-02` | Gregorian calendar, leap year | `CALC-03.3` | `CORE_Dates.DaysInYear` | — | Not validated |
+| `SRC-02` | Gregorian calendar, leap year | `CALC-03.4` | `CORE_Dates.IsLeapYear` | — | Not validated |
+| `SRC-02` | Gregorian calendar | `CALC-04.3` | `CORE_Dates.EndOfMonth`, `CORE_Dates.EndOfQuarter`, `CORE_Dates.EndOfYear` | — | Not validated |
 
 - **Source and paragraph:** a `SRC-` ID of the [source register](SOURCES.md)
   and the exact paragraph, as in the step's *Source* column.

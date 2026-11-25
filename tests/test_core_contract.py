@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import datetime
 import re
+import sys
 import unittest
 from pathlib import Path
 
@@ -123,6 +124,37 @@ class InternalFailureTest(unittest.TestCase):
         low, high = int(bounds.group(1)), int(bounds.group(2))
         offset = int(re.search(r"`vbObjectError \+ (\d+)`", self.table_row()[1]).group(1))  # type: ignore[union-attr]
         self.assertTrue(low <= offset <= high, (low, offset, high))
+
+
+class DatesTest(unittest.TestCase):
+    """CORE_Dates restates one number of the window, and the reference holds the contract's examples."""
+
+    def test_the_month_index_bound_is_the_last_month_of_the_window(self) -> None:
+        dates = read(ROOT / "src/core/CORE_Dates.bas")
+        self.assertRegex(dates, rf"MAX_MONTH_INDEX\s+As Long = {9999 * 12 + 11}\b")
+
+    def test_the_window_is_not_restated_in_the_date_core(self) -> None:
+        # CORE_Parse owns the window; CORE_Dates reads its constants.
+        dates = read(ROOT / "src/core/CORE_Dates.bas")
+        self.assertNotRegex(dates, r"\b2958465\b|\b61#")
+        self.assertIn("CORE_Parse.WINDOW_MIN_SERIAL", dates)
+
+    def test_the_reference_gives_the_worked_examples_of_calc_09(self) -> None:
+        sys.path.insert(0, str(ROOT / "tests/derivations"))
+        import date_core_reference as reference  # noqa: PLC0415
+
+        start = reference.parse("2026-01-01")
+        nearest = {days: reference.format_pillar(start, start + datetime.timedelta(days=days),
+                                                 "NEAREST")[0] for days in (24, 25, 26, 27)}
+        self.assertEqual(nearest, {24: "3W", 25: "3W", 26: "1M", 27: "1M"})
+        january_31 = reference.parse("2026-01-31")
+        self.assertEqual(reference.format_pillar(january_31, january_31 + datetime.timedelta(days=25),
+                                                 "NEAREST")[0], "1M")
+        self.assertEqual(reference.format_pillar(start, reference.parse("2026-01-28"), "CEILING"),
+                         ("1M", None))
+        edge = reference.parse("9999-12-20"), reference.parse("9999-12-31")
+        self.assertEqual([reference.format_pillar(*edge, mode) for mode in ("NEAREST", "FLOOR", "CEILING")],
+                         [("1W", None), ("1W", None), (None, "RESULT_WINDOW")])
 
 
 class WindowTest(unittest.TestCase):

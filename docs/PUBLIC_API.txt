@@ -7,6 +7,58 @@
 [supported]
 
 [project-public]
+CORE_Dates	Function	BeginOfMonth
+# SIG	CORE_Dates	Function	BeginOfMonth	Public Function BeginOfMonth(ByVal DateIn As Date) As Date
+CORE_Dates	Function	BeginOfQuarter
+# SIG	CORE_Dates	Function	BeginOfQuarter	Public Function BeginOfQuarter(ByVal DateIn As Date) As Date
+CORE_Dates	Function	BeginOfYear
+# SIG	CORE_Dates	Function	BeginOfYear	Public Function BeginOfYear(ByVal DateIn As Date) As Date
+CORE_Dates	Function	CheckMonth
+# SIG	CORE_Dates	Function	CheckMonth	Public Function CheckMonth(ByVal ValueIn As Long) As KPRCondition
+CORE_Dates	Function	CheckOccurrence
+# SIG	CORE_Dates	Function	CheckOccurrence	Public Function CheckOccurrence(ByVal ValueIn As Long) As KPRCondition
+CORE_Dates	Function	CheckWeekday
+# SIG	CORE_Dates	Function	CheckWeekday	Public Function CheckWeekday(ByVal ValueIn As Long) As KPRCondition
+CORE_Dates	Function	CheckYear
+# SIG	CORE_Dates	Function	CheckYear	Public Function CheckYear(ByVal ValueIn As Long) As KPRCondition
+CORE_Dates	Function	DayOfWeek
+# SIG	CORE_Dates	Function	DayOfWeek	Public Function DayOfWeek(ByVal DateIn As Date, ByVal MondayBase As Boolean) As Long
+CORE_Dates	Function	DaysInMonth
+# SIG	CORE_Dates	Function	DaysInMonth	Public Function DaysInMonth(ByVal YearIn As Long, ByVal MonthIn As Long) As Long
+CORE_Dates	Function	DaysInYear
+# SIG	CORE_Dates	Function	DaysInYear	Public Function DaysInYear(ByVal YearIn As Long) As Long
+CORE_Dates	Function	EndOfMonth
+# SIG	CORE_Dates	Function	EndOfMonth	Public Function EndOfMonth(ByVal DateIn As Date) As Date
+CORE_Dates	Function	EndOfQuarter
+# SIG	CORE_Dates	Function	EndOfQuarter	Public Function EndOfQuarter(ByVal DateIn As Date) As Date
+CORE_Dates	Function	EndOfYear
+# SIG	CORE_Dates	Function	EndOfYear	Public Function EndOfYear(ByVal DateIn As Date) As Date
+CORE_Dates	Function	IsDateInWindow
+# SIG	CORE_Dates	Function	IsDateInWindow	Public Function IsDateInWindow(ByVal DateIn As Date) As Boolean
+CORE_Dates	Function	IsLeapYear
+# SIG	CORE_Dates	Function	IsLeapYear	Public Function IsLeapYear(ByVal YearIn As Long) As Boolean
+CORE_Dates	Function	IsMonthEnd
+# SIG	CORE_Dates	Function	IsMonthEnd	Public Function IsMonthEnd(ByVal DateIn As Date) As Boolean
+CORE_Dates	Function	IsQuarterEnd
+# SIG	CORE_Dates	Function	IsQuarterEnd	Public Function IsQuarterEnd(ByVal DateIn As Date) As Boolean
+CORE_Dates	Function	IsYearEnd
+# SIG	CORE_Dates	Function	IsYearEnd	Public Function IsYearEnd(ByVal DateIn As Date) As Boolean
+CORE_Dates	Enum	KPRPillarRounding
+# SIG	CORE_Dates	Enum	KPRPillarRounding	Public Enum KPRPillarRounding | prNearest = 0 | prFloor = 1 | prCeiling = 2 | End Enum
+CORE_Dates	Function	TryAddDays
+# SIG	CORE_Dates	Function	TryAddDays	Public Function TryAddDays(ByVal DateIn As Date, ByVal Days As Double, ByRef DateOut As Date) As Boolean
+CORE_Dates	Function	TryAddMonths
+# SIG	CORE_Dates	Function	TryAddMonths	Public Function TryAddMonths(ByVal DateIn As Date, ByVal nMonths As Double, ByVal KeepEOM As Boolean, ByRef DateOut As Date) As Boolean
+CORE_Dates	Function	TryAddPillar
+# SIG	CORE_Dates	Function	TryAddPillar	Public Function TryAddPillar(ByVal StartDate As Date, ByVal TotalMonths As Double, ByVal TotalDays As Double, ByRef DateOut As Date, ByRef Condition As KPRCondition) As Boolean
+CORE_Dates	Function	TryFormatPillar
+# SIG	CORE_Dates	Function	TryFormatPillar	Public Function TryFormatPillar(ByVal DtStart As Date, ByVal DtEnd As Date, ByVal Mode As KPRPillarRounding, ByRef TokenOut As String, ByRef Condition As KPRCondition) As Boolean
+CORE_Dates	Function	TryLastWeekday
+# SIG	CORE_Dates	Function	TryLastWeekday	Public Function TryLastWeekday(ByVal YearIn As Long, ByVal MonthIn As Long, ByVal WeekdayIn As Long, ByVal MondayBase As Boolean, ByRef DateOut As Date, ByRef Condition As KPRCondition) As Boolean
+CORE_Dates	Function	TryNthWeekday
+# SIG	CORE_Dates	Function	TryNthWeekday	Public Function TryNthWeekday(ByVal YearIn As Long, ByVal MonthIn As Long, ByVal WeekdayIn As Long, ByVal Occurrence As Long, ByVal MondayBase As Boolean, ByRef DateOut As Date, ByRef Condition As KPRCondition) As Boolean
+CORE_Dates	Function	TryParsePillar
+# SIG	CORE_Dates	Function	TryParsePillar	Public Function TryParsePillar(ByVal PillarIn As Variant, ByRef TotalMonths As Double, ByRef TotalDays As Double, ByRef Condition As KPRCondition) As Boolean
 CORE_Err	Function	ConditionName
 # SIG	CORE_Err	Function	ConditionName	Public Function ConditionName(ByVal Condition As KPRCondition) As String
 CORE_Err	Const	ERR_UNMAPPED_CONDITION
@@ -21,6 +73,10 @@ CORE_Err	Function	ErrValue
 # SIG	CORE_Err	Function	ErrValue	Public Function ErrValue() As Variant
 CORE_Err	Enum	KPRCondition
 # SIG	CORE_Err	Enum	KPRCondition	Public Enum KPRCondition | cdNone = 0 | cdDateTextFormat = 1 | cdDateTextLocale = 2 | cdDateTextNumeric = 3 | cdDateTextImpossible = 4 | cdDateTypeRejected = 5 | cdDateWindow = 6 | cdInputBlankRequired = 10 | cdInputErrorPropagated = 11 | cdIntegerFraction = 20 | cdIntegerTypeRejected = 21 | cdIntegerRange = 22 | cdDomainYear = 30 | cdDomainMonth = 31 | cdDomainWeekday = 32 | cdDomainOccurrence = 33 | cdOccurrenceAbsent = 34 | cdResultWindow = 35 | cdControlTypeRejected = 40 | cdControlErrorPropagated = 41 | cdControlTokenUnknown = 42 | cdControlNotScalar = 43 | cdShapeUnsupported = 50 | cdShapeMismatch = 51 | cdCapacityExceeded = 52 | cdHostDate1904 = 60 | cdHostUnresolved = 61 | cdPillarTypeRejected = 70 | cdPillarTokenMalformed = 71 | cdPillarDuplicateUnit = 72 | cdPillarAliasSigned = 73 | cdPillarAggregateRange = 74 | End Enum
+CORE_Parse	Function	AsciiTrim
+# SIG	CORE_Parse	Function	AsciiTrim	Public Function AsciiTrim(ByVal TextIn As String) As String
+CORE_Parse	Function	AsciiUpper
+# SIG	CORE_Parse	Function	AsciiUpper	Public Function AsciiUpper(ByVal TextIn As String) As String
 CORE_Parse	Function	TryParseBoolControl
 # SIG	CORE_Parse	Function	TryParseBoolControl	Public Function TryParseBoolControl(ByVal ControlIn As Variant, ByVal DefaultValue As Boolean, ByRef ParsedBool As Boolean, ByRef Condition As KPRCondition) As Boolean
 CORE_Parse	Function	TryParseDateScalar

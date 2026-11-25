@@ -89,5 +89,16 @@ Use only the categories an entry needs.
   467 assertions passed, and the ten that failed need a `Decimal`, which
   LibreOffice lacks. Nothing was run in Excel
   ([#5](https://github.com/danielep71/K-PRICING/issues/5)).
+- The date layer's calendar core, `CORE_Dates` in `src/core/`: the window
+  predicate and argument domains, the leap and month-length rules, the weekday,
+  the period boundaries and tests, shifts by days and months, the weekday
+  locators, and the parse, shift and format of pillar tokens, one routine for
+  each rule of `CALC-02` to `CALC-09`. Its tests, `TEST_CoreDates` (2,083
+  assertions), take their expected values from `date_core_reference.py`. Only
+  the static checks and, as an early warning that is not Excel evidence, a
+  LibreOffice run were done: all 2,083 assertions passed, and so did a
+  comparison of the pillar format with the reference on 9,000 random intervals.
+  Nothing was run in Excel
+  ([#6](https://github.com/danielep71/K-PRICING/issues/6)).
 
 [Unreleased]: https://github.com/danielep71/K-PRICING/commits/main

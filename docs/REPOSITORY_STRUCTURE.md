@@ -23,7 +23,7 @@ them are already set in `.gitattributes`, `.editorconfig` and `.gitignore`.
 | `docs/methodology/sources/` | Byte-preserved copies of regulatory sources | Reserved |
 | `docs/methodology/workbook-protection.json` | The [protection matrix](methodology/WORKBOOK_CONTRACT.md#protection) of `src/workbook/Template.xlsx`, added with the template | Reserved |
 | `docs/user-manual/` | Optional manual for workbook recipients, one folder per released version (`docs/user-manual/X.Y.Z/MANUAL.md`), built to the PDF attached to the release ([user manual](../RELEASING.md#user-manual)) | Reserved |
-| `src/core/` | Calculations and pure validation, host-independent standard modules | Present, with `CORE_Err` and `CORE_Parse` |
+| `src/core/` | Calculations and pure validation, host-independent standard modules | Present, with `CORE_Err`, `CORE_Parse` and `CORE_Dates` |
 | `src/classes/` | Host-independent classes, if the design needs them | Reserved |
 | `src/modules/` | The public facade: the supported entry points | Reserved |
 | `src/workbook/` | Excel adapters, `ThisWorkbook` and sheet document modules, and the optional macro-free `Template.xlsx`, laid out as the [workbook contract](methodology/WORKBOOK_CONTRACT.md) defines | Reserved |
@@ -31,7 +31,7 @@ them are already set in `.gitattributes`, `.editorconfig` and `.gitignore`.
 | `tests/` | Python tests of the repository tooling (`test_*.py`) | Present |
 | `tests/modules/` | VBA test modules: the [test harness](methodology/TEST_HARNESS.md), its example suite, relation tests, case runners and volume benchmarks | Present, with the harness, the example suite and the illustrative relation tests |
 | `tests/fixtures/`, `tests/expected/` | Synthetic inputs and expected results in the [test-case format](methodology/TEST_CASES.md) | Present, with one illustrative case of each form |
-| `tests/derivations/` | Scripts that compute expected values from the documented method ([derivation scripts](methodology/TEST_CASES.md#derivation-scripts)) | Present, with one illustrative script for each case |
+| `tests/derivations/` | Scripts that compute expected values from the documented method ([derivation scripts](methodology/TEST_CASES.md#derivation-scripts)) | Present, with one illustrative script for each case and `date_core_reference.py`, the reference of the date core's tests |
 | `tests/accuracy/` | The [accuracy contracts](methodology/TEST_CASES.md#accuracy-contracts) of the calculations | Present, with the illustrative draft contract `ACC-01` |
 | `tests/independent/` | The adapters that run an [independent implementation](methodology/TEST_CASES.md#independent-implementations) on the test cases, and their registry `adapters.json` | Reserved |
 | `tools/` | Repository checks, setup and build tooling, in Python; `tools/devbuild/` builds a workbook from source ([building a workbook from source](../INSTALLATION.md#building-a-workbook-from-source)) | Present |
