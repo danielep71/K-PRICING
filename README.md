@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="docs/assets/social-preview.png" alt="K-TEMPLATE: the starting point for regulatory risk calculation workbooks in Excel VBA, across market, credit, operational, counterparty, IRRBB and liquidity risk" width="100%">
+<img src="docs/assets/social-preview.png" alt="K-PRICING: financial analytics and instrument pricing for Excel/VBA, under development" width="100%">
 
-# 🧰 K-TEMPLATE
+# ⚡ K-PRICING
 
-### The starting point for regulatory risk calculation workbooks in Excel VBA
+### Financial analytics and instrument pricing for Excel/VBA
 
-**SA-CCR · SFT · FRTB · LCR · NSFR · Exported VBA source · Reproducible builds · Excel-run evidence · Governed releases**
+**Source-first VBA · Explicit contracts · Evidence tied to one commit · Governed releases**
 
 <br>
 
@@ -21,11 +21,11 @@
 
 <br>
 
-**Text-first and reviewable: exported VBA, JSON contracts and Markdown evidence, every change through a pull request**
+**K-PRICING is an Excel/VBA project for practitioners who want transparent financial analytics and instrument pricing, reviewable line by line**
 
-[What it is](#-what-this-template-is)
+[What it is](#-what-k-pricing-is)
 &nbsp;·&nbsp;
-[What you get](#-what-you-get)
+[What it provides](#-what-the-repository-provides)
 &nbsp;·&nbsp;
 [Find your way](#-find-your-way)
 &nbsp;·&nbsp;
@@ -41,23 +41,44 @@
 
 </div>
 
-## ✨ What this template is
+## ✨ What K-PRICING is
 
-I use this template to start repositories for regulatory risk calculation
-workbooks, such as SA-CCR, SFT, FRTB, LCR and NSFR. A workbook built from it
-is not stored as a macro-enabled file: it is built from exported VBA source and
-an optional macro-free template, so every line of calculation code is
-reviewable in a pull request, and every Excel run leaves evidence that a check
-binds to one commit.
+K-PRICING is a source-first Excel/VBA project. Exported VBA, tests, contracts
+and documentation are the reviewable source of truth; a workbook is built from
+the source of one commit and is never the only record of a change. **KPR** is
+the short form of the name, and the prefix of its VBA namespace.
 
-The template holds no calculation of its own. It provides the repository around
-one: the source layout and house style, the methodology guides to fill in, the
-test harness and its evidence, the release process, and the GitHub governance
-that keeps them honest.
+I build it for practitioners who need to see how a figure is computed: every
+function states its inputs, its errors and its limits, and every claim of
+correctness names the commit and the Excel environment that produced it.
 
-## 🎯 What you get
+I am building it in layers, each released on its own evidence: the 22
+`KPR_Dates_*` date primitives first, then calendars and business days, day-count
+conventions and schedule generators ([plan](#-status)). Valuation and pricing
+are not scheduled yet.
 
-| Area | What the template provides |
+K-PRICING keeps five kinds of evidence apart:
+
+| Evidence | What it shows |
+| --- | --- |
+| Repository integrity | The source, the documents and the workflows agree with the rules |
+| VBA compilation | The source compiles in Excel |
+| Regression execution | Every case and assertion ran and passed in Excel |
+| Specialist assurance | An independent reference agrees with the results |
+| Release certification | A tagged commit carries all of the above |
+
+| Principle | Project contract |
+| --- | --- |
+| Source identity | Exported text source and an exact Git revision |
+| Public surface | Documented and machine-checked |
+| State ownership | Caller and host state is changed and restored deliberately |
+| Failure behavior | Invalid input, errors and cleanup are part of the contract |
+| Evidence | A claim names the exact candidate and environment tested |
+| Portability | Supported Excel and Office environments are stated, not inferred |
+
+## 🎯 What the repository provides
+
+| Area | What the repository provides |
 | --- | --- |
 | Source control for Excel | Editing and Git policies for workbooks, exported VBA source and byte-preserved regulatory source copies |
 | VBA quality | Static checks of exported VBA (layout, names, `#If` structure, jump targets, visibility, dependency direction, identifiers, `Err` copies, native declarations, calls) and a layout formatter, run on every change |
@@ -162,7 +183,7 @@ Each workflow runs on the events of its `on:` block:
 docs/      methodology, release records, governance, setup, house style, licenses
 tests/     VBA harness and example suite, test cases, accuracy contracts, Python tests
 tools/     static checks, workbook build and Excel run, release and setup
-src/       the workbook's VBA source and macro-free template (reserved: added by a project)
+src/       the workbook's VBA source and macro-free template (reserved: added with the date primitives)
 ```
 
 The full layout and its rules are in
@@ -187,11 +208,35 @@ The full layout and its rules are in
 
 ## 📌 Status
 
-The release state is recorded in one place: the
+No version has been released: the repository is being set up (v0.1.0). The
+release state is recorded in one place, the
 [*Current status*](RELEASING.md#current-status) of `RELEASING.md`, which
 **Repository integrity** checks against [`CHANGELOG.md`](CHANGELOG.md).
 Development continues on the active release branch through task branches and
 pull requests; only a release is versioned and tagged.
+
+| Milestone | Scope |
+| --- | --- |
+| v0.1.0 | Repository setup: settings baseline, README and About fields |
+| v0.2.0 | Date primitives: the 22 `KPR_Dates_*` worksheet functions on a core that does not depend on Excel |
+| v0.3.0 | Holiday calendars and business days, with roll conventions |
+| v0.4.0 | Day-count conventions |
+| v0.5.0 | Schedule generators |
+
+The [milestones](https://github.com/danielep71/K-PRICING/milestones) hold the
+scope, the exit criteria and the due dates.
+
+## 🖥️ Requirements and limitations
+
+- The target is Microsoft 365 Excel desktop on Windows. 32-bit and 64-bit
+  Office are evaluated separately.
+- No Excel run has been recorded for K-PRICING yet, so no environment is
+  claimed as supported. Mac, Excel for the web and older builds are not
+  targets.
+- Do not infer compatibility from source inspection or from one successful
+  host: a claim names the exact commit and Excel environment it was run on.
+- The first version is certified only by a run of the whole suite in Excel on
+  its exact candidate, recorded in the release certification.
 
 ## 🔐 Data and security
 
@@ -212,7 +257,12 @@ To take part, read the [contributing guide](CONTRIBUTING.md) and the
 
 ## 📄 License
 
-Repositories created from this template default to the [Mozilla Public License 2.0](LICENSE).
-If you choose a different license for a new repository, replace `LICENSE` and keep
-[`docs/licenses/`](docs/licenses/THIRD_PARTY_NOTICES.txt): the files listed there keep
-the license the notice states for them, MPL-2.0 or MIT.
+Copyright (c) 2026 Daniele Penza. Distributed under the
+[Mozilla Public License 2.0](LICENSE) (MPL-2.0). You may combine K-PRICING with
+your own code in any workbook or product, including a closed one, and your own
+files keep your terms. Whenever you distribute K-PRICING's files, modified or
+not, as source or inside a workbook or add-in, you must make their source
+available under MPL 2.0 and keep their notices. This summary does not replace
+the licence text. The files listed in
+[`docs/licenses/`](docs/licenses/THIRD_PARTY_NOTICES.txt) keep the license the
+notice states for them, MPL-2.0 or MIT.
