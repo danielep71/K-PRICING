@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/assets/social-preview.png" alt="K-PRICING: financial analytics and instrument pricing for Excel/VBA, under development" width="100%">
+
 # ⚡ K-PRICING
 
 ### Financial analytics and instrument pricing for Excel/VBA
