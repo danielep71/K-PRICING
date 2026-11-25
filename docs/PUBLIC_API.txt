@@ -7,6 +7,28 @@
 [supported]
 
 [project-public]
+CORE_Array	Function	AccumulateShape
+# SIG	CORE_Array	Function	AccumulateShape	Public Function AccumulateShape(ByRef OutKind As KPRArgShape, ByRef OutRows As Long, ByRef OutCols As Long, ByVal ArgKind As KPRArgShape, ByVal ArgRows As Long, ByVal ArgCols As Long, ByRef Condition As KPRCondition) As Boolean
+CORE_Array	Function	ArrayRank
+# SIG	CORE_Array	Function	ArrayRank	Public Function ArrayRank(ByVal ArrayIn As Variant) As Long
+CORE_Array	Function	CheckCapacity
+# SIG	CORE_Array	Function	CheckCapacity	Public Function CheckCapacity(ByVal RowCount As Long, ByVal ColCount As Long, ByRef Condition As KPRCondition) As Boolean
+CORE_Array	Function	ElementAt
+# SIG	CORE_Array	Function	ElementAt	Public Function ElementAt(ByRef Payload As Variant, ByVal Kind As KPRArgShape, ByVal R As Long, ByVal C As Long) As Variant
+CORE_Array	Enum	KPRArgShape
+# SIG	CORE_Array	Enum	KPRArgShape	Public Enum KPRArgShape | skScalar = 0 | skArray = 1 | End Enum
+CORE_Array	Const	MAX_ELEMENTS
+# SIG	CORE_Array	Const	MAX_ELEMENTS	Public Const MAX_ELEMENTS As Long = 100000
+CORE_Array	Function	TryAllocateOutput
+# SIG	CORE_Array	Function	TryAllocateOutput	Public Function TryAllocateOutput(ByVal RowCount As Long, ByVal ColCount As Long, ByRef OutArr As Variant, ByRef Condition As KPRCondition) As Boolean
+CORE_Array	Function	TryClassifyShape
+# SIG	CORE_Array	Function	TryClassifyShape	Public Function TryClassifyShape(ByVal ValueIn As Variant, ByRef Kind As KPRArgShape, ByRef RowCount As Long, ByRef ColCount As Long, ByRef Condition As KPRCondition) As Boolean
+CORE_Array	Function	TryMaterialize
+# SIG	CORE_Array	Function	TryMaterialize	Public Function TryMaterialize(ByVal ValueIn As Variant, ByRef Payload As Variant, ByRef Kind As KPRArgShape, ByRef RowCount As Long, ByRef ColCount As Long, ByRef Condition As KPRCondition) As Boolean
+CORE_Array	Function	TryUnwrapControl
+# SIG	CORE_Array	Function	TryUnwrapControl	Public Function TryUnwrapControl(ByVal ValueIn As Variant, ByRef ScalarOut As Variant, ByRef Condition As KPRCondition) As Boolean
+CORE_Array	Function	TryUnwrapScalar
+# SIG	CORE_Array	Function	TryUnwrapScalar	Public Function TryUnwrapScalar(ByVal ValueIn As Variant, ByRef ScalarOut As Variant) As Boolean
 CORE_Dates	Function	BeginOfMonth
 # SIG	CORE_Dates	Function	BeginOfMonth	Public Function BeginOfMonth(ByVal DateIn As Date) As Date
 CORE_Dates	Function	BeginOfQuarter
@@ -93,3 +115,11 @@ CORE_Parse	Const	WINDOW_MIN_SERIAL
 # SIG	CORE_Parse	Const	WINDOW_MIN_SERIAL	Public Const WINDOW_MIN_SERIAL As Double = 61#
 CORE_Parse	Const	WINDOW_MIN_YEAR
 # SIG	CORE_Parse	Const	WINDOW_MIN_YEAR	Public Const WINDOW_MIN_YEAR As Long = 1900
+M_Ranges	Function	TryDescribeArgument
+# SIG	M_Ranges	Function	TryDescribeArgument	Public Function TryDescribeArgument(ByVal ValueIn As Variant, ByRef Kind As KPRArgShape, ByRef RowCount As Long, ByRef ColCount As Long, ByRef Condition As KPRCondition) As Boolean
+M_Ranges	Function	TryReadArgument
+# SIG	M_Ranges	Function	TryReadArgument	Public Function TryReadArgument(ByVal ValueIn As Variant, ByRef Payload As Variant, ByRef Kind As KPRArgShape, ByRef RowCount As Long, ByRef ColCount As Long, ByRef Condition As KPRCondition) As Boolean
+M_Ranges	Function	TryReadControl
+# SIG	M_Ranges	Function	TryReadControl	Public Function TryReadControl(ByVal ValueIn As Variant, ByRef ScalarOut As Variant, ByRef Condition As KPRCondition) As Boolean
+M_Ranges	Function	TryReadScalar
+# SIG	M_Ranges	Function	TryReadScalar	Public Function TryReadScalar(ByVal ValueIn As Variant, ByRef ScalarOut As Variant) As Boolean
