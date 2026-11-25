@@ -42,20 +42,3 @@ The repository is licensed under MPL-2.0 through the root `LICENSE` unless that 
 ## Reusable defaults
 
 Preserve useful policies and assumptions for file types, tooling, and reserved paths even when this repository does not use them yet. Adapt project-specific names and historical references without stripping reusable capabilities. Describe reserved paths as conventions, not as files or directories that already exist.
-
-<!-- template-only:start -->
-## Template maintenance
-
-This section applies only to the template repository. In a repository generated from the template, delete it together with its markers; **Repository integrity** fails until you do.
-
-- This repository is the template that new workbook repositories are created from. Keep its files generic: each one must still be correct after it is copied into a new repository.
-- Word each file so that it is true both here and in a repository created from the template: write "empty until the project adds its own", not "empty in the template". Put a step that only the template needs in `docs/setup/REPOSITORY_SETUP.md` or in this section, or let the initializer adapt the sentence and list the edit. The `template-wording` check of **Repository integrity** fails on the phrases its tool lists.
-- When releasing this repository, run the repository checks of `RELEASING.md` with `--template true`, not `--template false`.
-- My reference repositories are `danielep71/K-SFTs` (primary) and `danielep71/K-SACCR` (secondary). Compare repository settings, issue labels, issue forms, and automation with them before changing the template.
-- My other workbook repositories, `danielep71/K-FRTB-ASA`, `danielep71/K-FRTB-SSA`, `danielep71/K-LCR`, and `danielep71/K-NSFR`, are also compared: adopt what they do better, and report where they lag behind the template.
-- My portfolio hub, `danielep71/K-Risk-Engines`, holds no workbook but shares labels, traffic collection, link checks and review rules with the template; compare those parts with it too.
-- Port improvements in generic form. Do not copy their names, links, issue numbers, or history into template files; only this section and `docs/licenses/` may name them.
-- This repository tracks its own work with milestones, starting with `v0.1.0 - Initial setup`. Issues assigned to a milestone follow the same triage rules as in generated repositories, including a target end date before the milestone's due date.
-- The rule that links each bot pull request to a tracking issue applies only in generated repositories. Here, merge a Dependabot pull request once **Repository integrity** passes and my review of its final diff is recorded in a comment on it, as `docs/repo_governance/PULL_REQUESTS.md` describes.
-- From a session on this repository, change only this repository. Read the reference repositories and any other repository only to compare them; for changes they need, write a message for a session dedicated to that repository instead of committing, pushing, or posting there.
-<!-- template-only:end -->

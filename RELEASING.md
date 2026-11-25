@@ -17,8 +17,8 @@ the version and changelog rules are in
 
 | Item | State |
 | --- | --- |
-| Released versions | 1.0.0 |
-| `VERSION` | `1.0.0` |
+| Released versions | None |
+| `VERSION` | Does not exist yet; it is created when the first release is prepared |
 | Active release branch | The branch `.github/dependabot.yml` names in `target-branch`, if any |
 
 A version is released from the preparation pull request that dates its

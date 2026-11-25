@@ -11,16 +11,14 @@ the examples below name no existing component other than those test modules.
 
 ## Naming and visibility
 
-Replace `<REGIME>` with the project's short name, such as `SACCR` or `LCR`,
-once, in this table. The
-[static checks](#static-checks) read the facade prefix from this table; while
-it is `<REGIME>_`, they accept any project prefix that is not a reserved one
-(`CORE_`, `TEST_`, `EX_`, `M_`).
+The project's short name is `KPR`. The [static checks](#static-checks)
+read the facade prefix, `KPR_`, from this table; the reserved prefixes
+are `CORE_`, `TEST_`, `EX_` and `M_`.
 
 | Element | Convention | Example |
 | --- | --- | --- |
 | Core standard module | `CORE_` plus subject | `CORE_Validation` |
-| Public facade module | `<REGIME>_` plus subject | `<REGIME>_Functions` |
+| Public facade module | `KPR_` plus subject | `KPR_Functions` |
 | Host-independent class | `C` plus noun | `CCalculationResult` |
 | Excel adapter module | `M_` plus subject | `M_Run` |
 | Document module | `ThisWorkbook`, or `sh` plus the tab name in PascalCase | `shInputs` |
@@ -30,7 +28,7 @@ it is `<REGIME>_`, they accept any project prefix that is not a reserved one
 | Procedure | PascalCase verb phrase | `ValidateInput` |
 | Parameter or local variable | Descriptive PascalCase | `CalculationCurrency` |
 | Constant, error constant | `UPPER_SNAKE_CASE`, `ERR_` prefix | `ERR_INVALID_INPUT` |
-| Enum and member | `<REGIME>` plus noun; short member prefix | `<REGIME>RunStatus`, `rsFailed` |
+| Enum and member | `KPR` plus noun; short member prefix | `KPRRunStatus`, `rsFailed` |
 
 - A component's name equals its exported `Attribute VB_Name` and its file
   name stem.
