@@ -1,0 +1,66 @@
+{
+  "record": "repository-settings-journal",
+  "tool": "tools/setup_repository.py",
+  "plan_sha256": "37aa1d93112d0df31f8099c90a02cc0d6c7eb88e8e91adeb96a9db9d0b6da9ca",
+  "repository": "danielep71/K-PRICING",
+  "configuration_sha256": "6fb45f3deecb89899cff1b11c3d100ed61e743ab7cd1496dbdce652085d64fd5",
+  "started_at": "2026-11-25T11:00:15Z",
+  "writes": [
+    {
+      "method": "POST",
+      "endpoint": "repos/danielep71/K-PRICING/rulesets",
+      "ruleset": "Prevent release branch deletion",
+      "status": "done",
+      "ruleset_id": 28069064
+    },
+    {
+      "method": "POST",
+      "endpoint": "repos/danielep71/K-PRICING/rulesets",
+      "ruleset": "Protect release tags",
+      "status": "done",
+      "ruleset_id": 28069066
+    },
+    {
+      "method": "POST",
+      "endpoint": "repos/danielep71/K-PRICING/rulesets",
+      "ruleset": "Protect traffic history",
+      "status": "done",
+      "ruleset_id": 28069067
+    },
+    {
+      "method": "POST",
+      "endpoint": "repos/danielep71/K-PRICING/rulesets",
+      "ruleset": "Protect release branches",
+      "status": "done",
+      "ruleset_id": 28069068
+    },
+    {
+      "method": "POST",
+      "endpoint": "repos/danielep71/K-PRICING/rulesets",
+      "ruleset": "Protect main",
+      "status": "done",
+      "ruleset_id": 28069070
+    },
+    {
+      "method": "PUT",
+      "endpoint": "repos/danielep71/K-PRICING/private-vulnerability-reporting",
+      "status": "done"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "repos/danielep71/K-PRICING/vulnerability-alerts",
+      "status": "done"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "repos/danielep71/K-PRICING/automated-security-fixes",
+      "status": "done"
+    },
+    {
+      "method": "PATCH",
+      "endpoint": "repos/danielep71/K-PRICING",
+      "status": "done"
+    }
+  ],
+  "readback": "DRIFT"
+}
