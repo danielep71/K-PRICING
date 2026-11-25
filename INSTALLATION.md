@@ -32,7 +32,6 @@ Record each host on which a commit has been compiled and run:
 
 | Tested environment | Commit | Evidence |
 | --- | --- | --- |
-| Microsoft 365 Excel 16.0 build 20430, 64-bit; Windows 11 Enterprise 25H2, build 26200.9711; `tools/devbuild/excel_run.py`, `compile=ON_DEMAND` | `50c065859c7f566ef37946cca9c6206447951145` | #204: `excel-run: PASS`, `Binding: VERIFIED`, ACC-01 worst error 0.0 |
 
 ## 🔖 Start from an exact revision
 
