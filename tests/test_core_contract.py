@@ -173,6 +173,31 @@ class ArrayTest(unittest.TestCase):
         self.assertFalse([line for line in code if re.search(r"\bRange\b", line.split("'")[0])])
 
 
+class FacadeTest(unittest.TestCase):
+    """The facade's surface and volatility, as #8 and the calculation contracts state them."""
+
+    def test_only_the_host_date_system_is_volatile(self) -> None:
+        calls = []
+        for path in sorted((ROOT / "src").rglob("*.bas")):
+            procedure = None
+            for line in read(path).splitlines():
+                found = re.match(r"^(?:Public |Private )?(?:Function|Sub) (\w+)", line)
+                if found:
+                    procedure = found.group(1)
+                code = line.split("'")[0]
+                if "Application.Volatile" in code:
+                    calls.append((path.name, procedure))
+        self.assertEqual(calls, [("KPR_Dates.bas", "KPR_Dates_HostDateSystem")])
+
+    def test_the_facade_exposes_exactly_the_22_functions(self) -> None:
+        facade = read(ROOT / "src/modules/KPR_Dates.bas")
+        public = re.findall(r"^Public (?:Function|Sub|Property \w+) (\w+)", facade, re.M)
+        listed = re.findall(r"^KPR_Dates\tFunction\t(\w+)$", read(ROOT / "docs/PUBLIC_API.txt"), re.M)
+        self.assertEqual(len(public), 22)
+        self.assertEqual(public, listed)
+        self.assertTrue(all(name.startswith("KPR_Dates_") for name in public))
+
+
 class WindowTest(unittest.TestCase):
     def test_the_window_constants_are_the_excel_serials_of_its_edges(self) -> None:
         epoch = datetime.date(1899, 12, 30)

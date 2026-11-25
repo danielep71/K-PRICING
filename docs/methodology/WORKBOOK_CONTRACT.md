@@ -36,9 +36,12 @@ These defaults hold unless a decision below replaces one:
   document modules in `src/workbook/` read or write a worksheet. They address
   a sheet by its code name and a range by its defined name, never by tab name
   or a hard-coded address. `M_Ranges` reads only the Range objects that a
-  worksheet function receives as arguments, and addresses no sheet. Core,
-  classes and the facade never touch a workbook object: the facade passes a
-  Range argument to `M_Ranges` unread.
+  worksheet function receives as arguments, and `M_Host` only
+  `Application.Caller` and the `Date1904` of the caller's own workbook;
+  neither addresses a sheet. Core, classes and the facade never touch a
+  workbook object: the facade passes a Range argument to `M_Ranges` unread,
+  and its one call to the Excel object model is `Application.Volatile` in
+  `KPR_Dates_HostDateSystem`.
 - **No partial results.** An operation validates first, calculates in memory,
   then clears and writes all of its result areas. On failure it writes no
   new result: it clears its result areas and marks them `FAILED`
