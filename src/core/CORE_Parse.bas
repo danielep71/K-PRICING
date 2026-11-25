@@ -29,6 +29,7 @@ Option Private Module
 '     - TryParseLongScalar       scalar to a VBA Long
 '     - TryParseBoolControl      optional control to a Boolean, or its default
 '     - TryParseRoundingControl  Opt_Rounding to NEAREST, FLOOR or CEILING
+'     - AsciiTrim, AsciiUpper    text helpers that use no locale, which CORE_Dates shares
 '     - WINDOW_MIN_SERIAL, WINDOW_MAX_SERIAL, WINDOW_MIN_YEAR, WINDOW_MAX_YEAR
 '       the supported date window, which this module owns
 '
@@ -875,7 +876,7 @@ Public Function TryParseRoundingControl( _
 
 End Function
 
-Private Function AsciiTrim(ByVal TextIn As String) As String
+Public Function AsciiTrim(ByVal TextIn As String) As String
 
 '
 '------------------------------------------------------------------------------
@@ -953,7 +954,7 @@ Private Function AsciiTrim(ByVal TextIn As String) As String
 
 End Function
 
-Private Function AsciiUpper(ByVal TextIn As String) As String
+Public Function AsciiUpper(ByVal TextIn As String) As String
 
 '
 '------------------------------------------------------------------------------

@@ -1,0 +1,2657 @@
+Attribute VB_Name = "TEST_CoreDates"
+
+Option Explicit
+Option Private Module
+
+'
+'------------------------------------------------------------------------------
+' MODULE: TEST_CoreDates
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Tests of CORE_Dates: the window and the domains, the calendar rules, the period boundaries,
+'   the shifts by days and months, the weekday locators and the pillar parser, shift and
+'   format
+'
+' WHY THIS EXISTS
+'   The calculation contracts CALC-02 to CALC-09 define each rule. These cases check the
+'   code against reference values that the code does not produce, on and beside every
+'   edge of the window
+'
+' INPUTS
+'   None at module level
+'
+' RETURNS
+'   Nothing at module level
+'
+' BEHAVIOR
+'   RunCoreDatesTests runs the suite. Option Private Module keeps it out of the workbook's
+'   external surface. The cases build their inputs in memory and change no Excel state.
+'   The suite is not certified: it is not listed in .github/excel-evidence-policy.json
+'
+' ERROR POLICY
+'   As TEST_Harness.EndRun: a run that does not pass raises TEST_Harness.ERR_TEST_FAILED,
+'   or the unexpected error that escaped the runner. A refused start raises
+'   TEST_Harness.ERR_TEST_DIRTY_START
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   In a development workbook holding the modules of src/ and tests/modules/, type
+'   TEST_CoreDates.RunCoreDatesTests in the Immediate window. Every expected serial and
+'   token is a literal computed by tests/derivations/date_core_reference.py: the calendar
+'   rules from Python's calendar, and the pillar format from a second implementation of
+'   CALC-09 written from the contract. Its author also wrote the VBA, so the pillar values
+'   are a cross-check, not an independent reference
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' PRIVATE CONSTANTS
+'------------------------------------------------------------------------------
+    'A complete run starts every case and evaluates every assertion once
+    Private Const SUITE_NAME            As String = "core-dates"        'Suite name in the run log
+    Private Const EXPECTED_CASES        As Long = 12                 'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 2083               'Assertions a complete run evaluates
+
+    'The values an output holds before a call, which a rejection must leave in place
+    Private Const SENTINEL_SERIAL       As Double = 36526#              '2000-01-01
+    Private Const SENTINEL_DELTA        As Double = -424242#            'A delta no token gives
+    Private Const SENTINEL_TOKEN        As String = "UNTOUCHED"         'A token no format returns
+
+
+'
+'------------------------------------------------------------------------------
+'
+'                                 ENTRY POINTS
+'
+'------------------------------------------------------------------------------
+'
+
+Public Sub RunCoreDatesTests()
+
+'
+'------------------------------------------------------------------------------
+'                             RUN CORE DATE TESTS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
+'   RESULT=PASS; suite=core-dates; operation=PASS; completeness=COMPLETE; cases=12;
+'   assertions=2083; failures=0; cleanup=PASS; recovery=NONE
+'
+' WHY THIS EXISTS
+'   One entry point runs the suite and reports it through the harness, so that a run is
+'   complete or visibly incomplete
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Starts the run, calls each case, then passes any error that escaped them to EndRun
+'
+' ERROR POLICY
+'   An error escaping a case handler is passed to EndRun, which reports it and re-raises it
+'   unchanged. BeginRun's refusal propagates directly
+'
+' DEPENDENCIES
+'   TEST_Harness.BeginRun, TEST_Harness.EndRun
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim ErrNumber       As Long     'Runner error number; 0 for none
+    Dim ErrSource       As String   'Runner error source
+    Dim ErrDescription  As String   'Runner error description
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
+    'Start the run; a refused start propagates directly
+        TEST_Harness.BeginRun SUITE_NAME, "NORMAL", EXPECTED_CASES, EXPECTED_ASSERTIONS
+    'Send an error that escapes a case to the runner handler
+        On Error GoTo RunFailed
+    'Run every case in a fixed order
+        CaseWindowAndDomains
+        CaseLeapYearsAndLengths
+        CaseDayOfWeek
+        CasePeriodBoundaries
+        CasePeriodEndTests
+        CaseAddDays
+        CaseAddMonths
+        CaseNthWeekday
+        CaseLastWeekday
+        CaseParsePillar
+        CaseAddPillar
+        CaseFormatPillar
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+Finish:
+    'Restore normal error handling
+        On Error GoTo 0
+    'Report the run, raising its failure or the escaped error
+        TEST_Harness.EndRun ErrNumber, ErrSource, ErrDescription
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+RunFailed:
+    'Capture the escaped error
+        ErrNumber = Err.Number
+        ErrSource = Err.Source
+        ErrDescription = Err.Description
+    'Finish the run with the captured error
+        Resume Finish
+
+End Sub
+
+'
+'------------------------------------------------------------------------------
+'
+'                                    CASES
+'
+'------------------------------------------------------------------------------
+'
+
+Private Sub CaseWindowAndDomains()
+
+'
+'------------------------------------------------------------------------------
+'                       CHECK THE WINDOW AND THE DOMAINS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The window includes both of its edges, and each domain its bounds. 25 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Checks the window predicate at its edges and each domain check on and beside its bounds
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "window-and-domains"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'The window starts at serial 61 and ends at serial 2958465, both included
+        CheckFlag "window-2", False, CORE_Dates.IsDateInWindow(CDate(2#))
+        CheckFlag "window-59", False, CORE_Dates.IsDateInWindow(CDate(59#))
+        CheckFlag "window-60", False, CORE_Dates.IsDateInWindow(CDate(60#))
+        CheckFlag "window-61", True, CORE_Dates.IsDateInWindow(CDate(61#))
+        CheckFlag "window-2958465", True, CORE_Dates.IsDateInWindow(CDate(2958465#))
+    'The year domain is 1900 to 9999
+        CheckCondition "year--1", cdDomainYear, CORE_Dates.CheckYear(-1)
+        CheckCondition "year-0", cdDomainYear, CORE_Dates.CheckYear(0)
+        CheckCondition "year-1899", cdDomainYear, CORE_Dates.CheckYear(1899)
+        CheckCondition "year-1900", cdNone, CORE_Dates.CheckYear(1900)
+        CheckCondition "year-5000", cdNone, CORE_Dates.CheckYear(5000)
+        CheckCondition "year-9999", cdNone, CORE_Dates.CheckYear(9999)
+        CheckCondition "year-10000", cdDomainYear, CORE_Dates.CheckYear(10000)
+    'The month domain is 1 to 12
+        CheckCondition "month--1", cdDomainMonth, CORE_Dates.CheckMonth(-1)
+        CheckCondition "month-0", cdDomainMonth, CORE_Dates.CheckMonth(0)
+        CheckCondition "month-1", cdNone, CORE_Dates.CheckMonth(1)
+        CheckCondition "month-12", cdNone, CORE_Dates.CheckMonth(12)
+        CheckCondition "month-13", cdDomainMonth, CORE_Dates.CheckMonth(13)
+    'The weekday domain is 1 to 7
+        CheckCondition "weekday-0", cdDomainWeekday, CORE_Dates.CheckWeekday(0)
+        CheckCondition "weekday-1", cdNone, CORE_Dates.CheckWeekday(1)
+        CheckCondition "weekday-7", cdNone, CORE_Dates.CheckWeekday(7)
+        CheckCondition "weekday-8", cdDomainWeekday, CORE_Dates.CheckWeekday(8)
+    'The occurrence domain is 1 to 5
+        CheckCondition "occurrence-0", cdDomainOccurrence, CORE_Dates.CheckOccurrence(0)
+        CheckCondition "occurrence-1", cdNone, CORE_Dates.CheckOccurrence(1)
+        CheckCondition "occurrence-5", cdNone, CORE_Dates.CheckOccurrence(5)
+        CheckCondition "occurrence-6", cdDomainOccurrence, CORE_Dates.CheckOccurrence(6)
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseLeapYearsAndLengths()
+
+'
+'------------------------------------------------------------------------------
+'                         CHECK LEAP YEARS AND LENGTHS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Leap years, month lengths and year lengths follow the Gregorian calendar. 46 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Checks the leap rule on centuries and on the edges of the window, and every month length in a common and a leap year
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "leap-years-and-lengths"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'The Gregorian leap rule: divisible by 4, except centuries not divisible by 400
+        CheckFlag "leap-1900", False, CORE_Dates.IsLeapYear(1900)
+        CheckLong "year-days-1900", 365, CORE_Dates.DaysInYear(1900)
+        CheckFlag "leap-1904", True, CORE_Dates.IsLeapYear(1904)
+        CheckLong "year-days-1904", 366, CORE_Dates.DaysInYear(1904)
+        CheckFlag "leap-1999", False, CORE_Dates.IsLeapYear(1999)
+        CheckLong "year-days-1999", 365, CORE_Dates.DaysInYear(1999)
+        CheckFlag "leap-2000", True, CORE_Dates.IsLeapYear(2000)
+        CheckLong "year-days-2000", 366, CORE_Dates.DaysInYear(2000)
+        CheckFlag "leap-2023", False, CORE_Dates.IsLeapYear(2023)
+        CheckLong "year-days-2023", 365, CORE_Dates.DaysInYear(2023)
+        CheckFlag "leap-2024", True, CORE_Dates.IsLeapYear(2024)
+        CheckLong "year-days-2024", 366, CORE_Dates.DaysInYear(2024)
+        CheckFlag "leap-2100", False, CORE_Dates.IsLeapYear(2100)
+        CheckLong "year-days-2100", 365, CORE_Dates.DaysInYear(2100)
+        CheckFlag "leap-2400", True, CORE_Dates.IsLeapYear(2400)
+        CheckLong "year-days-2400", 366, CORE_Dates.DaysInYear(2400)
+        CheckFlag "leap-9996", True, CORE_Dates.IsLeapYear(9996)
+        CheckLong "year-days-9996", 366, CORE_Dates.DaysInYear(9996)
+        CheckFlag "leap-9999", False, CORE_Dates.IsLeapYear(9999)
+        CheckLong "year-days-9999", 365, CORE_Dates.DaysInYear(9999)
+    'The length of each month in a common and in a leap year
+        CheckLong "month-2023-1", 31, CORE_Dates.DaysInMonth(2023, 1)
+        CheckLong "month-2023-2", 28, CORE_Dates.DaysInMonth(2023, 2)
+        CheckLong "month-2023-3", 31, CORE_Dates.DaysInMonth(2023, 3)
+        CheckLong "month-2023-4", 30, CORE_Dates.DaysInMonth(2023, 4)
+        CheckLong "month-2023-5", 31, CORE_Dates.DaysInMonth(2023, 5)
+        CheckLong "month-2023-6", 30, CORE_Dates.DaysInMonth(2023, 6)
+        CheckLong "month-2023-7", 31, CORE_Dates.DaysInMonth(2023, 7)
+        CheckLong "month-2023-8", 31, CORE_Dates.DaysInMonth(2023, 8)
+        CheckLong "month-2023-9", 30, CORE_Dates.DaysInMonth(2023, 9)
+        CheckLong "month-2023-10", 31, CORE_Dates.DaysInMonth(2023, 10)
+        CheckLong "month-2023-11", 30, CORE_Dates.DaysInMonth(2023, 11)
+        CheckLong "month-2023-12", 31, CORE_Dates.DaysInMonth(2023, 12)
+        CheckLong "month-2024-1", 31, CORE_Dates.DaysInMonth(2024, 1)
+        CheckLong "month-2024-2", 29, CORE_Dates.DaysInMonth(2024, 2)
+        CheckLong "month-2024-3", 31, CORE_Dates.DaysInMonth(2024, 3)
+        CheckLong "month-2024-4", 30, CORE_Dates.DaysInMonth(2024, 4)
+        CheckLong "month-2024-5", 31, CORE_Dates.DaysInMonth(2024, 5)
+        CheckLong "month-2024-6", 30, CORE_Dates.DaysInMonth(2024, 6)
+        CheckLong "month-2024-7", 31, CORE_Dates.DaysInMonth(2024, 7)
+        CheckLong "month-2024-8", 31, CORE_Dates.DaysInMonth(2024, 8)
+        CheckLong "month-2024-9", 30, CORE_Dates.DaysInMonth(2024, 9)
+        CheckLong "month-2024-10", 31, CORE_Dates.DaysInMonth(2024, 10)
+        CheckLong "month-2024-11", 30, CORE_Dates.DaysInMonth(2024, 11)
+        CheckLong "month-2024-12", 31, CORE_Dates.DaysInMonth(2024, 12)
+    'An invalid month has no length
+        CheckLong "month-invalid-0", 0, CORE_Dates.DaysInMonth(2026, 0)
+        CheckLong "month-invalid-13", 0, CORE_Dates.DaysInMonth(2026, 13)
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseDayOfWeek()
+
+'
+'------------------------------------------------------------------------------
+'                          CHECK THE DAY OF THE WEEK
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The weekday number follows the chosen base: Monday is 1, or Sunday is 1. 44 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Numbers the weekday of each sample date under both bases
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "day-of-week"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'Monday-based and Sunday-based numbering of the sample dates
+        CheckLong "monday-1900-03-01", 4, CORE_Dates.DayOfWeek(CDate(61#), True)
+        CheckLong "sunday-1900-03-01", 5, CORE_Dates.DayOfWeek(CDate(61#), False)
+        CheckLong "monday-1900-03-31", 6, CORE_Dates.DayOfWeek(CDate(91#), True)
+        CheckLong "sunday-1900-03-31", 7, CORE_Dates.DayOfWeek(CDate(91#), False)
+        CheckLong "monday-1900-06-30", 6, CORE_Dates.DayOfWeek(CDate(182#), True)
+        CheckLong "sunday-1900-06-30", 7, CORE_Dates.DayOfWeek(CDate(182#), False)
+        CheckLong "monday-1900-12-31", 1, CORE_Dates.DayOfWeek(CDate(366#), True)
+        CheckLong "sunday-1900-12-31", 2, CORE_Dates.DayOfWeek(CDate(366#), False)
+        CheckLong "monday-1999-12-31", 5, CORE_Dates.DayOfWeek(CDate(36525#), True)
+        CheckLong "sunday-1999-12-31", 6, CORE_Dates.DayOfWeek(CDate(36525#), False)
+        CheckLong "monday-2000-02-28", 1, CORE_Dates.DayOfWeek(CDate(36584#), True)
+        CheckLong "sunday-2000-02-28", 2, CORE_Dates.DayOfWeek(CDate(36584#), False)
+        CheckLong "monday-2000-02-29", 2, CORE_Dates.DayOfWeek(CDate(36585#), True)
+        CheckLong "sunday-2000-02-29", 3, CORE_Dates.DayOfWeek(CDate(36585#), False)
+        CheckLong "monday-2000-03-01", 3, CORE_Dates.DayOfWeek(CDate(36586#), True)
+        CheckLong "sunday-2000-03-01", 4, CORE_Dates.DayOfWeek(CDate(36586#), False)
+        CheckLong "monday-2024-02-29", 4, CORE_Dates.DayOfWeek(CDate(45351#), True)
+        CheckLong "sunday-2024-02-29", 5, CORE_Dates.DayOfWeek(CDate(45351#), False)
+        CheckLong "monday-2026-01-01", 4, CORE_Dates.DayOfWeek(CDate(46023#), True)
+        CheckLong "sunday-2026-01-01", 5, CORE_Dates.DayOfWeek(CDate(46023#), False)
+        CheckLong "monday-2026-01-31", 6, CORE_Dates.DayOfWeek(CDate(46053#), True)
+        CheckLong "sunday-2026-01-31", 7, CORE_Dates.DayOfWeek(CDate(46053#), False)
+        CheckLong "monday-2026-02-28", 6, CORE_Dates.DayOfWeek(CDate(46081#), True)
+        CheckLong "sunday-2026-02-28", 7, CORE_Dates.DayOfWeek(CDate(46081#), False)
+        CheckLong "monday-2026-03-31", 2, CORE_Dates.DayOfWeek(CDate(46112#), True)
+        CheckLong "sunday-2026-03-31", 3, CORE_Dates.DayOfWeek(CDate(46112#), False)
+        CheckLong "monday-2026-04-30", 4, CORE_Dates.DayOfWeek(CDate(46142#), True)
+        CheckLong "sunday-2026-04-30", 5, CORE_Dates.DayOfWeek(CDate(46142#), False)
+        CheckLong "monday-2026-06-30", 2, CORE_Dates.DayOfWeek(CDate(46203#), True)
+        CheckLong "sunday-2026-06-30", 3, CORE_Dates.DayOfWeek(CDate(46203#), False)
+        CheckLong "monday-2026-09-30", 3, CORE_Dates.DayOfWeek(CDate(46295#), True)
+        CheckLong "sunday-2026-09-30", 4, CORE_Dates.DayOfWeek(CDate(46295#), False)
+        CheckLong "monday-2026-11-25", 3, CORE_Dates.DayOfWeek(CDate(46351#), True)
+        CheckLong "sunday-2026-11-25", 4, CORE_Dates.DayOfWeek(CDate(46351#), False)
+        CheckLong "monday-2026-12-31", 4, CORE_Dates.DayOfWeek(CDate(46387#), True)
+        CheckLong "sunday-2026-12-31", 5, CORE_Dates.DayOfWeek(CDate(46387#), False)
+        CheckLong "monday-2100-02-28", 7, CORE_Dates.DayOfWeek(CDate(73109#), True)
+        CheckLong "sunday-2100-02-28", 1, CORE_Dates.DayOfWeek(CDate(73109#), False)
+        CheckLong "monday-2100-03-01", 1, CORE_Dates.DayOfWeek(CDate(73110#), True)
+        CheckLong "sunday-2100-03-01", 2, CORE_Dates.DayOfWeek(CDate(73110#), False)
+        CheckLong "monday-9999-01-01", 5, CORE_Dates.DayOfWeek(CDate(2958101#), True)
+        CheckLong "sunday-9999-01-01", 6, CORE_Dates.DayOfWeek(CDate(2958101#), False)
+        CheckLong "monday-9999-12-31", 5, CORE_Dates.DayOfWeek(CDate(2958465#), True)
+        CheckLong "sunday-9999-12-31", 6, CORE_Dates.DayOfWeek(CDate(2958465#), False)
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePeriodBoundaries()
+
+'
+'------------------------------------------------------------------------------
+'                         CHECK THE PERIOD BOUNDARIES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The first and last day of a month, quarter and year follow the calendar. 132 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Builds each boundary of the sample dates, the early 1900 ones that leave the window included
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "period-boundaries"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'The first and last day of the month, quarter and year of the sample dates
+        CheckDate "BeginOfMonth-1900-03-01", 61#, CORE_Dates.BeginOfMonth(CDate(61#))
+        CheckDate "EndOfMonth-1900-03-01", 91#, CORE_Dates.EndOfMonth(CDate(61#))
+        CheckDate "BeginOfQuarter-1900-03-01", 2#, CORE_Dates.BeginOfQuarter(CDate(61#))
+        CheckDate "EndOfQuarter-1900-03-01", 91#, CORE_Dates.EndOfQuarter(CDate(61#))
+        CheckDate "BeginOfYear-1900-03-01", 2#, CORE_Dates.BeginOfYear(CDate(61#))
+        CheckDate "EndOfYear-1900-03-01", 366#, CORE_Dates.EndOfYear(CDate(61#))
+        CheckDate "BeginOfMonth-1900-03-31", 61#, CORE_Dates.BeginOfMonth(CDate(91#))
+        CheckDate "EndOfMonth-1900-03-31", 91#, CORE_Dates.EndOfMonth(CDate(91#))
+        CheckDate "BeginOfQuarter-1900-03-31", 2#, CORE_Dates.BeginOfQuarter(CDate(91#))
+        CheckDate "EndOfQuarter-1900-03-31", 91#, CORE_Dates.EndOfQuarter(CDate(91#))
+        CheckDate "BeginOfYear-1900-03-31", 2#, CORE_Dates.BeginOfYear(CDate(91#))
+        CheckDate "EndOfYear-1900-03-31", 366#, CORE_Dates.EndOfYear(CDate(91#))
+        CheckDate "BeginOfMonth-1900-06-30", 153#, CORE_Dates.BeginOfMonth(CDate(182#))
+        CheckDate "EndOfMonth-1900-06-30", 182#, CORE_Dates.EndOfMonth(CDate(182#))
+        CheckDate "BeginOfQuarter-1900-06-30", 92#, CORE_Dates.BeginOfQuarter(CDate(182#))
+        CheckDate "EndOfQuarter-1900-06-30", 182#, CORE_Dates.EndOfQuarter(CDate(182#))
+        CheckDate "BeginOfYear-1900-06-30", 2#, CORE_Dates.BeginOfYear(CDate(182#))
+        CheckDate "EndOfYear-1900-06-30", 366#, CORE_Dates.EndOfYear(CDate(182#))
+        CheckDate "BeginOfMonth-1900-12-31", 336#, CORE_Dates.BeginOfMonth(CDate(366#))
+        CheckDate "EndOfMonth-1900-12-31", 366#, CORE_Dates.EndOfMonth(CDate(366#))
+        CheckDate "BeginOfQuarter-1900-12-31", 275#, CORE_Dates.BeginOfQuarter(CDate(366#))
+        CheckDate "EndOfQuarter-1900-12-31", 366#, CORE_Dates.EndOfQuarter(CDate(366#))
+        CheckDate "BeginOfYear-1900-12-31", 2#, CORE_Dates.BeginOfYear(CDate(366#))
+        CheckDate "EndOfYear-1900-12-31", 366#, CORE_Dates.EndOfYear(CDate(366#))
+        CheckDate "BeginOfMonth-1999-12-31", 36495#, CORE_Dates.BeginOfMonth(CDate(36525#))
+        CheckDate "EndOfMonth-1999-12-31", 36525#, CORE_Dates.EndOfMonth(CDate(36525#))
+        CheckDate "BeginOfQuarter-1999-12-31", 36434#, CORE_Dates.BeginOfQuarter(CDate(36525#))
+        CheckDate "EndOfQuarter-1999-12-31", 36525#, CORE_Dates.EndOfQuarter(CDate(36525#))
+        CheckDate "BeginOfYear-1999-12-31", 36161#, CORE_Dates.BeginOfYear(CDate(36525#))
+        CheckDate "EndOfYear-1999-12-31", 36525#, CORE_Dates.EndOfYear(CDate(36525#))
+        CheckDate "BeginOfMonth-2000-02-28", 36557#, CORE_Dates.BeginOfMonth(CDate(36584#))
+        CheckDate "EndOfMonth-2000-02-28", 36585#, CORE_Dates.EndOfMonth(CDate(36584#))
+        CheckDate "BeginOfQuarter-2000-02-28", 36526#, CORE_Dates.BeginOfQuarter(CDate(36584#))
+        CheckDate "EndOfQuarter-2000-02-28", 36616#, CORE_Dates.EndOfQuarter(CDate(36584#))
+        CheckDate "BeginOfYear-2000-02-28", 36526#, CORE_Dates.BeginOfYear(CDate(36584#))
+        CheckDate "EndOfYear-2000-02-28", 36891#, CORE_Dates.EndOfYear(CDate(36584#))
+        CheckDate "BeginOfMonth-2000-02-29", 36557#, CORE_Dates.BeginOfMonth(CDate(36585#))
+        CheckDate "EndOfMonth-2000-02-29", 36585#, CORE_Dates.EndOfMonth(CDate(36585#))
+        CheckDate "BeginOfQuarter-2000-02-29", 36526#, CORE_Dates.BeginOfQuarter(CDate(36585#))
+        CheckDate "EndOfQuarter-2000-02-29", 36616#, CORE_Dates.EndOfQuarter(CDate(36585#))
+        CheckDate "BeginOfYear-2000-02-29", 36526#, CORE_Dates.BeginOfYear(CDate(36585#))
+        CheckDate "EndOfYear-2000-02-29", 36891#, CORE_Dates.EndOfYear(CDate(36585#))
+        CheckDate "BeginOfMonth-2000-03-01", 36586#, CORE_Dates.BeginOfMonth(CDate(36586#))
+        CheckDate "EndOfMonth-2000-03-01", 36616#, CORE_Dates.EndOfMonth(CDate(36586#))
+        CheckDate "BeginOfQuarter-2000-03-01", 36526#, CORE_Dates.BeginOfQuarter(CDate(36586#))
+        CheckDate "EndOfQuarter-2000-03-01", 36616#, CORE_Dates.EndOfQuarter(CDate(36586#))
+        CheckDate "BeginOfYear-2000-03-01", 36526#, CORE_Dates.BeginOfYear(CDate(36586#))
+        CheckDate "EndOfYear-2000-03-01", 36891#, CORE_Dates.EndOfYear(CDate(36586#))
+        CheckDate "BeginOfMonth-2024-02-29", 45323#, CORE_Dates.BeginOfMonth(CDate(45351#))
+        CheckDate "EndOfMonth-2024-02-29", 45351#, CORE_Dates.EndOfMonth(CDate(45351#))
+        CheckDate "BeginOfQuarter-2024-02-29", 45292#, CORE_Dates.BeginOfQuarter(CDate(45351#))
+        CheckDate "EndOfQuarter-2024-02-29", 45382#, CORE_Dates.EndOfQuarter(CDate(45351#))
+        CheckDate "BeginOfYear-2024-02-29", 45292#, CORE_Dates.BeginOfYear(CDate(45351#))
+        CheckDate "EndOfYear-2024-02-29", 45657#, CORE_Dates.EndOfYear(CDate(45351#))
+        CheckDate "BeginOfMonth-2026-01-01", 46023#, CORE_Dates.BeginOfMonth(CDate(46023#))
+        CheckDate "EndOfMonth-2026-01-01", 46053#, CORE_Dates.EndOfMonth(CDate(46023#))
+        CheckDate "BeginOfQuarter-2026-01-01", 46023#, CORE_Dates.BeginOfQuarter(CDate(46023#))
+        CheckDate "EndOfQuarter-2026-01-01", 46112#, CORE_Dates.EndOfQuarter(CDate(46023#))
+        CheckDate "BeginOfYear-2026-01-01", 46023#, CORE_Dates.BeginOfYear(CDate(46023#))
+        CheckDate "EndOfYear-2026-01-01", 46387#, CORE_Dates.EndOfYear(CDate(46023#))
+        CheckDate "BeginOfMonth-2026-01-31", 46023#, CORE_Dates.BeginOfMonth(CDate(46053#))
+        CheckDate "EndOfMonth-2026-01-31", 46053#, CORE_Dates.EndOfMonth(CDate(46053#))
+        CheckDate "BeginOfQuarter-2026-01-31", 46023#, CORE_Dates.BeginOfQuarter(CDate(46053#))
+        CheckDate "EndOfQuarter-2026-01-31", 46112#, CORE_Dates.EndOfQuarter(CDate(46053#))
+        CheckDate "BeginOfYear-2026-01-31", 46023#, CORE_Dates.BeginOfYear(CDate(46053#))
+        CheckDate "EndOfYear-2026-01-31", 46387#, CORE_Dates.EndOfYear(CDate(46053#))
+        CheckDate "BeginOfMonth-2026-02-28", 46054#, CORE_Dates.BeginOfMonth(CDate(46081#))
+        CheckDate "EndOfMonth-2026-02-28", 46081#, CORE_Dates.EndOfMonth(CDate(46081#))
+        CheckDate "BeginOfQuarter-2026-02-28", 46023#, CORE_Dates.BeginOfQuarter(CDate(46081#))
+        CheckDate "EndOfQuarter-2026-02-28", 46112#, CORE_Dates.EndOfQuarter(CDate(46081#))
+        CheckDate "BeginOfYear-2026-02-28", 46023#, CORE_Dates.BeginOfYear(CDate(46081#))
+        CheckDate "EndOfYear-2026-02-28", 46387#, CORE_Dates.EndOfYear(CDate(46081#))
+        CheckDate "BeginOfMonth-2026-03-31", 46082#, CORE_Dates.BeginOfMonth(CDate(46112#))
+        CheckDate "EndOfMonth-2026-03-31", 46112#, CORE_Dates.EndOfMonth(CDate(46112#))
+        CheckDate "BeginOfQuarter-2026-03-31", 46023#, CORE_Dates.BeginOfQuarter(CDate(46112#))
+        CheckDate "EndOfQuarter-2026-03-31", 46112#, CORE_Dates.EndOfQuarter(CDate(46112#))
+        CheckDate "BeginOfYear-2026-03-31", 46023#, CORE_Dates.BeginOfYear(CDate(46112#))
+        CheckDate "EndOfYear-2026-03-31", 46387#, CORE_Dates.EndOfYear(CDate(46112#))
+        CheckDate "BeginOfMonth-2026-04-30", 46113#, CORE_Dates.BeginOfMonth(CDate(46142#))
+        CheckDate "EndOfMonth-2026-04-30", 46142#, CORE_Dates.EndOfMonth(CDate(46142#))
+        CheckDate "BeginOfQuarter-2026-04-30", 46113#, CORE_Dates.BeginOfQuarter(CDate(46142#))
+        CheckDate "EndOfQuarter-2026-04-30", 46203#, CORE_Dates.EndOfQuarter(CDate(46142#))
+        CheckDate "BeginOfYear-2026-04-30", 46023#, CORE_Dates.BeginOfYear(CDate(46142#))
+        CheckDate "EndOfYear-2026-04-30", 46387#, CORE_Dates.EndOfYear(CDate(46142#))
+        CheckDate "BeginOfMonth-2026-06-30", 46174#, CORE_Dates.BeginOfMonth(CDate(46203#))
+        CheckDate "EndOfMonth-2026-06-30", 46203#, CORE_Dates.EndOfMonth(CDate(46203#))
+        CheckDate "BeginOfQuarter-2026-06-30", 46113#, CORE_Dates.BeginOfQuarter(CDate(46203#))
+        CheckDate "EndOfQuarter-2026-06-30", 46203#, CORE_Dates.EndOfQuarter(CDate(46203#))
+        CheckDate "BeginOfYear-2026-06-30", 46023#, CORE_Dates.BeginOfYear(CDate(46203#))
+        CheckDate "EndOfYear-2026-06-30", 46387#, CORE_Dates.EndOfYear(CDate(46203#))
+        CheckDate "BeginOfMonth-2026-09-30", 46266#, CORE_Dates.BeginOfMonth(CDate(46295#))
+        CheckDate "EndOfMonth-2026-09-30", 46295#, CORE_Dates.EndOfMonth(CDate(46295#))
+        CheckDate "BeginOfQuarter-2026-09-30", 46204#, CORE_Dates.BeginOfQuarter(CDate(46295#))
+        CheckDate "EndOfQuarter-2026-09-30", 46295#, CORE_Dates.EndOfQuarter(CDate(46295#))
+        CheckDate "BeginOfYear-2026-09-30", 46023#, CORE_Dates.BeginOfYear(CDate(46295#))
+        CheckDate "EndOfYear-2026-09-30", 46387#, CORE_Dates.EndOfYear(CDate(46295#))
+        CheckDate "BeginOfMonth-2026-11-25", 46327#, CORE_Dates.BeginOfMonth(CDate(46351#))
+        CheckDate "EndOfMonth-2026-11-25", 46356#, CORE_Dates.EndOfMonth(CDate(46351#))
+        CheckDate "BeginOfQuarter-2026-11-25", 46296#, CORE_Dates.BeginOfQuarter(CDate(46351#))
+        CheckDate "EndOfQuarter-2026-11-25", 46387#, CORE_Dates.EndOfQuarter(CDate(46351#))
+        CheckDate "BeginOfYear-2026-11-25", 46023#, CORE_Dates.BeginOfYear(CDate(46351#))
+        CheckDate "EndOfYear-2026-11-25", 46387#, CORE_Dates.EndOfYear(CDate(46351#))
+        CheckDate "BeginOfMonth-2026-12-31", 46357#, CORE_Dates.BeginOfMonth(CDate(46387#))
+        CheckDate "EndOfMonth-2026-12-31", 46387#, CORE_Dates.EndOfMonth(CDate(46387#))
+        CheckDate "BeginOfQuarter-2026-12-31", 46296#, CORE_Dates.BeginOfQuarter(CDate(46387#))
+        CheckDate "EndOfQuarter-2026-12-31", 46387#, CORE_Dates.EndOfQuarter(CDate(46387#))
+        CheckDate "BeginOfYear-2026-12-31", 46023#, CORE_Dates.BeginOfYear(CDate(46387#))
+        CheckDate "EndOfYear-2026-12-31", 46387#, CORE_Dates.EndOfYear(CDate(46387#))
+        CheckDate "BeginOfMonth-2100-02-28", 73082#, CORE_Dates.BeginOfMonth(CDate(73109#))
+        CheckDate "EndOfMonth-2100-02-28", 73109#, CORE_Dates.EndOfMonth(CDate(73109#))
+        CheckDate "BeginOfQuarter-2100-02-28", 73051#, CORE_Dates.BeginOfQuarter(CDate(73109#))
+        CheckDate "EndOfQuarter-2100-02-28", 73140#, CORE_Dates.EndOfQuarter(CDate(73109#))
+        CheckDate "BeginOfYear-2100-02-28", 73051#, CORE_Dates.BeginOfYear(CDate(73109#))
+        CheckDate "EndOfYear-2100-02-28", 73415#, CORE_Dates.EndOfYear(CDate(73109#))
+        CheckDate "BeginOfMonth-2100-03-01", 73110#, CORE_Dates.BeginOfMonth(CDate(73110#))
+        CheckDate "EndOfMonth-2100-03-01", 73140#, CORE_Dates.EndOfMonth(CDate(73110#))
+        CheckDate "BeginOfQuarter-2100-03-01", 73051#, CORE_Dates.BeginOfQuarter(CDate(73110#))
+        CheckDate "EndOfQuarter-2100-03-01", 73140#, CORE_Dates.EndOfQuarter(CDate(73110#))
+        CheckDate "BeginOfYear-2100-03-01", 73051#, CORE_Dates.BeginOfYear(CDate(73110#))
+        CheckDate "EndOfYear-2100-03-01", 73415#, CORE_Dates.EndOfYear(CDate(73110#))
+        CheckDate "BeginOfMonth-9999-01-01", 2958101#, CORE_Dates.BeginOfMonth(CDate(2958101#))
+        CheckDate "EndOfMonth-9999-01-01", 2958131#, CORE_Dates.EndOfMonth(CDate(2958101#))
+        CheckDate "BeginOfQuarter-9999-01-01", 2958101#, CORE_Dates.BeginOfQuarter(CDate(2958101#))
+        CheckDate "EndOfQuarter-9999-01-01", 2958190#, CORE_Dates.EndOfQuarter(CDate(2958101#))
+        CheckDate "BeginOfYear-9999-01-01", 2958101#, CORE_Dates.BeginOfYear(CDate(2958101#))
+        CheckDate "EndOfYear-9999-01-01", 2958465#, CORE_Dates.EndOfYear(CDate(2958101#))
+        CheckDate "BeginOfMonth-9999-12-31", 2958435#, CORE_Dates.BeginOfMonth(CDate(2958465#))
+        CheckDate "EndOfMonth-9999-12-31", 2958465#, CORE_Dates.EndOfMonth(CDate(2958465#))
+        CheckDate "BeginOfQuarter-9999-12-31", 2958374#, CORE_Dates.BeginOfQuarter(CDate(2958465#))
+        CheckDate "EndOfQuarter-9999-12-31", 2958465#, CORE_Dates.EndOfQuarter(CDate(2958465#))
+        CheckDate "BeginOfYear-9999-12-31", 2958101#, CORE_Dates.BeginOfYear(CDate(2958465#))
+        CheckDate "EndOfYear-9999-12-31", 2958465#, CORE_Dates.EndOfYear(CDate(2958465#))
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePeriodEndTests()
+
+'
+'------------------------------------------------------------------------------
+'                          CHECK THE PERIOD-END TESTS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   A date is a month, quarter or year end exactly when it is the last day of the period. 66 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Tests the sample dates against each period end
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "period-end-tests"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'A date is a period end when it is the last day of the period
+        CheckFlag "IsMonthEnd-1900-03-01", False, CORE_Dates.IsMonthEnd(CDate(61#))
+        CheckFlag "IsQuarterEnd-1900-03-01", False, CORE_Dates.IsQuarterEnd(CDate(61#))
+        CheckFlag "IsYearEnd-1900-03-01", False, CORE_Dates.IsYearEnd(CDate(61#))
+        CheckFlag "IsMonthEnd-1900-03-31", True, CORE_Dates.IsMonthEnd(CDate(91#))
+        CheckFlag "IsQuarterEnd-1900-03-31", True, CORE_Dates.IsQuarterEnd(CDate(91#))
+        CheckFlag "IsYearEnd-1900-03-31", False, CORE_Dates.IsYearEnd(CDate(91#))
+        CheckFlag "IsMonthEnd-1900-06-30", True, CORE_Dates.IsMonthEnd(CDate(182#))
+        CheckFlag "IsQuarterEnd-1900-06-30", True, CORE_Dates.IsQuarterEnd(CDate(182#))
+        CheckFlag "IsYearEnd-1900-06-30", False, CORE_Dates.IsYearEnd(CDate(182#))
+        CheckFlag "IsMonthEnd-1900-12-31", True, CORE_Dates.IsMonthEnd(CDate(366#))
+        CheckFlag "IsQuarterEnd-1900-12-31", True, CORE_Dates.IsQuarterEnd(CDate(366#))
+        CheckFlag "IsYearEnd-1900-12-31", True, CORE_Dates.IsYearEnd(CDate(366#))
+        CheckFlag "IsMonthEnd-1999-12-31", True, CORE_Dates.IsMonthEnd(CDate(36525#))
+        CheckFlag "IsQuarterEnd-1999-12-31", True, CORE_Dates.IsQuarterEnd(CDate(36525#))
+        CheckFlag "IsYearEnd-1999-12-31", True, CORE_Dates.IsYearEnd(CDate(36525#))
+        CheckFlag "IsMonthEnd-2000-02-28", False, CORE_Dates.IsMonthEnd(CDate(36584#))
+        CheckFlag "IsQuarterEnd-2000-02-28", False, CORE_Dates.IsQuarterEnd(CDate(36584#))
+        CheckFlag "IsYearEnd-2000-02-28", False, CORE_Dates.IsYearEnd(CDate(36584#))
+        CheckFlag "IsMonthEnd-2000-02-29", True, CORE_Dates.IsMonthEnd(CDate(36585#))
+        CheckFlag "IsQuarterEnd-2000-02-29", False, CORE_Dates.IsQuarterEnd(CDate(36585#))
+        CheckFlag "IsYearEnd-2000-02-29", False, CORE_Dates.IsYearEnd(CDate(36585#))
+        CheckFlag "IsMonthEnd-2000-03-01", False, CORE_Dates.IsMonthEnd(CDate(36586#))
+        CheckFlag "IsQuarterEnd-2000-03-01", False, CORE_Dates.IsQuarterEnd(CDate(36586#))
+        CheckFlag "IsYearEnd-2000-03-01", False, CORE_Dates.IsYearEnd(CDate(36586#))
+        CheckFlag "IsMonthEnd-2024-02-29", True, CORE_Dates.IsMonthEnd(CDate(45351#))
+        CheckFlag "IsQuarterEnd-2024-02-29", False, CORE_Dates.IsQuarterEnd(CDate(45351#))
+        CheckFlag "IsYearEnd-2024-02-29", False, CORE_Dates.IsYearEnd(CDate(45351#))
+        CheckFlag "IsMonthEnd-2026-01-01", False, CORE_Dates.IsMonthEnd(CDate(46023#))
+        CheckFlag "IsQuarterEnd-2026-01-01", False, CORE_Dates.IsQuarterEnd(CDate(46023#))
+        CheckFlag "IsYearEnd-2026-01-01", False, CORE_Dates.IsYearEnd(CDate(46023#))
+        CheckFlag "IsMonthEnd-2026-01-31", True, CORE_Dates.IsMonthEnd(CDate(46053#))
+        CheckFlag "IsQuarterEnd-2026-01-31", False, CORE_Dates.IsQuarterEnd(CDate(46053#))
+        CheckFlag "IsYearEnd-2026-01-31", False, CORE_Dates.IsYearEnd(CDate(46053#))
+        CheckFlag "IsMonthEnd-2026-02-28", True, CORE_Dates.IsMonthEnd(CDate(46081#))
+        CheckFlag "IsQuarterEnd-2026-02-28", False, CORE_Dates.IsQuarterEnd(CDate(46081#))
+        CheckFlag "IsYearEnd-2026-02-28", False, CORE_Dates.IsYearEnd(CDate(46081#))
+        CheckFlag "IsMonthEnd-2026-03-31", True, CORE_Dates.IsMonthEnd(CDate(46112#))
+        CheckFlag "IsQuarterEnd-2026-03-31", True, CORE_Dates.IsQuarterEnd(CDate(46112#))
+        CheckFlag "IsYearEnd-2026-03-31", False, CORE_Dates.IsYearEnd(CDate(46112#))
+        CheckFlag "IsMonthEnd-2026-04-30", True, CORE_Dates.IsMonthEnd(CDate(46142#))
+        CheckFlag "IsQuarterEnd-2026-04-30", False, CORE_Dates.IsQuarterEnd(CDate(46142#))
+        CheckFlag "IsYearEnd-2026-04-30", False, CORE_Dates.IsYearEnd(CDate(46142#))
+        CheckFlag "IsMonthEnd-2026-06-30", True, CORE_Dates.IsMonthEnd(CDate(46203#))
+        CheckFlag "IsQuarterEnd-2026-06-30", True, CORE_Dates.IsQuarterEnd(CDate(46203#))
+        CheckFlag "IsYearEnd-2026-06-30", False, CORE_Dates.IsYearEnd(CDate(46203#))
+        CheckFlag "IsMonthEnd-2026-09-30", True, CORE_Dates.IsMonthEnd(CDate(46295#))
+        CheckFlag "IsQuarterEnd-2026-09-30", True, CORE_Dates.IsQuarterEnd(CDate(46295#))
+        CheckFlag "IsYearEnd-2026-09-30", False, CORE_Dates.IsYearEnd(CDate(46295#))
+        CheckFlag "IsMonthEnd-2026-11-25", False, CORE_Dates.IsMonthEnd(CDate(46351#))
+        CheckFlag "IsQuarterEnd-2026-11-25", False, CORE_Dates.IsQuarterEnd(CDate(46351#))
+        CheckFlag "IsYearEnd-2026-11-25", False, CORE_Dates.IsYearEnd(CDate(46351#))
+        CheckFlag "IsMonthEnd-2026-12-31", True, CORE_Dates.IsMonthEnd(CDate(46387#))
+        CheckFlag "IsQuarterEnd-2026-12-31", True, CORE_Dates.IsQuarterEnd(CDate(46387#))
+        CheckFlag "IsYearEnd-2026-12-31", True, CORE_Dates.IsYearEnd(CDate(46387#))
+        CheckFlag "IsMonthEnd-2100-02-28", True, CORE_Dates.IsMonthEnd(CDate(73109#))
+        CheckFlag "IsQuarterEnd-2100-02-28", False, CORE_Dates.IsQuarterEnd(CDate(73109#))
+        CheckFlag "IsYearEnd-2100-02-28", False, CORE_Dates.IsYearEnd(CDate(73109#))
+        CheckFlag "IsMonthEnd-2100-03-01", False, CORE_Dates.IsMonthEnd(CDate(73110#))
+        CheckFlag "IsQuarterEnd-2100-03-01", False, CORE_Dates.IsQuarterEnd(CDate(73110#))
+        CheckFlag "IsYearEnd-2100-03-01", False, CORE_Dates.IsYearEnd(CDate(73110#))
+        CheckFlag "IsMonthEnd-9999-01-01", False, CORE_Dates.IsMonthEnd(CDate(2958101#))
+        CheckFlag "IsQuarterEnd-9999-01-01", False, CORE_Dates.IsQuarterEnd(CDate(2958101#))
+        CheckFlag "IsYearEnd-9999-01-01", False, CORE_Dates.IsYearEnd(CDate(2958101#))
+        CheckFlag "IsMonthEnd-9999-12-31", True, CORE_Dates.IsMonthEnd(CDate(2958465#))
+        CheckFlag "IsQuarterEnd-9999-12-31", True, CORE_Dates.IsQuarterEnd(CDate(2958465#))
+        CheckFlag "IsYearEnd-9999-12-31", True, CORE_Dates.IsYearEnd(CDate(2958465#))
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseAddDays()
+
+'
+'------------------------------------------------------------------------------
+'                           CHECK THE SHIFT BY DAYS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   A date moves by whole days, and a result outside the window is rejected. 36 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Shifts dates by days on and beside both edges of the window, by a week count and by extreme counts
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "add-days"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'Whole calendar days, with the window checked on the result
+        CheckAddDays "2026-01-31+(1)", 46053#, 1#, True, 46054#
+        CheckAddDays "2026-01-01+(-1)", 46023#, -1#, True, 46022#
+        CheckAddDays "2026-03-01+(-365)", 46082#, -365#, True, 45717#
+        CheckAddDays "1900-03-01+(0)", 61#, 0#, True, 61#
+        CheckAddDays "1900-03-01+(-1)", 61#, -1#, False, 0#
+        CheckAddDays "1900-03-02+(-1)", 62#, -1#, True, 61#
+        CheckAddDays "9999-12-30+(1)", 2958464#, 1#, True, 2958465#
+        CheckAddDays "9999-12-31+(0)", 2958465#, 0#, True, 2958465#
+        CheckAddDays "9999-12-31+(1)", 2958465#, 1#, False, 0#
+        CheckAddDays "9999-12-31+(-2958404)", 2958465#, -2958404#, True, 61#
+        CheckAddDays "9999-12-31+(-2958405)", 2958465#, -2958405#, False, 0#
+        CheckAddDays "2026-01-01+(364)", 46023#, 364#, True, 46387#
+        CheckAddDays "2026-01-01+(-7)", 46023#, -7#, True, 46016#
+        CheckAddDays "2026-12-31+(364)", 46387#, 364#, True, 46751#
+        CheckAddDays "2026-06-15+(-7000000)", 46188#, -7000000#, False, 0#
+        CheckAddDays "2026-06-15-huge+", 46188#, (10# ^ 300), False, 0#
+        CheckAddDays "2026-06-15-huge-", 46188#, -(10# ^ 300), False, 0#
+    'The time of day is discarded before the shift
+        CheckAddDays "time-of-day", 46387.75, 1#, True, 46388#
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseAddMonths()
+
+'
+'------------------------------------------------------------------------------
+'                          CHECK THE SHIFT BY MONTHS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   A date moves by months with the clip of a short month, or keeps its month end. 286 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Shifts month ends and leap days by negative, zero and positive counts, to and past both edges of the window
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "add-months"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'Month shifts with the clip of a short month, with and without keeping a month end
+        CheckAddMonths "2026-01-31-13", 46053#, -13#, False, True, 45657#
+        CheckAddMonths "2026-01-31-13k", 46053#, -13#, True, True, 45657#
+        CheckAddMonths "2026-01-31-1", 46053#, -1#, False, True, 46022#
+        CheckAddMonths "2026-01-31-1k", 46053#, -1#, True, True, 46022#
+        CheckAddMonths "2026-01-31+0", 46053#, 0#, False, True, 46053#
+        CheckAddMonths "2026-01-31+0k", 46053#, 0#, True, True, 46053#
+        CheckAddMonths "2026-01-31+1", 46053#, 1#, False, True, 46081#
+        CheckAddMonths "2026-01-31+1k", 46053#, 1#, True, True, 46081#
+        CheckAddMonths "2026-01-31+2", 46053#, 2#, False, True, 46112#
+        CheckAddMonths "2026-01-31+2k", 46053#, 2#, True, True, 46112#
+        CheckAddMonths "2026-01-31+12", 46053#, 12#, False, True, 46418#
+        CheckAddMonths "2026-01-31+12k", 46053#, 12#, True, True, 46418#
+        CheckAddMonths "2026-01-31+48", 46053#, 48#, False, True, 47514#
+        CheckAddMonths "2026-01-31+48k", 46053#, 48#, True, True, 47514#
+        CheckAddMonths "2024-02-29-13", 45351#, -13#, False, True, 44955#
+        CheckAddMonths "2024-02-29-13k", 45351#, -13#, True, True, 44957#
+        CheckAddMonths "2024-02-29-1", 45351#, -1#, False, True, 45320#
+        CheckAddMonths "2024-02-29-1k", 45351#, -1#, True, True, 45322#
+        CheckAddMonths "2024-02-29+0", 45351#, 0#, False, True, 45351#
+        CheckAddMonths "2024-02-29+0k", 45351#, 0#, True, True, 45351#
+        CheckAddMonths "2024-02-29+1", 45351#, 1#, False, True, 45380#
+        CheckAddMonths "2024-02-29+1k", 45351#, 1#, True, True, 45382#
+        CheckAddMonths "2024-02-29+2", 45351#, 2#, False, True, 45411#
+        CheckAddMonths "2024-02-29+2k", 45351#, 2#, True, True, 45412#
+        CheckAddMonths "2024-02-29+12", 45351#, 12#, False, True, 45716#
+        CheckAddMonths "2024-02-29+12k", 45351#, 12#, True, True, 45716#
+        CheckAddMonths "2024-02-29+48", 45351#, 48#, False, True, 46812#
+        CheckAddMonths "2024-02-29+48k", 45351#, 48#, True, True, 46812#
+        CheckAddMonths "2026-02-28-13", 46081#, -13#, False, True, 45685#
+        CheckAddMonths "2026-02-28-13k", 46081#, -13#, True, True, 45688#
+        CheckAddMonths "2026-02-28-1", 46081#, -1#, False, True, 46050#
+        CheckAddMonths "2026-02-28-1k", 46081#, -1#, True, True, 46053#
+        CheckAddMonths "2026-02-28+0", 46081#, 0#, False, True, 46081#
+        CheckAddMonths "2026-02-28+0k", 46081#, 0#, True, True, 46081#
+        CheckAddMonths "2026-02-28+1", 46081#, 1#, False, True, 46109#
+        CheckAddMonths "2026-02-28+1k", 46081#, 1#, True, True, 46112#
+        CheckAddMonths "2026-02-28+2", 46081#, 2#, False, True, 46140#
+        CheckAddMonths "2026-02-28+2k", 46081#, 2#, True, True, 46142#
+        CheckAddMonths "2026-02-28+12", 46081#, 12#, False, True, 46446#
+        CheckAddMonths "2026-02-28+12k", 46081#, 12#, True, True, 46446#
+        CheckAddMonths "2026-02-28+48", 46081#, 48#, False, True, 47542#
+        CheckAddMonths "2026-02-28+48k", 46081#, 48#, True, True, 47542#
+        CheckAddMonths "2026-03-31-13", 46112#, -13#, False, True, 45716#
+        CheckAddMonths "2026-03-31-13k", 46112#, -13#, True, True, 45716#
+        CheckAddMonths "2026-03-31-1", 46112#, -1#, False, True, 46081#
+        CheckAddMonths "2026-03-31-1k", 46112#, -1#, True, True, 46081#
+        CheckAddMonths "2026-03-31+0", 46112#, 0#, False, True, 46112#
+        CheckAddMonths "2026-03-31+0k", 46112#, 0#, True, True, 46112#
+        CheckAddMonths "2026-03-31+1", 46112#, 1#, False, True, 46142#
+        CheckAddMonths "2026-03-31+1k", 46112#, 1#, True, True, 46142#
+        CheckAddMonths "2026-03-31+2", 46112#, 2#, False, True, 46173#
+        CheckAddMonths "2026-03-31+2k", 46112#, 2#, True, True, 46173#
+        CheckAddMonths "2026-03-31+12", 46112#, 12#, False, True, 46477#
+        CheckAddMonths "2026-03-31+12k", 46112#, 12#, True, True, 46477#
+        CheckAddMonths "2026-03-31+48", 46112#, 48#, False, True, 47573#
+        CheckAddMonths "2026-03-31+48k", 46112#, 48#, True, True, 47573#
+        CheckAddMonths "2026-12-31-13", 46387#, -13#, False, True, 45991#
+        CheckAddMonths "2026-12-31-13k", 46387#, -13#, True, True, 45991#
+        CheckAddMonths "2026-12-31-1", 46387#, -1#, False, True, 46356#
+        CheckAddMonths "2026-12-31-1k", 46387#, -1#, True, True, 46356#
+        CheckAddMonths "2026-12-31+0", 46387#, 0#, False, True, 46387#
+        CheckAddMonths "2026-12-31+0k", 46387#, 0#, True, True, 46387#
+        CheckAddMonths "2026-12-31+1", 46387#, 1#, False, True, 46418#
+        CheckAddMonths "2026-12-31+1k", 46387#, 1#, True, True, 46418#
+        CheckAddMonths "2026-12-31+2", 46387#, 2#, False, True, 46446#
+        CheckAddMonths "2026-12-31+2k", 46387#, 2#, True, True, 46446#
+        CheckAddMonths "2026-12-31+12", 46387#, 12#, False, True, 46752#
+        CheckAddMonths "2026-12-31+12k", 46387#, 12#, True, True, 46752#
+        CheckAddMonths "2026-12-31+48", 46387#, 48#, False, True, 47848#
+        CheckAddMonths "2026-12-31+48k", 46387#, 48#, True, True, 47848#
+        CheckAddMonths "2000-02-29-13", 36585#, -13#, False, True, 36189#
+        CheckAddMonths "2000-02-29-13k", 36585#, -13#, True, True, 36191#
+        CheckAddMonths "2000-02-29-1", 36585#, -1#, False, True, 36554#
+        CheckAddMonths "2000-02-29-1k", 36585#, -1#, True, True, 36556#
+        CheckAddMonths "2000-02-29+0", 36585#, 0#, False, True, 36585#
+        CheckAddMonths "2000-02-29+0k", 36585#, 0#, True, True, 36585#
+        CheckAddMonths "2000-02-29+1", 36585#, 1#, False, True, 36614#
+        CheckAddMonths "2000-02-29+1k", 36585#, 1#, True, True, 36616#
+        CheckAddMonths "2000-02-29+2", 36585#, 2#, False, True, 36645#
+        CheckAddMonths "2000-02-29+2k", 36585#, 2#, True, True, 36646#
+        CheckAddMonths "2000-02-29+12", 36585#, 12#, False, True, 36950#
+        CheckAddMonths "2000-02-29+12k", 36585#, 12#, True, True, 36950#
+        CheckAddMonths "2000-02-29+48", 36585#, 48#, False, True, 38046#
+        CheckAddMonths "2000-02-29+48k", 36585#, 48#, True, True, 38046#
+        CheckAddMonths "1900-03-31-13", 91#, -13#, False, False, 0#
+        CheckAddMonths "1900-03-31-13k", 91#, -13#, True, False, 0#
+        CheckAddMonths "1900-03-31-1", 91#, -1#, False, False, 0#
+        CheckAddMonths "1900-03-31-1k", 91#, -1#, True, False, 0#
+        CheckAddMonths "1900-03-31+0", 91#, 0#, False, True, 91#
+        CheckAddMonths "1900-03-31+0k", 91#, 0#, True, True, 91#
+        CheckAddMonths "1900-03-31+1", 91#, 1#, False, True, 121#
+        CheckAddMonths "1900-03-31+1k", 91#, 1#, True, True, 121#
+        CheckAddMonths "1900-03-31+2", 91#, 2#, False, True, 152#
+        CheckAddMonths "1900-03-31+2k", 91#, 2#, True, True, 152#
+        CheckAddMonths "1900-03-31+12", 91#, 12#, False, True, 456#
+        CheckAddMonths "1900-03-31+12k", 91#, 12#, True, True, 456#
+        CheckAddMonths "1900-03-31+48", 91#, 48#, False, True, 1552#
+        CheckAddMonths "1900-03-31+48k", 91#, 48#, True, True, 1552#
+        CheckAddMonths "1900-03-01-13", 61#, -13#, False, False, 0#
+        CheckAddMonths "1900-03-01-13k", 61#, -13#, True, False, 0#
+        CheckAddMonths "1900-03-01-1", 61#, -1#, False, False, 0#
+        CheckAddMonths "1900-03-01-1k", 61#, -1#, True, False, 0#
+        CheckAddMonths "1900-03-01+0", 61#, 0#, False, True, 61#
+        CheckAddMonths "1900-03-01+0k", 61#, 0#, True, True, 61#
+        CheckAddMonths "1900-03-01+1", 61#, 1#, False, True, 92#
+        CheckAddMonths "1900-03-01+1k", 61#, 1#, True, True, 92#
+        CheckAddMonths "1900-03-01+2", 61#, 2#, False, True, 122#
+        CheckAddMonths "1900-03-01+2k", 61#, 2#, True, True, 122#
+        CheckAddMonths "1900-03-01+12", 61#, 12#, False, True, 426#
+        CheckAddMonths "1900-03-01+12k", 61#, 12#, True, True, 426#
+        CheckAddMonths "1900-03-01+48", 61#, 48#, False, True, 1522#
+        CheckAddMonths "1900-03-01+48k", 61#, 48#, True, True, 1522#
+        CheckAddMonths "9999-11-30-13", 2958434#, -13#, False, True, 2958038#
+        CheckAddMonths "9999-11-30-13k", 2958434#, -13#, True, True, 2958039#
+        CheckAddMonths "9999-11-30-1", 2958434#, -1#, False, True, 2958403#
+        CheckAddMonths "9999-11-30-1k", 2958434#, -1#, True, True, 2958404#
+        CheckAddMonths "9999-11-30+0", 2958434#, 0#, False, True, 2958434#
+        CheckAddMonths "9999-11-30+0k", 2958434#, 0#, True, True, 2958434#
+        CheckAddMonths "9999-11-30+1", 2958434#, 1#, False, True, 2958464#
+        CheckAddMonths "9999-11-30+1k", 2958434#, 1#, True, True, 2958465#
+        CheckAddMonths "9999-11-30+2", 2958434#, 2#, False, False, 0#
+        CheckAddMonths "9999-11-30+2k", 2958434#, 2#, True, False, 0#
+        CheckAddMonths "9999-11-30+12", 2958434#, 12#, False, False, 0#
+        CheckAddMonths "9999-11-30+12k", 2958434#, 12#, True, False, 0#
+        CheckAddMonths "9999-11-30+48", 2958434#, 48#, False, False, 0#
+        CheckAddMonths "9999-11-30+48k", 2958434#, 48#, True, False, 0#
+        CheckAddMonths "9999-12-31-13", 2958465#, -13#, False, True, 2958069#
+        CheckAddMonths "9999-12-31-13k", 2958465#, -13#, True, True, 2958069#
+        CheckAddMonths "9999-12-31-1", 2958465#, -1#, False, True, 2958434#
+        CheckAddMonths "9999-12-31-1k", 2958465#, -1#, True, True, 2958434#
+        CheckAddMonths "9999-12-31+0", 2958465#, 0#, False, True, 2958465#
+        CheckAddMonths "9999-12-31+0k", 2958465#, 0#, True, True, 2958465#
+        CheckAddMonths "9999-12-31+1", 2958465#, 1#, False, False, 0#
+        CheckAddMonths "9999-12-31+1k", 2958465#, 1#, True, False, 0#
+        CheckAddMonths "9999-12-31+2", 2958465#, 2#, False, False, 0#
+        CheckAddMonths "9999-12-31+2k", 2958465#, 2#, True, False, 0#
+        CheckAddMonths "9999-12-31+12", 2958465#, 12#, False, False, 0#
+        CheckAddMonths "9999-12-31+12k", 2958465#, 12#, True, False, 0#
+        CheckAddMonths "9999-12-31+48", 2958465#, 48#, False, False, 0#
+        CheckAddMonths "9999-12-31+48k", 2958465#, 48#, True, False, 0#
+    'An extreme count is outside the window, not an overflow
+        CheckAddMonths "extreme-1e+15", 46188#, (10# ^ 15), False, False, 0#
+        CheckAddMonths "extreme--1e+15", 46188#, -(10# ^ 15), False, False, 0#
+        CheckAddMonths "extreme-1e+300", 46188#, (10# ^ 300), False, False, 0#
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseNthWeekday()
+
+'
+'------------------------------------------------------------------------------
+'                            CHECK THE NTH WEEKDAY
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The nth weekday of a month is found under both bases, or reported absent or out of the window. 240 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Locates the first and fifth Monday-based and Sunday-based weekday of months in 1900, 2026 and 9999, and fails each domain
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "nth-weekday"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'The nth weekday of a month, with a fifth that may be absent and a result that may be before the window
+        CheckNthWeekday "2026-1-w1-n1M", 2026, 1, 1, 1, True, cdNone, 46027#
+        CheckNthWeekday "2026-1-w1-n1S", 2026, 1, 1, 1, False, cdNone, 46026#
+        CheckNthWeekday "2026-1-w1-n5M", 2026, 1, 1, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "2026-1-w1-n5S", 2026, 1, 1, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "2026-1-w7-n1M", 2026, 1, 7, 1, True, cdNone, 46026#
+        CheckNthWeekday "2026-1-w7-n1S", 2026, 1, 7, 1, False, cdNone, 46025#
+        CheckNthWeekday "2026-1-w7-n5M", 2026, 1, 7, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "2026-1-w7-n5S", 2026, 1, 7, 5, False, cdNone, 46053#
+        CheckNthWeekday "2026-2-w1-n1M", 2026, 2, 1, 1, True, cdNone, 46055#
+        CheckNthWeekday "2026-2-w1-n1S", 2026, 2, 1, 1, False, cdNone, 46054#
+        CheckNthWeekday "2026-2-w1-n5M", 2026, 2, 1, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "2026-2-w1-n5S", 2026, 2, 1, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "2026-2-w7-n1M", 2026, 2, 7, 1, True, cdNone, 46054#
+        CheckNthWeekday "2026-2-w7-n1S", 2026, 2, 7, 1, False, cdNone, 46060#
+        CheckNthWeekday "2026-2-w7-n5M", 2026, 2, 7, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "2026-2-w7-n5S", 2026, 2, 7, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "2026-12-w1-n1M", 2026, 12, 1, 1, True, cdNone, 46363#
+        CheckNthWeekday "2026-12-w1-n1S", 2026, 12, 1, 1, False, cdNone, 46362#
+        CheckNthWeekday "2026-12-w1-n5M", 2026, 12, 1, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "2026-12-w1-n5S", 2026, 12, 1, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "2026-12-w7-n1M", 2026, 12, 7, 1, True, cdNone, 46362#
+        CheckNthWeekday "2026-12-w7-n1S", 2026, 12, 7, 1, False, cdNone, 46361#
+        CheckNthWeekday "2026-12-w7-n5M", 2026, 12, 7, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "2026-12-w7-n5S", 2026, 12, 7, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "1900-1-w1-n1M", 1900, 1, 1, 1, True, cdResultWindow, 0#
+        CheckNthWeekday "1900-1-w1-n1S", 1900, 1, 1, 1, False, cdResultWindow, 0#
+        CheckNthWeekday "1900-1-w1-n5M", 1900, 1, 1, 5, True, cdResultWindow, 0#
+        CheckNthWeekday "1900-1-w1-n5S", 1900, 1, 1, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "1900-1-w7-n1M", 1900, 1, 7, 1, True, cdResultWindow, 0#
+        CheckNthWeekday "1900-1-w7-n1S", 1900, 1, 7, 1, False, cdResultWindow, 0#
+        CheckNthWeekday "1900-1-w7-n5M", 1900, 1, 7, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "1900-1-w7-n5S", 1900, 1, 7, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "1900-2-w1-n1M", 1900, 2, 1, 1, True, cdResultWindow, 0#
+        CheckNthWeekday "1900-2-w1-n1S", 1900, 2, 1, 1, False, cdResultWindow, 0#
+        CheckNthWeekday "1900-2-w1-n5M", 1900, 2, 1, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "1900-2-w1-n5S", 1900, 2, 1, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "1900-2-w7-n1M", 1900, 2, 7, 1, True, cdResultWindow, 0#
+        CheckNthWeekday "1900-2-w7-n1S", 1900, 2, 7, 1, False, cdResultWindow, 0#
+        CheckNthWeekday "1900-2-w7-n5M", 1900, 2, 7, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "1900-2-w7-n5S", 1900, 2, 7, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "1900-12-w1-n1M", 1900, 12, 1, 1, True, cdNone, 338#
+        CheckNthWeekday "1900-12-w1-n1S", 1900, 12, 1, 1, False, cdNone, 337#
+        CheckNthWeekday "1900-12-w1-n5M", 1900, 12, 1, 5, True, cdNone, 366#
+        CheckNthWeekday "1900-12-w1-n5S", 1900, 12, 1, 5, False, cdNone, 365#
+        CheckNthWeekday "1900-12-w7-n1M", 1900, 12, 7, 1, True, cdNone, 337#
+        CheckNthWeekday "1900-12-w7-n1S", 1900, 12, 7, 1, False, cdNone, 336#
+        CheckNthWeekday "1900-12-w7-n5M", 1900, 12, 7, 5, True, cdNone, 365#
+        CheckNthWeekday "1900-12-w7-n5S", 1900, 12, 7, 5, False, cdNone, 364#
+        CheckNthWeekday "9999-1-w1-n1M", 9999, 1, 1, 1, True, cdNone, 2958104#
+        CheckNthWeekday "9999-1-w1-n1S", 9999, 1, 1, 1, False, cdNone, 2958103#
+        CheckNthWeekday "9999-1-w1-n5M", 9999, 1, 1, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "9999-1-w1-n5S", 9999, 1, 1, 5, False, cdNone, 2958131#
+        CheckNthWeekday "9999-1-w7-n1M", 9999, 1, 7, 1, True, cdNone, 2958103#
+        CheckNthWeekday "9999-1-w7-n1S", 9999, 1, 7, 1, False, cdNone, 2958102#
+        CheckNthWeekday "9999-1-w7-n5M", 9999, 1, 7, 5, True, cdNone, 2958131#
+        CheckNthWeekday "9999-1-w7-n5S", 9999, 1, 7, 5, False, cdNone, 2958130#
+        CheckNthWeekday "9999-2-w1-n1M", 9999, 2, 1, 1, True, cdNone, 2958132#
+        CheckNthWeekday "9999-2-w1-n1S", 9999, 2, 1, 1, False, cdNone, 2958138#
+        CheckNthWeekday "9999-2-w1-n5M", 9999, 2, 1, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "9999-2-w1-n5S", 9999, 2, 1, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "9999-2-w7-n1M", 9999, 2, 7, 1, True, cdNone, 2958138#
+        CheckNthWeekday "9999-2-w7-n1S", 9999, 2, 7, 1, False, cdNone, 2958137#
+        CheckNthWeekday "9999-2-w7-n5M", 9999, 2, 7, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "9999-2-w7-n5S", 9999, 2, 7, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "9999-12-w1-n1M", 9999, 12, 1, 1, True, cdNone, 2958440#
+        CheckNthWeekday "9999-12-w1-n1S", 9999, 12, 1, 1, False, cdNone, 2958439#
+        CheckNthWeekday "9999-12-w1-n5M", 9999, 12, 1, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "9999-12-w1-n5S", 9999, 12, 1, 5, False, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "9999-12-w7-n1M", 9999, 12, 7, 1, True, cdNone, 2958439#
+        CheckNthWeekday "9999-12-w7-n1S", 9999, 12, 7, 1, False, cdNone, 2958438#
+        CheckNthWeekday "9999-12-w7-n5M", 9999, 12, 7, 5, True, cdOccurrenceAbsent, 0#
+        CheckNthWeekday "9999-12-w7-n5S", 9999, 12, 7, 5, False, cdOccurrenceAbsent, 0#
+    'Domain failures, in the order of the arguments
+        CheckNthWeekday "domain-1899-1-1-1", 1899, 1, 1, 1, True, cdDomainYear, 0#
+        CheckNthWeekday "domain-2026-0-1-1", 2026, 0, 1, 1, True, cdDomainMonth, 0#
+        CheckNthWeekday "domain-2026-1-0-1", 2026, 1, 0, 1, True, cdDomainWeekday, 0#
+        CheckNthWeekday "domain-2026-1-1-0", 2026, 1, 1, 0, True, cdDomainOccurrence, 0#
+        CheckNthWeekday "domain-1899-13-8-6", 1899, 13, 8, 6, True, cdDomainYear, 0#
+        CheckNthWeekday "domain-2026-13-8-6", 2026, 13, 8, 6, True, cdDomainMonth, 0#
+        CheckNthWeekday "domain-2026-1-8-6", 2026, 1, 8, 6, True, cdDomainWeekday, 0#
+        CheckNthWeekday "domain-10000-1-1-1", 10000, 1, 1, 1, True, cdDomainYear, 0#
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseLastWeekday()
+
+'
+'------------------------------------------------------------------------------
+'                            CHECK THE LAST WEEKDAY
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The last weekday of a month is found under both bases, or reported out of the window. 123 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Locates the last Monday-based and Sunday-based weekday of months in 1900, 2026 and 9999, and fails each domain
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "last-weekday"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'The last weekday of a month, with a result that may be before the window
+        CheckLastWeekday "2026-1-w1M", 2026, 1, 1, True, cdNone, 46048#
+        CheckLastWeekday "2026-1-w1S", 2026, 1, 1, False, cdNone, 46047#
+        CheckLastWeekday "2026-1-w7M", 2026, 1, 7, True, cdNone, 46047#
+        CheckLastWeekday "2026-1-w7S", 2026, 1, 7, False, cdNone, 46053#
+        CheckLastWeekday "2026-2-w1M", 2026, 2, 1, True, cdNone, 46076#
+        CheckLastWeekday "2026-2-w1S", 2026, 2, 1, False, cdNone, 46075#
+        CheckLastWeekday "2026-2-w7M", 2026, 2, 7, True, cdNone, 46075#
+        CheckLastWeekday "2026-2-w7S", 2026, 2, 7, False, cdNone, 46081#
+        CheckLastWeekday "2026-12-w1M", 2026, 12, 1, True, cdNone, 46384#
+        CheckLastWeekday "2026-12-w1S", 2026, 12, 1, False, cdNone, 46383#
+        CheckLastWeekday "2026-12-w7M", 2026, 12, 7, True, cdNone, 46383#
+        CheckLastWeekday "2026-12-w7S", 2026, 12, 7, False, cdNone, 46382#
+        CheckLastWeekday "1900-1-w1M", 1900, 1, 1, True, cdResultWindow, 0#
+        CheckLastWeekday "1900-1-w1S", 1900, 1, 1, False, cdResultWindow, 0#
+        CheckLastWeekday "1900-1-w7M", 1900, 1, 7, True, cdResultWindow, 0#
+        CheckLastWeekday "1900-1-w7S", 1900, 1, 7, False, cdResultWindow, 0#
+        CheckLastWeekday "1900-2-w1M", 1900, 2, 1, True, cdResultWindow, 0#
+        CheckLastWeekday "1900-2-w1S", 1900, 2, 1, False, cdResultWindow, 0#
+        CheckLastWeekday "1900-2-w7M", 1900, 2, 7, True, cdResultWindow, 0#
+        CheckLastWeekday "1900-2-w7S", 1900, 2, 7, False, cdResultWindow, 0#
+        CheckLastWeekday "1900-12-w1M", 1900, 12, 1, True, cdNone, 366#
+        CheckLastWeekday "1900-12-w1S", 1900, 12, 1, False, cdNone, 365#
+        CheckLastWeekday "1900-12-w7M", 1900, 12, 7, True, cdNone, 365#
+        CheckLastWeekday "1900-12-w7S", 1900, 12, 7, False, cdNone, 364#
+        CheckLastWeekday "9999-1-w1M", 9999, 1, 1, True, cdNone, 2958125#
+        CheckLastWeekday "9999-1-w1S", 9999, 1, 1, False, cdNone, 2958131#
+        CheckLastWeekday "9999-1-w7M", 9999, 1, 7, True, cdNone, 2958131#
+        CheckLastWeekday "9999-1-w7S", 9999, 1, 7, False, cdNone, 2958130#
+        CheckLastWeekday "9999-2-w1M", 9999, 2, 1, True, cdNone, 2958153#
+        CheckLastWeekday "9999-2-w1S", 9999, 2, 1, False, cdNone, 2958159#
+        CheckLastWeekday "9999-2-w7M", 9999, 2, 7, True, cdNone, 2958159#
+        CheckLastWeekday "9999-2-w7S", 9999, 2, 7, False, cdNone, 2958158#
+        CheckLastWeekday "9999-12-w1M", 9999, 12, 1, True, cdNone, 2958461#
+        CheckLastWeekday "9999-12-w1S", 9999, 12, 1, False, cdNone, 2958460#
+        CheckLastWeekday "9999-12-w7M", 9999, 12, 7, True, cdNone, 2958460#
+        CheckLastWeekday "9999-12-w7S", 9999, 12, 7, False, cdNone, 2958459#
+    'Domain failures, in the order of the arguments
+        CheckLastWeekday "domain-1899-1-1", 1899, 1, 1, True, cdDomainYear, 0#
+        CheckLastWeekday "domain-2026-0-1", 2026, 0, 1, True, cdDomainMonth, 0#
+        CheckLastWeekday "domain-2026-1-0", 2026, 1, 0, True, cdDomainWeekday, 0#
+        CheckLastWeekday "domain-1899-13-8", 1899, 13, 8, True, cdDomainYear, 0#
+        CheckLastWeekday "domain-2026-13-8", 2026, 13, 8, True, cdDomainMonth, 0#
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseParsePillar()
+
+'
+'------------------------------------------------------------------------------
+'                           CHECK THE PILLAR PARSER
+'------------------------------------------------------------------------------
+' PURPOSE
+'   A pillar token gives its month and day deltas, or the condition that rejects it. 176 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Parses accepted tokens of every unit and alias and each rejected form
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "parse-pillar"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'Pillar tokens: every unit, the aliases, case, blanks, and each rejection
+        CheckParsePillar "3M-cdNone", "3M", 3#, 0#, cdNone
+        CheckParsePillar "1Y6M-cdNone", "1Y6M", 18#, 0#, cdNone
+        CheckParsePillar "minus1Y-cdNone", "-1Y", -12#, 0#, cdNone
+        CheckParsePillar "plus1M-cdNone", "+1M", 1#, 0#, cdNone
+        CheckParsePillar "2W3D-cdNone", "2W3D", 0#, 17#, cdNone
+        CheckParsePillar "3D2W-cdNone", "3D2W", 0#, 17#, cdNone
+        CheckParsePillar "minus2W3D-cdNone", "-2W3D", 0#, -17#, cdNone
+        CheckParsePillar "1Y2M3W4D-cdNone", "1Y2M3W4D", 14#, 25#, cdNone
+        CheckParsePillar "10D-cdNone", "10D", 0#, 10#, cdNone
+        CheckParsePillar "0D-cdNone", "0D", 0#, 0#, cdNone
+        CheckParsePillar "0M-cdNone", "0M", 0#, 0#, cdNone
+        CheckParsePillar "ON-cdNone", "ON", 0#, 1#, cdNone
+        CheckParsePillar "OminusN-cdNone", "O/N", 0#, 1#, cdNone
+        CheckParsePillar "TN-cdNone", "TN", 0#, 2#, cdNone
+        CheckParsePillar "TminusN-cdNone", "T/N", 0#, 2#, cdNone
+        CheckParsePillar "on-cdNone", "on", 0#, 1#, cdNone
+        CheckParsePillar "tminusn-cdNone", "t/n", 0#, 2#, cdNone
+        CheckParsePillar "1m-cdNone", "1m", 1#, 0#, cdNone
+        CheckParsePillar "__1M__-cdNone", "  1M  ", 1#, 0#, cdNone
+        CheckParsePillar "tab2Ytab-cdNone", "" & vbTab & "2Y" & vbTab & "", 24#, 0#, cdNone
+        CheckParsePillar "999999999999M-cdNone", "999999999999M", 999999999999#, 0#, cdNone
+        CheckParsePillar "1_M-cdPillarTokenMalformed", "1 M", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "1M_2W-cdPillarTokenMalformed", "1M 2W", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "M-cdPillarTokenMalformed", "M", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "1.5Y-cdPillarTokenMalformed", "1.5Y", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "1X-cdPillarTokenMalformed", "1X", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "12-cdPillarTokenMalformed", "12", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "empty-cdPillarTokenMalformed", "", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "___-cdPillarTokenMalformed", "   ", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "plus-cdPillarTokenMalformed", "+", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "minus-cdPillarTokenMalformed", "-", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "1M2-cdPillarTokenMalformed", "1M2", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "ONE-cdPillarTokenMalformed", "ONE", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "OminusN1D-cdPillarTokenMalformed", "O/N1D", 0#, 0#, cdPillarTokenMalformed
+        CheckParsePillar "1M2M-cdPillarDuplicateUnit", "1M2M", 0#, 0#, cdPillarDuplicateUnit
+        CheckParsePillar "3D4D-cdPillarDuplicateUnit", "3D4D", 0#, 0#, cdPillarDuplicateUnit
+        CheckParsePillar "1Y1Y-cdPillarDuplicateUnit", "1Y1Y", 0#, 0#, cdPillarDuplicateUnit
+        CheckParsePillar "minusON-cdPillarAliasSigned", "-ON", 0#, 0#, cdPillarAliasSigned
+        CheckParsePillar "plusTminusN-cdPillarAliasSigned", "+T/N", 0#, 0#, cdPillarAliasSigned
+    'Not text, and a quantity that overflows a Double
+        CheckParsePillar "type-number", 3, 0#, 0#, cdPillarTypeRejected
+        CheckParsePillar "type-empty", Empty, 0#, 0#, cdPillarTypeRejected
+        CheckParsePillar "type-null", Null, 0#, 0#, cdPillarTypeRejected
+        CheckParsePillar "type-boolean", True, 0#, 0#, cdPillarTypeRejected
+        CheckParsePillar "type-overflow", String(310, "9") & "D", 0#, 0#, cdPillarAggregateRange
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseAddPillar()
+
+'
+'------------------------------------------------------------------------------
+'                            CHECK THE PILLAR SHIFT
+'------------------------------------------------------------------------------
+' PURPOSE
+'   A parsed pillar moves a date by months first, then days, inside the window. 45 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Shifts month ends and leap days by pillar deltas, to and past both edges of the window
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "add-pillar"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'Months first with the clip, then days; a shift out of the window is an aggregate range
+        CheckAddPillar "2026-01-31_1_0", 46053#, 1#, 0#, cdNone, 46081#
+        CheckAddPillar "2026-01-31_0_17", 46053#, 0#, 17#, cdNone, 46070#
+        CheckAddPillar "2026-03-31_-1_0", 46112#, -1#, 0#, cdNone, 46081#
+        CheckAddPillar "2024-02-29_12_0", 45351#, 12#, 0#, cdNone, 45716#
+        CheckAddPillar "2024-02-29_48_0", 45351#, 48#, 0#, cdNone, 46812#
+        CheckAddPillar "2026-01-15_-12_-3", 46037#, -12#, -3#, cdNone, 45669#
+        CheckAddPillar "2026-06-15_18_25", 46188#, 18#, 25#, cdNone, 46761#
+        CheckAddPillar "1900-03-01_-1_0", 61#, -1#, 0#, cdPillarAggregateRange, 0#
+        CheckAddPillar "1900-03-01_0_-1", 61#, 0#, -1#, cdPillarAggregateRange, 0#
+        CheckAddPillar "9999-12-31_1_0", 2958465#, 1#, 0#, cdPillarAggregateRange, 0#
+        CheckAddPillar "9999-12-31_0_1", 2958465#, 0#, 1#, cdPillarAggregateRange, 0#
+        CheckAddPillar "9999-11-30_1_0", 2958434#, 1#, 0#, cdNone, 2958464#
+        CheckAddPillar "2026-06-15_1e+15_0", 46188#, (10# ^ 15), 0#, cdPillarAggregateRange, 0#
+        CheckAddPillar "2026-06-15_0_1e+300", 46188#, 0#, (10# ^ 300), cdPillarAggregateRange, 0#
+        CheckAddPillar "2026-06-15_0_-1e+300", 46188#, 0#, -(10# ^ 300), cdPillarAggregateRange, 0#
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseFormatPillar()
+
+'
+'------------------------------------------------------------------------------
+'                           CHECK THE PILLAR FORMAT
+'------------------------------------------------------------------------------
+' PURPOSE
+'   An interval formats as one canonical pillar under each rounding mode, or reports the window. 864 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date core follows the calculation contracts
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Formats intervals of 0 to 40 days from one start, negative intervals, clipped month ends, leap days and the edges of the window
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   Expected values come from tests/ reference computations in Python, not from the code
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "format-pillar"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'Every rounding mode on short intervals, month edges, leap days, and both edges of the window
+        CheckFormatPillar "2026-01-01_2026-01-01_N", 46023#, 46023#, prNearest, "0D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-01_F", 46023#, 46023#, prFloor, "0D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-01_C", 46023#, 46023#, prCeiling, "0D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-02_N", 46023#, 46024#, prNearest, "1D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-02_F", 46023#, 46024#, prFloor, "1D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-02_C", 46023#, 46024#, prCeiling, "1D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-03_N", 46023#, 46025#, prNearest, "2D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-03_F", 46023#, 46025#, prFloor, "2D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-03_C", 46023#, 46025#, prCeiling, "2D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-04_N", 46023#, 46026#, prNearest, "3D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-04_F", 46023#, 46026#, prFloor, "3D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-04_C", 46023#, 46026#, prCeiling, "3D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-05_N", 46023#, 46027#, prNearest, "4D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-05_F", 46023#, 46027#, prFloor, "4D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-05_C", 46023#, 46027#, prCeiling, "4D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-06_N", 46023#, 46028#, prNearest, "5D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-06_F", 46023#, 46028#, prFloor, "5D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-06_C", 46023#, 46028#, prCeiling, "5D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-07_N", 46023#, 46029#, prNearest, "6D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-07_F", 46023#, 46029#, prFloor, "6D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-07_C", 46023#, 46029#, prCeiling, "6D", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-08_N", 46023#, 46030#, prNearest, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-08_F", 46023#, 46030#, prFloor, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-08_C", 46023#, 46030#, prCeiling, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-09_N", 46023#, 46031#, prNearest, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-09_F", 46023#, 46031#, prFloor, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-09_C", 46023#, 46031#, prCeiling, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-10_N", 46023#, 46032#, prNearest, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-10_F", 46023#, 46032#, prFloor, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-10_C", 46023#, 46032#, prCeiling, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-11_N", 46023#, 46033#, prNearest, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-11_F", 46023#, 46033#, prFloor, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-11_C", 46023#, 46033#, prCeiling, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-12_N", 46023#, 46034#, prNearest, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-12_F", 46023#, 46034#, prFloor, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-12_C", 46023#, 46034#, prCeiling, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-13_N", 46023#, 46035#, prNearest, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-13_F", 46023#, 46035#, prFloor, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-13_C", 46023#, 46035#, prCeiling, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-14_N", 46023#, 46036#, prNearest, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-14_F", 46023#, 46036#, prFloor, "1W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-14_C", 46023#, 46036#, prCeiling, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-15_N", 46023#, 46037#, prNearest, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-15_F", 46023#, 46037#, prFloor, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-15_C", 46023#, 46037#, prCeiling, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-16_N", 46023#, 46038#, prNearest, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-16_F", 46023#, 46038#, prFloor, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-16_C", 46023#, 46038#, prCeiling, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-17_N", 46023#, 46039#, prNearest, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-17_F", 46023#, 46039#, prFloor, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-17_C", 46023#, 46039#, prCeiling, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-18_N", 46023#, 46040#, prNearest, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-18_F", 46023#, 46040#, prFloor, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-18_C", 46023#, 46040#, prCeiling, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-19_N", 46023#, 46041#, prNearest, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-19_F", 46023#, 46041#, prFloor, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-19_C", 46023#, 46041#, prCeiling, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-20_N", 46023#, 46042#, prNearest, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-20_F", 46023#, 46042#, prFloor, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-20_C", 46023#, 46042#, prCeiling, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-21_N", 46023#, 46043#, prNearest, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-21_F", 46023#, 46043#, prFloor, "2W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-21_C", 46023#, 46043#, prCeiling, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-22_N", 46023#, 46044#, prNearest, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-22_F", 46023#, 46044#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-22_C", 46023#, 46044#, prCeiling, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-23_N", 46023#, 46045#, prNearest, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-23_F", 46023#, 46045#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-23_C", 46023#, 46045#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-24_N", 46023#, 46046#, prNearest, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-24_F", 46023#, 46046#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-24_C", 46023#, 46046#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-25_N", 46023#, 46047#, prNearest, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-25_F", 46023#, 46047#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-25_C", 46023#, 46047#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-26_N", 46023#, 46048#, prNearest, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-26_F", 46023#, 46048#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-26_C", 46023#, 46048#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-27_N", 46023#, 46049#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-27_F", 46023#, 46049#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-27_C", 46023#, 46049#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-28_N", 46023#, 46050#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-28_F", 46023#, 46050#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-28_C", 46023#, 46050#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-29_N", 46023#, 46051#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-29_F", 46023#, 46051#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-29_C", 46023#, 46051#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-30_N", 46023#, 46052#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-30_F", 46023#, 46052#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-30_C", 46023#, 46052#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-31_N", 46023#, 46053#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-31_F", 46023#, 46053#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-01_2026-01-31_C", 46023#, 46053#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-01_N", 46023#, 46054#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-01_F", 46023#, 46054#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-01_C", 46023#, 46054#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-02_N", 46023#, 46055#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-02_F", 46023#, 46055#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-02_C", 46023#, 46055#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-03_N", 46023#, 46056#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-03_F", 46023#, 46056#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-03_C", 46023#, 46056#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-04_N", 46023#, 46057#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-04_F", 46023#, 46057#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-04_C", 46023#, 46057#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-05_N", 46023#, 46058#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-05_F", 46023#, 46058#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-05_C", 46023#, 46058#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-06_N", 46023#, 46059#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-06_F", 46023#, 46059#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-06_C", 46023#, 46059#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-07_N", 46023#, 46060#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-07_F", 46023#, 46060#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-07_C", 46023#, 46060#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-08_N", 46023#, 46061#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-08_F", 46023#, 46061#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-08_C", 46023#, 46061#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-09_N", 46023#, 46062#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-09_F", 46023#, 46062#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-09_C", 46023#, 46062#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-10_N", 46023#, 46063#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-10_F", 46023#, 46063#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-10_C", 46023#, 46063#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-31_N", 46023#, 46022#, prNearest, "-1D", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-31_F", 46023#, 46022#, prFloor, "-1D", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-31_C", 46023#, 46022#, prCeiling, "-1D", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-26_N", 46023#, 46017#, prNearest, "-6D", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-26_F", 46023#, 46017#, prFloor, "-6D", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-26_C", 46023#, 46017#, prCeiling, "-6D", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-25_N", 46023#, 46016#, prNearest, "-1W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-25_F", 46023#, 46016#, prFloor, "-1W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-25_C", 46023#, 46016#, prCeiling, "-1W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-22_N", 46023#, 46013#, prNearest, "-1W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-22_F", 46023#, 46013#, prFloor, "-1W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-22_C", 46023#, 46013#, prCeiling, "-2W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-11_N", 46023#, 46002#, prNearest, "-3W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-11_F", 46023#, 46002#, prFloor, "-3W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-11_C", 46023#, 46002#, prCeiling, "-3W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-08_N", 46023#, 45999#, prNearest, "-3W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-08_F", 46023#, 45999#, prFloor, "-3W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-08_C", 46023#, 45999#, prCeiling, "-1M", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-07_N", 46023#, 45998#, prNearest, "-3W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-07_F", 46023#, 45998#, prFloor, "-3W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-07_C", 46023#, 45998#, prCeiling, "-1M", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-06_N", 46023#, 45997#, prNearest, "-1M", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-06_F", 46023#, 45997#, prFloor, "-3W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-06_C", 46023#, 45997#, prCeiling, "-1M", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-05_N", 46023#, 45996#, prNearest, "-1M", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-05_F", 46023#, 45996#, prFloor, "-3W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-05_C", 46023#, 45996#, prCeiling, "-1M", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-02_N", 46023#, 45993#, prNearest, "-1M", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-02_F", 46023#, 45993#, prFloor, "-3W", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-02_C", 46023#, 45993#, prCeiling, "-1M", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-01_N", 46023#, 45992#, prNearest, "-1M", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-01_F", 46023#, 45992#, prFloor, "-1M", cdNone
+        CheckFormatPillar "2026-01-01_2025-12-01_C", 46023#, 45992#, prCeiling, "-1M", cdNone
+        CheckFormatPillar "2026-01-01_2025-01-01_N", 46023#, 45658#, prNearest, "-1Y", cdNone
+        CheckFormatPillar "2026-01-01_2025-01-01_F", 46023#, 45658#, prFloor, "-1Y", cdNone
+        CheckFormatPillar "2026-01-01_2025-01-01_C", 46023#, 45658#, prCeiling, "-1Y", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-15_N", 46023#, 46068#, prNearest, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-15_F", 46023#, 46068#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-01_2026-02-15_C", 46023#, 46068#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-03-01_N", 46023#, 46082#, prNearest, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-03-01_F", 46023#, 46082#, prFloor, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-03-01_C", 46023#, 46082#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-03-02_N", 46023#, 46083#, prNearest, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-03-02_F", 46023#, 46083#, prFloor, "2M", cdNone
+        CheckFormatPillar "2026-01-01_2026-03-02_C", 46023#, 46083#, prCeiling, "3M", cdNone
+        CheckFormatPillar "2026-01-01_2026-04-01_N", 46023#, 46113#, prNearest, "3M", cdNone
+        CheckFormatPillar "2026-01-01_2026-04-01_F", 46023#, 46113#, prFloor, "3M", cdNone
+        CheckFormatPillar "2026-01-01_2026-04-01_C", 46023#, 46113#, prCeiling, "3M", cdNone
+        CheckFormatPillar "2026-01-01_2026-06-30_N", 46023#, 46203#, prNearest, "6M", cdNone
+        CheckFormatPillar "2026-01-01_2026-06-30_F", 46023#, 46203#, prFloor, "5M", cdNone
+        CheckFormatPillar "2026-01-01_2026-06-30_C", 46023#, 46203#, prCeiling, "6M", cdNone
+        CheckFormatPillar "2026-01-01_2026-12-31_N", 46023#, 46387#, prNearest, "1Y", cdNone
+        CheckFormatPillar "2026-01-01_2026-12-31_F", 46023#, 46387#, prFloor, "11M", cdNone
+        CheckFormatPillar "2026-01-01_2026-12-31_C", 46023#, 46387#, prCeiling, "1Y", cdNone
+        CheckFormatPillar "2026-01-01_2027-01-01_N", 46023#, 46388#, prNearest, "1Y", cdNone
+        CheckFormatPillar "2026-01-01_2027-01-01_F", 46023#, 46388#, prFloor, "1Y", cdNone
+        CheckFormatPillar "2026-01-01_2027-01-01_C", 46023#, 46388#, prCeiling, "1Y", cdNone
+        CheckFormatPillar "2026-01-01_2027-01-02_N", 46023#, 46389#, prNearest, "1Y", cdNone
+        CheckFormatPillar "2026-01-01_2027-01-02_F", 46023#, 46389#, prFloor, "1Y", cdNone
+        CheckFormatPillar "2026-01-01_2027-01-02_C", 46023#, 46389#, prCeiling, "1Y1M", cdNone
+        CheckFormatPillar "2026-01-01_2027-02-05_N", 46023#, 46423#, prNearest, "1Y1M", cdNone
+        CheckFormatPillar "2026-01-01_2027-02-05_F", 46023#, 46423#, prFloor, "1Y1M", cdNone
+        CheckFormatPillar "2026-01-01_2027-02-05_C", 46023#, 46423#, prCeiling, "1Y2M", cdNone
+        CheckFormatPillar "2026-01-01_2028-01-01_N", 46023#, 46753#, prNearest, "2Y", cdNone
+        CheckFormatPillar "2026-01-01_2028-01-01_F", 46023#, 46753#, prFloor, "2Y", cdNone
+        CheckFormatPillar "2026-01-01_2028-01-01_C", 46023#, 46753#, prCeiling, "2Y", cdNone
+        CheckFormatPillar "2026-01-01_2035-12-30_N", 46023#, 49673#, prNearest, "10Y", cdNone
+        CheckFormatPillar "2026-01-01_2035-12-30_F", 46023#, 49673#, prFloor, "9Y11M", cdNone
+        CheckFormatPillar "2026-01-01_2035-12-30_C", 46023#, 49673#, prCeiling, "10Y", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-07_N", 46053#, 46060#, prNearest, "1W", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-07_F", 46053#, 46060#, prFloor, "1W", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-07_C", 46053#, 46060#, prCeiling, "1W", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-25_N", 46053#, 46078#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-25_F", 46053#, 46078#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-25_C", 46053#, 46078#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-26_N", 46053#, 46079#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-26_F", 46053#, 46079#, prFloor, "3W", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-26_C", 46053#, 46079#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-28_N", 46053#, 46081#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-28_F", 46053#, 46081#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-02-28_C", 46053#, 46081#, prCeiling, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-01_N", 46053#, 46082#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-01_F", 46053#, 46082#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-01_C", 46053#, 46082#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-02_N", 46053#, 46083#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-02_F", 46053#, 46083#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-02_C", 46053#, 46083#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-03_N", 46053#, 46084#, prNearest, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-03_F", 46053#, 46084#, prFloor, "1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-03_C", 46053#, 46084#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-31_N", 46053#, 46112#, prNearest, "2M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-31_F", 46053#, 46112#, prFloor, "2M", cdNone
+        CheckFormatPillar "2026-01-31_2026-03-31_C", 46053#, 46112#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2026-01-31_2026-04-01_N", 46053#, 46113#, prNearest, "2M", cdNone
+        CheckFormatPillar "2026-01-31_2026-04-01_F", 46053#, 46113#, prFloor, "2M", cdNone
+        CheckFormatPillar "2026-01-31_2026-04-01_C", 46053#, 46113#, prCeiling, "3M", cdNone
+        CheckFormatPillar "2026-01-31_2026-04-02_N", 46053#, 46114#, prNearest, "2M", cdNone
+        CheckFormatPillar "2026-01-31_2026-04-02_F", 46053#, 46114#, prFloor, "2M", cdNone
+        CheckFormatPillar "2026-01-31_2026-04-02_C", 46053#, 46114#, prCeiling, "3M", cdNone
+        CheckFormatPillar "2026-01-31_2027-01-31_N", 46053#, 46418#, prNearest, "1Y", cdNone
+        CheckFormatPillar "2026-01-31_2027-01-31_F", 46053#, 46418#, prFloor, "1Y", cdNone
+        CheckFormatPillar "2026-01-31_2027-01-31_C", 46053#, 46418#, prCeiling, "1Y", cdNone
+        CheckFormatPillar "2026-01-31_2026-01-06_N", 46053#, 46028#, prNearest, "-3W", cdNone
+        CheckFormatPillar "2026-01-31_2026-01-06_F", 46053#, 46028#, prFloor, "-3W", cdNone
+        CheckFormatPillar "2026-01-31_2026-01-06_C", 46053#, 46028#, prCeiling, "-1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-01-03_N", 46053#, 46025#, prNearest, "-1M", cdNone
+        CheckFormatPillar "2026-01-31_2026-01-03_F", 46053#, 46025#, prFloor, "-3W", cdNone
+        CheckFormatPillar "2026-01-31_2026-01-03_C", 46053#, 46025#, prCeiling, "-1M", cdNone
+        CheckFormatPillar "2026-01-31_2025-12-03_N", 46053#, 45994#, prNearest, "-2M", cdNone
+        CheckFormatPillar "2026-01-31_2025-12-03_F", 46053#, 45994#, prFloor, "-1M", cdNone
+        CheckFormatPillar "2026-01-31_2025-12-03_C", 46053#, 45994#, prCeiling, "-2M", cdNone
+        CheckFormatPillar "2024-02-29_2024-03-30_N", 45351#, 45381#, prNearest, "1M", cdNone
+        CheckFormatPillar "2024-02-29_2024-03-30_F", 45351#, 45381#, prFloor, "1M", cdNone
+        CheckFormatPillar "2024-02-29_2024-03-30_C", 45351#, 45381#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2024-02-29_2024-03-31_N", 45351#, 45382#, prNearest, "1M", cdNone
+        CheckFormatPillar "2024-02-29_2024-03-31_F", 45351#, 45382#, prFloor, "1M", cdNone
+        CheckFormatPillar "2024-02-29_2024-03-31_C", 45351#, 45382#, prCeiling, "2M", cdNone
+        CheckFormatPillar "2024-02-29_2025-02-28_N", 45351#, 45716#, prNearest, "1Y", cdNone
+        CheckFormatPillar "2024-02-29_2025-02-28_F", 45351#, 45716#, prFloor, "1Y", cdNone
+        CheckFormatPillar "2024-02-29_2025-02-28_C", 45351#, 45716#, prCeiling, "1Y", cdNone
+        CheckFormatPillar "2024-02-29_2025-03-01_N", 45351#, 45717#, prNearest, "1Y", cdNone
+        CheckFormatPillar "2024-02-29_2025-03-01_F", 45351#, 45717#, prFloor, "1Y", cdNone
+        CheckFormatPillar "2024-02-29_2025-03-01_C", 45351#, 45717#, prCeiling, "1Y1M", cdNone
+        CheckFormatPillar "2024-02-29_2028-02-29_N", 45351#, 46812#, prNearest, "4Y", cdNone
+        CheckFormatPillar "2024-02-29_2028-02-29_F", 45351#, 46812#, prFloor, "4Y", cdNone
+        CheckFormatPillar "2024-02-29_2028-02-29_C", 45351#, 46812#, prCeiling, "4Y", cdNone
+        CheckFormatPillar "2024-02-29_2024-01-30_N", 45351#, 45321#, prNearest, "-1M", cdNone
+        CheckFormatPillar "2024-02-29_2024-01-30_F", 45351#, 45321#, prFloor, "-3W", cdNone
+        CheckFormatPillar "2024-02-29_2024-01-30_C", 45351#, 45321#, prCeiling, "-1M", cdNone
+        CheckFormatPillar "2024-02-29_2024-01-29_N", 45351#, 45320#, prNearest, "-1M", cdNone
+        CheckFormatPillar "2024-02-29_2024-01-29_F", 45351#, 45320#, prFloor, "-1M", cdNone
+        CheckFormatPillar "2024-02-29_2024-01-29_C", 45351#, 45320#, prCeiling, "-1M", cdNone
+        CheckFormatPillar "2024-02-29_2023-03-01_N", 45351#, 44986#, prNearest, "-1Y", cdNone
+        CheckFormatPillar "2024-02-29_2023-03-01_F", 45351#, 44986#, prFloor, "-11M", cdNone
+        CheckFormatPillar "2024-02-29_2023-03-01_C", 45351#, 44986#, prCeiling, "-1Y", cdNone
+        CheckFormatPillar "1900-03-10_1900-03-01_N", 70#, 61#, prNearest, "-1W", cdNone
+        CheckFormatPillar "1900-03-10_1900-03-01_F", 70#, 61#, prFloor, "-1W", cdNone
+        CheckFormatPillar "1900-03-10_1900-03-01_C", 70#, 61#, prCeiling, "", cdResultWindow
+        CheckFormatPillar "1900-03-05_1900-03-01_N", 65#, 61#, prNearest, "-4D", cdNone
+        CheckFormatPillar "1900-03-05_1900-03-01_F", 65#, 61#, prFloor, "-4D", cdNone
+        CheckFormatPillar "1900-03-05_1900-03-01_C", 65#, 61#, prCeiling, "-4D", cdNone
+        CheckFormatPillar "1900-03-01_1900-04-01_N", 61#, 92#, prNearest, "1M", cdNone
+        CheckFormatPillar "1900-03-01_1900-04-01_F", 61#, 92#, prFloor, "1M", cdNone
+        CheckFormatPillar "1900-03-01_1900-04-01_C", 61#, 92#, prCeiling, "1M", cdNone
+        CheckFormatPillar "1900-03-01_1901-03-01_N", 61#, 426#, prNearest, "1Y", cdNone
+        CheckFormatPillar "1900-03-01_1901-03-01_F", 61#, 426#, prFloor, "1Y", cdNone
+        CheckFormatPillar "1900-03-01_1901-03-01_C", 61#, 426#, prCeiling, "1Y", cdNone
+        CheckFormatPillar "9999-12-20_9999-12-31_N", 2958454#, 2958465#, prNearest, "1W", cdNone
+        CheckFormatPillar "9999-12-20_9999-12-31_F", 2958454#, 2958465#, prFloor, "1W", cdNone
+        CheckFormatPillar "9999-12-20_9999-12-31_C", 2958454#, 2958465#, prCeiling, "", cdResultWindow
+        CheckFormatPillar "9999-12-31_9999-12-20_N", 2958465#, 2958454#, prNearest, "-2W", cdNone
+        CheckFormatPillar "9999-12-31_9999-12-20_F", 2958465#, 2958454#, prFloor, "-1W", cdNone
+        CheckFormatPillar "9999-12-31_9999-12-20_C", 2958465#, 2958454#, prCeiling, "-2W", cdNone
+        CheckFormatPillar "9999-12-01_9999-12-31_N", 2958435#, 2958465#, prNearest, "3W", cdNone
+        CheckFormatPillar "9999-12-01_9999-12-31_F", 2958435#, 2958465#, prFloor, "3W", cdNone
+        CheckFormatPillar "9999-12-01_9999-12-31_C", 2958435#, 2958465#, prCeiling, "", cdResultWindow
+        CheckFormatPillar "9999-11-30_9999-12-31_N", 2958434#, 2958465#, prNearest, "1M", cdNone
+        CheckFormatPillar "9999-11-30_9999-12-31_F", 2958434#, 2958465#, prFloor, "1M", cdNone
+        CheckFormatPillar "9999-11-30_9999-12-31_C", 2958434#, 2958465#, prCeiling, "", cdResultWindow
+        CheckFormatPillar "1900-03-01_9999-12-31_N", 61#, 2958465#, prNearest, "8099Y9M", cdNone
+        CheckFormatPillar "1900-03-01_9999-12-31_F", 61#, 2958465#, prFloor, "8099Y9M", cdNone
+        CheckFormatPillar "1900-03-01_9999-12-31_C", 61#, 2958465#, prCeiling, "", cdResultWindow
+        CheckFormatPillar "9999-12-31_1900-03-01_N", 2958465#, 61#, prNearest, "-8099Y9M", cdNone
+        CheckFormatPillar "9999-12-31_1900-03-01_F", 2958465#, 61#, prFloor, "-8099Y9M", cdNone
+        CheckFormatPillar "9999-12-31_1900-03-01_C", 2958465#, 61#, prCeiling, "", cdResultWindow
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+'
+'------------------------------------------------------------------------------
+'
+'                                   HELPERS
+'
+'------------------------------------------------------------------------------
+'
+
+Private Sub CheckLong( _
+    ByVal Label As String, _
+    ByVal Expected As Long, _
+    ByVal Actual As Long)
+
+'
+'------------------------------------------------------------------------------
+'                             CHECK A WHOLE NUMBER
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Asserts that a whole number equals its expectation. 1 assertion
+'
+' WHY THIS EXISTS
+'   The same checks repeat for many rows, so they are stated once
+'
+' INPUTS
+'   Label
+'     Name of the assertion
+'
+'   Expected
+'     The value from the reference
+'
+'   Actual
+'     The value from the code under test
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Compares the two values exactly
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' CHECK
+'------------------------------------------------------------------------------
+    'Whole numbers compare exactly
+        TEST_Harness.AssertEqualDouble Label, Expected, Actual
+
+End Sub
+
+Private Sub CheckFlag( _
+    ByVal Label As String, _
+    ByVal Expected As Boolean, _
+    ByVal Actual As Boolean)
+
+'
+'------------------------------------------------------------------------------
+'                               CHECK A BOOLEAN
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Asserts that a Boolean equals its expectation. 1 assertion
+'
+' WHY THIS EXISTS
+'   The same checks repeat for many rows, so they are stated once
+'
+' INPUTS
+'   Label
+'     Name of the assertion
+'
+'   Expected
+'     The value from the reference
+'
+'   Actual
+'     The value from the code under test
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Compares the two values
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' CHECK
+'------------------------------------------------------------------------------
+    'Booleans compare exactly
+        TEST_Harness.AssertTrue Label, Actual = Expected, "the value differs from the expectation"
+
+End Sub
+
+Private Sub CheckDate( _
+    ByVal Label As String, _
+    ByVal Expected As Double, _
+    ByVal Actual As Date)
+
+'
+'------------------------------------------------------------------------------
+'                                 CHECK A DATE
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Asserts that a date has the expected serial. 1 assertion
+'
+' WHY THIS EXISTS
+'   The same checks repeat for many rows, so they are stated once
+'
+' INPUTS
+'   Label
+'     Name of the assertion
+'
+'   Expected
+'     The serial from the reference
+'
+'   Actual
+'     The date from the code under test
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Compares the serial of the date with the expectation
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' CHECK
+'------------------------------------------------------------------------------
+    'Whole days compare exactly
+        TEST_Harness.AssertEqualDouble Label, Expected, CDbl(Actual)
+
+End Sub
+
+Private Sub CheckCondition( _
+    ByVal Label As String, _
+    ByVal Expected As KPRCondition, _
+    ByVal Actual As KPRCondition)
+
+'
+'------------------------------------------------------------------------------
+'                              CHECK A CONDITION
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Asserts that a condition is the expected one. 1 assertion
+'
+' WHY THIS EXISTS
+'   The same checks repeat for many rows, so they are stated once
+'
+' INPUTS
+'   Label
+'     Name of the assertion
+'
+'   Expected
+'     The condition from the contract
+'
+'   Actual
+'     The condition from the code under test
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Compares the identifiers of the two conditions
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   CORE_Err.ConditionName, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' CHECK
+'------------------------------------------------------------------------------
+    'The identifier is the semantic name that evidence cites
+        TEST_Harness.AssertEqualText Label, CORE_Err.ConditionName(Expected), CORE_Err.ConditionName(Actual)
+
+End Sub
+
+Private Sub CheckAddDays( _
+    ByVal Label As String, _
+    ByVal StartSerial As Double, _
+    ByVal Days As Double, _
+    ByVal ExpectedAccepted As Boolean, _
+    ByVal ExpectedSerial As Double)
+
+'
+'------------------------------------------------------------------------------
+'                            CHECK A SHIFT BY DAYS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Shifts a date by days and checks the result and the output. 2 assertions
+'
+' WHY THIS EXISTS
+'   The same checks repeat for many rows, so they are stated once
+'
+' INPUTS
+'   Label
+'     Prefix of the assertion names
+'
+'   StartSerial, Days
+'     The inputs
+'
+'   ExpectedAccepted
+'     Whether the shift stays inside the window
+'
+'   ExpectedSerial
+'     The serial of the result; ignored when the shift is rejected
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Starts from a sentinel output so that an assignment on failure is seen
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   CORE_Dates.TryAddDays, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim DateOut         As Date     'Output of the shift, a sentinel on entry
+    Dim Accepted        As Boolean  'Whether the shift was accepted
+    Dim Expected        As Double   'Serial the output must hold
+
+'------------------------------------------------------------------------------
+' RUN
+'------------------------------------------------------------------------------
+    'Start from a sentinel, then shift
+        DateOut = CDate(SENTINEL_SERIAL)
+        Accepted = CORE_Dates.TryAddDays(CDate(StartSerial), Days, DateOut)
+    'A rejection leaves the sentinel untouched
+        If ExpectedAccepted Then
+            Expected = ExpectedSerial
+        Else
+            Expected = SENTINEL_SERIAL
+        End If
+
+'------------------------------------------------------------------------------
+' CHECK
+'------------------------------------------------------------------------------
+        CheckFlag Label & "-accepted", ExpectedAccepted, Accepted
+        CheckDate Label & "-value", Expected, DateOut
+
+End Sub
+
+Private Sub CheckAddMonths( _
+    ByVal Label As String, _
+    ByVal StartSerial As Double, _
+    ByVal Months As Double, _
+    ByVal KeepEOM As Boolean, _
+    ByVal ExpectedAccepted As Boolean, _
+    ByVal ExpectedSerial As Double)
+
+'
+'------------------------------------------------------------------------------
+'                           CHECK A SHIFT BY MONTHS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Shifts a date by months and checks the result and the output. 2 assertions
+'
+' WHY THIS EXISTS
+'   The same checks repeat for many rows, so they are stated once
+'
+' INPUTS
+'   Label
+'     Prefix of the assertion names
+'
+'   StartSerial, Months, KeepEOM
+'     The inputs
+'
+'   ExpectedAccepted
+'     Whether the shift stays inside the window
+'
+'   ExpectedSerial
+'     The serial of the result; ignored when the shift is rejected
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Starts from a sentinel output so that an assignment on failure is seen
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   CORE_Dates.TryAddMonths, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim DateOut         As Date     'Output of the shift, a sentinel on entry
+    Dim Accepted        As Boolean  'Whether the shift was accepted
+    Dim Expected        As Double   'Serial the output must hold
+
+'------------------------------------------------------------------------------
+' RUN
+'------------------------------------------------------------------------------
+    'Start from a sentinel, then shift
+        DateOut = CDate(SENTINEL_SERIAL)
+        Accepted = CORE_Dates.TryAddMonths(CDate(StartSerial), Months, KeepEOM, DateOut)
+    'A rejection leaves the sentinel untouched
+        If ExpectedAccepted Then
+            Expected = ExpectedSerial
+        Else
+            Expected = SENTINEL_SERIAL
+        End If
+
+'------------------------------------------------------------------------------
+' CHECK
+'------------------------------------------------------------------------------
+        CheckFlag Label & "-accepted", ExpectedAccepted, Accepted
+        CheckDate Label & "-value", Expected, DateOut
+
+End Sub
+
+Private Sub CheckNthWeekday( _
+    ByVal Label As String, _
+    ByVal YearIn As Long, _
+    ByVal MonthIn As Long, _
+    ByVal WeekdayIn As Long, _
+    ByVal Occurrence As Long, _
+    ByVal MondayBase As Boolean, _
+    ByVal ExpectedCondition As KPRCondition, _
+    ByVal ExpectedSerial As Double)
+
+'
+'------------------------------------------------------------------------------
+'                            CHECK THE NTH WEEKDAY
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Locates a weekday and checks the result, the condition and the output. 3 assertions
+'
+' WHY THIS EXISTS
+'   The same checks repeat for many rows, so they are stated once
+'
+' INPUTS
+'   Label
+'     Prefix of the assertion names
+'
+'   YearIn, MonthIn, WeekdayIn, Occurrence, MondayBase
+'     The inputs
+'
+'   ExpectedCondition
+'     cdNone for a date, otherwise the failing condition
+'
+'   ExpectedSerial
+'     The serial of the result; ignored when a condition is expected
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Starts from a sentinel output so that an assignment on failure is seen
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err.ConditionName, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim DateOut         As Date         'Output of the locator, a sentinel on entry
+    Dim Condition       As KPRCondition 'Condition that the locator reported
+    Dim Accepted        As Boolean      'Whether a date was found
+    Dim Expected        As Double       'Serial the output must hold
+
+'------------------------------------------------------------------------------
+' RUN
+'------------------------------------------------------------------------------
+    'Start from a sentinel, then locate
+        DateOut = CDate(SENTINEL_SERIAL)
+        Accepted = CORE_Dates.TryNthWeekday(YearIn, MonthIn, WeekdayIn, Occurrence, MondayBase, DateOut, Condition)
+    'A failure leaves the sentinel untouched
+        If ExpectedCondition = cdNone Then
+            Expected = ExpectedSerial
+        Else
+            Expected = SENTINEL_SERIAL
+        End If
+
+'------------------------------------------------------------------------------
+' CHECK
+'------------------------------------------------------------------------------
+        CheckFlag Label & "-accepted", (ExpectedCondition = cdNone), Accepted
+        CheckCondition Label & "-condition", ExpectedCondition, Condition
+        CheckDate Label & "-value", Expected, DateOut
+
+End Sub
+
+Private Sub CheckLastWeekday( _
+    ByVal Label As String, _
+    ByVal YearIn As Long, _
+    ByVal MonthIn As Long, _
+    ByVal WeekdayIn As Long, _
+    ByVal MondayBase As Boolean, _
+    ByVal ExpectedCondition As KPRCondition, _
+    ByVal ExpectedSerial As Double)
+
+'
+'------------------------------------------------------------------------------
+'                            CHECK THE LAST WEEKDAY
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Locates a weekday and checks the result, the condition and the output. 3 assertions
+'
+' WHY THIS EXISTS
+'   The same checks repeat for many rows, so they are stated once
+'
+' INPUTS
+'   Label
+'     Prefix of the assertion names
+'
+'   YearIn, MonthIn, WeekdayIn, MondayBase
+'     The inputs
+'
+'   ExpectedCondition
+'     cdNone for a date, otherwise the failing condition
+'
+'   ExpectedSerial
+'     The serial of the result; ignored when a condition is expected
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Starts from a sentinel output so that an assignment on failure is seen
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err.ConditionName, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim DateOut         As Date         'Output of the locator, a sentinel on entry
+    Dim Condition       As KPRCondition 'Condition that the locator reported
+    Dim Accepted        As Boolean      'Whether a date was found
+    Dim Expected        As Double       'Serial the output must hold
+
+'------------------------------------------------------------------------------
+' RUN
+'------------------------------------------------------------------------------
+    'Start from a sentinel, then locate
+        DateOut = CDate(SENTINEL_SERIAL)
+        Accepted = CORE_Dates.TryLastWeekday(YearIn, MonthIn, WeekdayIn, MondayBase, DateOut, Condition)
+    'A failure leaves the sentinel untouched
+        If ExpectedCondition = cdNone Then
+            Expected = ExpectedSerial
+        Else
+            Expected = SENTINEL_SERIAL
+        End If
+
+'------------------------------------------------------------------------------
+' CHECK
+'------------------------------------------------------------------------------
+        CheckFlag Label & "-accepted", (ExpectedCondition = cdNone), Accepted
+        CheckCondition Label & "-condition", ExpectedCondition, Condition
+        CheckDate Label & "-value", Expected, DateOut
+
+End Sub
+
+Private Sub CheckParsePillar( _
+    ByVal Label As String, _
+    ByVal PillarIn As Variant, _
+    ByVal ExpectedMonths As Double, _
+    ByVal ExpectedDays As Double, _
+    ByVal ExpectedCondition As KPRCondition)
+
+'
+'------------------------------------------------------------------------------
+'                             CHECK A PILLAR PARSE
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Parses a pillar token and checks the result, the condition and both deltas. 4 assertions
+'
+' WHY THIS EXISTS
+'   The same checks repeat for many rows, so they are stated once
+'
+' INPUTS
+'   Label
+'     Prefix of the assertion names
+'
+'   PillarIn
+'     The token
+'
+'   ExpectedMonths, ExpectedDays
+'     The deltas; ignored when a condition is expected
+'
+'   ExpectedCondition
+'     cdNone for a token, otherwise the failing condition
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Starts from sentinel outputs so that an assignment on failure is seen
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   CORE_Dates.TryParsePillar, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Months          As Double       'Month delta, a sentinel on entry
+    Dim Days            As Double       'Day delta, a sentinel on entry
+    Dim Condition       As KPRCondition 'Condition that the parser reported
+    Dim Accepted        As Boolean      'Whether the token was accepted
+    Dim WantMonths      As Double       'Value the month output must hold
+    Dim WantDays        As Double       'Value the day output must hold
+
+'------------------------------------------------------------------------------
+' RUN
+'------------------------------------------------------------------------------
+    'Start from sentinels, then parse
+        Months = SENTINEL_DELTA
+        Days = SENTINEL_DELTA
+        Accepted = CORE_Dates.TryParsePillar(PillarIn, Months, Days, Condition)
+    'A rejection leaves the sentinels untouched
+        If ExpectedCondition = cdNone Then
+            WantMonths = ExpectedMonths
+            WantDays = ExpectedDays
+        Else
+            WantMonths = SENTINEL_DELTA
+            WantDays = SENTINEL_DELTA
+        End If
+
+'------------------------------------------------------------------------------
+' CHECK
+'------------------------------------------------------------------------------
+        CheckFlag Label & "-accepted", (ExpectedCondition = cdNone), Accepted
+        CheckCondition Label & "-condition", ExpectedCondition, Condition
+        TEST_Harness.AssertEqualDouble Label & "-months", WantMonths, Months
+        TEST_Harness.AssertEqualDouble Label & "-days", WantDays, Days
+
+End Sub
+
+Private Sub CheckAddPillar( _
+    ByVal Label As String, _
+    ByVal StartSerial As Double, _
+    ByVal Months As Double, _
+    ByVal Days As Double, _
+    ByVal ExpectedCondition As KPRCondition, _
+    ByVal ExpectedSerial As Double)
+
+'
+'------------------------------------------------------------------------------
+'                             CHECK A PILLAR SHIFT
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Adds a parsed pillar to a date and checks the result, the condition and the output. 3 assertions
+'
+' WHY THIS EXISTS
+'   The same checks repeat for many rows, so they are stated once
+'
+' INPUTS
+'   Label
+'     Prefix of the assertion names
+'
+'   StartSerial, Months, Days
+'     The inputs
+'
+'   ExpectedCondition
+'     cdNone for a date, otherwise cdPillarAggregateRange
+'
+'   ExpectedSerial
+'     The serial of the result; ignored when a condition is expected
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Starts from a sentinel output so that an assignment on failure is seen
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   CORE_Dates.TryAddPillar, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim DateOut         As Date         'Output of the shift, a sentinel on entry
+    Dim Condition       As KPRCondition 'Condition that the shift reported
+    Dim Accepted        As Boolean      'Whether the shift was accepted
+    Dim Expected        As Double       'Serial the output must hold
+
+'------------------------------------------------------------------------------
+' RUN
+'------------------------------------------------------------------------------
+    'Start from a sentinel, then shift
+        DateOut = CDate(SENTINEL_SERIAL)
+        Accepted = CORE_Dates.TryAddPillar(CDate(StartSerial), Months, Days, DateOut, Condition)
+    'A rejection leaves the sentinel untouched
+        If ExpectedCondition = cdNone Then
+            Expected = ExpectedSerial
+        Else
+            Expected = SENTINEL_SERIAL
+        End If
+
+'------------------------------------------------------------------------------
+' CHECK
+'------------------------------------------------------------------------------
+        CheckFlag Label & "-accepted", (ExpectedCondition = cdNone), Accepted
+        CheckCondition Label & "-condition", ExpectedCondition, Condition
+        CheckDate Label & "-value", Expected, DateOut
+
+End Sub
+
+Private Sub CheckFormatPillar( _
+    ByVal Label As String, _
+    ByVal StartSerial As Double, _
+    ByVal EndSerial As Double, _
+    ByVal Mode As KPRPillarRounding, _
+    ByVal ExpectedToken As String, _
+    ByVal ExpectedCondition As KPRCondition)
+
+'
+'------------------------------------------------------------------------------
+'                            CHECK A PILLAR FORMAT
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Formats an interval as a pillar and checks the result, the condition and the token. 3 assertions
+'
+' WHY THIS EXISTS
+'   The same checks repeat for many rows, so they are stated once
+'
+' INPUTS
+'   Label
+'     Prefix of the assertion names
+'
+'   StartSerial, EndSerial, Mode
+'     The inputs
+'
+'   ExpectedToken
+'     The token; ignored when a condition is expected
+'
+'   ExpectedCondition
+'     cdNone for a token, otherwise the failing condition
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Starts from a sentinel output so that an assignment on failure is seen
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   CORE_Dates.TryFormatPillar, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim TokenOut        As String       'Output of the format, a sentinel on entry
+    Dim Condition       As KPRCondition 'Condition that the format reported
+    Dim Accepted        As Boolean      'Whether a token was formatted
+    Dim Expected        As String       'Text the output must hold
+
+'------------------------------------------------------------------------------
+' RUN
+'------------------------------------------------------------------------------
+    'Start from a sentinel, then format
+        TokenOut = SENTINEL_TOKEN
+        Accepted = CORE_Dates.TryFormatPillar(CDate(StartSerial), CDate(EndSerial), Mode, TokenOut, Condition)
+    'A failure leaves the sentinel untouched
+        If ExpectedCondition = cdNone Then
+            Expected = ExpectedToken
+        Else
+            Expected = SENTINEL_TOKEN
+        End If
+
+'------------------------------------------------------------------------------
+' CHECK
+'------------------------------------------------------------------------------
+        CheckFlag Label & "-accepted", (ExpectedCondition = cdNone), Accepted
+        CheckCondition Label & "-condition", ExpectedCondition, Condition
+        TEST_Harness.AssertEqualText Label & "-token", Expected, TokenOut
+
+End Sub
