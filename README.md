@@ -15,9 +15,9 @@
 [![Python](https://img.shields.io/badge/Tooling-Python_3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](#-quality-gates)
 [![GitHub Actions](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](#-quality-gates)
 [![License](https://img.shields.io/badge/License-MPL_2.0-2ea44f?style=for-the-badge)](#-license)
-<br>[![Clones, including CI](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/danielep71/K-TEMPLATE/traffic-history/data/badges/clones.json&style=flat-square)](docs/repo_governance/TRAFFIC.md#badges)
-[![Unique visitors, last 14 days](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/danielep71/K-TEMPLATE/traffic-history/data/badges/visitors.json&style=flat-square)](docs/repo_governance/TRAFFIC.md#badges)
-[![Daily unique visitors since tracking began](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/danielep71/K-TEMPLATE/traffic-history/data/badges/visits.json&style=flat-square)](docs/repo_governance/TRAFFIC.md#badges)
+<br>[![Clones, including CI](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/danielep71/K-PRICING/traffic-history/data/badges/clones.json&style=flat-square)](docs/repo_governance/TRAFFIC.md#badges)
+[![Unique visitors, last 14 days](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/danielep71/K-PRICING/traffic-history/data/badges/visitors.json&style=flat-square)](docs/repo_governance/TRAFFIC.md#badges)
+[![Daily unique visitors since tracking began](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/danielep71/K-PRICING/traffic-history/data/badges/visits.json&style=flat-square)](docs/repo_governance/TRAFFIC.md#badges)
 
 <br>
 
@@ -26,9 +26,8 @@
 [What it is](#-what-this-template-is)
 &nbsp;·&nbsp;
 [What you get](#-what-you-get)
-&nbsp;·&nbsp;<!-- template-only:start -->
-[Quick start](#-start-a-new-repository)<!-- template-only:replacement
-[Find your way](#-find-your-way)--><!-- template-only:end -->
+&nbsp;·&nbsp;
+[Find your way](#-find-your-way)
 &nbsp;·&nbsp;
 [Lifecycle](#-from-source-to-release)
 &nbsp;·&nbsp;
@@ -36,9 +35,7 @@
 &nbsp;·&nbsp;
 [Documentation](#-documentation)
 &nbsp;·&nbsp;
-[Status](#-status)<!-- template-only:start -->
-&nbsp;·&nbsp;
-[Template wiki](https://github.com/danielep71/K-TEMPLATE/wiki)<!-- template-only:end -->
+[Status](#-status)
 
 ---
 
@@ -75,73 +72,6 @@ that keeps them honest.
 | Releases | A release process with a changelog, a certification record, a milestone closeout and a reproducible, attested source bundle |
 | Traffic | Optional daily collection of clones and visitors, with the badges above |
 
-<!-- template-only:start -->
-## 🚀 Start a new repository
-
-GitHub copies files from a template, not its settings. In order:
-
-1. Create the repository with **Use this template**. GitHub copies the
-   default branch of this template as it is at that moment, not a release tag:
-   record the template commit the new repository came from, or the release
-   tag when the default branch equals it, so that later template changes
-   can be compared with it.
-2. Adapt the files to the new repository, in a clean clone of it. The first
-   command lists the changes and writes nothing; `--apply` makes them, then
-   deletes the initializer and its test, its last change. Neither changes
-   anything on GitHub. `PREFIX` is the project's short name, such as `LCR`:
-
-   ```sh
-   python tools/initialize_repository.py --repository OWNER/NEW-REPO --regime PREFIX
-   python tools/initialize_repository.py --repository OWNER/NEW-REPO --regime PREFIX --apply
-   ```
-
-   Add `--release-branch BRANCH` to point Dependabot at an existing release
-   branch, `--assignee LOGIN` to assign the issue forms and Dependabot's pull
-   requests to another GitHub account, and `--remove-traffic` to remove the
-   optional traffic collection, or `--remove-traffic-badges` to remove only
-   its badges. Review the diff and commit it.
-
-   The setup guide's
-   [*Template cleanup*](docs/setup/REPOSITORY_SETUP.md#-before-you-start)
-   lists what the initializer changes, and what **Repository integrity**
-   checks until it is done. Without the initializer, make the same edits by
-   hand.
-
-3. Enable Actions and let **Repository integrity** pass on the default branch.
-4. Apply and verify the settings baseline, as the
-   [repository setup guide](docs/setup/REPOSITORY_SETUP.md) describes. It
-   needs Python 3.11+ and GitHub CLI authentication; applying needs
-   administrator access, the `PLAN SHA-256` that the preview prints and a new
-   journal path. Set the Actions settings it reports, which it never
-   writes, in **Settings → Actions → General**. Run it on a task branch, and
-   merge the journal, report and evidence it writes through a pull request:
-   applying protects the default branch.
-
-   ```sh
-   git switch -c docs/settings-evidence
-   python tools/setup_repository.py --repo OWNER/NEW-REPO
-   python tools/setup_repository.py --repo OWNER/NEW-REPO --apply --approve-plan PLAN_SHA256 --journal docs/repo_governance/settings-journal-YYYY-MM-DD.json
-   python tools/setup_repository.py --repo OWNER/NEW-REPO --check --report docs/repo_governance/SETTINGS_EVIDENCE.md --evidence 'docs/repo_governance/settings-evidence-{date}.json'
-   ```
-
-5. Run **Sync issue labels** and create milestones with due dates
-   ([issue labels](docs/repo_governance/ISSUE_LABELS.md)).
-6. Adapt, replace or remove the remaining template files, as the setup
-   guide's [handover table](docs/setup/REPOSITORY_SETUP.md#recommended-handover)
-   says. The initializer leaves them as they are: among them the title,
-   introduction and banner of this README, the social preview in
-   `docs/assets/`, the repository's **About** fields, and the illustrative
-   methodology, cases and contracts. It replaces this section and the
-   template's wiki links with a table of the main guides.
-7. Unless you removed it, optionally enable traffic collection
-   ([traffic history](docs/repo_governance/TRAFFIC.md)).
-8. If Codex reviews your pull requests, check that it reviews the new
-   repository's first one; no Codex environment is needed
-   ([pull request review](docs/repo_governance/PULL_REQUESTS.md)).
-
-The [settings reference](docs/repo_governance/SETTINGS.md) and its
-[JSON configuration](docs/setup/repository-settings.json) describe the baseline.
-<!-- template-only:replacement
 ## 📍 Find your way
 
 | I want to… | Read |
@@ -154,8 +84,6 @@ The [settings reference](docs/repo_governance/SETTINGS.md) and its
 | Label, triage or plan an issue | [Issue labels](docs/repo_governance/ISSUE_LABELS.md) |
 | Check or reapply the GitHub settings | [Repository setup](docs/setup/REPOSITORY_SETUP.md) |
 | Prepare, certify and publish a release | [Releasing](RELEASING.md) |
--->
-<!-- template-only:end -->
 
 ## 🔄 From source to release
 
@@ -233,7 +161,7 @@ Each workflow runs on the events of its `on:` block:
 .github/   workflows, issue forms, labels, Dependabot and the Excel evidence policy
 docs/      methodology, release records, governance, setup, house style, licenses
 tests/     VBA harness and example suite, test cases, accuracy contracts, Python tests
-tools/     static checks, workbook build and Excel run, release, setup and initializer
+tools/     static checks, workbook build and Excel run, release and setup
 src/       the workbook's VBA source and macro-free template (reserved: added by a project)
 ```
 
@@ -255,8 +183,7 @@ The full layout and its rules are in
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Workflow, checks, rules of evidence and pull requests |
 | [`SECURITY.md`](SECURITY.md) | Private vulnerability reporting, runtime risk surface and data handling |
 | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Participant behaviour and conduct reporting |
-| [`CHANGELOG.md`](CHANGELOG.md) | Change history<!-- template-only:start --> |
-| [Template wiki](https://github.com/danielep71/K-TEMPLATE/wiki) | A guided tour of the template, page by page; the documents above govern where it differs<!-- template-only:end --> |
+| [`CHANGELOG.md`](CHANGELOG.md) | Change history |
 
 ## 📌 Status
 
