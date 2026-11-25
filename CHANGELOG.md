@@ -77,5 +77,17 @@ Use only the categories an entry needs.
   ([validation plan](docs/methodology/VALIDATION_PLAN.md#date-layer-coverage)).
   No function exists yet and nothing was run in Excel
   ([#4](https://github.com/danielep71/K-PRICING/issues/4)).
+- The date layer's error and parsing core, `CORE_Err` and `CORE_Parse` in
+  `src/core/`: the native `#VALUE!`, `#NUM!` and `#N/A` values, the 31
+  conditions of the data contract with their identifiers and errors, the one
+  raised error `ERR_UNMAPPED_CONDITION`, the supported date window, and the
+  strict parsers of dates, whole numbers, Boolean controls and `Opt_Rounding`.
+  They use no Excel object model and are not supported API. A VBA suite,
+  `TEST_CoreErrParse` (455 assertions), and a Python test that keeps the code
+  equal to the data contract check them. Only the static checks and, as an early
+  warning that is not Excel evidence, a LibreOffice run were done: 452 of the
+  455 assertions passed, and the three that failed need a `Decimal`, which
+  LibreOffice lacks. Nothing was run in Excel
+  ([#5](https://github.com/danielep71/K-PRICING/issues/5)).
 
 [Unreleased]: https://github.com/danielep71/K-PRICING/commits/main

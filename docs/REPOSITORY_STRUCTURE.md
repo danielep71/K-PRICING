@@ -23,7 +23,7 @@ them are already set in `.gitattributes`, `.editorconfig` and `.gitignore`.
 | `docs/methodology/sources/` | Byte-preserved copies of regulatory sources | Reserved |
 | `docs/methodology/workbook-protection.json` | The [protection matrix](methodology/WORKBOOK_CONTRACT.md#protection) of `src/workbook/Template.xlsx`, added with the template | Reserved |
 | `docs/user-manual/` | Optional manual for workbook recipients, one folder per released version (`docs/user-manual/X.Y.Z/MANUAL.md`), built to the PDF attached to the release ([user manual](../RELEASING.md#user-manual)) | Reserved |
-| `src/core/` | Calculations and pure validation, host-independent standard modules | Reserved |
+| `src/core/` | Calculations and pure validation, host-independent standard modules | Present, with `CORE_Err` and `CORE_Parse` |
 | `src/classes/` | Host-independent classes, if the design needs them | Reserved |
 | `src/modules/` | The public facade: the supported entry points | Reserved |
 | `src/workbook/` | Excel adapters, `ThisWorkbook` and sheet document modules, and the optional macro-free `Template.xlsx`, laid out as the [workbook contract](methodology/WORKBOOK_CONTRACT.md) defines | Reserved |
@@ -86,7 +86,7 @@ review.
 ## Public API inventory
 
 [PUBLIC_API.txt](PUBLIC_API.txt) lists every `Public` declaration under
-`src/`, in two tiers; both are empty until the project adds its own.
+`src/`, in two tiers; `[supported]` is empty until the facade is ported, and `[project-public]` lists the core.
 
 - **`[supported]`:** the supported API, the public declarations of the
   standard modules in `src/modules/`. A `Public` declaration is supported
