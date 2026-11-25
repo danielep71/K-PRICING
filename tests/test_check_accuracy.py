@@ -32,6 +32,9 @@ from check_test_cases import Report  # noqa: E402
 from gitfixture import git, init  # noqa: E402
 
 QUANTITY = "total_exposure_amount"
+# A calculation that no guide declares: the copied guides declare the project's own
+# contracts, so the ID is chosen beyond any that a project will reach.
+UNDECLARED = "CALC-999"
 CANDIDATE = "a" * 40
 ILLUSTRATIVE = {
     "id": "ACC-01", "calculation": "CALC-03", "regime": "illustrative",
@@ -237,7 +240,7 @@ class RegistryTest(unittest.TestCase):
 
     def test_cases_must_fit_the_contract(self) -> None:
         cases: dict[str, dict[str, Any]] = {
-            "calculation CALC-09 is not declared": {"calculation": "CALC-09"},
+            f"calculation {UNDECLARED} is not declared": {"calculation": UNDECLARED},
             "case missing-case has no fixture": {"calibration_cases": ["missing-case"]},
             "case demo-illustrative-calibration tests CALC-03, not CALC-02":
                 {"calibration_cases": ["demo-illustrative-calibration"]},
@@ -750,8 +753,8 @@ class InvariantRegistryTest(unittest.TestCase):
 
     def test_an_unknown_calculation_case_or_quantity_is_a_finding(self) -> None:
         cases: list[tuple[dict[str, Any], str]] = [
-            ({**BOUNDS, "calculation": "CALC-09"},
-             "calculation CALC-09 is not declared by the calculation contracts"),
+            ({**BOUNDS, "calculation": UNDECLARED},
+             f"calculation {UNDECLARED} is not declared by the calculation contracts"),
             ({**BOUNDS, "cases": ["missing-case"]}, "case missing-case has no fixture"),
             ({**BOUNDS, "cases": ["demo-illustrative-calibration"]},
              "case demo-illustrative-calibration tests CALC-03, not CALC-02"),

@@ -28,6 +28,17 @@ The workbook's scope, feature by feature:
 | Feature | Status | Calculation or input | Notes |
 | --- | --- | --- | --- |
 | *Illustrative:* Example total | Supported | `CALC-01` | Implementation and validation status per rule: [traceability](VALIDATION_PLAN.md#traceability) |
+| Day of week | Supported | `CALC-02` | Monday- or Sunday-based |
+| Month and year lengths, leap years | Supported | `CALC-03` | |
+| Month, quarter and year boundaries | Supported | `CALC-04` | Calendar quarters |
+| Month, quarter and year-end tests | Supported | `CALC-05` | |
+| Shifts by days, weeks, months and years | Supported | `CALC-06` | Calendar days; month-end clip, optional month-end keep |
+| Nth and last weekday of a month | Supported | `CALC-07` | |
+| Date from a pillar token | Supported | `CALC-08` | `ON` and `TN` are calendar days |
+| Pillar token from two dates | Supported | `CALC-09` | Weeks up to `3W`; `FLOOR`, `CEILING` or `NEAREST` |
+| Date system of the calling workbook | Supported | `CALC-10` | The 1904 date system is refused, never converted |
+| Calendars, holidays and business days | Not supported | — | Later milestones; no `KPR_Dates_*` function takes a calendar |
+| Day-count conventions and schedules | Not supported | — | Later milestones |
 
 - **Supported:** in scope. The workbook calculates it, as the named
   [calculation contract](CALCULATION_CONTRACTS.md) states, once that
