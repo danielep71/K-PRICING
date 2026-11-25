@@ -216,7 +216,7 @@ Public Function TryUnwrapScalar(ByVal ValueIn As Variant, ByRef ScalarOut As Var
 ' RETURNS
 '   Boolean
 '     True when ScalarOut holds the single scalar. False for an object, a rank other than
-'     1 or 2, more than one element, or an element that is itself an object.
+'     1 or 2, more than one element, or an element that is itself an object or an array.
 '
 ' BEHAVIOR
 '   Tests the argument itself before any copy, then unwraps a one-element array of rank
@@ -280,8 +280,8 @@ Public Function TryUnwrapScalar(ByVal ValueIn As Variant, ByRef ScalarOut As Var
                         UB2 = UBound(ValueIn, 2)
                     'Reject anything larger than 1x1
                         If (UB1 <> LB1) Or (UB2 <> LB2) Then GoTo Fail
-                    'A wrapped object is not a scalar payload
-                        If IsObject(ValueIn(LB1, LB2)) Then GoTo Fail
+                    'A wrapped object or array is not a scalar payload
+                        If IsObject(ValueIn(LB1, LB2)) Or IsArray(ValueIn(LB1, LB2)) Then GoTo Fail
                     'Unwrap the scalar payload
                         Payload = ValueIn(LB1, LB2)
             'One-dimensional wrapper
@@ -291,8 +291,8 @@ Public Function TryUnwrapScalar(ByVal ValueIn As Variant, ByRef ScalarOut As Var
                         UB1 = UBound(ValueIn)
                     'Reject vectors with more than one element
                         If UB1 <> LB1 Then GoTo Fail
-                    'A wrapped object is not a scalar payload
-                        If IsObject(ValueIn(LB1)) Then GoTo Fail
+                    'A wrapped object or array is not a scalar payload
+                        If IsObject(ValueIn(LB1)) Or IsArray(ValueIn(LB1)) Then GoTo Fail
                     'Unwrap the scalar payload
                         Payload = ValueIn(LB1)
                 End If
@@ -571,11 +571,12 @@ Public Function TryMaterialize( _
 '   Boolean
 '     True with the payload. False with cdCapacityExceeded for more than MAX_ELEMENTS
 '     elements, or cdShapeUnsupported for an object, an empty array, a rank other than 1
-'     or 2, or an element that is itself an array.
+'     or 2, or an element that is itself an array or an object.
 '
 ' BEHAVIOR
 '   Gates the capacity from the bounds, then copies the elements row by row into a
-'   1-based array, rejecting a jagged element as it meets it.
+'   1-based array, rejecting an element that is an array or an object as it meets it, so
+'   that no default member is ever evaluated here.
 '
 ' ERROR POLICY
 '   Does not raise. A runtime error is a shape rejection, and Err is cleared.
@@ -641,13 +642,13 @@ Public Function TryMaterialize( _
 
                     'A single element is a scalar; an element that is an array is jagged
                         If ColCount = 1 Then
-                            If IsArray(ValueIn(LB1)) Then GoTo Unsupported
+                            If IsArray(ValueIn(LB1)) Or IsObject(ValueIn(LB1)) Then GoTo Unsupported
                             Kind = skScalar
                             Payload = ValueIn(LB1)
                         Else
                             ReDim Snapshot(1 To 1, 1 To ColCount)
                             For C = 1 To ColCount
-                                If IsArray(ValueIn(LB1 + C - 1)) Then GoTo Unsupported
+                                If IsArray(ValueIn(LB1 + C - 1)) Or IsObject(ValueIn(LB1 + C - 1)) Then GoTo Unsupported
                                 Snapshot(1, C) = ValueIn(LB1 + C - 1)
                             Next C
                             Kind = skArray
@@ -667,14 +668,15 @@ Public Function TryMaterialize( _
 
                     'A single element is a scalar; any element that is an array is jagged
                         If (RowCount = 1) And (ColCount = 1) Then
-                            If IsArray(ValueIn(LB1, LB2)) Then GoTo Unsupported
+                            If IsArray(ValueIn(LB1, LB2)) Or IsObject(ValueIn(LB1, LB2)) Then GoTo Unsupported
                             Kind = skScalar
                             Payload = ValueIn(LB1, LB2)
                         Else
                             ReDim Snapshot(1 To RowCount, 1 To ColCount)
                             For R = 1 To RowCount
                                 For C = 1 To ColCount
-                                    If IsArray(ValueIn(LB1 + R - 1, LB2 + C - 1)) Then GoTo Unsupported
+                                    If IsArray(ValueIn(LB1 + R - 1, LB2 + C - 1)) Or _
+                                        IsObject(ValueIn(LB1 + R - 1, LB2 + C - 1)) Then GoTo Unsupported
                                     Snapshot(R, C) = ValueIn(LB1 + R - 1, LB2 + C - 1)
                                 Next C
                             Next R
@@ -994,7 +996,7 @@ Public Function TryUnwrapControl( _
 '   Boolean
 '     True with the scalar. False with cdControlNotScalar for more than one element, or
 '     cdShapeUnsupported for an object, an empty array, a rank other than 1 or 2, or an
-'     element that is itself an array.
+'     element that is itself an array or an object.
 '
 ' BEHAVIOR
 '   Counts the elements from the bounds alone and never reads a multi-element control.
@@ -1050,7 +1052,7 @@ Public Function TryUnwrapControl( _
                         Condition = cdControlNotScalar
                         Exit Function
                     End If
-                    If IsArray(ValueIn(LBound(ValueIn))) Then GoTo Unsupported
+                    If IsArray(ValueIn(LBound(ValueIn))) Or IsObject(ValueIn(LBound(ValueIn))) Then GoTo Unsupported
                     ScalarOut = ValueIn(LBound(ValueIn))
                 Case 2
                     If (UBound(ValueIn, 1) < LBound(ValueIn, 1)) Or _
@@ -1061,7 +1063,8 @@ Public Function TryUnwrapControl( _
                         Condition = cdControlNotScalar
                         Exit Function
                     End If
-                    If IsArray(ValueIn(LBound(ValueIn, 1), LBound(ValueIn, 2))) Then GoTo Unsupported
+                    If IsArray(ValueIn(LBound(ValueIn, 1), LBound(ValueIn, 2))) Or _
+                        IsObject(ValueIn(LBound(ValueIn, 1), LBound(ValueIn, 2))) Then GoTo Unsupported
                     ScalarOut = ValueIn(LBound(ValueIn, 1), LBound(ValueIn, 2))
                 Case Else
                     GoTo Unsupported

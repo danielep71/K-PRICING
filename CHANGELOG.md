@@ -104,13 +104,16 @@ Use only the categories an entry needs.
   which applies the array rules (shape, capacity, broadcasting, traversal) to
   plain values with no Excel object, and the adapter `M_Ranges` in
   `src/workbook/`, which describes a Range from its counts and reads it only
-  after its size passes the cap. Their tests are `TEST_CoreArray` (115
-  assertions) and `TEST_Ranges` (55). Only the static checks and, as an early
-  warning that is not Excel evidence, a LibreOffice run were done: all 55 range
-  assertions and 114 of the 115 core ones passed, the one left being an
-  unallocated array that LibreOffice ranks 1, where VBA ranks it 0; and the
-  split engine gave the same results as the engine it replaces on 24 argument
-  shapes. Nothing was run in Excel
+  after its size passes the cap. An element that is an object or an array
+  is now refused on every path, where the engine it replaces read an object
+  element through its default member and returned a nested array as a scalar;
+  a worksheet cannot pass either. Their tests are `TEST_CoreArray` (122
+  assertions) and `TEST_Ranges` (62). Only the static checks and, as an early
+  warning that is not Excel evidence, a LibreOffice run were done: all 62 range
+  assertions and 121 of the 122 core ones passed, the one left being an
+  unallocated array that LibreOffice ranks 1, where VBA ranks it 0; and,
+  before those two corrections, the split engine gave the same results as the
+  engine it replaces on 24 argument shapes. Nothing was run in Excel
   ([#7](https://github.com/danielep71/K-PRICING/issues/7)).
 
 [Unreleased]: https://github.com/danielep71/K-PRICING/commits/main

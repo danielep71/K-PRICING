@@ -51,7 +51,7 @@ Option Private Module
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "core-array"        'Suite name in the run log
     Private Const EXPECTED_CASES        As Long = 8                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 115               'Assertions a complete run evaluates
+    Private Const EXPECTED_ASSERTIONS   As Long = 122               'Assertions a complete run evaluates
 
 
 '
@@ -71,7 +71,7 @@ Public Sub RunCoreArrayTests()
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
 '   RESULT=PASS; suite=core-array; operation=PASS; completeness=COMPLETE; cases=8;
-'   assertions=115; failures=0; cleanup=PASS; recovery=NONE
+'   assertions=122; failures=0; cleanup=PASS; recovery=NONE
 '
 ' WHY THIS EXISTS
 '   One entry point runs the suite and reports it through the harness, so that a run is
@@ -510,7 +510,7 @@ Private Sub CaseMaterialize()
 '                          CHECK THE MATERIALIZATION
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Arrays become 1-based two-dimensional copies, and jagged or oversized ones are rejected. 15 assertions.
+'   Arrays become 1-based two-dimensional copies, and jagged or oversized ones are rejected. 17 assertions.
 '
 ' WHY THIS EXISTS
 '   Part of the evidence that the array rules hold as the calculation contracts state them
@@ -549,6 +549,7 @@ Private Sub CaseMaterialize()
     Dim Offset()          As Variant      'A 2 by 2 array with lower bounds 0 and 3
     Dim Large()           As Variant      'A row of 100,001 elements
     Dim Item              As Collection   'An object
+    Dim Holder(1 To 2)    As Variant      'A row whose second element is an object
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -607,6 +608,14 @@ Private Sub CaseMaterialize()
             Not CORE_Array.TryMaterialize(Item, Payload, Kind, RowCount, ColCount, Condition), _
             "an object passed"
         TEST_Harness.AssertEqualText "object-condition", "SHAPE_UNSUPPORTED", CORE_Err.ConditionName(Condition)
+    'An element that is an object is refused, never read through a default member
+        Holder(1) = 1
+        Set Holder(2) = Item
+        TEST_Harness.AssertTrue "object-element", _
+            Not CORE_Array.TryMaterialize(Holder, Payload, Kind, RowCount, ColCount, Condition), _
+            "an object element passed"
+        TEST_Harness.AssertEqualText "object-element-condition", "SHAPE_UNSUPPORTED", CORE_Err.ConditionName(Condition)
+        Set Holder(2) = Nothing
         Set Item = Nothing
 
 '------------------------------------------------------------------------------
@@ -722,7 +731,7 @@ Private Sub CaseUnwrapScalar()
 '                         CHECK THE SCALAR UNWRAPPING
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   One element unwraps to its value; more elements, an object or a wrapped object do not. 6 assertions.
+'   One element unwraps to its value; more elements, an object or a wrapped object do not. 8 assertions.
 '
 ' WHY THIS EXISTS
 '   Part of the evidence that the array rules hold as the calculation contracts state them
@@ -787,6 +796,12 @@ Private Sub CaseUnwrapScalar()
         TEST_Harness.AssertTrue "wrapped-object", Not CORE_Array.TryUnwrapScalar(Wrapped, ScalarOut), "a wrapped object unwrapped"
         Set Wrapped(1) = Nothing
         Set Item = Nothing
+    'An element that is itself an array is not a scalar
+        TEST_Harness.AssertTrue "nested-row", _
+            Not CORE_Array.TryUnwrapScalar(Array(Array(1, 2)), ScalarOut), _
+            "a nested row unwrapped"
+        One(2, 3) = Array(1, 2)
+        TEST_Harness.AssertTrue "nested-block", Not CORE_Array.TryUnwrapScalar(One, ScalarOut), "a 1 by 1 block holding an array unwrapped"
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -810,7 +825,7 @@ Private Sub CaseUnwrapControl()
 '                         CHECK THE CONTROL UNWRAPPING
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   A control is one element; a larger one is not a scalar, whatever its size. 27 assertions.
+'   A control is one element; a larger one is not a scalar, whatever its size. 30 assertions.
 '
 ' WHY THIS EXISTS
 '   Part of the evidence that the array rules hold as the calculation contracts state them
@@ -844,6 +859,7 @@ Private Sub CaseUnwrapControl()
     Dim Large()           As Variant      'A row of 100,001 elements
     Dim Block()           As Variant      'A 2 by 2 array
     Dim Item              As Collection   'An object
+    Dim Holder(1 To 1)    As Variant      'A one-element array holding an object
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -871,6 +887,10 @@ Private Sub CaseUnwrapControl()
         CheckControl "jagged", Array(Array(1)), cdShapeUnsupported, "UNTOUCHED"
         Set Item = New Collection
         CheckControl "object", Item, cdShapeUnsupported, "UNTOUCHED"
+    'A one-element array holding an object is not a control
+        Set Holder(1) = Item
+        CheckControl "object-element", Holder, cdShapeUnsupported, "UNTOUCHED"
+        Set Holder(1) = Nothing
         Set Item = Nothing
 
 '------------------------------------------------------------------------------

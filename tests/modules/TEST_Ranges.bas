@@ -49,8 +49,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "ranges"            'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 4                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 55                'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 5                 'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 62                'Assertions a complete run evaluates
 
 
 '
@@ -69,8 +69,8 @@ Public Sub RunRangeTests()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
-'   RESULT=PASS; suite=ranges; operation=PASS; completeness=COMPLETE; cases=4;
-'   assertions=55; failures=0; cleanup=PASS; recovery=NONE
+'   RESULT=PASS; suite=ranges; operation=PASS; completeness=COMPLETE; cases=5;
+'   assertions=62; failures=0; cleanup=PASS; recovery=NONE
 '
 ' WHY THIS EXISTS
 '   One entry point runs the suite and reports it through the harness, so that a run is
@@ -118,6 +118,7 @@ Public Sub RunRangeTests()
         CaseReadRanges
         CaseReadScalars
         CaseReadControls
+        CaseRangeElements
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -477,6 +478,98 @@ Private Sub CaseReadControls()
     'Two areas are not a shape, and a plain array is the core's
         CheckControl "two-areas", Sheet.Range("A1,C1"), cdShapeUnsupported, "UNTOUCHED"
         CheckControl "plain", Array("CEILING"), cdNone, "CEILING"
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseRangeElements()
+
+'
+'------------------------------------------------------------------------------
+'                        CHECK A RANGE INSIDE AN ARRAY
+'------------------------------------------------------------------------------
+' PURPOSE
+'   A Range held inside an array is an object element, refused on every path. 7 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the array rules hold as the calculation contracts state them
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Puts a one-cell Range inside one-element and two-element arrays and reads them as an argument, a scalar and a control
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   M_Ranges, CORE_Err, TEST_Harness; the Excel object model (Worksheets, Range)
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-25
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Sheet             As Worksheet    'The first worksheet
+    Dim One(1 To 1)       As Variant      'A one-element array holding a Range
+    Dim Two(1 To 2)       As Variant      'A row whose second element is a Range
+    Dim Payload           As Variant      'Payload read
+    Dim Kind              As KPRArgShape  'Kind reported
+    Dim RowCount          As Long         'Rows reported
+    Dim ColCount          As Long         'Columns reported
+    Dim Condition         As KPRCondition 'Condition reported
+    Dim ScalarOut         As Variant      'Scalar read
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "range-elements"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'Read Ranges of the first worksheet
+        Set Sheet = ThisWorkbook.Worksheets(1)
+    'A one-cell Range has a default member, which no path may evaluate
+        Set One(1) = Sheet.Range("Z1000")
+        Two(1) = 1
+        Set Two(2) = Sheet.Range("Z1000")
+        TEST_Harness.AssertTrue "row-read", _
+            Not M_Ranges.TryReadArgument(Two, Payload, Kind, RowCount, ColCount, Condition), _
+            "a Range element was read"
+        TEST_Harness.AssertEqualText "row-read-condition", "SHAPE_UNSUPPORTED", CORE_Err.ConditionName(Condition)
+        TEST_Harness.AssertTrue "one-read", _
+            Not M_Ranges.TryReadArgument(One, Payload, Kind, RowCount, ColCount, Condition), _
+            "a Range element was read as a scalar"
+        TEST_Harness.AssertTrue "one-scalar", Not M_Ranges.TryReadScalar(One, ScalarOut), "a Range element was unwrapped"
+        CheckControl "one-control", One, cdShapeUnsupported, "UNTOUCHED"
+        Set One(1) = Nothing
+        Set Two(2) = Nothing
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
