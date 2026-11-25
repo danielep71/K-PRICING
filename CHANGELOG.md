@@ -100,5 +100,17 @@ Use only the categories an entry needs.
   comparison of the pillar format with the reference on 9,000 random intervals.
   Nothing was run in Excel
   ([#6](https://github.com/danielep71/K-PRICING/issues/6)).
+- The date layer's shape engine, split in two: `CORE_Array` in `src/core/`,
+  which applies the array rules (shape, capacity, broadcasting, traversal) to
+  plain values with no Excel object, and the adapter `M_Ranges` in
+  `src/workbook/`, which describes a Range from its counts and reads it only
+  after its size passes the cap. Their tests are `TEST_CoreArray` (115
+  assertions) and `TEST_Ranges` (55). Only the static checks and, as an early
+  warning that is not Excel evidence, a LibreOffice run were done: all 55 range
+  assertions and 114 of the 115 core ones passed, the one left being an
+  unallocated array that LibreOffice ranks 1, where VBA ranks it 0; and the
+  split engine gave the same results as the engine it replaces on 24 argument
+  shapes. Nothing was run in Excel
+  ([#7](https://github.com/danielep71/K-PRICING/issues/7)).
 
 [Unreleased]: https://github.com/danielep71/K-PRICING/commits/main

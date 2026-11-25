@@ -157,6 +157,22 @@ class DatesTest(unittest.TestCase):
                          [("1W", None), ("1W", None), (None, "RESULT_WINDOW")])
 
 
+class ArrayTest(unittest.TestCase):
+    """CORE_Array restates the capacity of the calculation contracts."""
+
+    def test_the_capacity_is_the_contracts(self) -> None:
+        self.assertRegex(read(ROOT / "src/core/CORE_Array.bas"), r"MAX_ELEMENTS\s+As Long = 100000\b")
+        contracts = read(ROOT / "docs/methodology/CALCULATION_CONTRACTS.md")
+        self.assertIn("100,001 elements or more", contracts)
+        self.assertIn("100,000 is allowed", contracts)
+
+    def test_the_core_names_no_range(self) -> None:
+        # Comments may name a Range; code may not.
+        code = [line for line in read(ROOT / "src/core/CORE_Array.bas").splitlines()
+                if not line.lstrip().startswith("'")]
+        self.assertFalse([line for line in code if re.search(r"\bRange\b", line.split("'")[0])])
+
+
 class WindowTest(unittest.TestCase):
     def test_the_window_constants_are_the_excel_serials_of_its_edges(self) -> None:
         epoch = datetime.date(1899, 12, 30)
