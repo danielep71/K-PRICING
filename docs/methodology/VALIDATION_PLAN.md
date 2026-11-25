@@ -96,8 +96,13 @@ kept shape, a scalar repeated over an array, a one-dimensional array read as a
 row, `SHAPE_MISMATCH`, an element-level error beside valid neighbours, the
 first failing argument at a position, and the order of evaluation.
 
-[Relation tests](TEST_HARNESS.md#relation-tests) check properties that hold
-for every date in the window, each with its corruption check:
+[Relation tests](TEST_HARNESS.md#relation-tests) check properties, each with
+its corruption check, over the dates whose inputs and intermediate results
+all stay in the window. Each relation holds only there: `BeginOfYear` of a
+1900 date, `BeginOfQuarter` of a date in the first quarter of 1900, `d + 7`
+beyond 9999-12-31 and a shift that leaves the window return their documented
+error (`CALC-04` step 4, `RESULT_WINDOW`, `DATE_WINDOW`), and those edges are
+`boundary` cases that expect that error, not relation tests:
 
 - `DayOfWeek(d + 7) = DayOfWeek(d)`;
 - `BeginOfMonth(d) ≤ d ≤ EndOfMonth(d)`, and the same for quarters and years;
