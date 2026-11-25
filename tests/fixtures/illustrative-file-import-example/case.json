@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "kind": "test-file-fixture",
+  "id": "illustrative-file-import-example",
+  "synthetic": true,
+  "description": "Shows the file-based format: one positions file in two variants that differ only in line endings; holds no regulatory value",
+  "category": "nominal",
+  "calculation": "CALC-01",
+  "reporting_date": "2026-01-02",
+  "reporting_currency_code": "EUR",
+  "datasets": ["DS-01"]
+}

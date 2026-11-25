@@ -1,0 +1,63 @@
+# Proposes updates to SHA-pinned GitHub Actions, the pinned configuration
+# parser in .github/requirements.txt, and the hash-locked quality tools in
+# tools/requirements-quality-ci.txt. Every update arrives as a pull request
+# for my review; nothing merges automatically.
+# Pull requests target the default branch, or, when target-branch is set, the
+# active release branch it names. Set target-branch when a release branch
+# opens, update it when the next one opens, and remove it when none is active.
+# Repository integrity fails while target-branch names a branch that does not
+# exist.
+# Labels must exist in .github/labels.json, include exactly one priority (P3),
+# and the assignee must match the issue forms; Repository integrity checks them.
+# A version update waits 14 days after its release (cooldown), so a package
+# withdrawn soon after publication is never proposed. Security updates do not
+# wait, and they target the default branch whatever target-branch says
+# (docs/repo_governance/PULL_REQUESTS.md, Dependency updates).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: release/1.1.0
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Europe/Rome
+    open-pull-requests-limit: 5
+    labels:
+      - ci
+      - P3
+    assignees:
+      - danielep71
+    commit-message:
+      prefix: ci
+    cooldown:
+      default-days: 14
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+  - package-ecosystem: pip
+    directories:
+      - /.github
+      - /tools
+    target-branch: release/1.1.0
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Europe/Rome
+    open-pull-requests-limit: 5
+    labels:
+      - ci
+      - P3
+    assignees:
+      - danielep71
+    commit-message:
+      prefix: ci
+    cooldown:
+      default-days: 14
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "kind": "test-expected",
+  "fixture": "illustrative-file-import-example",
+  "variants": {
+    "crlf-line-endings": [
+      {
+        "quantity": "illustrative_total_notional_amount",
+        "scope": null,
+        "rule": "CALC-01.1",
+        "value": 1000000,
+        "unit": "EUR",
+        "tolerance": {"absolute": 0.000001, "relative": 0.000000001},
+        "reference": {
+          "class": "illustrative",
+          "source": null,
+          "locator": null,
+          "derivation": "Format example only: the sum of the two synthetic notional amounts in positions.csv, 600000 + 400000 EUR, computed by tests/derivations/illustrative_file_total.py; the variants differ only in line endings. Not a regulatory quantity: an illustrative value that follows step 1 of the illustrative CALC-01, which validates nothing",
+          "script": "tests/derivations/illustrative_file_total.py",
+          "derived_by": "Daniele Penza",
+          "reviewed_by": null,
+          "date": "2026-11-02"
+        }
+      }
+    ],
+    "lf-line-endings": [
+      {
+        "quantity": "illustrative_total_notional_amount",
+        "scope": null,
+        "rule": "CALC-01.1",
+        "value": 1000000,
+        "unit": "EUR",
+        "tolerance": {"absolute": 0.000001, "relative": 0.000000001},
+        "reference": {
+          "class": "illustrative",
+          "source": null,
+          "locator": null,
+          "derivation": "Format example only: the sum of the two synthetic notional amounts in positions.csv, 600000 + 400000 EUR, computed by tests/derivations/illustrative_file_total.py; the variants differ only in line endings. Not a regulatory quantity: an illustrative value that follows step 1 of the illustrative CALC-01, which validates nothing",
+          "script": "tests/derivations/illustrative_file_total.py",
+          "derived_by": "Daniele Penza",
+          "reviewed_by": null,
+          "date": "2026-11-02"
+        }
+      }
+    ]
+  }
+}

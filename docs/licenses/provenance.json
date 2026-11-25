@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "repository": "https://github.com/danielep71/K-SFTs",
+      "license": "MPL-2.0",
+      "revision": null,
+      "revision_note": "Not recorded when the files were adapted; the commits and pull requests that added them do not name it",
+      "files": [
+        ".editorconfig",
+        ".gitattributes",
+        ".gitignore",
+        ".github/dependabot.yml",
+        ".github/ISSUE_TEMPLATE/bug.yml",
+        ".github/ISSUE_TEMPLATE/documentation.yml",
+        ".github/ISSUE_TEMPLATE/enhancement.yml",
+        ".github/labels.json",
+        ".github/PULL_REQUEST_TEMPLATE.md",
+        ".github/scripts/labels-sync.mjs",
+        ".github/scripts/labels-drift.mjs",
+        ".github/workflows/labels-sync.yml",
+        ".github/workflows/labels-drift.yml",
+        ".github/workflows/issue-triage.yml",
+        ".github/workflows/traffic-history.yml",
+        "SECURITY.md",
+        "docs/repo_governance/TRAFFIC.md",
+        "pyproject.toml",
+        "tools/check_issues.py",
+        "tools/requirements-quality-ci.txt",
+        "tools/traffic_history.py",
+        "tests/test_check_issues.py",
+        "tests/test_quality_gates.py",
+        "tests/test_traffic_history.py"
+      ]
+    },
+    {
+      "repository": "https://github.com/danielep71/K-NSFR",
+      "license": "MPL-2.0",
+      "revision": null,
+      "revision_note": "Not recorded when the files were adapted; the commits and pull requests that added them do not name it",
+      "files": [
+        ".github/ISSUE_TEMPLATE/bug.yml",
+        ".github/ISSUE_TEMPLATE/documentation.yml",
+        ".github/ISSUE_TEMPLATE/enhancement.yml",
+        "tools/check_issues.py",
+        "tests/test_check_issues.py"
+      ]
+    },
+    {
+      "repository": "https://github.com/danielep71/K-Risk-Engines",
+      "license": "MPL-2.0",
+      "revision": null,
+      "revision_note": "Not recorded when the files were adapted; the commits and pull requests that added them do not name it",
+      "files": [
+        ".github/workflows/link-check.yml",
+        ".github/workflows/traffic-history.yml",
+        "docs/repo_governance/PULL_REQUESTS.md",
+        "docs/repo_governance/TRAFFIC.md",
+        "tools/check_links.py",
+        "tests/test_check_links.py"
+      ]
+    },
+    {
+      "repository": "https://github.com/danielep71/K-CVA",
+      "license": "MPL-2.0",
+      "revision": "f72a79b1ad34ece48e405ac569c6cf232c5d8f84",
+      "revision_note": "The main branch as inspected when the files were adapted",
+      "files": [
+        "CHANGELOG.md",
+        "INSTALLATION.md",
+        "RELEASING.md",
+        "docs/PUBLIC_API.txt",
+        "docs/REPOSITORY_STRUCTURE.md",
+        "docs/VBA_HOUSE_STYLE.md",
+        "docs/methodology/TEST_CASES.md",
+        "docs/release/CLOSEOUT.md",
+        "tools/check_changelog.py",
+        "tools/check_test_cases.py",
+        "tests/test_check_changelog.py",
+        "tests/test_check_test_cases.py",
+        "tests/fixtures/illustrative-format-example.json",
+        "tests/expected/illustrative-format-example.json",
+        "tools/vba_lexer.py",
+        "tools/check_vba_source.py",
+        "tools/check_vba_conditionals.py",
+        "tools/check_vba_jumps.py",
+        "tools/check_vba_public_api.py",
+        "tools/check_vba_dependencies.py",
+        "tests/test_check_vba.py",
+        "tests/modules/TEST_Harness.bas",
+        "tests/modules/TEST_Examples.bas",
+        "tools/check_excel_run.py",
+        "tests/test_check_excel_run.py",
+        "tests/test_vba_harness.py",
+        "docs/methodology/TEST_HARNESS.md"
+      ]
+    },
+    {
+      "repository": "https://github.com/danielep71/K-IRRBB-NMDs",
+      "license": "MPL-2.0",
+      "revision": "f703c7ab6bff207b5ce5917af8368cb24ea23f13",
+      "revision_note": "The main branch as inspected when the files were adapted",
+      "files": [
+        "tools/devbuild/vba_project.py",
+        "tools/devbuild/build_workbook.py",
+        "tools/devbuild/lo_smoke.py",
+        "tests/test_devbuild.py"
+      ]
+    },
+    {
+      "repository": "https://github.com/danielep71/K-FRTB-ASA",
+      "license": "MIT",
+      "revision": null,
+      "revision_note": "Not recorded when the files were adapted; the commits and pull requests that added them do not name it",
+      "files": [
+        ".github/workflows/pr-milestones.yml"
+      ]
+    },
+    {
+      "repository": "https://github.com/danielep71/VBA-PROBABILITY-DISTRIBUTIONS",
+      "license": "MPL-2.0",
+      "revision": "723be583f17963da532ff07cc0bc4d74062b7760",
+      "revision_note": "The main branch as inspected when the files were adapted",
+      "files": [
+        "tools/vba_code_identity.py",
+        "tests/test_vba_code_identity.py",
+        "tools/vba_lexer.py",
+        "tools/check_vba_conditionals.py",
+        "tests/test_check_vba.py",
+        "tools/format_vba.py",
+        "tests/test_format_vba.py",
+        "tools/check_links.py",
+        "tests/test_check_links.py",
+        "tools/check_verification_depth.py",
+        "tools/verification_depth.json",
+        "tests/test_check_verification_depth.py"
+      ]
+    }
+  ]
+}

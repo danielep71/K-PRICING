@@ -1,0 +1,115 @@
+name: "📖 Documentation"
+description: "Report missing, wrong, stale or unclear documentation."
+title: "[Docs]: "
+labels: ["documentation", "P3"]
+assignees: ["danielep71"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📖 Documentation
+
+        **Accurate · Current · Traceable to its source**
+
+        Documentation must match the code, the recorded decisions and the cited regulatory texts. Triage sets the milestone and confirms the priority (`P3` by default).
+
+  - type: input
+    id: location
+    attributes:
+      label: "📍 Document and section"
+      description: File and heading, or a link to the exact line on the branch you read.
+      placeholder: README.md → License
+    validations:
+      required: true
+
+  - type: dropdown
+    id: problem_type
+    attributes:
+      label: "🏷️ Problem type"
+      options:
+        - Incorrect behavior or contract
+        - Stale version, count, command or evidence
+        - Missing explanation or example
+        - Unclear or ambiguous
+        - Methodology or regulatory reference
+        - Broken link or anchor
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "🎯 Current problem and impact"
+      description: What is wrong and who it misleads.
+    validations:
+      required: true
+
+  - type: textarea
+    id: correction
+    attributes:
+      label: "✏️ Proposed correction"
+      description: The requested change and its scope.
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: "📚 Authoritative source"
+      description: The code, contract, regulatory text or decision the corrected text must match.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "🏁 Acceptance criteria"
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: "🧪 Validation evidence required"
+      description: How the correction will be checked, for example `python -m unittest discover -s tests`, a rendered review or a link check.
+    validations:
+      required: true
+
+  - type: input
+    id: start_date
+    attributes:
+      label: "🗓️ Start date (Europe/Rome)"
+      description: ISO calendar date YYYY-MM-DD when the work is planned to start, not after the target end date.
+      placeholder: "YYYY-MM-DD"
+    validations:
+      required: true
+
+  - type: input
+    id: target_end_date
+    attributes:
+      label: "🗓️ Target end date (Europe/Rome)"
+      description: ISO calendar date YYYY-MM-DD, earlier than the due date of the milestone. Triage checks it against the milestone it assigns.
+      placeholder: "YYYY-MM-DD"
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: "🔗 Dependencies and blocking status"
+      description: Name each prerequisite as an issue link (#12) or on a line starting "External condition:". Write "None" if nothing blocks this work. Triage adds `blocked` only while a named prerequisite is unresolved. When an external condition is resolved, delete its "External condition:" line, or replace the section with "None" if nothing else is named, in the same edit that removes `blocked`.
+      placeholder: None
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "☑️ Submission checks"
+      options:
+        - label: I checked the current documentation on the default branch or the active release branch.
+          required: true
+        - label: This request contains no secrets, private links or real portfolio data.
+          required: true

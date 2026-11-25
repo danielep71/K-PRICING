@@ -1,0 +1,197 @@
+name: Release
+
+# Verifies a release tag, builds the source bundle from it, attests the
+# bundle's build provenance and drafts the GitHub Release, as RELEASING.md
+# (steps 6 and 7) describes. Publication stays manual: nothing here publishes
+# a release or moves a tag.
+#
+#   tag push vX.Y.Z   verify -> build -> attest -> draft
+#   manual run        rehearsal of a ref: the changelog check and the build,
+#                     with the bundle kept as an artifact; no attestation and
+#                     no release
+#
+# The verification is fail-closed: an annotated vX.Y.Z tag equal to the
+# newest changelog release and to VERSION, on the default branch, whose
+# message names the candidate and its deviations, on a commit where
+# Repository integrity succeeded (tools/release.py). When the commit holds a
+# VBA component, the message must also declare its Excel run, with the
+# "Excel evidence: <digest> (run <sha>)." line that tools/release.py evidence
+# prints, or an invariant 4 deviation. Only the line's form is checked here:
+# the evidence never leaves the machine of the run, where release.py verify
+# checks it against the line before the tag is pushed (RELEASING.md, steps 4
+# and 6). The Excel certification and the distribution review stay records in
+# their issues; the tag message cites them.
+#
+# Attestations are free on a public repository. A private one needs GitHub
+# Enterprise Cloud for them; there, set the repository variable
+# RELEASE_ATTESTATIONS to enabled. Without it a private repository skips the
+# attestation, and the draft release states that its bundle is not attested.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Ref to rehearse; no attestation or release is created
+        required: true
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  verify:
+    name: Verify the release candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # Reads the Repository integrity check run of the tagged commit.
+      checks: read
+    steps:
+      - name: Check out the candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13.18"
+      - name: Verify the tag
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          # Re-fetch the tag itself, so that its object type is the remote's;
+          # the token is used for this command only, never stored.
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c "http.https://github.com/.extraheader=$auth" fetch --no-tags --force origin \
+            "refs/tags/$TAG:refs/tags/$TAG"
+          python tools/release.py verify "$TAG" --default-branch "$DEFAULT_BRANCH"
+      - name: Check the changelog at the candidate
+        run: python tools/check_changelog.py --repository "$GITHUB_REPOSITORY"
+      - name: Require Repository integrity on the tagged commit
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/release.py integrity --repository "$GITHUB_REPOSITORY" --sha "$(git rev-parse HEAD)"
+
+  build:
+    name: Build the source bundle
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13.18"
+      - name: Build the bundle and its checksums
+        env:
+          REF: ${{ github.event_name == 'push' && github.ref_name || 'HEAD' }}
+          NAME: ${{ github.event.repository.name }}
+        run: python tools/release.py bundle "$REF" --name "$NAME" --out dist
+      - name: Keep the bundle
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-dist-${{ github.run_id }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+  attest:
+    name: Attest build provenance
+    needs: build
+    if: >-
+      github.event_name == 'push' &&
+      (github.event.repository.private == false || vars.RELEASE_ATTESTATIONS == 'enabled')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # The attestation is signed with the workflow's OIDC identity.
+      id-token: write
+      attestations: write
+    steps:
+      - name: Fetch the bundle
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-dist-${{ github.run_id }}
+          path: dist
+      - name: Attest the bundle and its checksums
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            dist/*.tar.gz
+            dist/SHA256SUMS
+
+  draft:
+    name: Draft the GitHub Release
+    needs: [build, attest]
+    # Runs after an attestation, or after a build whose attestation was
+    # skipped because the repository does not support it; never after a
+    # failure.
+    if: >-
+      !cancelled() && github.event_name == 'push' && needs.build.result == 'success' &&
+      (needs.attest.result == 'success' || needs.attest.result == 'skipped')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      # Creates the draft release; publishing it stays manual.
+      contents: write
+    steps:
+      - name: Check out the tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13.18"
+      - name: Fetch the bundle
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-dist-${{ github.run_id }}
+          path: dist
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          ATTESTED: ${{ needs.attest.result }}
+        run: |
+          set -euo pipefail
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c "http.https://github.com/.extraheader=$auth" fetch --no-tags --force origin \
+            "refs/tags/$TAG:refs/tags/$TAG"
+          python tools/release.py notes "$TAG" > notes.md
+          if [ "$ATTESTED" != "success" ]; then
+            printf '\n%s %s\n' "The source bundle has no build provenance attestation: this" \
+              "private repository does not enable RELEASE_ATTESTATIONS." >> notes.md
+          fi
+          gh release create "$TAG" --draft --verify-tag --title "$TAG" \
+            --notes-file notes.md dist/*

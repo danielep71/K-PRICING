@@ -1,0 +1,59 @@
+name: Detect settings drift
+run-name: Settings drift — ${{ github.ref_name }} @ ${{ github.sha }}
+
+# Compares the live repository settings and rulesets with
+# docs/setup/repository-settings.json, using the job's read-only token
+# (tools/setup_repository.py --check --token-scope workflow). It fails on drift
+# in what that token can read: each ruleset without its bypass list, the
+# visibility and the general settings GitHub reports to it. What the token
+# cannot read is listed as not checked in the job summary, never as a match:
+# the bypass lists, the merge-related settings, the Dependabot switches, secret
+# scanning and the Actions settings. A --check with an administrator's token
+# compares them (docs/repo_governance/SETTINGS.md). It never writes a setting.
+
+on:
+  schedule:
+    # Daily, off the hour; GitHub may start scheduled runs late.
+    - cron: "41 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: settings-drift
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  detect:
+    name: Live settings drift
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out the selected ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13.18"
+
+      - name: Compare the live settings with the versioned configuration
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: >-
+          python tools/setup_repository.py
+          --repo "$GITHUB_REPOSITORY"
+          --check
+          --token-scope workflow
+          --summary "$GITHUB_STEP_SUMMARY"

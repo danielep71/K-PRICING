@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-fixture",
+  "id": "illustrative-format-example",
+  "synthetic": true,
+  "description": "Shows the fixture format with one dataset of two records; holds no regulatory value",
+  "category": "nominal",
+  "calculation": "CALC-01",
+  "reporting_date": "2026-01-02",
+  "reporting_currency_code": "EUR",
+  "datasets": {
+    "DS-01": [
+      {"id": "P1", "inputs": {"currency_code": "EUR", "notional_amount": 600000}},
+      {"id": "P2", "inputs": {"currency_code": "EUR", "notional_amount": 400000}}
+    ]
+  }
+}

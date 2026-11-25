@@ -1,0 +1,69 @@
+name: Minimum Python
+
+# Runs the repository tests on the minimum supported Python, the
+# python_version in pyproject.toml. Not a required check: it confirms the
+# documented Python floor, and runs only when a pull request changes code that
+# Python runs or its requirements, on pushes to the default branch and on
+# manual dispatch.
+#
+# The push branch list names the default branch, because branch filters
+# cannot refer to it: if the default branch is not main, rename it below.
+# Repository integrity fails while the list omits it.
+
+on:
+  pull_request:
+    paths:
+      - "**/*.py"
+      - "tests/**"
+      - "tools/**"
+      - ".github/scripts/**"
+      - pyproject.toml
+      - .github/requirements.txt
+      - .github/workflows/minimum-python.yml
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # A new commit on a pull request cancels the run of the commit it replaces.
+  # Every other run has a group of its own, so a push is never cancelled, nor
+  # queued behind another run.
+  group: minimum-python-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  minimum-python:
+    name: Minimum Python (3.11)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11.18"
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.22.2"
+          package-manager-cache: false
+      - name: Install pinned configuration parser
+        run: |
+          python -m pip install \
+            --disable-pip-version-check \
+            --only-binary=:all: \
+            --require-hashes \
+            -r .github/requirements.txt
+      - name: Run repository tests
+        run: python -m unittest discover -s tests

@@ -1,0 +1,34 @@
+{
+  "schema_version": 2,
+  "description": "What an Excel run of the VBA harness must leave as evidence, read by tools/check_excel_run.py from the commit it checks, and by tools/devbuild/excel_run.py, tools/devbuild/export_manifest.py, tools/devbuild/lo_smoke.py and tools/render_docs.py. suite is the example suite, which certifies the harness itself in three modes; suites lists the project's own suites, each certified in its normal run by its own entry point, which saves its log, its certification log and, when the entry names a results file, the results of that run. The results files of all suites are measured together. tests/test_check_excel_run.py keeps it equal to the example suite, its certification entry point and the host policy of INSTALLATION.md.",
+  "harness": "tests/modules/TEST_Harness.bas",
+  "suite": {
+    "name": "examples",
+    "source": "tests/modules/TEST_Examples.bas",
+    "certification_entry_point": "CertifyExamples",
+    "expected_cases": 14,
+    "expected_assertions": 34
+  },
+  "suites": [],
+  "modes": [
+    {"mode": "NORMAL", "log": "examples.log", "must_pass": true},
+    {"mode": "INJECTED_FAILURE", "log": "injected.log", "must_pass": false},
+    {"mode": "SKIPPED_CASE", "log": "skipped.log", "must_pass": false}
+  ],
+  "evidence": {
+    "certification_log": "certification.log",
+    "exported": "exported",
+    "host_record": "host.txt",
+    "export_manifest": "export-manifest.json",
+    "results": "results.json"
+  },
+  "host": {
+    "references": [
+      "Visual Basic For Applications",
+      "Microsoft Excel 16.0 Object Library",
+      "OLE Automation",
+      "Microsoft Office 16.0 Object Library"
+    ],
+    "office": "64-bit"
+  }
+}

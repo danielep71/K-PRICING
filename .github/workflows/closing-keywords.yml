@@ -1,0 +1,67 @@
+name: Closing keywords
+
+# Finds the closing keywords that a pull request would carry to the default
+# branch (tools/check_closing_keywords.py). Into a release branch, any keyword
+# in a commit, the title or the body fails. Into the default branch from a
+# release branch, a keyword naming an open issue fails, unless the body lists
+# that issue on a "Reopen after merge: #N" line. Any other pull request is
+# reported as not checked. Read-only: it never changes an issue.
+# Not a required check: a separate workflow keeps the issue-reading token out
+# of Repository integrity (docs/repo_governance/PULL_REQUESTS.md).
+
+on:
+  pull_request:
+    # edited: a new title, body or base changes what is checked.
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+
+permissions:
+  contents: read
+
+concurrency:
+  group: closing-keywords-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check:
+    name: Closing keywords
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: read
+      # Without it the issues API omits pull requests, and a keyword naming one
+      # cannot be read.
+      pull-requests: read
+    env:
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The whole history, so that base..head lists every commit.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13.18"
+
+      - name: Check the closing keywords
+        # The title and body are read from the event file, never interpolated
+        # into the script.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python tools/check_closing_keywords.py
+          --event "$GITHUB_EVENT_PATH"
+          --summary "$GITHUB_STEP_SUMMARY"

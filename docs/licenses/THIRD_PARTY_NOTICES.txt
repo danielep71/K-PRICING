@@ -1,0 +1,202 @@
+Third-party source notice
+
+The following files were imported or adapted from danielep71/K-SFTs
+(https://github.com/danielep71/K-SFTs) under the Mozilla Public License 2.0:
+
+.editorconfig
+.gitattributes
+.gitignore
+.github/dependabot.yml
+.github/ISSUE_TEMPLATE/bug.yml
+.github/ISSUE_TEMPLATE/documentation.yml
+.github/ISSUE_TEMPLATE/enhancement.yml
+.github/labels.json
+.github/PULL_REQUEST_TEMPLATE.md
+.github/scripts/labels-sync.mjs
+.github/scripts/labels-drift.mjs
+.github/workflows/labels-sync.yml
+.github/workflows/labels-drift.yml
+.github/workflows/issue-triage.yml
+.github/workflows/traffic-history.yml
+SECURITY.md
+docs/repo_governance/TRAFFIC.md
+pyproject.toml
+tools/check_issues.py
+tools/requirements-quality-ci.txt
+tools/traffic_history.py
+tests/test_check_issues.py
+tests/test_quality_gates.py
+tests/test_traffic_history.py
+
+The license text is included in MPL-2.0.txt in this directory.
+Modifications include generic issue-form wording, local documentation
+references, file locations, newest-observation tracking in the traffic
+history merge, a pinned Node.js setup in the workflows, and issue triage on
+milestone events.
+This notice applies to the listed files, not unrelated project files.
+
+The target end date rule was adapted from danielep71/K-NSFR
+(https://github.com/danielep71/K-NSFR) under the Mozilla Public License 2.0,
+in these files:
+
+.github/ISSUE_TEMPLATE/bug.yml
+.github/ISSUE_TEMPLATE/documentation.yml
+.github/ISSUE_TEMPLATE/enhancement.yml
+tools/check_issues.py
+tests/test_check_issues.py
+
+The license text is included in MPL-2.0.txt in this directory.
+Modifications drop the active-release milestone rule, leave the date out of
+the private security contact form, and give the planning line precedence over
+the form field.
+
+The following files were imported or adapted from danielep71/K-Risk-Engines
+(https://github.com/danielep71/K-Risk-Engines) under the Mozilla Public
+License 2.0:
+
+.github/workflows/link-check.yml
+.github/workflows/traffic-history.yml
+docs/repo_governance/PULL_REQUESTS.md
+docs/repo_governance/TRAFFIC.md
+tools/check_links.py
+tests/test_check_links.py
+
+The license text is included in MPL-2.0.txt in this directory.
+Modifications limit the link checker to Markdown, require HTTPS, let a listed
+exception for an unverifiable link expire, skip links into this repository in
+the external check, and adapt the GitHub App credentials and
+the review procedure to this repository's workflows and documentation.
+
+The following files were adapted from danielep71/K-CVA
+(https://github.com/danielep71/K-CVA) under the Mozilla Public License 2.0:
+
+CHANGELOG.md
+INSTALLATION.md
+RELEASING.md
+docs/PUBLIC_API.txt
+docs/REPOSITORY_STRUCTURE.md
+docs/VBA_HOUSE_STYLE.md
+docs/methodology/TEST_CASES.md
+docs/release/CLOSEOUT.md
+tools/check_changelog.py
+tools/check_test_cases.py
+tests/test_check_changelog.py
+tests/test_check_test_cases.py
+tests/fixtures/illustrative-format-example.json
+tests/expected/illustrative-format-example.json
+tools/vba_lexer.py
+tools/check_vba_source.py
+tools/check_vba_conditionals.py
+tools/check_vba_jumps.py
+tools/check_vba_public_api.py
+tools/check_vba_dependencies.py
+tests/test_check_vba.py
+tests/modules/TEST_Harness.bas
+tests/modules/TEST_Examples.bas
+tools/check_excel_run.py
+tests/test_check_excel_run.py
+tests/test_vba_harness.py
+docs/methodology/TEST_HARNESS.md
+
+The license text is included in MPL-2.0.txt in this directory.
+Modifications replace project-specific names with a <REGIME> placeholder,
+describe the component directories as reserved paths, link the methodology
+guides for contracts and evidence. The release guide and the records are made
+generic, with the distribution review, the CodeQL assessment and the
+Excel-run check as release gates and a certification record, and the
+changelog check also verifies that the link references point to the checked
+repository. The test-case format and its check replace the counterparty,
+netting-set, hedge and regime model with datasets and records, and check
+calculations, datasets and sources against the methodology guides. The VBA
+static checks read the facade prefix from the house style's naming table
+instead of a fixed project prefix, name example modules EX_, allow the
+macro-free src/workbook/Template.xlsx, and point to the house style for their
+limits; their tests use synthetic DEMO_ components. The test harness adds a
+certification (BeginCertification, CertifyRun, EndCertification) that writes
+certification.log before it raises, and also compares the open workbooks and
+the active window; the example suite's evidence entry point becomes
+CertifyExamples. The Excel-run check also checks certification.log, rejects an
+incomplete normal run by name and keeps its configuration in one block; its
+tests check a commit made from the working tree's modules. The log format
+moves to docs/methodology/TEST_HARNESS.md. So that the harness also runs in
+LibreOffice, its error numbers are written as literals equal to
+vbObjectError + n, it prints through TEST_Harness.Echo, it reads host
+properties that may be missing through HostProperty, and its timestamps use
+the hh:mm:ss format. The Excel-run check also binds an export to the
+workbook it came from, through export-manifest.json and the workbook's build
+stamp.
+
+The following files were adapted from danielep71/K-IRRBB-NMDs
+(https://github.com/danielep71/K-IRRBB-NMDs) under the Mozilla Public
+License 2.0:
+
+tools/devbuild/vba_project.py
+tools/devbuild/build_workbook.py
+tools/devbuild/lo_smoke.py
+tests/test_devbuild.py
+
+The license text is included in MPL-2.0.txt in this directory.
+Modifications add class modules to the VBA project writer. The workbook
+builder writes its own package from tools/devbuild/workbook.json, which
+follows the workbook contract, instead of a project template. It also builds
+a production or a development configuration from the directories of the
+structure guide, stops on forms and on document modules that match no sheet,
+and stamps the commit's committer time so that a rebuild is byte-identical.
+The LibreOffice smoke test runs the harness certification in a temporary
+profile and reports only failures LibreOffice is not known to cause. The
+decoder tests also check the builder against the workbook contract.
+
+The following file was adapted from danielep71/K-FRTB-ASA
+(https://github.com/danielep71/K-FRTB-ASA) under the MIT License:
+
+.github/workflows/pr-milestones.yml
+
+The license text, with its copyright notice, is included in MIT.txt in this
+directory. Modifications restrict pushes and manual runs to the default
+branch, grant issues: read so the script can read pull requests on a private
+repository, and add local documentation references.
+
+The following files were adapted from danielep71/VBA-PROBABILITY-DISTRIBUTIONS
+(https://github.com/danielep71/VBA-PROBABILITY-DISTRIBUTIONS) under the
+Mozilla Public License 2.0:
+
+tools/vba_code_identity.py
+tests/test_vba_code_identity.py
+tools/vba_lexer.py
+tools/check_vba_conditionals.py
+tests/test_check_vba.py
+tools/format_vba.py
+tests/test_format_vba.py
+tools/check_links.py
+tests/test_check_links.py
+tools/check_verification_depth.py
+tools/verification_depth.json
+tests/test_check_verification_depth.py
+
+The license text is included in MPL-2.0.txt in this directory.
+Modifications compare commit with commit for the Excel-run check instead of
+a recorded digest, cover class and form modules as well as standard modules,
+compare the letter case of code as the export comparison does, report the
+line of each version of the first changed statement, and turn the tests into
+unit tests with neutral module names. The VBA lexer takes from it only the
+reading of a colon and Rem inside a [...] expression. The conditional-
+compilation check takes from it the evaluation of a module-level #Const,
+without its Win16 and Mac constants, and also rejects a #Const named like an
+operator of the expression grammar; its tests take the #Const fixtures with
+neutral names. The VBA formatter takes from it the layout baseline and its
+ratchet, the handling of lines that a continuation carries over and of
+statement keywords followed by a colon, and the tests of these; it keeps its
+own source directories, folder and outside paths, output and exit status 2
+for every error, and its tests compare logical lines with this repository's
+lexer. The link checker takes from it the reading of Markdown as GitHub
+renders it, the reviewed exclusions of wrong reports and the request of wiki
+pages as raw Markdown; it keeps its HTTPS requirement and expiring
+exceptions, moves the exclusions file under .github/ with stricter
+validation, requests wiki pages only while the repository answers anonymous
+requests, ends a fence with its list item and reads lazy continuation lines
+only where they do not start a block. The verification-depth inventory and
+its check take the checks that need an entry from tools/check_repository.py
+instead of a fixed list, compare each entry with what its check runs, accept
+unittest ids or the check's probe as proofs and require each test to be
+collected by the tests check instead of listed in a runner, and are tested
+with unit tests on fixtures.

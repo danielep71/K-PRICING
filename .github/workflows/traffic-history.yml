@@ -1,0 +1,289 @@
+name: Traffic history
+run-name: "Traffic history — ${{ github.event_name }}"
+
+# Keeps this repository's GitHub traffic beyond the API's 14-day window:
+# collects views, clones, top referrers, popular paths and the repository's
+# stars, forks, watchers and open issues once a day, and merges them into CSV
+# files on the data-only `traffic-history` branch with
+# tools/traffic_history.py, which also writes the README badge files there.
+# When traffic spikes, stars or forks increase, or a new referrer appears, the
+# alert job opens one issue for that day. Analytics only: it is not CI and
+# must never run builds or tests. Operation, credentials and recovery:
+# docs/repo_governance/TRAFFIC.md.
+#
+# Opt-in: nothing runs until the repository variable TRAFFIC_HISTORY is set
+# to "enabled", after the traffic-history branch, the analytics environment
+# and the traffic App exist (docs/repo_governance/TRAFFIC.md, Enabling).
+#
+# Credentials
+#   The traffic API needs Administration: read, which the workflow token
+#   cannot have. A dedicated GitHub App with only that permission issues an
+#   installation token for this repository that expires after an hour and is
+#   revoked when the job ends, so it needs no rotation. The App's client ID
+#   is the variable TRAFFIC_APP_CLIENT_ID and its private key the secret
+#   TRAFFIC_APP_PRIVATE_KEY, both in the `analytics` environment, whose
+#   deployment branches are limited to the default branch. Only the token
+#   step receives the key and only the fetch step the token; neither runs
+#   repository code. The workflow token pushes the history, with
+#   contents: write; the alert job, which has no environment, opens issues
+#   with issues: write.
+
+on:
+  schedule:
+    # Daily, off the hour; GitHub may start scheduled runs late.
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # One collection at a time, and never cancel one that is writing.
+  group: traffic-history
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  collect:
+    name: Collect traffic
+    # A manual run may select any branch; only the default branch's reviewed
+    # copy runs. The analytics environment enforces the same restriction.
+    if: >-
+      vars.TRAFFIC_HISTORY == 'enabled' &&
+      (github.event_name == 'schedule' ||
+       github.ref == format('refs/heads/{0}', github.event.repository.default_branch))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: analytics
+    permissions:
+      contents: write
+    outputs:
+      # The traffic-history commit this collection wrote, or merged onto when
+      # nothing changed: the alert job reads exactly that commit.
+      history-sha: ${{ steps.push.outputs.sha }}
+    env:
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+
+    steps:
+      - name: Check out the default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: source
+          persist-credentials: false
+
+      - name: Check out traffic-history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: traffic-history
+          path: history
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13.18"
+
+      - name: Check the traffic App configuration
+        env:
+          CLIENT_ID: ${{ vars.TRAFFIC_APP_CLIENT_ID }}
+          HAS_KEY: ${{ secrets.TRAFFIC_APP_PRIVATE_KEY != '' }}
+        run: |
+          if [ -z "$CLIENT_ID" ] || [ "$HAS_KEY" != "true" ]; then
+            echo "::error::TRAFFIC_APP_CLIENT_ID or TRAFFIC_APP_PRIVATE_KEY is not set in the analytics environment (docs/repo_governance/TRAFFIC.md)"
+            exit 1
+          fi
+
+      - name: Create the traffic App token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.TRAFFIC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.TRAFFIC_APP_PRIVATE_KEY }}
+          permission-administration: read
+
+      - name: Fetch traffic from the GitHub API
+        id: fetch
+        env:
+          TRAFFIC_API_TOKEN: ${{ steps.app-token.outputs.token }}
+          API: ${{ github.api_url }}/repos/${{ github.repository }}
+        run: |
+          set -euo pipefail
+          echo "collected_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          RAW="$RUNNER_TEMP/traffic-raw"
+          echo "RAW=$RAW" >> "$GITHUB_ENV"
+          mkdir -p "$RAW"
+          # curl retries timeouts and HTTP 408, 429, 500, 502, 503 and 504,
+          # honouring Retry-After; any other failure stops the run before a merge.
+          for resource in traffic/views traffic/clones traffic/popular/referrers \
+                          traffic/popular/paths ""; do
+            name="${resource##*/}"
+            name="${name:-repository}"
+            curl --silent --show-error --location --fail-with-body \
+              --retry 5 --retry-max-time 300 --max-time 60 \
+              --header "Authorization: Bearer $TRAFFIC_API_TOKEN" \
+              --header "Accept: application/vnd.github+json" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              --output "$RAW/$name.json" \
+              "$API${resource:+/$resource}" \
+              || { echo "::error::API request for ${resource:-the repository} failed"; exit 1; }
+          done
+
+      - name: Merge into the history
+        env:
+          COLLECTED_AT: ${{ steps.fetch.outputs.collected_at }}
+        run: >-
+          python source/tools/traffic_history.py merge
+          --raw "$RAW" --data history/data
+          --collected-at "$COLLECTED_AT"
+          --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit and push the history
+        id: push
+        working-directory: history
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          COLLECTED_AT: ${{ steps.fetch.outputs.collected_at }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          basic="$(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)"
+          echo "::add-mask::$basic"
+          auth="AUTHORIZATION: basic $basic"
+          git_auth() { git -c "http.https://github.com/.extraheader=$auth" "$@"; }
+          # Every successful exit records the commit the history now stands at.
+          recorded() {
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+
+          # set -e does not apply inside a function called from a || list, so
+          # each git command checks its own status. 3 means "nothing to commit".
+          commit() {
+            git add data || return 1
+            if git diff --cached --quiet; then
+              echo "No change to the history."
+              return 3
+            fi
+            git commit --quiet -m "chore: record traffic collected at $COLLECTED_AT" || return 1
+          }
+          record() {
+            status=0
+            commit || status=$?
+            if [ "$status" -eq 3 ]; then
+              recorded
+            elif [ "$status" -ne 0 ]; then
+              echo "::error::Could not commit the history"
+              exit "$status"
+            fi
+          }
+
+          record
+          for attempt in 1 2 3; do
+            if git_auth push origin HEAD:traffic-history; then
+              recorded
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              break
+            fi
+            # Another writer moved the branch: rebuild this collection on its
+            # new tip instead of overwriting it.
+            sleep $((attempt * 10))
+            git_auth fetch origin traffic-history
+            git reset --hard FETCH_HEAD
+            python ../source/tools/traffic_history.py merge \
+              --raw "$RAW" --data data --collected-at "$COLLECTED_AT"
+            record
+          done
+          echo "::error::Could not push the history after 3 attempts"
+          exit 1
+
+  alert:
+    name: Traffic alert
+    needs: collect
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # No environment: this job never receives the App's key or token.
+    permissions:
+      contents: read
+      issues: write
+    env:
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+
+    steps:
+      - name: Check out the default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: source
+          persist-credentials: false
+
+      # An empty ref would check out the default branch instead of the history.
+      - name: Check the collected history commit
+        env:
+          HISTORY_SHA: ${{ needs.collect.outputs.history-sha }}
+        run: |
+          if ! [[ "$HISTORY_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::The collect job reported no traffic-history commit"
+            exit 1
+          fi
+
+      # The commit the collect job wrote, not the branch, which may have moved
+      # since: a re-run of this job reads the same data as the first run.
+      - name: Check out the collected traffic-history commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.collect.outputs.history-sha }}
+          path: history
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13.18"
+
+      - name: Open the alert issue, if one is due
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # The issue-form assignee, which Issue triage requires on every issue.
+          ASSIGNEE="$(python -c 'import sys; from pathlib import Path; sys.path.insert(0, "source/tools"); import check_issues; print(check_issues.configured_assignee(Path("source")))')"
+          # Decide first, from the history alone: a run with no alert due
+          # needs no milestone.
+          snapshot_file="$RUNNER_TEMP/alert-snapshot"
+          python source/tools/traffic_history.py alert \
+            --data history/data --snapshot-output "$snapshot_file"
+          [ -f "$snapshot_file" ] || exit 0
+          SNAPSHOT="$(cat "$snapshot_file")"
+          # The active milestone: the open one with the earliest due date after
+          # the snapshot's (UTC collection) date, not the job's own date.
+          # `// empty` prints nothing when there is none.
+          milestone="$(SNAPSHOT="$SNAPSHOT" gh api \
+            "repos/$GH_REPO/milestones?state=open&sort=due_on&direction=asc" \
+            --jq 'first(.[] | select(.due_on != null and .due_on[0:10] > env.SNAPSHOT))
+                  // empty | [.title, .due_on[0:10]] | @tsv')"
+          if [ -z "$milestone" ]; then
+            echo "::error::No open milestone due after the collection date $SNAPSHOT to file the alert under"
+            exit 1
+          fi
+          IFS=$'\t' read -r title due <<< "$milestone"
+          alert="$RUNNER_TEMP/alert.json"
+          python source/tools/traffic_history.py alert \
+            --data history/data --milestone-due "$due" --output "$alert"
+          [ -f "$alert" ] || exit 0
+          issue_title="$(jq -r .title "$alert")"
+          jq -j .body "$alert" > "$RUNNER_TEMP/alert.md"
+          existing="$(gh issue list --state all --search "\"$issue_title\" in:title" \
+            --json title --jq "map(select(.title == \"$issue_title\")) | length")"
+          if [ "$existing" != "0" ]; then
+            echo "An issue titled \"$issue_title\" already exists."
+            exit 0
+          fi
+          gh issue create --title "$issue_title" --body-file "$RUNNER_TEMP/alert.md" \
+            --assignee "$ASSIGNEE" --label P3 --label repository --milestone "$title"

@@ -1,0 +1,61 @@
+name: Sync issue labels
+
+# Only a trusted push to the default branch or an explicit manual dispatch on
+# the default branch can reconcile the live repository taxonomy; a push or a
+# dispatch on any other branch skips reconciliation. Pull requests are not run
+# here: Repository integrity runs the script's self-test and validates the
+# catalogue on every pull request.
+# The job runs the script's self-test, then reconciles; the script validates
+# before the first API mutation and verifies an exact post-run match.
+
+on:
+  push:
+    paths:
+      - .github/labels.json
+      - .github/scripts/labels-sync.mjs
+      - .github/workflows/labels-sync.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: labels-sync-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  reconcile:
+    name: Reconcile live labels
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+      # Without it the issues API omits pull requests, and pruning would
+      # delete a label that only pull requests carry.
+      pull-requests: read
+
+    steps:
+      - name: Check out the exact SHA to apply
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24.22.2"
+          package-manager-cache: false
+
+      - name: Exercise validation and reconciliation paths
+        run: node .github/scripts/labels-sync.mjs --self-test
+
+      - name: Reconcile and verify the versioned label catalogue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node .github/scripts/labels-sync.mjs --mode reconcile --repository "${GITHUB_REPOSITORY}"

@@ -1,0 +1,467 @@
+{
+  "schema_version": 1,
+  "checks": [
+    {
+      "check": "tests",
+      "checker": "python -m unittest discover -s tests -v",
+      "proofs": [
+        "tests.test_check_repository.RunTest.test_the_tests_check_fails_on_a_failing_or_broken_test"
+      ],
+      "negative_claim": "a failing test, a test module that cannot be imported and, from Python 3.12, a run that finds no test fail the check",
+      "state": "green"
+    },
+    {
+      "check": "ruff",
+      "checker": "python -m ruff check --no-cache tools tests",
+      "proofs": [
+        "tests.test_quality_gates.QualityGateTests.test_complexity_15_passes_and_16_fails"
+      ],
+      "negative_claim": "a function above the configured complexity ceiling of 15 is rejected, and one at 15 passes",
+      "state": "green_in_ci"
+    },
+    {
+      "check": "mypy",
+      "checker": "python -m mypy --no-incremental",
+      "proofs": [
+        "tests.test_quality_gates.QualityGateTests.test_strict_mode_rejects_an_unannotated_function",
+        "tests.test_quality_gates.QualityGateTests.test_unreachable_code_is_reported"
+      ],
+      "negative_claim": "under the repository's configuration an unannotated function and unreachable code are rejected",
+      "state": "green_in_ci"
+    },
+    {
+      "check": "actionlint",
+      "checker": "actionlint -no-color",
+      "proofs": [
+        "probe",
+        "tests.test_quality_gates.QualityGateTests.test_actionlint_rejects_the_probe_of_the_actionlint_check",
+        "tests.test_check_repository.RunTest.test_actionlint_that_accepts_the_probe_fails_without_linting",
+        "tests.test_check_repository.RunTest.test_actionlint_that_fails_the_probe_without_the_finding_fails",
+        "tests.test_check_repository.RunTest.test_actionlint_that_rejects_the_workflows_fails"
+      ],
+      "negative_claim": "the probe workflow with an unknown key is rejected; an actionlint that accepts it, or rejects it without the finding, fails the check without linting; a rejected workflow fails the check",
+      "state": "green_in_ci"
+    },
+    {
+      "check": "labels-sync-self-test",
+      "checker": "node .github/scripts/labels-sync.mjs --self-test",
+      "proofs": [
+        "tests.test_labels_sync.IntegrityCommandTests.test_the_sync_self_test_fails_when_validation_accepts_a_bad_colour"
+      ],
+      "negative_claim": "the self-test fails when the label validation of labels-sync.mjs stops rejecting a colour that is not six uppercase hexadecimal characters",
+      "state": "green_in_ci"
+    },
+    {
+      "check": "labels-catalogue",
+      "checker": "node .github/scripts/labels-sync.mjs --mode validate",
+      "proofs": [
+        "tests.test_labels_sync.IntegrityCommandTests.test_the_catalogue_check_rejects_an_invalid_label"
+      ],
+      "negative_claim": "a catalogue label whose colour is not six uppercase hexadecimal characters fails the validation, with the label's position",
+      "state": "green_in_ci"
+    },
+    {
+      "check": "labels-drift-self-test",
+      "checker": "node .github/scripts/labels-drift.mjs --self-test",
+      "proofs": [
+        "tests.test_labels_sync.IntegrityCommandTests.test_the_drift_self_test_fails_when_a_disagreement_is_ignored"
+      ],
+      "negative_claim": "the self-test fails when labels-drift.mjs stops failing on a disagreement between its report and the reconciler's plan",
+      "state": "green_in_ci"
+    },
+    {
+      "check": "issue-configuration",
+      "checker": "python tools/check_issues.py --check-config",
+      "proofs": [
+        "tests.test_check_issues.ConfigTests.test_forms_must_ask_for_the_target_end_date",
+        "tests.test_check_issues.ConfigTests.test_forms_must_ask_for_the_start_date",
+        "tests.test_check_issues.ConfigTests.test_an_unknown_or_duplicated_overlay_selection_is_rejected",
+        "tests.test_check_issues.ConfigTests.test_the_previous_manifest_schema_is_rejected"
+      ],
+      "negative_claim": "an issue form without the start date or the target end date field, an unknown or repeated overlay selection and the previous label manifest schema are rejected",
+      "state": "green"
+    },
+    {
+      "check": "template-only-content",
+      "checker": "tools/check_repository.py:template_only",
+      "proofs": [
+        "tests.test_check_repository.FileCheckTest.test_template_only_content"
+      ],
+      "negative_claim": "with --template false, an AGENTS.md or a README.md that keeps a template-only section is reported",
+      "state": "green"
+    },
+    {
+      "check": "issue-contact-links",
+      "checker": "tools/check_repository.py:contact_links",
+      "proofs": [
+        "tests.test_check_repository.FileCheckTest.test_contact_links"
+      ],
+      "negative_claim": "an issue-form contact link that points to another repository is reported with its URL",
+      "state": "green"
+    },
+    {
+      "check": "readme-traffic-badges",
+      "checker": "tools/check_repository.py:traffic_badges",
+      "proofs": [
+        "tests.test_check_repository.FileCheckTest.test_traffic_badges"
+      ],
+      "negative_claim": "a README traffic badge that reads another repository's traffic is reported",
+      "state": "green"
+    },
+    {
+      "check": "binaries",
+      "checker": "python tools/check_binaries.py",
+      "proofs": [
+        "tests.test_check_binaries.BinaryCheckTest.test_binary_types_fail",
+        "tests.test_check_binaries.BinaryCheckTest.test_an_office_package_with_macros_fails",
+        "tests.test_check_binaries.BinaryCheckTest.test_an_office_package_with_personal_metadata_fails",
+        "tests.test_check_binaries.BinaryCheckTest.test_an_office_package_with_private_data_fails",
+        "tests.test_check_binaries.BinaryCheckTest.test_nul_byte_late_in_a_text_file_fails",
+        "tests.test_check_binaries.BinaryCheckTest.test_allowlisted_file_replaced_by_text_still_fails"
+      ],
+      "negative_claim": "binary files outside the approved paths, Office packages with macros, personal metadata, a OneDrive or user-profile path, a threaded-comment person, a Purview label part or a SharePoint schema, a late NUL byte and a changed allowlisted file are rejected",
+      "state": "green"
+    },
+    {
+      "check": "secret-files",
+      "checker": "tools/check_repository.py:secret_files",
+      "proofs": [
+        "tests.test_check_repository.FileCheckTest.test_secret_files"
+      ],
+      "negative_claim": "each tracked file named as a secret or private key file, force-added past .gitignore, is reported with its pattern",
+      "state": "green"
+    },
+    {
+      "check": "vba-format",
+      "checker": "python tools/format_vba.py --check",
+      "proofs": [
+        "tests.test_format_vba.MainTest.test_check_and_write",
+        "tests.test_format_vba.RuleTest.test_trailing_white_space",
+        "tests.test_format_vba.RuleTest.test_indentation_tabs"
+      ],
+      "negative_claim": "--check fails on a module outside the house-style layout, such as trailing white space or wrong indentation, and names the file",
+      "state": "green"
+    },
+    {
+      "check": "vba-source",
+      "checker": "python tools/check_vba_source.py",
+      "proofs": [
+        "tests.test_check_vba.SourceTest.test_main_exit_codes",
+        "tests.test_check_vba.SourceTest.test_vb_name_must_equal_file_name",
+        "tests.test_check_vba.SourceTest.test_module_options",
+        "tests.test_check_vba.MainTest.test_every_gate_exits_0_when_valid_and_1_when_invalid"
+      ],
+      "negative_claim": "a component outside its home, a VB_Name that differs from the file name and a module without Option Explicit fail with exit code 1",
+      "state": "green"
+    },
+    {
+      "check": "vba-conditionals",
+      "checker": "python tools/check_vba_conditionals.py",
+      "proofs": [
+        "tests.test_check_vba.ConditionalTest.test_invalid_fixtures_fail",
+        "tests.test_check_vba.MainTest.test_every_gate_exits_0_when_valid_and_1_when_invalid"
+      ],
+      "negative_claim": "each invalid conditional-compilation fixture, such as an unknown #If symbol, is reported and fails the check",
+      "state": "green"
+    },
+    {
+      "check": "vba-jumps",
+      "checker": "python tools/check_vba_jumps.py",
+      "proofs": [
+        "tests.test_check_vba.JumpTest.test_invalid_fixtures_fail",
+        "tests.test_check_vba.JumpTest.test_reraise_trapped_by_the_local_handler_is_reported",
+        "tests.test_check_vba.MainTest.test_every_gate_exits_0_when_valid_and_1_when_invalid"
+      ],
+      "negative_claim": "each invalid jump fixture, such as a GoTo to a missing label or a re-raise its own handler traps, is reported and fails the check",
+      "state": "green"
+    },
+    {
+      "check": "vba-public-api",
+      "checker": "python tools/check_vba_public_api.py",
+      "proofs": [
+        "tests.test_check_vba.PublicApiTest.test_inventory_must_list_every_declaration",
+        "tests.test_check_vba.PublicApiTest.test_implicit_visibility_is_rejected_everywhere",
+        "tests.test_check_vba.PublicApiTest.test_stale_and_malformed_rows",
+        "tests.test_check_vba.MainTest.test_every_gate_exits_0_when_valid_and_1_when_invalid"
+      ],
+      "negative_claim": "a public declaration missing from docs/PUBLIC_API.txt, implicit visibility and stale or malformed inventory rows are rejected",
+      "state": "green"
+    },
+    {
+      "check": "vba-dependencies",
+      "checker": "python tools/check_vba_dependencies.py",
+      "proofs": [
+        "tests.test_check_vba.DependencyTest.test_invalid_fixtures_fail",
+        "tests.test_check_vba.MainTest.test_every_gate_exits_0_when_valid_and_1_when_invalid"
+      ],
+      "negative_claim": "each invalid dependency fixture, such as a core module that reaches the host, is reported and fails the check",
+      "state": "green"
+    },
+    {
+      "check": "vba-layout",
+      "checker": "python tools/check_vba_layout.py",
+      "proofs": [
+        "tests.test_check_vba_layout.LayoutTest.test_invalid_fixtures_fail",
+        "tests.test_check_vba_layout.LayoutTest.test_main_exits_0_when_valid_and_1_when_invalid",
+        "tests.test_check_vba_layout.BaselineTest.test_an_unlisted_module_out_of_layout_fails",
+        "tests.test_check_vba_layout.BaselineTest.test_a_listed_module_in_layout_fails_until_removed",
+        "tests.test_check_vba_layout.BaselineTest.test_a_listed_path_that_is_not_a_tracked_module_fails",
+        "tests.test_check_vba_layout.BaselineTest.test_baseline_errors_exit_2"
+      ],
+      "negative_claim": "a banner that is not 79 characters, a missing component header, a procedure header with a missing, repeated, unknown or out-of-order field, a field with no text and an UPDATED field that is not a date fail the check; so do a module out of layout that the baseline does not list, a listed module that is in layout for both layout tools, a listed path that is not a tracked module, and a malformed baseline (exit status 2)",
+      "state": "green"
+    },
+    {
+      "check": "vba-identifiers",
+      "checker": "python tools/check_vba_identifiers.py",
+      "proofs": [
+        "tests.test_check_vba.IdentifierTest.test_invalid_fixtures_fail",
+        "tests.test_check_vba.MainTest.test_every_gate_exits_0_when_valid_and_1_when_invalid"
+      ],
+      "negative_claim": "each invalid identifier fixture, such as an assignment to an undeclared name, is reported and fails the check",
+      "state": "green"
+    },
+    {
+      "check": "vba-errors",
+      "checker": "python tools/check_vba_errors.py",
+      "proofs": [
+        "tests.test_check_vba.ErrorTest.test_invalid_fixtures_fail",
+        "tests.test_check_vba.ErrorTest.test_counts_and_exit_codes"
+      ],
+      "negative_claim": "each invalid error-handling fixture is reported once with its line and environments, and fails the check with exit code 1",
+      "state": "green"
+    },
+    {
+      "check": "vba-declares",
+      "checker": "python tools/check_vba_declares.py",
+      "proofs": [
+        "tests.test_check_vba_declares.DeclareTest.test_unregistered_declare_is_reported_in_each_branch",
+        "tests.test_check_vba_declares.DeclareTest.test_declares_that_differ_from_their_abi_are_reported",
+        "tests.test_check_vba_declares.DeclareTest.test_invalid_registers_are_reported",
+        "tests.test_check_vba_declares.DeclareTest.test_main_exits_0_when_valid_and_1_when_invalid"
+      ],
+      "negative_claim": "an unregistered Declare, a Declare that differs from its export's ABI, an invalid register and a misplaced error capture fail the check",
+      "state": "green"
+    },
+    {
+      "check": "data-contract",
+      "checker": "python tools/check_data_contract.py",
+      "proofs": [
+        "tests.test_check_data_contract.MainTest.test_the_contract_alone",
+        "tests.test_check_data_contract.ContractTest.test_envelope",
+        "tests.test_check_data_contract.ContractTest.test_fields"
+      ],
+      "negative_claim": "a data contract with a wrong envelope or invalid dataset fields fails, with the problem named",
+      "state": "green"
+    },
+    {
+      "check": "test-cases",
+      "checker": "python tools/check_test_cases.py",
+      "proofs": [
+        "tests.test_check_test_cases.MainTest.test_fail",
+        "tests.test_check_test_cases.FixtureTest.test_missing_and_unknown_keys",
+        "tests.test_check_test_cases.ExpectedTest.test_reference"
+      ],
+      "negative_claim": "a fixture that is not synthetic, missing or unknown keys and an invalid reference of an expected value fail the check",
+      "state": "green"
+    },
+    {
+      "check": "derivations",
+      "checker": "python tools/check_derivations.py",
+      "proofs": [
+        "tests.test_check_derivations.DerivationTest.test_mismatch_fails",
+        "tests.test_check_derivations.DerivationTest.test_script_failures",
+        "tests.test_check_derivations.DerivationTest.test_a_script_outside_tests_derivations_is_refused"
+      ],
+      "negative_claim": "a derivation script whose value differs from the expected one, a failing script and a script outside tests/derivations/ are rejected",
+      "state": "green"
+    },
+    {
+      "check": "independent-implementations",
+      "checker": "python tools/check_independent.py",
+      "proofs": [
+        "tests.test_check_independent.IndependentTest.test_disagreeing_outputs_fail",
+        "tests.test_check_independent.IndependentTest.test_registry_problems_fail",
+        "tests.test_check_independent.IndependentTest.test_unusable_replies_fail"
+      ],
+      "negative_claim": "an implementation whose output differs beyond the tolerance, a malformed adapter registry and an unusable reply fail the check",
+      "state": "green"
+    },
+    {
+      "check": "accuracy",
+      "checker": "python tools/check_accuracy.py",
+      "proofs": [
+        "tests.test_check_accuracy.RegistryTest.test_malformed_contracts",
+        "tests.test_check_accuracy.WideningTest.test_a_frozen_threshold_widens_only_with_a_new_decision",
+        "tests.test_check_accuracy.WideningTest.test_a_frozen_contract_is_neither_removed_nor_unfrozen",
+        "tests.test_check_accuracy.RecordCheckTest.test_a_malformed_record_is_a_finding",
+        "tests.test_check_accuracy.ExposureDriftTest.test_a_lower_threshold_after_an_exposure_is_a_finding",
+        "tests.test_check_accuracy.ExposureDriftTest.test_a_changed_holdout_file_is_a_finding"
+      ],
+      "negative_claim": "a malformed accuracy contract, a frozen contract widened, removed or unfrozen without a new decision, a malformed holdout exposure record, and a frozen contract whose entry, threshold or holdout files changed under the decision of its recorded exposure, fail the check",
+      "state": "green"
+    },
+    {
+      "check": "workbook-protection",
+      "checker": "python tools/check_workbook_protection.py",
+      "proofs": [
+        "tests.test_check_workbook_protection.ProtectionCheckTest.test_a_differing_lock_flag_fails",
+        "tests.test_check_workbook_protection.ProtectionCheckTest.test_a_differing_protection_option_fails",
+        "tests.test_check_workbook_protection.ProtectionCheckTest.test_a_malformed_matrix_fails"
+      ],
+      "negative_claim": "a lock flag or protection option that differs from the matrix, and a malformed matrix, fail the check",
+      "state": "green"
+    },
+    {
+      "check": "changelog",
+      "checker": "python tools/check_changelog.py --repository OWNER/REPOSITORY",
+      "proofs": [
+        "tests.test_check_changelog.VersionTest.test_main_reports_the_verdict",
+        "tests.test_check_changelog.ChangelogTest.test_link_references_point_to_the_repository",
+        "tests.test_check_changelog.FrozenSectionTest.test_an_edited_release_fails_with_its_line"
+      ],
+      "negative_claim": "a VERSION that is not the newest release, a link reference to another repository and an edited released section fail the check",
+      "state": "green"
+    },
+    {
+      "check": "generated-docs",
+      "checker": "python tools/render_docs.py --check",
+      "proofs": [
+        "tests.test_render_docs.RenderTest.test_main_exit_codes",
+        "tests.test_render_docs.RenderTest.test_a_stale_block_fails_and_write_renders_it",
+        "tests.test_render_docs.RenderTest.test_marker_problems",
+        "tests.test_render_docs.TriageRulesTest.test_a_new_rule_makes_the_table_stale",
+        "tests.test_render_docs.WorkflowTriggersTest.test_a_changed_trigger_makes_the_block_stale"
+      ],
+      "negative_claim": "a stale generated block, among them the triage rules after a rule is added and the workflow triggers after a trigger changes, and markers that are unbalanced, repeated or name no renderer, fail --check",
+      "state": "green_in_ci"
+    },
+    {
+      "check": "restated-counts",
+      "checker": "python tools/check_restated_counts.py",
+      "proofs": [
+        "tests.test_check_restated_counts.RestatedCounts.test_the_old_restatements_fail_with_file_line_phrase_and_source",
+        "tests.test_check_restated_counts.RestatedCounts.test_counts_in_digits_or_words_fail_whatever_their_value",
+        "tests.test_check_restated_counts.RestatedCounts.test_allowed_restatements",
+        "tests.test_check_restated_counts.RestatedCounts.test_an_unreadable_source_fails",
+        "tests.test_check_restated_counts.RestatedCounts.test_main_reports_and_exits"
+      ],
+      "negative_claim": "a count of a single-source record restated by hand in tracked Markdown, an unused or unexplained allowed restatement and an unreadable source fail",
+      "state": "green"
+    },
+    {
+      "check": "template-wording",
+      "checker": "python tools/check_template_wording.py",
+      "proofs": [
+        "tests.test_check_template_wording.TemplateWording.test_the_old_sentences_fail_with_file_line_and_phrase",
+        "tests.test_check_template_wording.TemplateWording.test_case_line_breaks_comment_marks_and_apostrophes",
+        "tests.test_check_template_wording.TemplateWording.test_only_the_template_only_sections_of_agents_and_readme_are_left_out",
+        "tests.test_check_template_wording.TemplateWording.test_allowed_uses",
+        "tests.test_check_template_wording.TemplateWording.test_tracked_files_that_cannot_be_listed_fail",
+        "tests.test_check_template_wording.TemplateWording.test_main_reports_and_exits"
+      ],
+      "negative_claim": "a tracked text file that holds one of the phrases of PHRASES, also across a line break or comment marks, outside the template-only sections of AGENTS.md and README.md, is reported with its file, line and phrase; an allowed use that matches nothing or has no reason, and tracked files that cannot be listed, are reported",
+      "state": "green"
+    },
+    {
+      "check": "markdown-links",
+      "checker": "python tools/check_links.py",
+      "proofs": [
+        "tests.test_check_links.CheckTests.test_missing_files_anchors_and_paths_are_errors",
+        "tests.test_check_links.CheckTests.test_plain_http_links_are_errors_outside_code"
+      ],
+      "negative_claim": "a missing target or anchor, a root-relative or outside path, an empty target and a plain HTTP link are errors",
+      "state": "green"
+    },
+    {
+      "check": "documented-commands",
+      "checker": "python tools/check_doc_commands.py",
+      "proofs": [
+        "tests.test_check_doc_commands.CommandTests.test_unknown_options_fail",
+        "tests.test_check_doc_commands.CommandTests.test_missing_or_untracked_script_fails",
+        "tests.test_check_doc_commands.CommandTests.test_unreadable_parsers_are_reported"
+      ],
+      "negative_claim": "a documented command with an unknown option, a missing or untracked script, or a parser that cannot be read is reported",
+      "state": "green"
+    },
+    {
+      "check": "verification-depth",
+      "checker": "python tools/check_verification_depth.py",
+      "proofs": [
+        "tests.test_check_verification_depth.InventoryTest.test_a_removed_entry_fails_and_names_its_check",
+        "tests.test_check_verification_depth.InventoryTest.test_a_check_added_without_an_entry_fails",
+        "tests.test_check_verification_depth.InventoryTest.test_a_renamed_or_deleted_test_fails",
+        "tests.test_check_verification_depth.InventoryTest.test_a_state_outside_the_closed_list_fails",
+        "tests.test_check_verification_depth.InventoryTest.test_a_short_negative_claim_fails",
+        "tests.test_check_verification_depth.InventoryTest.test_a_duplicate_entry_fails",
+        "tests.test_check_verification_depth.InventoryTest.test_an_entry_for_a_check_that_does_not_exist_fails",
+        "tests.test_check_verification_depth.InventoryTest.test_a_missing_or_empty_field_fails",
+        "tests.test_check_verification_depth.MainTest.test_main_reports_the_verdict"
+      ],
+      "negative_claim": "a missing, duplicate or unknown entry, a check without an entry, a proof that is not collected, a state outside the list and a short claim fail",
+      "state": "green"
+    },
+    {
+      "check": "dependabot-target-branches",
+      "checker": "tools/check_repository.py:dependabot_branches",
+      "proofs": [
+        "tests.test_check_repository.FileCheckTest.test_dependabot_target_branches",
+        "tests.test_check_repository.FileCheckTest.test_dependabot_target_branch_nowhere_fails"
+      ],
+      "negative_claim": "a Dependabot target-branch that exists neither as a remote-tracking branch nor on origin is reported",
+      "state": "green"
+    },
+    {
+      "check": "codeql-default-branch",
+      "checker": "tools/check_repository.py:codeql_default_branch",
+      "proofs": [
+        "tests.test_check_repository.FileCheckTest.test_codeql_default_branch",
+        "tests.test_check_repository.FileCheckTest.test_integrity_push_branches_name_the_default_branch",
+        "tests.test_check_repository.FileCheckTest.test_minimum_python_push_branches_name_the_default_branch",
+        "tests.test_check_repository.FileCheckTest.test_branch_patterns_follow_github_rules",
+        "tests.test_check_repository.FileCheckTest.test_required_workflows_read_filters_as_github_does",
+        "tests.test_check_repository.FileCheckTest.test_every_workflow_branch_filter_must_be_well_formed",
+        "tests.test_check_repository.RunTest.test_a_check_that_raises_fails_and_the_run_continues"
+      ],
+      "negative_claim": "codeql.yml, minimum-python.yml and repository-integrity.yml filters that exclude the default branch, through a pattern list, a negation, branches-ignore or a tags-only push, are reported; a malformed branch filter in any workflow is reported; and a duplicate YAML key fails the check",
+      "state": "green_in_ci"
+    },
+    {
+      "check": "required-documents",
+      "checker": "tools/check_repository.py:required_documents",
+      "proofs": [
+        "tests.test_check_repository.FileCheckTest.test_required_documents"
+      ],
+      "negative_claim": "a required document that is missing or empty, such as an empty LICENSE, is reported",
+      "state": "green"
+    },
+    {
+      "check": "whitespace-committed",
+      "checker": "git diff --check 4b825dc642cb6eb9a060e54bf8d69288fbee4904 HEAD",
+      "proofs": [
+        "tests.test_check_repository.WhitespaceTest.test_committed_trailing_white_space_fails_in_a_clean_checkout",
+        "tests.test_check_repository.WhitespaceTest.test_ordinary_text_beside_byte_preserved_files_is_checked"
+      ],
+      "negative_claim": "committed trailing white space fails in a clean checkout, also in ordinary text beside the byte-preserved files",
+      "state": "green"
+    },
+    {
+      "check": "whitespace-local",
+      "checker": "git diff --check HEAD",
+      "proofs": [
+        "tests.test_check_repository.WhitespaceTest.test_local_white_space_fails"
+      ],
+      "negative_claim": "trailing white space in an uncommitted change to a tracked file fails the check",
+      "state": "green"
+    },
+    {
+      "check": "clean-working-tree",
+      "checker": "tools/check_repository.py:clean_working_tree",
+      "proofs": [
+        "tests.test_check_repository.RunTest.test_ci_fails_a_working_tree_that_differs_from_the_commit"
+      ],
+      "negative_claim": "a changed tracked file and an untracked file that is not ignored each fail the check, with their git status",
+      "state": "green"
+    }
+  ]
+}

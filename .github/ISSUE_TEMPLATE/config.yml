@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+# Both links must point to this repository; Repository integrity fails
+# otherwise.
+contact_links:
+  - name: "🔒 Report a security vulnerability privately"
+    url: "https://github.com/danielep71/K-TEMPLATE/security/policy"
+    about: "Do not open an issue. Report it privately, as SECURITY.md describes."
+  - name: "🏷️ Issue rules and labels"
+    url: "https://github.com/danielep71/K-TEMPLATE/blob/HEAD/docs/repo_governance/ISSUE_LABELS.md"
+    about: "Priorities, labels, milestones, dependency status, and how issues are closed."

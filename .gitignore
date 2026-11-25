@@ -1,0 +1,307 @@
+#==============================================================================
+# .gitignore
+#------------------------------------------------------------------------------
+# PURPOSE
+#   Keep the repository source-first, reviewable, reproducible, and safe to
+#   clone. Ignore workstation state, generated output, secrets, caches, and
+#   unintended Office packages while preserving authoritative source and
+#   repository evidence.
+#
+# REPOSITORY POLICY
+#   These defaults also cover file types the repository may not use yet.
+#   - Exported VBA source and UserForm companions are version-controlled.
+#   - Workbooks, Access databases and macro-enabled Office files are ignored
+#     unless an exact path is approved. Copies of regulatory sources in
+#     docs/methodology/sources/ are never ignored for their Office type.
+#   - Repository configuration, documentation, tests, tools, and visual assets are source.
+#   - Python and Node development caches are excluded without hiding manifests.
+#
+# SAFETY RULE
+#   Never add broad rules for exported VBA source, documentation, repository
+#   automation, or evidence directories. Exceptions for intentional Office
+#   packages must use exact rooted paths.
+#==============================================================================
+
+
+#------------------------------------------------------------------------------
+# MICROSOFT OFFICE TEMPORARY / LOCK / RECOVERY FILES
+#------------------------------------------------------------------------------
+~$*
+.~lock.*#
+*.laccdb
+*.ldb
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*.xlk
+*.asd
+*.wbk
+
+
+#------------------------------------------------------------------------------
+# GENERATED OFFICE PACKAGES
+#------------------------------------------------------------------------------
+# Workbooks, Access databases and macro-enabled Word and PowerPoint files and
+# add-ins are generated or release artifacts by default. Legacy .doc and .ppt
+# files are not ignored because they also hold plain documents; check them for
+# macros before committing. These global
+# rules prevent an accidental workbook saved anywhere in the tree from becoming
+# source. Re-include an intentional package only by its exact rooted path.
+*.xls
+*.xlsx
+*.xlsm
+*.xlsb
+*.xlt
+*.xltx
+*.xltm
+*.xla
+*.xlam
+*.xll
+*.xlw
+
+*.docm
+*.dotm
+*.pptm
+*.potm
+*.ppsm
+*.ppam
+*.accdb
+*.accde
+*.accdr
+*.mdb
+*.mde
+*.ade
+
+# Reserve one exact path for an intentional macro-free workbook template.
+# Review any additional exception in the change that introduces the package.
+!/src/workbook/Template.xlsx
+#
+# Built workbooks are saved outside the checkout or under /test-results/
+# and are never re-included.
+
+
+#------------------------------------------------------------------------------
+# RELEASE / BUILD STAGING
+#------------------------------------------------------------------------------
+# Root anchoring prevents a generated-directory name from hiding an
+# authoritative nested source or evidence directory.
+/release-assets/
+/build/
+/out/
+/output/
+/outputs/
+/dist/
+
+
+#------------------------------------------------------------------------------
+# LOCAL TEST / CERTIFICATION OUTPUT
+#------------------------------------------------------------------------------
+/test-output/
+/test-results/
+/coverage/
+/htmlcov/
+
+.coverage
+.coverage.*
+coverage.xml
+
+.pytest_cache/
+.hypothesis/
+.tox/
+.nox/
+
+
+#------------------------------------------------------------------------------
+# LOCAL TEMPORARY DIRECTORIES
+#------------------------------------------------------------------------------
+/temp/
+/tmp/
+/.cache/
+
+
+#------------------------------------------------------------------------------
+# WINDOWS FILE-SYSTEM / SHELL METADATA
+#------------------------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+System Volume Information/
+*.stackdump
+
+# Reserved-name artifact occasionally created by shell redirection mistakes.
+nul
+
+
+#------------------------------------------------------------------------------
+# MACOS / NETWORK / UNIX METADATA
+#------------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+# A custom folder icon is a file named Icon plus a carriage return.
+Icon[[:cntrl:]]
+._*
+.Trashes
+.Spotlight-V100
+.fseventsd
+
+.directory
+.fuse_hidden*
+.nfs*
+
+
+#------------------------------------------------------------------------------
+# EDITOR / IDE STATE
+#------------------------------------------------------------------------------
+# Project-wide configuration belongs in the repository; personal workspaces do
+# not. Re-include a specific shared editor file explicitly if one is introduced.
+.vscode/
+.idea/
+.vs/
+.history/
+.fleet/
+
+*.code-workspace
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.swp
+*.swo
+*~
+
+*.nppBackup
+# Notepad++ session file, rooted so that a fixture of that name stays visible.
+/session.xml
+
+
+
+#------------------------------------------------------------------------------
+# MERGE / PATCH / CONFLICT ARTIFACTS
+#------------------------------------------------------------------------------
+*.orig
+*.rej
+*.patch.tmp
+
+
+#------------------------------------------------------------------------------
+# LOGS / CRASH DUMPS
+#------------------------------------------------------------------------------
+*.log
+*.dmp
+*.dump
+
+
+#------------------------------------------------------------------------------
+# LOCAL ENVIRONMENT / SECRET / SIGNING MATERIAL
+#------------------------------------------------------------------------------
+# Sanitized examples remain trackable.
+.env
+.env.*
+!.env.example
+
+*.pfx
+*.p12
+*.pvk
+*.key
+*.pem
+*.jks
+*.keystore
+*.kdbx
+
+# Private SSH keys; their public halves remain trackable.
+id_rsa*
+id_ed25519*
+!id_rsa*.pub
+!id_ed25519*.pub
+
+
+#------------------------------------------------------------------------------
+# PYTHON CACHE / LOCAL ENVIRONMENTS
+#------------------------------------------------------------------------------
+# Source, manifests, lock files, and requirements remain trackable.
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+.mypy_cache/
+.pyright/
+.ruff_cache/
+.ipynb_checkpoints/
+
+.venv/
+venv/
+
+
+#------------------------------------------------------------------------------
+# NODE / JAVASCRIPT LOCAL DEPENDENCIES
+#------------------------------------------------------------------------------
+# Package manifests and lock files remain trackable. Only installed dependencies,
+# machine caches, and diagnostic logs are ignored.
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/install-state.gz
+.yarn/build-state.yml
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+#------------------------------------------------------------------------------
+# REGULATORY SOURCE COPIES
+#------------------------------------------------------------------------------
+# Regulators publish templates and worked examples as workbooks and logs.
+# Byte-preserved copies under docs/methodology/sources/ (see .gitattributes)
+# are evidence, so the Office package rules and the *.log rule above do not
+# apply there: each type ignored under GENERATED OFFICE PACKAGES has its
+# negation here. These negations come last so that they override those rules.
+!/docs/methodology/sources/**/*.xls
+!/docs/methodology/sources/**/*.xlsx
+!/docs/methodology/sources/**/*.xlsm
+!/docs/methodology/sources/**/*.xlsb
+!/docs/methodology/sources/**/*.xlt
+!/docs/methodology/sources/**/*.xltx
+!/docs/methodology/sources/**/*.xltm
+!/docs/methodology/sources/**/*.xla
+!/docs/methodology/sources/**/*.xlam
+!/docs/methodology/sources/**/*.xll
+!/docs/methodology/sources/**/*.xlw
+!/docs/methodology/sources/**/*.docm
+!/docs/methodology/sources/**/*.dotm
+!/docs/methodology/sources/**/*.pptm
+!/docs/methodology/sources/**/*.potm
+!/docs/methodology/sources/**/*.ppsm
+!/docs/methodology/sources/**/*.ppam
+!/docs/methodology/sources/**/*.accdb
+!/docs/methodology/sources/**/*.accde
+!/docs/methodology/sources/**/*.accdr
+!/docs/methodology/sources/**/*.mdb
+!/docs/methodology/sources/**/*.mde
+!/docs/methodology/sources/**/*.ade
+!/docs/methodology/sources/**/*.log
+
+#------------------------------------------------------------------------------
+# AUTHORITATIVE CONTENT THAT MUST REMAIN TRACKABLE
+#------------------------------------------------------------------------------
+# These are documentation guardrails, not negation rules:
+#   *.bas, *.cls, *.frm, *.frx, *.xml
+#   src/**, tests/**, tools/**, docs/**, .github/**, examples/** (reserved)
+#   src/forms/*.frx beside its .frm; src/workbook/*.cls document modules
+#   *.md, *.txt, *.yml, *.yaml, *.json, *.csv
+#   .editorconfig, .gitattributes, .gitignore
+#
+# Do not ignore exported VBA extensions or the source, test, tool,
+# documentation or .github directories.
+#==============================================================================

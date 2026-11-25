@@ -1,0 +1,164 @@
+name: CodeQL
+
+# Code scanning with CodeQL's advanced setup: the Python tools and tests, the
+# label scripts (JavaScript) and the workflows themselves (Actions). It runs on
+# pushes to the default branch, on pull requests into it and into release
+# branches, and weekly, because new queries can find issues in unchanged code.
+# A pull request that changes only Markdown files and files under docs/ is not
+# analyzed: it changes no scanned code. Results appear under
+# Security -> Code scanning. It runs the security-extended query suite. Pull
+# requests are analyzed by a separate job with no write permission: it uploads
+# nothing to code scanning and keeps the SARIF as a 30-day artifact, so pull
+# requests show no code scanning annotations; pushes to the default branch
+# upload as usual. The workflow is versioned here rather than
+# enabled as default setup, so that it is reviewed with the code it scans,
+# follows the same pinning and permission rules as every other workflow, and
+# Dependabot updates its action.
+#
+# The push and pull_request branch lists name the default branch, because
+# branch filters cannot refer to it: if the default branch is not main,
+# rename it below. Repository integrity fails while the lists omit it. A push
+# to a release branch is not analyzed: its pull request already was, and the
+# default branch is analyzed again when the release is integrated.
+#
+# Availability: code scanning is free on public repositories. A private
+# repository needs GitHub Code Security; there, set the repository variable
+# CODE_SCANNING to "enabled", or the analysis is skipped instead of failing.
+# This check is not required by the rulesets, so it never blocks a merge.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      - "release/**"
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+  schedule:
+    # Weekly, off the hour; GitHub may start scheduled runs late.
+    - cron: "29 4 * * 3"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  availability:
+    name: Code scanning availability
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - name: Check visibility and opt-in
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CODE_SCANNING: ${{ vars.CODE_SCANNING }}
+        run: |
+          # The visibility is read from the API because scheduled events do
+          # not carry the repository in their payload.
+          visibility="$(gh api "repos/${GITHUB_REPOSITORY}" --jq .visibility)"
+          if [[ "$visibility" == "public" || "$CODE_SCANNING" == "enabled" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Code scanning skipped: the repository is ${visibility} and CODE_SCANNING is not \"enabled\"."
+          fi
+
+  analyze:
+    # Pushes, the weekly schedule and manual runs: upload to code scanning.
+    name: Analyze (${{ matrix.language }})
+    needs: availability
+    if: needs.availability.outputs.enabled == 'true' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      # Read the workflow run on a private repository and upload the results.
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - actions
+          - javascript-typescript
+          - python
+    steps:
+      - name: Check out the revision under analysis
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          languages: ${{ matrix.language }}
+          # None of the three languages needs a build.
+          build-mode: none
+          queries: security-extended
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          category: /language:${{ matrix.language }}
+
+  analyze-pr:
+    # Pull requests: analyze without any write permission, upload nothing to
+    # code scanning, and keep the SARIF as an artifact for review.
+    name: Analyze pull request (${{ matrix.language }})
+    needs: availability
+    if: needs.availability.outputs.enabled == 'true' && github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - actions
+          - javascript-typescript
+          - python
+    steps:
+      - name: Check out the pull request merge commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          queries: security-extended
+
+      - name: Analyze without uploading
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          category: /language:${{ matrix.language }}
+          upload: never
+          upload-database: false
+          output: codeql-results
+
+      - name: Keep the SARIF results
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: codeql-pr-${{ matrix.language }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: codeql-results
+          if-no-files-found: error
+          retention-days: 30

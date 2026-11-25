@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "description": "What tools/devbuild/build_workbook.py builds: the sheets and defined names of docs/methodology/WORKBOOK_CONTRACT.md, the names that carry the build stamp, and the source directories of each configuration. Each sheet's role is the contract's; sheets with the Test role are built only in the development configuration. tests/test_devbuild.py keeps the sheets and names equal to the contract's tables.",
+  "workbook_code_name": "ThisWorkbook",
+  "sheets": [
+    {"tab": "Readme", "code_name": "shReadme", "role": "Reference"},
+    {"tab": "Inputs", "code_name": "shInputs", "role": "Input"}
+  ],
+  "names": [
+    {"name": "build_commit", "sheet": "shReadme", "cell": "B3", "label": "Commit"},
+    {"name": "build_time", "sheet": "shReadme", "cell": "B4", "label": "Commit time"},
+    {"name": "build_configuration", "sheet": "shReadme", "cell": "B5", "label": "Configuration"},
+    {"name": "cfg_reporting_date", "sheet": "shInputs", "cell": "C5", "label": "Reporting date"},
+    {"name": "Inputs_Settings", "sheet": "shInputs", "cell": "B4"}
+  ],
+  "stamp": {
+    "commit": "build_commit",
+    "time": "build_time",
+    "configuration": "build_configuration"
+  },
+  "configurations": {
+    "production": ["src/core", "src/classes", "src/modules", "src/workbook"],
+    "development": ["src/core", "src/classes", "src/modules", "src/workbook", "tests/modules", "examples/modules"]
+  }
+}

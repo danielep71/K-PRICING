@@ -1,0 +1,9 @@
+# Public VBA API inventory.
+# [supported]: the supported API, the public declarations of src/modules/.
+# [project-public]: every other public declaration under src/.
+# No public declarations exist yet in either tier.
+# Format and change policy: docs/REPOSITORY_STRUCTURE.md, "Public API inventory".
+
+[supported]
+
+[project-public]

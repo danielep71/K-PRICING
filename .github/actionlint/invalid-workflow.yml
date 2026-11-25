@@ -1,0 +1,19 @@
+# Negative probe for the actionlint check of tools/check_repository.py. This
+# file is not a workflow and never runs: it lives outside .github/workflows/,
+# so GitHub ignores it and the normal actionlint run does not lint it.
+#
+# The check lints this file first and fails unless actionlint rejects it with
+# the finding below. A binary that accepts every workflow cannot pass.
+name: Invalid workflow probe
+
+on: push
+
+permissions: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo probe
+        # Error: a step has no key of this name.
+        bogus-key: true

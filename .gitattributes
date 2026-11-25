@@ -1,0 +1,303 @@
+#==============================================================================
+# .gitattributes
+#------------------------------------------------------------------------------
+# PURPOSE
+#   Define Git behavior for the repository.
+#
+# POLICY
+#   These defaults also cover file types the repository may not use yet.
+#   - Exported VBA source is normalized in Git and checked out as CRLF.
+#   - Repository text and cross-platform tooling are checked out as LF.
+#   - Office packages, UserForm binaries, archives, and media remain binary.
+#   - Binary payloads never receive text normalization or line-based merges.
+#   - GitHub Linguist reports exported modules as VBA.
+#   - Text and binary handling depends on file type, except for the copies of
+#     regulatory sources in docs/methodology/sources/ and the variant files of
+#     file-based test cases, which are stored byte for byte with no white-space
+#     check; the only other path rules are the archive exclusions under
+#     ARCHIVE HYGIENE.
+#     Other locations use file-type rules for their handling;
+#     Linguist already treats docs/ and
+#     examples/ as documentation. Add a path rule only with a layout change
+#     that needs it.
+#   - VBA source is ASCII only, so no
+#     working-tree encoding is configured.
+#
+# PLACEMENT
+#   Keep this file at the repository root. Custom [attr] macros are honored only
+#   in a top-level attributes file.
+#
+# ADOPTION / POLICY CHANGES
+#   Attribute changes do not rewrite existing blobs automatically. Inspect any
+#   normalization separately:
+#
+#       git add --renormalize .
+#       git status --short
+#       git diff --cached --stat
+#       git diff --cached --check
+#
+#   (`--renormalize --dry-run` lists every tracked file, not only changed
+#   ones; `git restore --staged .` unstages an unwanted result.)
+#
+#   Commit a required normalization as its own mechanical change.
+#
+# VBA DIFF DRIVER
+#   The vba driver below is harmless without local configuration. For procedure
+#   names in diff hunk headers, configure each clone once:
+#
+#       git config diff.vba.xfuncname \
+#         "^([[:blank:]]*(Public|Private|Friend)?[[:blank:]]*(Static[[:blank:]]+)?(Sub|Function|Property[[:blank:]]+(Get|Let|Set))[[:blank:]]+[A-Za-z_].*)$"
+#
+#   The outer capture group is intentional: it returns the complete declaration
+#   rather than only a visibility keyword.
+#==============================================================================
+
+
+#------------------------------------------------------------------------------
+# REUSABLE ATTRIBUTE POLICIES
+#------------------------------------------------------------------------------
+[attr]vba-source    text eol=crlf diff=vba linguist-language=VBA
+[attr]vba-form-bin  binary merge=binary linguist-generated
+[attr]office-doc    binary merge=binary -linguist-detectable
+[attr]opaque        binary merge=binary
+
+
+#------------------------------------------------------------------------------
+# DETERMINISTIC DEFAULT
+#------------------------------------------------------------------------------
+# Normalize detected text to LF in the index and use LF in the working tree.
+# Explicit VBA and Windows-native rules below override the working-tree EOL.
+* text=auto eol=lf
+
+
+#------------------------------------------------------------------------------
+# EXPORTED VBA SOURCE
+#------------------------------------------------------------------------------
+# The header the VBE writes for a form keeps its bytes, and a form's Begin
+# line ends with a blank, so git diff --check does not report trailing blanks
+# in a .frm file; tools/check_vba_source.py checks every line after the header.
+*.bas   vba-source
+*.cls   vba-source
+*.frm   vba-source whitespace=-blank-at-eol
+*.frx   vba-form-bin
+
+
+#------------------------------------------------------------------------------
+# WINDOWS-NATIVE SCRIPTS
+#------------------------------------------------------------------------------
+# Line-ending conversion needs ASCII or UTF-8 content: Git would corrupt the
+# newline bytes inside UTF-16 text. Save these scripts and INI files as UTF-8
+# (Windows PowerShell 5.1 redirection writes UTF-16; use Out-File -Encoding utf8).
+# Registry exports are UTF-16LE by default, so they are kept byte for byte.
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+*.psm1  text eol=crlf
+*.psd1  text eol=crlf
+*.vbs   text eol=crlf
+*.reg   binary
+*.ini   text eol=crlf
+
+
+#------------------------------------------------------------------------------
+# POSIX SHELL TOOLING
+#------------------------------------------------------------------------------
+*.sh    text eol=lf
+
+
+#------------------------------------------------------------------------------
+# PYTHON TOOLING
+#------------------------------------------------------------------------------
+*.py    text eol=lf
+*.pyw   text eol=lf
+
+
+#------------------------------------------------------------------------------
+# NODE / JAVASCRIPT TOOLING
+#------------------------------------------------------------------------------
+*.js    text eol=lf
+*.mjs   text eol=lf
+*.cjs   text eol=lf
+
+
+#------------------------------------------------------------------------------
+# DOCUMENTATION AND STRUCTURED CONFIGURATION
+#------------------------------------------------------------------------------
+*.md            text eol=lf
+*.txt           text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+*.json          text eol=lf
+*.jsonc         text eol=lf
+*.xml           text eol=lf
+*.csv           text eol=lf
+*.tsv           text eol=lf
+*.toml          text eol=lf
+*.cfg           text eol=lf
+*.svg           text eol=lf
+
+.editorconfig   text eol=lf
+.gitattributes  text eol=lf
+.gitignore      text eol=lf
+.gitkeep        text eol=lf
+LICENSE         text eol=lf
+VERSION         text eol=lf
+
+
+#------------------------------------------------------------------------------
+# MICROSOFT OFFICE PACKAGES
+#------------------------------------------------------------------------------
+# Office Open XML files are ZIP containers; legacy formats are binary. Keep all
+# of them opaque to text conversion and line-based merge machinery.
+*.xls   office-doc
+*.xlsx  office-doc
+*.xlsm  office-doc
+*.xlsb  office-doc
+*.xlt   office-doc
+*.xltx  office-doc
+*.xltm  office-doc
+*.xlam  office-doc
+*.xla   office-doc
+*.xlw   office-doc
+*.xll   opaque
+*.thmx  office-doc
+
+*.doc   office-doc
+*.docx  office-doc
+*.docm  office-doc
+*.dot   office-doc
+*.dotx  office-doc
+*.dotm  office-doc
+
+*.ppt   office-doc
+*.pptx  office-doc
+*.pptm  office-doc
+*.pot   office-doc
+*.potx  office-doc
+*.potm  office-doc
+*.pps   office-doc
+*.ppsx  office-doc
+*.ppsm  office-doc
+*.ppam  office-doc
+
+*.accdb office-doc
+*.accde office-doc
+*.accdr office-doc
+*.mdb   office-doc
+*.mde   office-doc
+*.ade   office-doc
+
+
+#------------------------------------------------------------------------------
+# OFFICE LOCK FILES
+#------------------------------------------------------------------------------
+# Normally ignored, but still classified defensively if one reaches the index.
+~$*        opaque
+*.laccdb   opaque
+*.ldb      opaque
+
+
+#------------------------------------------------------------------------------
+# ARCHIVES, EXECUTABLES, AND NATIVE BINARIES
+#------------------------------------------------------------------------------
+*.zip   opaque
+*.7z    opaque
+*.rar   opaque
+*.gz    opaque
+*.tgz   opaque
+*.bz2   opaque
+*.xz    opaque
+*.zst   opaque
+*.cab   opaque
+*.msi   opaque
+*.exe   opaque
+*.dll   opaque
+*.so    opaque
+*.dylib opaque
+*.ocx   opaque
+*.tlb   opaque
+
+
+#------------------------------------------------------------------------------
+# IMAGES, MEDIA, DOCUMENTS, AND FONTS
+#------------------------------------------------------------------------------
+# SVG remains reviewable text and is classified in the text section above.
+*.png   opaque
+*.jpg   opaque
+*.jpeg  opaque
+*.gif   opaque
+*.webp  opaque
+*.bmp   opaque
+*.ico   opaque
+*.tif   opaque
+*.tiff  opaque
+*.avif  opaque
+*.heic  opaque
+*.pdf   opaque
+*.mp4   opaque
+*.mov   opaque
+*.webm  opaque
+*.mp3   opaque
+*.wav   opaque
+*.gifv  opaque
+*.ttf   opaque
+*.otf   opaque
+*.woff  opaque
+*.woff2 opaque
+*.eot   opaque
+
+
+#------------------------------------------------------------------------------
+# REGULATORY SOURCE COPIES
+#------------------------------------------------------------------------------
+# Reserve this directory for byte-preserved source copies. Record each
+# copy's SHA-256 in the register of docs/methodology/SOURCES.md.
+# Never normalized, so the checked-out bytes keep the registered hash, and
+# never checked for white space, because a copy keeps the line endings and
+# trailing blanks of its issuer. A README in the directory, by convention, is
+# ordinary documentation.
+docs/methodology/sources/**             -text -whitespace
+docs/methodology/sources/README.md      text eol=lf !whitespace
+
+
+#------------------------------------------------------------------------------
+# FILE-BASED TEST CASE VARIANTS
+#------------------------------------------------------------------------------
+# tests/fixtures/<case-id>/<variant>/ holds input files exactly as the workbook
+# reads them: a case may test CRLF line endings, a missing final newline,
+# trailing blanks or another encoding, so Git never converts these files and
+# reports no white-space error in them. The case.json manifest, one level up,
+# stays ordinary JSON. docs/methodology/TEST_CASES.md describes the format.
+tests/fixtures/*/*/**                   -text -whitespace
+
+
+#------------------------------------------------------------------------------
+# ARCHIVE HYGIENE
+#------------------------------------------------------------------------------
+# These rules apply to git archive and archive producers that honor Git
+# attributes. Repository plumbing is not part of a consumable source package:
+# configuration, workflows, and the tests and tools that depend on them.
+# Use GitHub's template creation or a clone for a full development checkout.
+.gitattributes  export-ignore
+.gitignore      export-ignore
+.editorconfig   export-ignore
+.github         export-ignore
+tests           export-ignore
+tools           export-ignore
+pyproject.toml  export-ignore
+AGENTS.md       export-ignore
+
+
+#==============================================================================
+# ENCODING POLICY
+#------------------------------------------------------------------------------
+# VBE exports use the Windows system code page, which differs between hosts.
+# VBA source is ASCII only, identical in every code page, and
+# any other character is built at run time with ChrW
+# rather than embedded in exported source. These rules therefore stay
+# disabled. Enabling one would need a new decision and a round-trip test:
+#
+#   *.bas  working-tree-encoding=windows-1252
+#   *.cls  working-tree-encoding=windows-1252
+#   *.frm  working-tree-encoding=windows-1252
+#==============================================================================

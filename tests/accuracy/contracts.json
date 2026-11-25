@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "kind": "accuracy-contracts",
+  "min_holdout_cases": 3,
+  "contracts": [
+    {
+      "id": "ACC-01",
+      "calculation": "CALC-01",
+      "regime": "illustrative",
+      "quantities": ["illustrative_total_notional_amount"],
+      "metric": "absolute",
+      "threshold": 0.000001,
+      "target": 0,
+      "provenance": "Format example only: the threshold is the double-precision bound of the illustrative cases' own tolerance, and the target is 0 because their sums of whole amounts are exact in double precision. Neither is a guarantee of any rule",
+      "status": "draft",
+      "decision": null,
+      "calibration_cases": ["illustrative-format-example"],
+      "holdout_cases": ["illustrative-file-import-example"]
+    }
+  ],
+  "invariants": [
+    {
+      "id": "INV-01",
+      "kind": "bounds",
+      "calculation": "CALC-01",
+      "basis": "Format example only: the illustrative total sums notional amounts, which the illustrative notional field of the data contract requires to be at least 0, so the total is never negative. Not a regulatory rule",
+      "quantity": "illustrative_total_notional_amount",
+      "cases": ["illustrative-format-example", "illustrative-file-import-example"],
+      "minimum": 0,
+      "maximum": null
+    }
+  ]
+}

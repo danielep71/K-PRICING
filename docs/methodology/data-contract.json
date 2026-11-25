@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "kind": "data-contract",
+  "datasets": [
+    {
+      "id": "DS-01",
+      "illustrative": true,
+      "description": "Example positions",
+      "provider": "Upstream system or manual input",
+      "frequency": "Per reporting date",
+      "granularity": "One row per position",
+      "source": "positions.csv",
+      "encoding": "UTF-8",
+      "delimiter": ",",
+      "decimal_separator": ".",
+      "fields": [
+        {"name": "position_id", "type": "text", "unit": null, "required": true, "allowed": null,
+         "notes": "Identifies the position"},
+        {"name": "currency", "type": "currency", "unit": null, "required": true, "allowed": null,
+         "notes": "Currency of the position's amounts"},
+        {"name": "notional", "type": "decimal", "unit": {"currency_field": "currency"},
+         "required": true, "allowed": {"min": 0}, "notes": "Absolute amount, never negative"}
+      ]
+    }
+  ]
+}

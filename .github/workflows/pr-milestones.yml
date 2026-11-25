@@ -1,0 +1,156 @@
+name: Keep milestones issue-only
+
+# Milestones belong to issues only (docs/repo_governance/ISSUE_LABELS.md).
+# Removes any milestone set on a pull request: on each pull-request event, and
+# for every pull request on a weekly scan, a manual run, or a change to this
+# file on the default branch. The job summary lists each removal. pull_request_target runs this file from the
+# base branch; the job never checks out or runs pull-request code.
+
+on:
+  push:
+    paths: [.github/workflows/pr-milestones.yml]
+  pull_request_target:
+    types: [opened, reopened, edited, milestoned]
+  schedule:
+    # Weekly on Friday, off the hour; GitHub may start scheduled runs late.
+    - cron: "37 3 * * 5"
+  workflow_dispatch:
+
+permissions: {}
+
+# One group per pull request: a group keeps only one pending run, so a
+# shared group would cancel the events of other pull requests.
+concurrency:
+  group: pr-milestones-${{ github.event.pull_request.number || 'scan' }}
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    name: Remove PR milestone assignments
+    # Pushes and manual runs use only the default branch's reviewed copy.
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      github.event_name == 'schedule' ||
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      # The script reads each pull request through the issues endpoint, which
+      # needs issues: read on a private repository.
+      issues: read
+      pull-requests: write
+    steps:
+      # Trusted inline code only: never check out or execute a PR's contents.
+      - name: Reconcile PR metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          from urllib.error import HTTPError
+          from urllib.request import Request, urlopen
+
+          TITLE = "## Keep milestones issue-only"
+
+          def reconcile(request, repository, event):
+              """Remove pull request milestones; return [(number, milestone title)]."""
+              removed = []
+
+              def clear(number):
+                  # Verify the live object before mutating the issues endpoint.
+                  item = request("GET", f"/repos/{repository}/issues/{number}")
+                  if "pull_request" not in item:
+                      raise ValueError("Refusing to change an issue")
+                  milestone = item.get("milestone")
+                  if milestone is None:
+                      return
+                  result = request("PATCH", f"/repos/{repository}/issues/{number}", {"milestone": None})
+                  if result.get("milestone") is not None:
+                      raise ValueError(f"PR #{number} still has a milestone")
+                  # Read the pull request again: the summary records what GitHub
+                  # keeps, not what the response to the write reports.
+                  after = request("GET", f"/repos/{repository}/issues/{number}")
+                  if after.get("milestone") is not None:
+                      raise ValueError(f"PR #{number} still has a milestone after the change")
+                  title = str(milestone.get("title", ""))
+                  removed.append((number, title))
+                  print(f"Removed milestone {title!r} from PR #{number}")
+
+              if "pull_request" in event:
+                  clear(int(event["number"]))
+                  return removed
+              # Traverse the full unfiltered PR collection so mutations cannot
+              # shift pagination. This includes closed and merged PRs and bots.
+              for page in range(1, 101):
+                  items = request("GET", f"/repos/{repository}/pulls?state=all&sort=created&direction=asc&per_page=100&page={page}")
+                  if not isinstance(items, list):
+                      raise ValueError("Malformed PR collection")
+                  for item in items:
+                      if item.get("milestone") is not None:
+                          clear(int(item["number"]))
+                  if len(items) < 100:
+                      return removed
+              raise ValueError("PR pagination exceeded 100 pages")
+
+          def summary(removed, scope):
+              """Markdown for the job summary; a milestone title is data."""
+              lines = [TITLE, "", f"Scope: {scope}.", ""]
+              if not removed:
+                  lines.append("No pull request carried a milestone; nothing was removed.")
+              else:
+                  lines += ["| Pull request | Milestone removed |", "| --- | --- |"]
+                  for number, title in removed:
+                      cell = " ".join(title.replace("\\", "\\\\").replace("|", "\\|").splitlines())
+                      lines.append(f"| #{number} | {cell} |")
+              return "\n".join(lines) + "\n"
+
+          def run(request, repository, event, publish):
+              """Reconcile, then publish the job summary."""
+              if "pull_request" in event:
+                  scope = f"pull request #{int(event['number'])}"
+              else:
+                  scope = "every pull request"
+              try:
+                  removed = reconcile(request, repository, event)
+              except HTTPError as error:
+                  # GitHub can give pull_request_target a read-only token, for
+                  # example on a Dependabot run whose base branch Dependabot
+                  # created. The scan runs with the default branch's token and
+                  # removes the milestone, so one pull request only warns.
+                  if error.code != 403 or "pull_request" not in event:
+                      raise
+                  message = (f"The workflow token cannot change {scope} (HTTP 403, read-only token). "
+                             "The weekly scan or a manual run of this workflow removes its milestone.")
+                  print(f"::warning title=Milestone not removed::{message}")
+                  publish(f"{TITLE}\n\n{message}\n")
+                  return
+              publish(summary(removed, scope))
+              print(f"Removed {len(removed)} pull request milestone(s); scope: {scope}")
+
+          def main():
+              repository = os.environ["GITHUB_REPOSITORY"]
+              event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+
+              def request(method, path, data=None):
+                  headers = {
+                      "Authorization": "Bearer " + os.environ["GH_TOKEN"],
+                      "Accept": "application/vnd.github+json",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                      "Content-Type": "application/json",
+                  }
+                  payload = None if data is None else json.dumps(data).encode()
+                  req = Request(os.environ["GITHUB_API_URL"] + path, data=payload, headers=headers, method=method)
+                  with urlopen(req, timeout=30) as response:
+                      return json.load(response)
+
+              def publish(text):
+                  with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as handle:
+                      handle.write(text)
+
+              run(request, repository, event, publish)
+
+          if __name__ == "__main__":
+              main()
+          PY
