@@ -1,9 +1,39 @@
 # Public VBA API inventory.
 # [supported]: the supported API, the public declarations of src/modules/.
 # [project-public]: every other public declaration under src/.
-# No public declarations exist yet in either tier.
+# [supported] is empty until the facade is ported; [project-public] lists the core.
 # Format and change policy: docs/REPOSITORY_STRUCTURE.md, "Public API inventory".
 
 [supported]
 
 [project-public]
+CORE_Err	Function	ConditionName
+# SIG	CORE_Err	Function	ConditionName	Public Function ConditionName(ByVal Condition As KPRCondition) As String
+CORE_Err	Const	ERR_UNMAPPED_CONDITION
+# SIG	CORE_Err	Const	ERR_UNMAPPED_CONDITION	Public Const ERR_UNMAPPED_CONDITION As Long = &H80040800
+CORE_Err	Function	ErrForCondition
+# SIG	CORE_Err	Function	ErrForCondition	Public Function ErrForCondition(ByVal Condition As KPRCondition) As Variant
+CORE_Err	Function	ErrNA
+# SIG	CORE_Err	Function	ErrNA	Public Function ErrNA() As Variant
+CORE_Err	Function	ErrNum
+# SIG	CORE_Err	Function	ErrNum	Public Function ErrNum() As Variant
+CORE_Err	Function	ErrValue
+# SIG	CORE_Err	Function	ErrValue	Public Function ErrValue() As Variant
+CORE_Err	Enum	KPRCondition
+# SIG	CORE_Err	Enum	KPRCondition	Public Enum KPRCondition | cdNone = 0 | cdDateTextFormat = 1 | cdDateTextLocale = 2 | cdDateTextNumeric = 3 | cdDateTextImpossible = 4 | cdDateTypeRejected = 5 | cdDateWindow = 6 | cdInputBlankRequired = 10 | cdInputErrorPropagated = 11 | cdIntegerFraction = 20 | cdIntegerTypeRejected = 21 | cdIntegerRange = 22 | cdDomainYear = 30 | cdDomainMonth = 31 | cdDomainWeekday = 32 | cdDomainOccurrence = 33 | cdOccurrenceAbsent = 34 | cdResultWindow = 35 | cdControlTypeRejected = 40 | cdControlErrorPropagated = 41 | cdControlTokenUnknown = 42 | cdControlNotScalar = 43 | cdShapeUnsupported = 50 | cdShapeMismatch = 51 | cdCapacityExceeded = 52 | cdHostDate1904 = 60 | cdHostUnresolved = 61 | cdPillarTypeRejected = 70 | cdPillarTokenMalformed = 71 | cdPillarDuplicateUnit = 72 | cdPillarAliasSigned = 73 | cdPillarAggregateRange = 74 | End Enum
+CORE_Parse	Function	TryParseBoolControl
+# SIG	CORE_Parse	Function	TryParseBoolControl	Public Function TryParseBoolControl(ByVal ControlIn As Variant, ByVal DefaultValue As Boolean, ByRef ParsedBool As Boolean, ByRef Condition As KPRCondition) As Boolean
+CORE_Parse	Function	TryParseDateScalar
+# SIG	CORE_Parse	Function	TryParseDateScalar	Public Function TryParseDateScalar(ByVal ScalarIn As Variant, ByRef ParsedDate As Date, ByRef Condition As KPRCondition) As Boolean
+CORE_Parse	Function	TryParseLongScalar
+# SIG	CORE_Parse	Function	TryParseLongScalar	Public Function TryParseLongScalar(ByVal ScalarIn As Variant, ByRef ParsedLong As Long, ByRef Condition As KPRCondition) As Boolean
+CORE_Parse	Function	TryParseRoundingControl
+# SIG	CORE_Parse	Function	TryParseRoundingControl	Public Function TryParseRoundingControl(ByVal ControlIn As Variant, ByRef TokenOut As String, ByRef Condition As KPRCondition) As Boolean
+CORE_Parse	Const	WINDOW_MAX_SERIAL
+# SIG	CORE_Parse	Const	WINDOW_MAX_SERIAL	Public Const WINDOW_MAX_SERIAL As Double = 2958465#
+CORE_Parse	Const	WINDOW_MAX_YEAR
+# SIG	CORE_Parse	Const	WINDOW_MAX_YEAR	Public Const WINDOW_MAX_YEAR As Long = 9999
+CORE_Parse	Const	WINDOW_MIN_SERIAL
+# SIG	CORE_Parse	Const	WINDOW_MIN_SERIAL	Public Const WINDOW_MIN_SERIAL As Double = 61#
+CORE_Parse	Const	WINDOW_MIN_YEAR
+# SIG	CORE_Parse	Const	WINDOW_MIN_YEAR	Public Const WINDOW_MIN_YEAR As Long = 1900

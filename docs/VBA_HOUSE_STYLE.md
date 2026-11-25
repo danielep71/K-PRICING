@@ -5,9 +5,10 @@ These conventions apply to every VBA component of the workbook. The
 component lives and which may call which; the
 [installation guide](../INSTALLATION.md) says how source moves between the
 repository and Excel. Until the project adds its own components, the
-repository holds only the [VBA test harness](methodology/TEST_HARNESS.md),
-its example suite and the illustrative relation tests in `tests/modules/`, so
-the examples below name no existing component other than those test modules.
+repository holds the date layer's core modules `CORE_Err` and `CORE_Parse`, the
+[VBA test harness](methodology/TEST_HARNESS.md), its example suite, the
+illustrative relation tests and the core's tests in `tests/modules/`; the
+examples below name no component other than the harness's.
 
 ## Naming and visibility
 

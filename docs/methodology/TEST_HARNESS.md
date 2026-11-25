@@ -15,8 +15,9 @@ records.
 | `tests/modules/TEST_Harness.bas` | The run lifecycle (`BeginRun`, `BeginCase`, `RecordCaseError`, `EndRun`), the assertions (`AssertEqualDouble`, `AssertNear`, `AssertEqualText`, `AssertTrue`, `AssertErrorValue`, `AssertRaised`, with `WithinTolerance` as the comparison rule), the log (`Say`, `Echo`, `SaveLog`, `LastResult`), the [results](#results) (`RecordResult`, `SaveResults`), recovery (`ResetTests`) and certification (`BeginCertification`, `CertifyRun`, `EndCertification`) |
 | `tests/modules/TEST_Examples.bas` | The example suite: one case per kind of assertion, one case that reads the illustrative [test cases](TEST_CASES.md) and records their totals, and the reference implementation of the [cleanup pattern](../VBA_HOUSE_STYLE.md#operation-and-cleanup-outcomes) with its failure paths. It holds no calculation of the workbook |
 | `tests/modules/TEST_Relations.bas` | The illustrative [relation tests](#relation-tests), `RunRelationTests`: four relations of a stand-in total, each with its corruption check. It is not certified, and holds no calculation of the workbook |
+| `tests/modules/TEST_CoreErrParse.bas` | The tests of `CORE_Err` and `CORE_Parse`, `RunCoreErrParseTests`: the native errors, the registry of conditions against the data contract's table, and the four argument parsers on every accepted and rejected form. It is not certified until the suites of the date layer are ported, and holds no case of a `KPR_Dates_*` function |
 
-All three use `Option Private Module`, so they never become part of the
+All of them use `Option Private Module`, so they never become part of the
 workbook's external surface. A production workbook contains none of them.
 
 A project suite follows the example suite: one `Case` procedure per case,
