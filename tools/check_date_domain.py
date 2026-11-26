@@ -68,6 +68,9 @@ WORKBOOK_FALLBACKS = re.compile(r"\b(?:ActiveWorkbook|ThisWorkbook|ActiveSheet|A
 # Conversions that depend on the Windows or Excel regional settings.
 LOCALE_CALLS = re.compile(r"(?<![\w.])(?:VBA\s*\.\s*)?(IsDate|DateValue|CVDate|IsNumeric"
                           r"|FormatDateTime|Format\$?)\s*\(", re.I)
+# The one statement that makes the diagnostic volatile, in any of VBA's spellings of it.
+VOLATILE_TRUE = re.compile(r"\s*(?:Call\s+)?(?:Excel\s*\.\s*)?Application\s*\.\s*Volatile"
+                           r"\s*(?:\(\s*True\s*\)|\s+True)\s*", re.I)
 CDATE_CALL = re.compile(r"(?<![\w.])(?:VBA\s*\.\s*)?CDate\s*\(", re.I)
 DATESERIAL_CALL = re.compile(r"(?<![\w.])(?:VBA\s*\.\s*)?DateSerial\s*\(", re.I)
 DECLARATION = re.compile(r"^\s*(?:Dim|Const|Static|Private|Public)\b", re.I)
@@ -251,7 +254,7 @@ def host_guard(sources: Mapping[str, str]) -> tuple[list[Finding], int]:
         if path not in (FACADE, HOST):
             findings.extend(Finding(path, number, "the host rule is applied outside the facade")
                             for number, code in code_lines(text)
-                            if re.search(rf"\b{CHECK}\b|\b{READ}\b", code))
+                            if re.search(rf"\b{CHECK}\b|\b{READ}\b", code, re.I))
     return findings, len(functions)
 
 
@@ -275,8 +278,7 @@ def volatility(sources: Mapping[str, str]) -> list[Finding]:
                 elif not first or first[0] != hits[0]:
                     findings.append(Finding(path, hits[0][0], "Application.Volatile must be the "
                                             f"first statement of {DIAGNOSTIC}"))
-                elif not re.fullmatch(r"\s*Application\s*\.\s*Volatile\s*\(?\s*True\s*\)?\s*",
-                                      hits[0][1], re.I):
+                elif not VOLATILE_TRUE.fullmatch(hits[0][1]):
                     findings.append(Finding(path, hits[0][0], "Application.Volatile must be called "
                                             "with True"))
             else:

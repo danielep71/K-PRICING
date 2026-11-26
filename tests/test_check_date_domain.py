@@ -253,6 +253,18 @@ class HostGuardTest(unittest.TestCase):
         self.assertTrue(any("KPR_Dates_HostDateSystem must call TryReadHostDateSystem" in message
                             for message in messages(sources)))
 
+    def test_the_host_rule_outside_the_facade_is_rejected_in_every_spelling(self) -> None:
+        for call in ("Ok = M_Host.TryCheckHost(Spare)", "Ok = m_host.trycheckhost(Spare)",
+                     "Call M_HOST.TRYCHECKHOST(Spare)", "Ok = M_Host.TryReadHostDateSystem(A, B)",
+                     "call m_host.tryreadhostdatesystem(a, b)", "Ok = trycheckhost(Spare)"):
+            with self.subTest(call=call):
+                sources = real()
+                sources[RANGES] = sources[RANGES].replace(
+                    "Option Explicit", f"Option Explicit\nPrivate Sub Stray()\n        {call}\n"
+                    "End Sub", 1)
+                self.assertTrue(any("applied outside the facade" in message
+                                    for message in messages(sources)), call)
+
     def test_another_component_applying_the_host_rule_is_rejected(self) -> None:
         sources = inserted(RANGES, "Option Explicit", "    '", before=False)
         sources[RANGES] = sources[RANGES].replace("Option Explicit", "Option Explicit\n"
@@ -295,9 +307,34 @@ class VolatilityTest(unittest.TestCase):
                 self.assertTrue(any("must be called with True" in message
                                     for message in messages(sources)), argument)
 
-    def test_volatile_true_in_parentheses_is_accepted(self) -> None:
-        sources = replaced(FACADE, VOLATILE, VOLATILE.replace("True", "(True)"))
-        self.assertEqual(messages(sources), [])
+    def test_every_spelling_of_volatile_true_is_accepted(self) -> None:
+        for statement in ("Application.Volatile True", "Application.Volatile (True)",
+                          "Application.Volatile(True)", "Call Application.Volatile(True)",
+                          "call application.volatile(true)", "CALL APPLICATION.VOLATILE (TRUE)",
+                          "Excel.Application.Volatile True", "Call Excel.Application.Volatile(True)",
+                          "Application . Volatile True", "application.volatile    true"):
+            with self.subTest(statement=statement):
+                sources = replaced(FACADE, VOLATILE, f"        {statement}")
+                self.assertEqual(messages(sources), [], statement)
+
+    def test_a_call_with_the_wrong_argument_is_rejected_in_every_spelling(self) -> None:
+        for statement in ("Call Application.Volatile(False)", "Call Application.Volatile",
+                          "Application.Volatile", "Application.Volatile()",
+                          "Call Application.Volatile((True And False))",
+                          "Call Application.Volatile(True) And False", "Application.Volatile True,"):
+            with self.subTest(statement=statement):
+                sources = replaced(FACADE, VOLATILE, f"        {statement}")
+                self.assertTrue(any("must be called with True" in message
+                                    for message in messages(sources)), statement)
+
+    def test_a_volatile_call_in_another_function_is_rejected_in_every_spelling(self) -> None:
+        for statement in ("Call Application.Volatile(True)", "application.volatile true",
+                          "Excel.Application.Volatile True"):
+            with self.subTest(statement=statement):
+                sources = inserted(FACADE, "        KPR_Dates_DaysInMonth = EvaluateCall("
+                                   "dfDaysInMonth, Values)", f"        {statement}", before=True)
+                self.assertTrue(any("KPR_Dates_DaysInMonth must not be volatile" in message
+                                    for message in messages(sources)), statement)
 
     def test_a_second_volatile_call_is_rejected(self) -> None:
         sources = inserted(FACADE, VOLATILE, VOLATILE)
