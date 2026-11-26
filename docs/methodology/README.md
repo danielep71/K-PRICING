@@ -14,6 +14,7 @@ and the evidence they require, show that the figures are right.
 | [🧪 Numerical test cases](TEST_CASES.md) | The format of the synthetic inputs and expected results, with their provenance and tolerances, that the checks enforce. |
 | [📊 Workbook contract](WORKBOOK_CONTRACT.md) | The workbook's sheets, code names, defined names and areas, what each operation writes, and how a failure marks earlier results. |
 | [🧪 VBA test harness](TEST_HARNESS.md) | The harness that runs the VBA suites in Excel, its outcomes, the log and certification formats, and the evidence an Excel run leaves. |
+| [🧮 Excel oracle](EXCEL_ORACLE.md) | The second computation of the date layer's cases with Excel's own worksheet functions: the functions allowed, each function's identity, and the cases it excludes and why. |
 
 Read the first five in that order: a rule cites a source, consumes the data
 contract's fields, and is validated as the plan describes, with test cases in

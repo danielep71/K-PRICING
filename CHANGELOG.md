@@ -192,6 +192,18 @@ Use only the categories an entry needs.
   (467, 2,083, 122, 62 and 81), and `tests/test_project_suites.py` fails when a
   project suite's source no longer reads as its counts state
   ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
+- The Excel oracle, the project suite `excel-oracle`,
+  `tests/modules/TEST_ExcelOracle.bas`: 416 of the 1,635 worksheet-function
+  cases computed a second time with Excel's own worksheet functions only
+  (`DATE`, `YEAR`, `MONTH`, `DAY`, `EOMONTH`, `EDATE`, `WEEKDAY`, `INT`, `MOD`,
+  `IF`) and compared with their expected files; it calls no procedure of the
+  date layer. The other 1,219 are excluded, each for a stated reason, as
+  [EXCEL_ORACLE.md](docs/methodology/EXCEL_ORACLE.md) lists them. Generated
+  by `tools/gen_excel_oracle_suite.py`; a test fails while it is stale, when
+  a formula calls another function and when it names the date layer. Checked
+  against an emulation of those functions only; not yet run in Excel, and no
+  expected value changes class
+  ([#14](https://github.com/danielep71/K-PRICING/issues/14)).
 - The project suite `worksheet-cases`, `tests/modules/TEST_WorksheetCases.bas`,
   which replays in Excel the 74 worksheet-function cases whose caller is a
   worksheet: each is a formula in a scratch workbook of the case's date
