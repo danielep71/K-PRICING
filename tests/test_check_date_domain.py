@@ -83,6 +83,12 @@ class DayZeroTest(unittest.TestCase):
                            "        Last = DateSerial(YearPart, MonthPart, -1)")
         self.assertTrue(any("day of zero or below" in message for message in messages(sources)))
 
+    def test_a_call_continued_over_lines_is_read_whole(self) -> None:
+        sources = replaced(CORE_DATES, self.ANCHOR,
+                           "        BeginOfMonth = VBA.DateSerial(VBA.Year(DateIn), _\n"
+                           "            VBA.Month(DateIn), 0)")
+        self.assertTrue(any("day of zero" in message for message in messages(sources)))
+
     def test_a_computed_day_is_not_judged(self) -> None:
         sources = inserted(CORE_DATES, self.ANCHOR,
                            "        Last = DateSerial(YearPart, MonthPart, DaysInMonth(Y, M))")
@@ -106,6 +112,21 @@ class WindowTest(unittest.TestCase):
                 lines = sources[CORE_PARSE].split("\n")
                 index = next(i for i, line in enumerate(lines) if f"Const {name} " in line)
                 lines[index] = lines[index].replace(old, new, 1)
+                sources[CORE_PARSE] = "\n".join(lines)
+                self.assertTrue(any(f"{name} is no longer" in message
+                                    for message in messages(sources)), messages(sources))
+
+    def test_an_initializer_with_more_than_the_edge_is_rejected(self) -> None:
+        for name, old, new in (("WINDOW_MIN_SERIAL", "61#", "61# + 1#"),
+                               ("WINDOW_MAX_SERIAL", "2958465#", "2958465# - 1#"),
+                               ("WINDOW_MIN_YEAR", "= 1900", "= 1900 + 1"),
+                               ("WINDOW_MAX_YEAR", "= 9999", "= 9999 - 1")):
+            with self.subTest(name=name):
+                sources = real()
+                lines = sources[CORE_PARSE].split("\n")
+                index = next(i for i, line in enumerate(lines) if f"Const {name} " in line)
+                code, _, comment = lines[index].partition("'")
+                lines[index] = f"{code.rstrip().replace(old, new, 1)} '{comment}"
                 sources[CORE_PARSE] = "\n".join(lines)
                 self.assertTrue(any(f"{name} is no longer" in message
                                     for message in messages(sources)), messages(sources))
@@ -258,6 +279,14 @@ class LocaleTest(unittest.TestCase):
 
     def test_cdate_of_text_is_rejected(self) -> None:
         for call in ('D = CDate("2026-01-01")', "D = CDate(Text)", "D = VBA.CDate(DateText)"):
+            with self.subTest(call=call):
+                sources = inserted(CORE_DATES, self.ANCHOR, f"        {call}")
+                self.assertTrue(any("CDate may only convert a serial" in message
+                                    for message in messages(sources)))
+
+    def test_cdate_of_a_nested_text_conversion_is_rejected(self) -> None:
+        for call in ("D = VBA.CDate(Trim$(CStr(DateIn)))", "D = CDate((Text))",
+                     "D = CDate(Left$(Text, 10))"):
             with self.subTest(call=call):
                 sources = inserted(CORE_DATES, self.ANCHOR, f"        {call}")
                 self.assertTrue(any("CDate may only convert a serial" in message

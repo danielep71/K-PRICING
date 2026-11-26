@@ -166,7 +166,8 @@ copy of the production source and show the check rejecting it.
 | `host-authority` | `Application.Caller` is read outside `M_Host` or not exactly once there, or `M_Host` or the facade names `ActiveWorkbook`, `ThisWorkbook`, `ActiveSheet`, `ActiveCell`, `Selection` or `Workbooks` | [Host and date system](CALCULATION_CONTRACTS.md#host-and-date-system), steps 1 and 5: only the caller's own workbook decides, and no other is consulted |
 | `locale` | production calls `IsDate`, `DateValue`, `CVDate`, `IsNumeric`, `Format`, `Format$` or `FormatDateTime`, or `CDate` on anything but a variable named `...Serial` | [Date values](DATA_CONTRACT.md#date-values): no parse uses a conversion that depends on regional settings |
 
-The check reads comments out and blanks string literals; it does not compile
+The check joins a statement continued over lines, reads comments out and blanks
+string literals; it does not compile
 or run VBA, follows no call through a variable, and judges a computed day or a
 `CDate` argument only by its name, so a defect written another way, such as a
 day held in a variable that happens to be zero, stays with the cases and the

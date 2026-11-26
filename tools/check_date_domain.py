@@ -36,7 +36,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from check_vba_identifiers import Procedure, scan
-from vba_lexer import Finding, read_component, report, strip_code, tracked_components
+from vba_lexer import Finding, logical_units, read_component, report, tracked_components
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -66,7 +66,7 @@ WORKBOOK_FALLBACKS = re.compile(r"\b(?:ActiveWorkbook|ThisWorkbook|ActiveSheet|A
 # Conversions that depend on the Windows or Excel regional settings.
 LOCALE_CALLS = re.compile(r"(?<![\w.])(?:VBA\s*\.\s*)?(IsDate|DateValue|CVDate|IsNumeric"
                           r"|FormatDateTime|Format\$?)\s*\(", re.I)
-CDATE_CALL = re.compile(r"(?<![\w.])(?:VBA\s*\.\s*)?CDate\s*\(\s*([^()]*)\)", re.I)
+CDATE_CALL = re.compile(r"(?<![\w.])(?:VBA\s*\.\s*)?CDate\s*\(", re.I)
 DATESERIAL_CALL = re.compile(r"(?<![\w.])(?:VBA\s*\.\s*)?DateSerial\s*\(", re.I)
 DECLARATION = re.compile(r"^\s*(?:Dim|Const|Static|Private|Public)\b", re.I)
 
@@ -90,9 +90,12 @@ def split_arguments(text: str) -> list[str]:
 
 
 def code_lines(text: str) -> list[tuple[int, str]]:
-    """Each physical line without its comment, strings blanked, with its number."""
-    return [(number, strip_code(raw, blank_strings=True))
-            for number, raw in enumerate(text.split("\n"), start=1)]
+    """Each logical line without its comment, strings blanked, with its first line's number.
+
+    A statement continued with " _" is one logical line, so a call written over several
+    lines is read whole."""
+    return [(first, code) for first, _, kind, code
+            in logical_units(text.split("\n"), blank_strings=True) if kind == "code"]
 
 
 def day_zero(sources: Mapping[str, str]) -> list[Finding]:
@@ -124,7 +127,7 @@ def window(sources: Mapping[str, str]) -> list[Finding]:
         found = constant_statement(parse, name)
         if found is None:
             findings.append(Finding(CORE_PARSE, None, f"{name} is not declared"))
-        elif not re.search(rf"=\s*{value}(?![\w.])", found[1]):
+        elif not re.search(rf"=\s*{value}\s*$", found[1]):
             findings.append(Finding(CORE_PARSE, found[0], f"{name} is no longer {value.rstrip('#')}, "
                                     "the edge of the supported window"))
     for path, text in sources.items():
@@ -274,7 +277,7 @@ def locale(sources: Mapping[str, str]) -> list[Finding]:
                 findings.append(Finding(path, number, f"{hit.group(1)} depends on regional "
                                         "settings: read dates and numbers by their own rules"))
             for hit in CDATE_CALL.finditer(code):
-                argument = hit.group(1).strip()
+                argument = split_arguments(code[hit.end():])[0].strip()
                 if not re.fullmatch(r"\w*Serial", argument, re.I):
                     findings.append(Finding(path, number, "CDate may only convert a serial, "
                                             f"a variable named ...Serial, not {argument or 'nothing'}"))
