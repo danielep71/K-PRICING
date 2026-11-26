@@ -89,6 +89,22 @@ class DayZeroTest(unittest.TestCase):
                            "            VBA.Month(DateIn), 0)")
         self.assertTrue(any("day of zero" in message for message in messages(sources)))
 
+    def test_a_day_in_any_vba_number_notation_is_read(self) -> None:
+        for day in ("0&", "0#", "0%", "0!", "0@", "-1&", "- 1#", "0.0", "0.", ".0", "0E0", "0D0",
+                    "&H0", "&O0", "(0)", "((-1))", "+0", "00"):
+            with self.subTest(day=day):
+                sources = replaced(CORE_DATES, self.ANCHOR,
+                                   self.ANCHOR.replace("), 1)", f"), {day})"))
+                self.assertTrue(any("day of zero or below" in message
+                                    for message in messages(sources)), day)
+
+    def test_a_positive_literal_day_is_accepted(self) -> None:
+        for day in ("1&", "28#", "0.5", "&H1", "(1)", "1E0", "(1) + (0)", "Day0", "0 + Day"):
+            with self.subTest(day=day):
+                sources = replaced(CORE_DATES, self.ANCHOR,
+                                   self.ANCHOR.replace("), 1)", f"), {day})"))
+                self.assertEqual(messages(sources), [], day)
+
     def test_a_computed_day_is_not_judged(self) -> None:
         sources = inserted(CORE_DATES, self.ANCHOR,
                            "        Last = DateSerial(YearPart, MonthPart, DaysInMonth(Y, M))")
@@ -136,6 +152,19 @@ class WindowTest(unittest.TestCase):
         self.assertTrue(any("WINDOW_MIN_SERIAL is not declared" in message
                             for message in messages(sources)))
 
+    def test_a_constant_declared_again_is_rejected(self) -> None:
+        anchor = "        BeginOfMonth = VBA.DateSerial(VBA.Year(DateIn), VBA.Month(DateIn), 1)"
+        for path, statement in ((CORE_DATES, "        Const WINDOW_MIN_SERIAL As Double = 0#"),
+                                (CORE_DATES, "    Private Const WINDOW_MAX_YEAR As Long = 1"),
+                                (RANGES, "    Public Const WINDOW_MIN_YEAR As Long = 1900")):
+            with self.subTest(path=path, statement=statement):
+                sources = real()
+                sources[path] = sources[path].replace("Option Explicit", "Option Explicit\n"
+                                                      + statement, 1) if path == RANGES else \
+                    replaced(path, anchor, f"{statement}\n{anchor}")[path]
+                self.assertTrue(any("is declared again" in message
+                                    for message in messages(sources)), messages(sources))
+
     def test_a_copy_of_an_edge_is_rejected(self) -> None:
         for literal in ("Limit = 2958465#", "Limit = #12/31/9999#", "Limit = #3/1/1900#"):
             with self.subTest(literal=literal):
@@ -152,6 +181,13 @@ class HostGuardTest(unittest.TestCase):
         sources = replaced(FACADE, self.CALL, "        KPR_Dates_DaysInMonth = Empty")
         self.assertTrue(any("KPR_Dates_DaysInMonth must call EvaluateCall exactly once" in message
                             for message in messages(sources)))
+
+    def test_the_facade_is_read_without_regard_to_letter_case(self) -> None:
+        sources = replaced(FACADE, "Public Function KPR_Dates_DaysInMonth(",
+                           "Public Function kpr_dates_daysinmonth(")
+        sources[FACADE] = sources[FACADE].replace(self.CALL, "        kpr_dates_daysinmonth = Empty")
+        self.assertTrue(any("must call EvaluateCall exactly once" in message
+                            for message in messages(sources)), messages(sources))
 
     def test_a_function_that_calls_the_evaluator_twice_is_rejected(self) -> None:
         sources = inserted(FACADE, self.CALL, "        Spare = EvaluateCall(dfDaysInMonth, Values)")
@@ -224,6 +260,18 @@ class VolatilityTest(unittest.TestCase):
         sources = replaced(FACADE, VOLATILE, VOLATILE.replace("True", "False"))
         self.assertTrue(any("must be called with True" in message
                             for message in messages(sources)))
+
+    def test_a_volatile_argument_that_is_more_than_true_is_rejected(self) -> None:
+        for argument in ("True And False", "True Or False", "True And Flag", "Not True",
+                         "True = False", "Flag", "1"):
+            with self.subTest(argument=argument):
+                sources = replaced(FACADE, VOLATILE, f"{VOLATILE.split('True')[0]}{argument}")
+                self.assertTrue(any("must be called with True" in message
+                                    for message in messages(sources)), argument)
+
+    def test_volatile_true_in_parentheses_is_accepted(self) -> None:
+        sources = replaced(FACADE, VOLATILE, VOLATILE.replace("True", "(True)"))
+        self.assertEqual(messages(sources), [])
 
     def test_a_second_volatile_call_is_rejected(self) -> None:
         sources = inserted(FACADE, VOLATILE, VOLATILE)

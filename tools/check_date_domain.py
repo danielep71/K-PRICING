@@ -98,6 +98,30 @@ def code_lines(text: str) -> list[tuple[int, str]]:
             in logical_units(text.split("\n"), blank_strings=True) if kind == "code"]
 
 
+NUMBER = re.compile(r"[+-]?\s*(?:(?P<hex>&[hH][0-9A-Fa-f]+)|(?P<octal>&[oO][0-7]+)"
+                    r"|(?P<decimal>(?:\d+\.?\d*|\.\d+)(?:[eEdD][+-]?\d+)?))[%&#!@^]*")
+
+
+def literal_value(text: str) -> float | None:
+    """The value of a numeric literal in VBA notation, or None when ``text`` is not one.
+
+    It reads a sign, enclosing parentheses, a type suffix (``0&``, ``0#``), a decimal point, an
+    exponent (``0E0``) and hexadecimal or octal (``&H0``)."""
+    text = text.strip()
+    while text.startswith("(") and text.endswith(")") and split_arguments(text[1:])[0] == text[1:-1]:
+        text = text[1:-1].strip()
+    match = NUMBER.fullmatch(text)
+    if match is None:
+        return None
+    if match.group("hex"):
+        value = float(int(match.group("hex")[2:], 16))
+    elif match.group("octal"):
+        value = float(int(match.group("octal")[2:], 8))
+    else:
+        value = float(match.group("decimal").replace("d", "e").replace("D", "e"))
+    return -value if text.lstrip().startswith("-") else value
+
+
 def day_zero(sources: Mapping[str, str]) -> list[Finding]:
     """No DateSerial with a literal day of zero or below."""
     findings = []
@@ -105,7 +129,8 @@ def day_zero(sources: Mapping[str, str]) -> list[Finding]:
         for number, code in code_lines(text):
             for call in DATESERIAL_CALL.finditer(code):
                 arguments = split_arguments(code[call.end():])
-                if len(arguments) >= 3 and re.fullmatch(r"\s*(?:-\s*\d+|0+)\s*", arguments[2]):
+                day = literal_value(arguments[2]) if len(arguments) >= 3 else None
+                if day is not None and day <= 0:
                     findings.append(Finding(path, number, "DateSerial with a day of zero or below "
                                             "overflows after December 9999: take the last day "
                                             "of a month from the month's length"))
@@ -132,6 +157,11 @@ def window(sources: Mapping[str, str]) -> list[Finding]:
                                     "the edge of the supported window"))
     for path, text in sources.items():
         for number, code in code_lines(text):
+            for name in WINDOW:
+                if re.search(rf"\bConst\s+{name}\b", code, re.I) and (
+                        path != CORE_PARSE or constant_statement(parse, name) != (number, code)):
+                    findings.append(Finding(path, number, f"{name} is declared again: the window "
+                                            f"is declared once, in {CORE_PARSE}"))
             if WINDOW_COPIES.search(code) and not (path == CORE_PARSE and DECLARATION.match(code)):
                 findings.append(Finding(path, number, "an edge of the supported window is written "
                                         "out: use CORE_Parse.WINDOW_MIN_SERIAL, WINDOW_MAX_SERIAL, "
@@ -160,7 +190,7 @@ def function_findings(procedure: Procedure) -> list[Finding]:
     """What one worksheet function of the facade may call of the host rule."""
     body = executable(procedure)
     name = procedure.name
-    if name == DIAGNOSTIC:
+    if name.casefold() == DIAGNOSTIC.casefold():
         if len(calls_of(body, READ)) == 1 and not calls_of(body, CHECK) \
                 and not calls_of(body, EVALUATOR):
             return []
@@ -195,12 +225,12 @@ def host_guard(sources: Mapping[str, str]) -> tuple[list[Finding], int]:
     module = scan(FACADE, sources.get(FACADE, ""))
     functions = [procedure for procedure in module.procedures
                  if procedure.public and procedure.kind == "function"
-                 and procedure.name.startswith("KPR_Dates_")]
+                 and procedure.name.casefold().startswith("kpr_dates_")]
     findings = [finding for procedure in functions for finding in function_findings(procedure)]
     findings += evaluator_findings(next((procedure for procedure in module.procedures
-                                         if procedure.name == EVALUATOR), None))
+                                         if procedure.name.casefold() == EVALUATOR.casefold()), None))
     for procedure in module.procedures:
-        if procedure not in functions and procedure.name != EVALUATOR:
+        if procedure not in functions and procedure.name.casefold() != EVALUATOR.casefold():
             findings.extend(Finding(FACADE, line, f"{procedure.name} applies the host rule: only "
                                     f"{EVALUATOR} may")
                             for line in calls_of(executable(procedure), CHECK))
@@ -223,7 +253,7 @@ def volatility(sources: Mapping[str, str]) -> list[Finding]:
             hits = [(line, statement) for line, statement in executable(procedure)
                     if pattern.search(statement)]
             total += len(hits)
-            if procedure.name == DIAGNOSTIC:
+            if procedure.name.casefold() == DIAGNOSTIC.casefold():
                 first = executable(procedure)[:1]
                 if len(hits) != 1:
                     findings.append(Finding(path, procedure.line, f"{DIAGNOSTIC} must call "
@@ -232,7 +262,8 @@ def volatility(sources: Mapping[str, str]) -> list[Finding]:
                 elif not first or first[0] != hits[0]:
                     findings.append(Finding(path, hits[0][0], "Application.Volatile must be the "
                                             f"first statement of {DIAGNOSTIC}"))
-                elif not re.search(r"Volatile\s*\(?\s*True\b", hits[0][1], re.I):
+                elif not re.fullmatch(r"\s*Application\s*\.\s*Volatile\s*\(?\s*True\s*\)?\s*",
+                                      hits[0][1], re.I):
                     findings.append(Finding(path, hits[0][0], "Application.Volatile must be called "
                                             "with True"))
             else:
