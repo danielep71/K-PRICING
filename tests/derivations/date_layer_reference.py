@@ -11,17 +11,20 @@ call and, when the call fails, its condition, as docs/methodology/TEST_CASES.md
     python -I tests/derivations/date_layer_reference.py tests/fixtures/<case-id>.json
 
 The model is the oracle of the project's earlier date-layer fixture generator,
-carried over unchanged. Its values are illustrative: the project derived them.
+carried over with one correction: a whole number given as a Double is checked
+in its binary value, as VBA holds it. Its values are illustrative: the project
+derived them.
 """
 
 from __future__ import annotations
 
 import datetime as dt
 import json
+import math
 import re
 import sys
 from dataclasses import dataclass
-from decimal import ROUND_FLOOR, ROUND_HALF_EVEN, Decimal
+from decimal import ROUND_FLOOR, Decimal
 from pathlib import Path
 from typing import Callable, Iterable, NamedTuple, Union
 
@@ -317,7 +320,7 @@ def parse_date_text(text: str) -> dt.date | Fail:
     return parsed
 
 
-INTEGER_TOLERANCE = Decimal("1E-9")
+INTEGER_TOLERANCE = 1e-9
 
 
 def parse_long(value: Val) -> int | Fail:
@@ -329,10 +332,15 @@ def parse_long(value: Val) -> int | Fail:
         return fail("#VALUE!", "INPUT_BLANK_REQUIRED")
     if kind not in {"num", "lng"}:
         return fail("#VALUE!", "INTEGER_TYPE_REJECTED")
-    number = Decimal(value.payload)
+    if kind == "lng":
+        return int(value.payload)
+    # A num is a Double: its range and its distance from the nearest whole
+    # number are those of its binary value, not of the decimal literal, so
+    # 3.000000001, about 1.0000000827E-9 above 3, is a fraction.
+    number = float(value.payload)
     if number < LONG_MIN or number > LONG_MAX:
         return fail("#NUM!", "INTEGER_RANGE")
-    nearest = number.to_integral_value(rounding=ROUND_HALF_EVEN)
+    nearest = math.floor(number + 0.5)
     if abs(number - nearest) > INTEGER_TOLERANCE:
         return fail("#VALUE!", "INTEGER_FRACTION")
     return int(nearest)

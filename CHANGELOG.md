@@ -146,7 +146,9 @@ Use only the categories an entry needs.
   The expected file holds the result and, for a failing call, its condition.
   `tests/derivations/date_layer_reference.py`, the earlier reference model
   carried over, recomputes every expected value from the contracts without VBA
-  or Excel, so the values are `illustrative`; `tools/check_test_cases.py`
+  or Excel, so the values are `illustrative`; it now checks a whole number
+  given as a `Double` in its binary value, as VBA does, which changes no
+  converted case; `tools/check_test_cases.py`
   checks the new form, and `tools/check_derivations.py`, which now runs several
   cases at a time, compares all of them. The cases are 601 `nominal`, 246
   `boundary` and 514 `invalid`. None was run in Excel: the runner is
