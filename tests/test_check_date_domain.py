@@ -204,6 +204,32 @@ class HostGuardTest(unittest.TestCase):
         self.assertTrue(any("reads an argument before TryCheckHost" in message
                             for message in messages(sources)))
 
+    def test_a_reader_is_matched_without_regard_to_letter_case(self) -> None:
+        for call in ("If Not m_ranges.TryDescribeArgument(Values(1), Kinds(1), RowCounts(1), "
+                     "ColCounts(1), Condition) Then Exit Function",
+                     "Ok = CORE_ARRAY.CheckCapacity(1, 1, Condition)",
+                     "Ok = core_parse.TryParseDateScalar(Values(1), Spare, Condition)"):
+            with self.subTest(call=call):
+                sources = inserted(FACADE, GUARD, f"        {call}", before=True)
+                self.assertTrue(any("reads an argument before TryCheckHost" in message
+                                    for message in messages(sources)), call)
+
+    def test_a_reader_called_by_its_own_name_is_rejected(self) -> None:
+        for call in ("Ok = TryDescribeArgument(Values(1), Kinds(1), RowCounts(1), ColCounts(1), "
+                     "Condition)", "Ok = checkcapacity(1, 1, Condition)",
+                     "Ok = CheckCapacity(1, 1, Condition)",
+                     "Ok = TryParseDateScalar(Values(1), Spare, Condition)",
+                     "Ok = IsDateInWindow(Spare)"):
+            with self.subTest(call=call):
+                sources = inserted(FACADE, GUARD, f"        {call}", before=True)
+                self.assertTrue(any("reads an argument before TryCheckHost" in message
+                                    for message in messages(sources)), call)
+
+    def test_a_reader_after_the_host_rule_is_accepted(self) -> None:
+        sources = inserted(FACADE, GUARD, "        Ok = CheckCapacity(1, 1, Condition)")
+        self.assertFalse(any("reads an argument before" in message
+                             for message in messages(sources)))
+
     def test_a_second_host_rule_in_the_evaluator_is_rejected(self) -> None:
         sources = inserted(FACADE, GUARD, "        Ok = M_Host.TryCheckHost(Condition)")
         self.assertTrue(any("EvaluateCall must call TryCheckHost exactly once" in message

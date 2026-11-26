@@ -58,8 +58,10 @@ WINDOW = {
 # The edges of the window written another way, in any component.
 WINDOW_COPIES = re.compile(r"\b2958465\b|#\s*12/31/9999\s*#|#\s*3/1/1900\s*#|#\s*9999-12-31\s*#"
                            r"|#\s*1900-03-01\s*#")
-# An argument that the facade reads or classifies: none may come before the host rule.
-ARGUMENT_READERS = ("M_Ranges.", "CORE_Array.", "CORE_Parse.", "CORE_Dates.")
+# The components whose public procedures read or classify an argument: no call of theirs may
+# come before the host rule, qualified by the module or, as VBA allows, by its name alone.
+READER_MODULES = ("src/workbook/M_Ranges.bas", "src/core/CORE_Array.bas", "src/core/CORE_Parse.bas",
+                  "src/core/CORE_Dates.bas")
 WORKBOOK_FALLBACKS = re.compile(r"\b(?:ActiveWorkbook|ThisWorkbook|ActiveSheet|ActiveCell|Selection"
                                 r"|Workbooks|Application\s*\.\s*(?:ActiveWorkbook|ActiveSheet))\b",
                                 re.I)
@@ -205,7 +207,17 @@ def function_findings(procedure: Procedure) -> list[Finding]:
     return findings
 
 
-def evaluator_findings(procedure: Procedure | None) -> list[Finding]:
+def argument_readers(sources: Mapping[str, str]) -> re.Pattern[str]:
+    """A pattern for a call of a reader module: the module's name, or one of its public procedures."""
+    names = [Path(path).stem for path in READER_MODULES]
+    procedures = {procedure.name for path in READER_MODULES
+                  for procedure in scan(path, sources.get(path, "")).procedures if procedure.public}
+    alternatives = [rf"\b{name}\s*\." for name in names] + [rf"\b{name}\b" for name in
+                                                              sorted(procedures)]
+    return re.compile("|".join(alternatives), re.I)
+
+
+def evaluator_findings(procedure: Procedure | None, readers: re.Pattern[str]) -> list[Finding]:
     """EvaluateCall applies the host rule once, before it reads any argument."""
     if procedure is None:
         return [Finding(FACADE, None, f"{EVALUATOR} is not declared")]
@@ -217,7 +229,7 @@ def evaluator_findings(procedure: Procedure | None) -> list[Finding]:
     return [Finding(FACADE, line, f"{EVALUATOR} reads an argument before {CHECK}: the host rule "
                     "comes first")
             for line, statement in body
-            if line < guards[0] and any(reader in statement for reader in ARGUMENT_READERS)]
+            if line < guards[0] and readers.search(statement)]
 
 
 def host_guard(sources: Mapping[str, str]) -> tuple[list[Finding], int]:
@@ -228,7 +240,8 @@ def host_guard(sources: Mapping[str, str]) -> tuple[list[Finding], int]:
                  and procedure.name.casefold().startswith("kpr_dates_")]
     findings = [finding for procedure in functions for finding in function_findings(procedure)]
     findings += evaluator_findings(next((procedure for procedure in module.procedures
-                                         if procedure.name.casefold() == EVALUATOR.casefold()), None))
+                                         if procedure.name.casefold() == EVALUATOR.casefold()), None),
+                                   argument_readers(sources))
     for procedure in module.procedures:
         if procedure not in functions and procedure.name.casefold() != EVALUATOR.casefold():
             findings.extend(Finding(FACADE, line, f"{procedure.name} applies the host rule: only "
