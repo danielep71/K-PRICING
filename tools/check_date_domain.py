@@ -35,6 +35,7 @@ import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
+from check_vba_conditionals import ENVIRONMENTS, reachable_sources
 from check_vba_identifiers import Procedure, scan
 from vba_lexer import Finding, logical_units, read_component, report, tracked_components
 
@@ -378,12 +379,36 @@ def production(root: Path) -> dict[str, str]:
             if path.startswith("src/")}
 
 
-def analyze(sources: Mapping[str, str]) -> tuple[list[Finding], int]:
-    """Every finding, and how many public worksheet functions the host rule covers."""
+def analyze_environment(sources: Mapping[str, str]) -> tuple[list[Finding], int]:
+    """Every finding of one environment's source, and how many public worksheet
+    functions the host rule covers."""
     guard, functions = host_guard(sources)
     findings = [*day_zero(sources), *window(sources), *guard, *volatility(sources),
                 *host_authority(sources), *locale(sources)]
     return findings, functions
+
+
+def analyze(sources: Mapping[str, str]) -> tuple[list[Finding], int]:
+    """Every finding, and how many public worksheet functions the host rule covers.
+
+    Each supported conditional-compilation environment is read on its own, with
+    the lines it does not compile blanked, so that a call written once in each of
+    two exclusive branches counts once, as the environment executes it. A finding
+    seen in several environments is reported once."""
+    by_environment: dict[str, dict[str, str]] = {name: {} for name in ENVIRONMENTS}
+    for path, text in sources.items():
+        for name, source in reachable_sources(path, text)[0].items():
+            by_environment[name][path] = source
+    findings: dict[Finding, None] = {}
+    functions = 0
+    # Environments that compile the same text give the same findings: read once.
+    distinct = {tuple(sorted(environment.items())): environment
+                for environment in by_environment.values()}
+    for environment in distinct.values():
+        found, count = analyze_environment(environment)
+        findings.update(dict.fromkeys(found))
+        functions = max(functions, count)
+    return list(findings), functions
 
 
 def main(argv: Sequence[str] | None = None) -> int:

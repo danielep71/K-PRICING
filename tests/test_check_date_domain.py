@@ -203,6 +203,23 @@ class HostGuardTest(unittest.TestCase):
         self.assertTrue(any("KPR_Dates_DaysInMonth must call EvaluateCall exactly once" in message
                             for message in messages(sources)))
 
+    def test_a_call_in_each_of_two_exclusive_branches_counts_once(self) -> None:
+        branches = f"#If Win64 Then\n{self.CALL}\n#Else\n{self.CALL}\n#End If"
+        sources = replaced(FACADE, self.CALL, branches)
+        self.assertEqual(messages(sources), [])
+
+    def test_a_call_in_both_branches_and_outside_them_is_still_twice(self) -> None:
+        branches = f"{self.CALL}\n#If Win64 Then\n{self.CALL}\n#Else\n{self.CALL}\n#End If"
+        sources = replaced(FACADE, self.CALL, branches)
+        self.assertTrue(any("KPR_Dates_DaysInMonth must call EvaluateCall exactly once" in message
+                            for message in messages(sources)))
+
+    def test_a_skipped_call_in_one_branch_is_seen_once(self) -> None:
+        branches = f"#If Win64 Then\n{self.CALL}\n#Else\n        KPR_Dates_DaysInMonth = Empty\n#End If"
+        found = [message for message in messages(replaced(FACADE, self.CALL, branches))
+                 if "must call EvaluateCall exactly once" in message]
+        self.assertEqual(len(found), 1)
+
     def test_the_facade_is_read_without_regard_to_letter_case(self) -> None:
         sources = replaced(FACADE, "Public Function KPR_Dates_DaysInMonth(",
                            "Public Function kpr_dates_daysinmonth(")
