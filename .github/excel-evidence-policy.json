@@ -43,7 +43,11 @@
     {"name": "excel-host", "source": "tests/modules/TEST_Host.bas",
      "certification_entry_point": "CertifyHost", "runner": "RunHostTests",
      "expected_cases": 4, "expected_assertions": 41, "log": "excel-host.log",
-     "certification_log": "excel-host-certification.log"}
+     "certification_log": "excel-host-certification.log"},
+    {"name": "excel-oracle", "source": "tests/modules/TEST_ExcelOracle.bas",
+     "certification_entry_point": "CertifyExcelOracle", "expected_cases": 21,
+     "expected_assertions": 437, "log": "excel-oracle.log",
+     "certification_log": "excel-oracle-certification.log"}
   ],
   "modes": [
     {"mode": "NORMAL", "log": "examples.log", "must_pass": true},
