@@ -128,4 +128,27 @@ Use only the categories an entry needs.
   replace on 29,440 combinations of arguments. Nothing was run in Excel
   ([#8](https://github.com/danielep71/K-PRICING/issues/8)).
 
+### Changed
+
+- The public API inventory is reconciled with the code: the 22 `KPR_Dates_*`
+  functions are the `[supported]` tier, with their exact signatures; the other
+  60 public declarations of the core and the adapters stay `[project-public]`,
+  and the inventory says why the ones that only the tests call are not
+  private. The repository structure no longer says that nothing is supported
+  yet. No procedure changed
+  ([#9](https://github.com/danielep71/K-PRICING/issues/9)).
+
+### Validation
+
+- The five date-layer suites ran in Excel for Microsoft 365 (build
+  16.0.20527, 64-bit) on the development workbook, after a clean compile:
+  `TEST_CoreErrParse` 467, `TEST_CoreDates` 2,083, `TEST_CoreArray` 122,
+  `TEST_Ranges` 62 and `TEST_Dates` 81 assertions, all passed, with no
+  failure and the Excel state unchanged. This includes the 9 `TEST_Dates`
+  assertions that failed in LibreOffice. Four worksheet formulas gave the
+  expected values, in the 1900 and in the 1904 date system. The suites are
+  not certified and are not in the evidence policy; the cases of the 22
+  functions are converted in
+  [#11](https://github.com/danielep71/K-PRICING/issues/11).
+
 [Unreleased]: https://github.com/danielep71/K-PRICING/commits/main

@@ -86,7 +86,7 @@ review.
 ## Public API inventory
 
 [PUBLIC_API.txt](PUBLIC_API.txt) lists every `Public` declaration under
-`src/`, in two tiers; `[supported]` is empty until the facade is ported, and `[project-public]` lists the core.
+`src/`, in two tiers; `[supported]` lists the 22 `KPR_Dates_*` worksheet functions, and `[project-public]` the core and the adapters.
 
 - **`[supported]`:** the supported API, the public declarations of the
   standard modules in `src/modules/`. A `Public` declaration is supported
@@ -149,8 +149,9 @@ same pull request, to:
 - the [calculation contract](methodology/CALCULATION_CONTRACTS.md);
 - the tests.
 
-There are no supported entry points until these are reviewed together with
-the implementation.
+The supported entry points are the 22 `KPR_Dates_*` worksheet functions of
+`src/modules/KPR_Dates.bas`; their contract is in the
+[calculation contracts](methodology/CALCULATION_CONTRACTS.md).
 
 ## Native declarations
 
