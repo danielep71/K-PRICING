@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-quarter-end-at-ceiling",
+  "synthetic": true,
+  "description": "Regression case (surface): quarter/end at ceiling.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfQuarter",
+  "context": "direct",
+  "arguments": [
+    "str:\"9999-11-11\""
+  ]
+}

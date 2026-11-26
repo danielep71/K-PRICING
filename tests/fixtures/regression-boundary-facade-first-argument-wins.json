@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-boundary-facade-first-argument-wins",
+  "synthetic": true,
+  "description": "Regression case (boundary): facade/first argument wins.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddWeeks",
+  "context": "direct",
+  "arguments": [
+    "str:\"31/12/2026\"",
+    "err:#N/A"
+  ]
+}

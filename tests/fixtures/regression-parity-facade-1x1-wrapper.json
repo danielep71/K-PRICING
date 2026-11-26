@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-parity-facade-1x1-wrapper",
+  "synthetic": true,
+  "description": "Regression case (parity): facade/1x1 wrapper.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "arr1:[str:\"2026-03-15\"]"
+  ]
+}

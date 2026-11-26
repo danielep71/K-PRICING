@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-year-end-at-ceiling",
+  "synthetic": true,
+  "description": "Regression case (surface): year/end at ceiling.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfYear",
+  "context": "direct",
+  "arguments": [
+    "str:\"9999-01-01\""
+  ]
+}

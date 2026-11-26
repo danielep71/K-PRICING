@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-pillar-window-ceiling-gap-facade",
+  "synthetic": true,
+  "description": "Regression case (pillar): window/ceiling gap facade.",
+  "category": "invalid",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:9999-12-15",
+    "date:9999-12-31",
+    "str:\"CEILING\""
+  ]
+}

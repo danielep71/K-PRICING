@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-floor-endofquarter-1900-03-01",
+  "synthetic": true,
+  "description": "Regression case (surface): floor/EndOfQuarter 1900-03-01.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfQuarter",
+  "context": "direct",
+  "arguments": [
+    "str:\"1900-03-01\""
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-clip-addyears-feb29-1",
+  "synthetic": true,
+  "description": "Regression case (surface): clip/AddYears Feb29+1.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddYears",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024-02-29\"",
+    "lng:1"
+  ]
+}

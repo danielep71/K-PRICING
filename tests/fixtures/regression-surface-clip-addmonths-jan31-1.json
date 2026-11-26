@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-clip-addmonths-jan31-1",
+  "synthetic": true,
+  "description": "Regression case (surface): clip/AddMonths Jan31+1.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-01-31\"",
+    "lng:1"
+  ]
+}

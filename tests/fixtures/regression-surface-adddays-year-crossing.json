@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-adddays-year-crossing",
+  "synthetic": true,
+  "description": "Regression case (surface): adddays/year crossing.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-12-31\"",
+    "lng:1"
+  ]
+}

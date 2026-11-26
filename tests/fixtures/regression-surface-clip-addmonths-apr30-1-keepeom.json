@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-clip-addmonths-apr30-1-keepeom",
+  "synthetic": true,
+  "description": "Regression case (surface): clip/AddMonths Apr30+1 keepEOM.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-04-30\"",
+    "lng:1",
+    "bool:TRUE"
+  ]
+}

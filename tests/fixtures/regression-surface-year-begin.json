@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-year-begin",
+  "synthetic": true,
+  "description": "Regression case (surface): year/begin.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_BeginOfYear",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-07-04\""
+  ]
+}

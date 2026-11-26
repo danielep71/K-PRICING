@@ -142,7 +142,7 @@ Public Sub RunCoreDatesTests()
         CaseParsePillar
         CaseAddPillar
         CaseFormatPillar
-        CasePillarLegacy
+        CasePillarRegression
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -4034,14 +4034,14 @@ CaseFailed:
 
 End Sub
 
-Private Sub CasePillarLegacy()
+Private Sub CasePillarRegression()
 
 '
 '------------------------------------------------------------------------------
-'                        CHECK THE LEGACY PILLAR TOKENS
+'                        CHECK THE REGRESSION PILLAR TOKENS
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Oversized pillar tokens of the earlier project: grammar before numerical range. 28 assertions.
+'   Oversized pillar tokens: the grammar decides before the numerical range. 28 assertions.
 '
 ' WHY THIS EXISTS
 '   Part of the evidence that the pillar parser reads tokens as the data contract says
@@ -4063,8 +4063,7 @@ Private Sub CasePillarLegacy()
 '   CORE_Dates, CORE_Err, TEST_Harness
 '
 ' NOTES
-'   Ported from the earlier project's pillar regression suite: the tokens that
-'   CaseParsePillar does not already hold
+'   CaseParsePillar holds the ordinary tokens; these exceed the Double range
 '
 ' UPDATED
 '   2026-11-26
@@ -4081,7 +4080,7 @@ Private Sub CasePillarLegacy()
     'Record an unexpected error against the case
         On Error GoTo CaseFailed
     'Start the case
-        TEST_Harness.BeginCase "pillar-legacy"
+        TEST_Harness.BeginCase "pillar-regression"
 
 '------------------------------------------------------------------------------
 ' RUN CASE

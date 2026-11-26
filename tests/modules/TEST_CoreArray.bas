@@ -130,7 +130,7 @@ Public Sub RunCoreArrayTests()
         CaseTraversal
         CaseUnwrapScalar
         CaseUnwrapControl
-        CaseLegacyShapes
+        CaseRegressionShapes
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -1052,14 +1052,14 @@ CaseFailed:
 
 End Sub
 
-Private Sub CaseLegacyShapes()
+Private Sub CaseRegressionShapes()
 
 '
 '------------------------------------------------------------------------------
-'                           CHECK THE LEGACY SHAPES
+'                           CHECK THE REGRESSION SHAPES
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   The shapes of the earlier project that the cases above lack: an error scalar, the
+'   Regression shapes that the cases above do not hold: an error scalar, the
 '   250 by 400 block at the capacity and a two-dimensional one-cell control. 10 assertions.
 '
 ' WHY THIS EXISTS
@@ -1082,7 +1082,7 @@ Private Sub CaseLegacyShapes()
 '   CORE_Array, CORE_Err, TEST_Harness
 '
 ' NOTES
-'   Ported from the earlier project's shape regression suite
+'   CaseClassifyShape, CaseCapacity and CaseUnwrapControl hold the ordinary shapes
 '
 ' UPDATED
 '   2026-11-26
@@ -1100,7 +1100,7 @@ Private Sub CaseLegacyShapes()
     'Record an unexpected error against the case
         On Error GoTo CaseFailed
     'Start the case
-        TEST_Harness.BeginCase "legacy-shapes"
+        TEST_Harness.BeginCase "regression-shapes"
 
 '------------------------------------------------------------------------------
 ' RUN CASE

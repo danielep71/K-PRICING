@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-boundary-facade-propagate-num",
+  "synthetic": true,
+  "description": "Regression case (boundary): facade/propagate NUM.",
+  "category": "invalid",
+  "calculation": "CALC-02",
+  "function": "KPR_Dates_DayOfWeek",
+  "context": "direct",
+  "arguments": [
+    "err:#NUM!"
+  ]
+}

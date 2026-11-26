@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-yearin-isleapyear-2026",
+  "synthetic": true,
+  "description": "Regression case (surface): yearin/IsLeapYear 2026.",
+  "category": "nominal",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_IsLeapYear",
+  "context": "direct",
+  "arguments": [
+    "lng:2026"
+  ]
+}

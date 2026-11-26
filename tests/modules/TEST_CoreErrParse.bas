@@ -145,8 +145,8 @@ Public Sub RunCoreErrParseTests()
         CaseLongRejected
         CaseBoolControl
         CaseRoundingControl
-        CaseDateLegacy
-        CaseLongLegacy
+        CaseDateRegression
+        CaseLongRegression
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -1635,14 +1635,14 @@ CaseFailed:
 
 End Sub
 
-Private Sub CaseDateLegacy()
+Private Sub CaseDateRegression()
 
 '
 '------------------------------------------------------------------------------
-'                         CHECK THE LEGACY DATE INPUTS
+'                         CHECK THE REGRESSION DATE INPUTS
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   The date inputs of the earlier project that the cases above lack. 114 assertions.
+'   Regression date inputs that the cases above do not hold. 114 assertions.
 '
 ' WHY THIS EXISTS
 '   Part of the evidence that the date layer reads its arguments as the data contract says
@@ -1664,8 +1664,7 @@ Private Sub CaseDateLegacy()
 '   CORE_Err, CORE_Parse, TEST_Harness
 '
 ' NOTES
-'   Ported from the earlier project's parser regression suites: the inputs that the
-'   cases above do not already hold, with the expectations of the data contract
+'   Each expectation is the data contract's; none is read back from the code under test
 '
 ' UPDATED
 '   2026-11-26
@@ -1682,7 +1681,7 @@ Private Sub CaseDateLegacy()
     'Record an unexpected error against the case
         On Error GoTo CaseFailed
     'Start the case
-        TEST_Harness.BeginCase "date-legacy"
+        TEST_Harness.BeginCase "date-regression"
 
 '------------------------------------------------------------------------------
 ' RUN CASE
@@ -1863,14 +1862,14 @@ CaseFailed:
 
 End Sub
 
-Private Sub CaseLongLegacy()
+Private Sub CaseLongRegression()
 
 '
 '------------------------------------------------------------------------------
-'                       CHECK THE LEGACY INTEGER INPUTS
+'                       CHECK THE REGRESSION INTEGER INPUTS
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   The integer inputs of the earlier project that the cases above lack. 51 assertions.
+'   Regression integer inputs that the cases above do not hold. 51 assertions.
 '
 ' WHY THIS EXISTS
 '   Part of the evidence that the date layer reads its arguments as the data contract says
@@ -1892,8 +1891,7 @@ Private Sub CaseLongLegacy()
 '   CORE_Err, CORE_Parse, TEST_Harness
 '
 ' NOTES
-'   Ported from the earlier project's parser regression suites: the inputs that the
-'   cases above do not already hold, with the expectations of the data contract
+'   Each expectation is the data contract's; none is read back from the code under test
 '
 ' UPDATED
 '   2026-11-26
@@ -1910,7 +1908,7 @@ Private Sub CaseLongLegacy()
     'Record an unexpected error against the case
         On Error GoTo CaseFailed
     'Start the case
-        TEST_Harness.BeginCase "long-legacy"
+        TEST_Harness.BeginCase "long-regression"
 
 '------------------------------------------------------------------------------
 ' RUN CASE

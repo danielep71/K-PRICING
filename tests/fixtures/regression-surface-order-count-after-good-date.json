@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-order-count-after-good-date",
+  "synthetic": true,
+  "description": "Regression case (surface): order/count after good date.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-03-15\"",
+    "str:\"bad\""
+  ]
+}

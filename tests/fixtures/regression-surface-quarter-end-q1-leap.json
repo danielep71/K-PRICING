@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-quarter-end-q1-leap",
+  "synthetic": true,
+  "description": "Regression case (surface): quarter/end Q1 leap.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfQuarter",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024-01-15\""
+  ]
+}

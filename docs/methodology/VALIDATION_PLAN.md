@@ -172,36 +172,31 @@ caller in a 1900 and in a 1904 workbook, a call from VBA, from
 caller that is not a Range, the recalculation of `KPR_Dates_HostDateSystem`,
 and a multi-cell result spilled by dynamic-array Excel.
 
-<a id="earlier-suites"></a>
+<a id="regression-coverage"></a>
 
-#### The earlier project's suites
+#### Regression coverage
 
-The regression suites of the earlier project are ported by coverage, not by
-copy ([#13](https://github.com/danielep71/K-PRICING/issues/13)): each of their
-direct suites maps onto a certified suite of this project, and only the
-inputs that no suite held were added. A check on a worksheet function whose
-inputs the [case format](TEST_CASES.md#worksheet-function-cases) can express
-became a `legacy-<suite>-<label>` case, with its result and condition derived
-by the reference model; every other check became a literal assertion of a
-VBA suite. Every expectation of the earlier suites agrees with the
-[data contract](DATA_CONTRACT.md).
+Each regression area of the date layer maps onto a certified suite. A check
+on a worksheet function whose inputs the
+[case format](TEST_CASES.md#worksheet-function-cases) can express is a
+`regression-<area>-<label>` case, with its result and condition derived by the
+reference model; every other check is a literal assertion of a VBA suite.
 
-| Earlier suite | Covered by |
+| Regression area | Covered by |
 | --- | --- |
-| Date types, date text, date window, integers | `core-err-parse`: the parser cases, and `date-legacy` and `long-legacy` for the inputs they lacked |
-| Controls | `core-err-parse` (`bool-control`, `rounding-control`), `core-array` (`unwrap-control`, `legacy-shapes`), `dates` (`controls`: a forwarded `Missing` and a tab-padded `Opt_Rounding`) |
-| Boundary | `core-err-parse` (`date-window`) and 12 `legacy-boundary-*` cases |
-| Mapper | `core-err-parse` (`err-constructors`, `condition-registry`, `unmapped-conditions`) |
-| Host | 3 `legacy-host-*` cases and the `KPR_Dates_HostDateSystem` cases; the host probes in Excel |
-| Pillar | `core-dates` (`parse-pillar`, `add-pillar`, `format-pillar`, `pillar-legacy`) and 55 `legacy-pillar-*` cases |
-| Surface | 49 `legacy-surface-*` cases |
-| Shape | `core-array`, and `legacy-shapes` for an error scalar, the 250 by 400 block and a one-cell two-dimensional control |
-| Parity | 10 `legacy-parity-*` cases; every array case states each element's value, derived element by element |
-| Fixtures | `date-cases` |
+| Date types, date text, date window, integers | `core-err-parse`: the parser cases, with `date-regression` and `long-regression` for numeric types, text shapes and tolerances beyond the ordinary ones |
+| Controls | `core-err-parse` (`bool-control`, `rounding-control`), `core-array` (`unwrap-control`, `regression-shapes`), `dates` (`controls`: a forwarded `Missing` and a tab-padded `Opt_Rounding`) |
+| Boundaries | `core-err-parse` (`date-window`) and 12 `regression-boundary-*` cases |
+| Conditions and their errors | `core-err-parse` (`err-constructors`, `condition-registry`, `unmapped-conditions`) |
+| Host | 3 `regression-host-*` cases and the `KPR_Dates_HostDateSystem` cases; the host probes in Excel |
+| Pillars | `core-dates` (`parse-pillar`, `add-pillar`, `format-pillar`, `pillar-regression`) and 55 `regression-pillar-*` cases |
+| Function surface | 49 `regression-surface-*` cases |
+| Shapes | `core-array`, with `regression-shapes` for an error scalar, the 250 by 400 block and a one-cell two-dimensional control |
+| Array and scalar parity | 10 `regression-parity-*` cases; every array case states each element's value, derived element by element |
+| Worksheet-function cases | `date-cases` |
 
-The `LongLong` inputs of the earlier suites are not ported: a `LongLong`
-cannot be built on a 32-bit host, so a suite that held one would not run
-there. The worksheet suites are ported with the worksheet harness.
+No case holds a `LongLong`: one cannot be built on a 32-bit host, so a suite
+that held one would not run there.
 
 ## Traceability
 

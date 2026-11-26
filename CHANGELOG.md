@@ -192,16 +192,16 @@ Use only the categories an entry needs.
   (467, 2,083, 122, 62 and 81), and `tests/test_project_suites.py` fails when a
   project suite's source no longer reads as its counts state
   ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
-- The earlier project's direct regression suites are mapped onto the project
-  suites, and the inputs that no suite held were added: 129 `legacy-*`
+- Regression coverage of the date layer: 129 `regression-*`
   worksheet-function cases, so the date layer has 1,635; the cases
-  `date-legacy` and `long-legacy` of `core-err-parse` (165 assertions),
-  `pillar-legacy` of `core-dates` (28), `legacy-shapes` of `core-array` (10),
-  and four control assertions of `dates`. Every expectation of the earlier
-  suites agrees with the data contract. The
-  [validation plan](docs/methodology/VALIDATION_PLAN.md#earlier-suites) maps
-  each earlier suite to its coverage; the calibration and holdout cases of
-  `ACC-02` to `ACC-23` are recomputed by the same rule. Not yet run in Excel
+  `date-regression` and `long-regression` of `core-err-parse` (165
+  assertions), `pillar-regression` of `core-dates` (28),
+  `regression-shapes` of `core-array` (10), and four control assertions of
+  `dates`. The
+  [validation plan](docs/methodology/VALIDATION_PLAN.md#regression-coverage)
+  maps each regression area to the suites that cover it; the calibration and
+  holdout cases of `ACC-02` to `ACC-23` are recomputed by the same rule. Not
+  yet run in Excel
   ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
 
 ### Changed

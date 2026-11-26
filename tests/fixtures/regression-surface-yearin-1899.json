@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-yearin-1899",
+  "synthetic": true,
+  "description": "Regression case (surface): yearin/1899.",
+  "category": "invalid",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_IsLeapYear",
+  "context": "direct",
+  "arguments": [
+    "lng:1899"
+  ]
+}
