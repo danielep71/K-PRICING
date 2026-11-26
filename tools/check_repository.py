@@ -472,6 +472,7 @@ def checks(context: Context) -> list[Check]:
           for name in ("source", "layout", "conditionals", "jumps", "public_api",
                        "dependencies", "identifiers", "errors", "declares")],
         Check("vba-calls", [python, "tools/check_vba_calls.py"], advisory=True),
+        Check("date-domain", [python, "tools/check_date_domain.py"]),
         Check("data-contract", [python, "tools/check_data_contract.py"]),
         Check("test-cases", [python, "tools/check_test_cases.py"]),
         Check("derivations", [python, "tools/check_derivations.py"]),
