@@ -173,7 +173,7 @@ Use only the categories an entry needs.
   run in Excel
   ([#12](https://github.com/danielep71/K-PRICING/issues/12)).
 - The project suite `date-cases`, `tests/modules/TEST_DateCases.bas`, which
-  replays in Excel the 1,432 worksheet-function cases whose caller is VBA: each
+  replays in Excel the 1,561 worksheet-function cases whose caller is VBA: each
   is one assertion named after the case, comparing the encoded result with its
   expected file, and one text result for the `exact` contracts, recorded with
   the harness's new `RecordTextResult`. The suite is generated from the cases
@@ -191,6 +191,17 @@ Use only the categories an entry needs.
   order equal those of the Excel run of 2026-11-26, assertion for assertion
   (467, 2,083, 122, 62 and 81), and `tests/test_project_suites.py` fails when a
   project suite's source no longer reads as its counts state
+  ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
+- The earlier project's direct regression suites are mapped onto the project
+  suites, and the inputs that no suite held were added: 129 `legacy-*`
+  worksheet-function cases, so the date layer has 1,635; the cases
+  `date-legacy` and `long-legacy` of `core-err-parse` (165 assertions),
+  `pillar-legacy` of `core-dates` (28), `legacy-shapes` of `core-array` (10),
+  and four control assertions of `dates`. Every expectation of the earlier
+  suites agrees with the data contract. The
+  [validation plan](docs/methodology/VALIDATION_PLAN.md#earlier-suites) maps
+  each earlier suite to its coverage; the calibration and holdout cases of
+  `ACC-02` to `ACC-23` are recomputed by the same rule. Not yet run in Excel
   ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
 
 ### Changed

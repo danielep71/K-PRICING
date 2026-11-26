@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-surface-yearin-isleapyear-1900-century",
+  "synthetic": true,
+  "description": "Legacy surface suite: yearin/IsLeapYear 1900 century.",
+  "category": "nominal",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_IsLeapYear",
+  "context": "direct",
+  "arguments": [
+    "lng:1900"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-surface-adddays-positive",
+  "synthetic": true,
+  "description": "Legacy surface suite: adddays/positive.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-03-15\"",
+    "lng:10"
+  ]
+}

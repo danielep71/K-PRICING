@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "kind": "test-expected",
+  "fixture": "legacy-surface-locator-5th-monday-exists",
+  "outputs": [
+    {
+      "quantity": "weekday_date",
+      "scope": null,
+      "rule": null,
+      "text": "date:2026-03-30",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Ported from the earlier project's surface regression suite (locator/5th Monday exists); the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-parity-facade-2x2-rectangle",
+  "synthetic": true,
+  "description": "Legacy parity suite: facade/2x2 rectangle.",
+  "category": "nominal",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_DaysInMonth",
+  "context": "direct",
+  "arguments": [
+    "arr2:2x2[str:\"2024-02-10\";str:\"2025-02-10\";str:\"2026-02-10\";str:\"2028-02-10\"]"
+  ]
+}

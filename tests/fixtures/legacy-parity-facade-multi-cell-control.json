@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-parity-facade-multi-cell-control",
+  "synthetic": true,
+  "description": "Legacy parity suite: facade/multi-cell control.",
+  "category": "invalid",
+  "calculation": "CALC-02",
+  "function": "KPR_Dates_DayOfWeek",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-03-15\"",
+    "arr1:[bool:TRUE;bool:FALSE]"
+  ]
+}

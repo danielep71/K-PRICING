@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-pillar-control-mixed-case-ceiling",
+  "synthetic": true,
+  "description": "Legacy pillar suite: control/mixed case ceiling.",
+  "category": "nominal",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2026-03-15",
+    "date:2026-04-09",
+    "str:\"Ceiling\""
+  ]
+}

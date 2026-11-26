@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "kind": "test-expected",
+  "fixture": "legacy-surface-adddays-max-shift-in-window",
+  "outputs": [
+    {
+      "quantity": "shifted_date",
+      "scope": null,
+      "rule": null,
+      "text": "date:9999-12-31",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Ported from the earlier project's surface regression suite (adddays/max shift in window); the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    }
+  ]
+}

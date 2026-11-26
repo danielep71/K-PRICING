@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-pillar-exact-2w-floor",
+  "synthetic": true,
+  "description": "Legacy pillar suite: exact/2W floor.",
+  "category": "boundary",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2026-03-15",
+    "date:2026-03-29",
+    "str:\"FLOOR\""
+  ]
+}

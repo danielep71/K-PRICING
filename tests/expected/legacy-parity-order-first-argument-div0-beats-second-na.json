@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "kind": "test-expected",
+  "fixture": "legacy-parity-order-first-argument-div0-beats-second-na",
+  "outputs": [
+    {
+      "quantity": "shifted_date",
+      "scope": null,
+      "rule": null,
+      "text": "arr2:1x2[date:2026-03-16;err:#DIV/0!]",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Ported from the earlier project's parity regression suite (order/first argument DIV0 beats second NA); the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    },
+    {
+      "quantity": "date_shift_status",
+      "scope": null,
+      "rule": null,
+      "text": "r1c2=INPUT_ERROR_PROPAGATED",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Ported from the earlier project's parity regression suite (order/first argument DIV0 beats second NA); the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    }
+  ]
+}

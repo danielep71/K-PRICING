@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-surface-quarter-begin-q2",
+  "synthetic": true,
+  "description": "Legacy surface suite: quarter/begin Q2.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_BeginOfQuarter",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-05-31\""
+  ]
+}

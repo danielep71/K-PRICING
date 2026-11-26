@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-surface-rename-datefrompillar-2w",
+  "synthetic": true,
+  "description": "Legacy surface suite: rename/DateFromPillar -2W.",
+  "category": "nominal",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-03-15\"",
+    "str:\"-2W\""
+  ]
+}

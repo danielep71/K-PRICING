@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-pillar-boundary-27d-mar15",
+  "synthetic": true,
+  "description": "Legacy pillar suite: boundary/27d Mar15.",
+  "category": "boundary",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2026-03-15",
+    "date:2026-04-11",
+    "str:\"NEAREST\""
+  ]
+}

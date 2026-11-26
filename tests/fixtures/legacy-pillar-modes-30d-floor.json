@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-pillar-modes-30d-floor",
+  "synthetic": true,
+  "description": "Legacy pillar suite: modes/30d floor.",
+  "category": "nominal",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2026-03-15",
+    "date:2026-04-14",
+    "str:\"FLOOR\""
+  ]
+}

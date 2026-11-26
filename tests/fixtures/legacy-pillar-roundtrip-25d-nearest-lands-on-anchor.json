@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-pillar-roundtrip-25d-nearest-lands-on-anchor",
+  "synthetic": true,
+  "description": "Legacy pillar suite: roundtrip/25d nearest lands on anchor.",
+  "category": "nominal",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2026-03-15",
+    "str:\"3W\""
+  ]
+}

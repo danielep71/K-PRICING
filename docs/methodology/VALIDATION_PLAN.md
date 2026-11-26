@@ -88,14 +88,14 @@ with the [case categories](TEST_CASES.md#categories):
 | `invalid` | Every [condition](DATA_CONTRACT.md#conditions) of every argument a function takes, each with at least one case, as a [worksheet-function case](TEST_CASES.md#worksheet-function-cases) where it can express the input, otherwise as a VBA test |
 
 The worksheet-function cases hold, as encoded values, a VBA `Date`,
-`Empty`, `Null`, an Excel error, an empty array and the 100,000 and 100,001
-element calls, and the array rules of
+`Empty`, `Null`, an Excel error, an empty array, a jagged array and the
+100,000 and 100,001 element calls, and the array rules of
 [arrays and evaluation](CALCULATION_CONTRACTS.md#arrays-and-evaluation): a
 kept shape, a scalar repeated over an array, a one-dimensional array read as a
 row, `SHAPE_MISMATCH`, an element-level error beside valid neighbours and the
 first failing argument at a position. Inputs that they cannot express are VBA
 tests, run by the harness ([#13](https://github.com/danielep71/K-PRICING/issues/13)):
-an object, a Range of several areas, a jagged array, a `Decimal`, and the
+an object, a Range of several areas, a `Decimal`, and the
 order of evaluation.
 
 <a id="date-layer-completeness"></a>
@@ -171,6 +171,37 @@ caller in a 1900 and in a 1904 workbook, a call from VBA, from
 `Application.Run` and from the Immediate window, the contexts that give a
 caller that is not a Range, the recalculation of `KPR_Dates_HostDateSystem`,
 and a multi-cell result spilled by dynamic-array Excel.
+
+<a id="earlier-suites"></a>
+
+#### The earlier project's suites
+
+The regression suites of the earlier project are ported by coverage, not by
+copy ([#13](https://github.com/danielep71/K-PRICING/issues/13)): each of their
+direct suites maps onto a certified suite of this project, and only the
+inputs that no suite held were added. A check on a worksheet function whose
+inputs the [case format](TEST_CASES.md#worksheet-function-cases) can express
+became a `legacy-<suite>-<label>` case, with its result and condition derived
+by the reference model; every other check became a literal assertion of a
+VBA suite. Every expectation of the earlier suites agrees with the
+[data contract](DATA_CONTRACT.md).
+
+| Earlier suite | Covered by |
+| --- | --- |
+| Date types, date text, date window, integers | `core-err-parse`: the parser cases, and `date-legacy` and `long-legacy` for the inputs they lacked |
+| Controls | `core-err-parse` (`bool-control`, `rounding-control`), `core-array` (`unwrap-control`, `legacy-shapes`), `dates` (`controls`: a forwarded `Missing` and a tab-padded `Opt_Rounding`) |
+| Boundary | `core-err-parse` (`date-window`) and 12 `legacy-boundary-*` cases |
+| Mapper | `core-err-parse` (`err-constructors`, `condition-registry`, `unmapped-conditions`) |
+| Host | 3 `legacy-host-*` cases and the `KPR_Dates_HostDateSystem` cases; the host probes in Excel |
+| Pillar | `core-dates` (`parse-pillar`, `add-pillar`, `format-pillar`, `pillar-legacy`) and 55 `legacy-pillar-*` cases |
+| Surface | 49 `legacy-surface-*` cases |
+| Shape | `core-array`, and `legacy-shapes` for an error scalar, the 250 by 400 block and a one-cell two-dimensional control |
+| Parity | 10 `legacy-parity-*` cases; every array case states each element's value, derived element by element |
+| Fixtures | `date-cases` |
+
+The `LongLong` inputs of the earlier suites are not ported: a `LongLong`
+cannot be built on a 32-bit host, so a suite that held one would not run
+there. The worksheet suites are ported with the worksheet harness.
 
 ## Traceability
 

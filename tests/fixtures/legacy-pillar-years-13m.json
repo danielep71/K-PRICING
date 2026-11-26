@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-pillar-years-13m",
+  "synthetic": true,
+  "description": "Legacy pillar suite: years/13M.",
+  "category": "nominal",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2026-03-15",
+    "date:2027-04-15",
+    "str:\"NEAREST\""
+  ]
+}

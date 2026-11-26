@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-boundary-facade-window-below",
+  "synthetic": true,
+  "description": "Legacy boundary suite: facade/window below.",
+  "category": "invalid",
+  "calculation": "CALC-02",
+  "function": "KPR_Dates_DayOfWeek",
+  "context": "direct",
+  "arguments": [
+    "str:\"1900-02-28\""
+  ]
+}

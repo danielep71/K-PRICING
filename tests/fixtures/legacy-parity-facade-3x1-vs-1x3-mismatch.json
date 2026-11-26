@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-parity-facade-3x1-vs-1x3-mismatch",
+  "synthetic": true,
+  "description": "Legacy parity suite: facade/3x1 vs 1x3 mismatch.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "arr2:3x1[str:\"2026-01-31\";str:\"2026-02-28\";str:\"2026-03-31\"]",
+    "arr1:[lng:1;lng:2;lng:3]"
+  ]
+}

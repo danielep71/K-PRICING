@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-pillar-roundtrip-exact-2w-lands-on-end",
+  "synthetic": true,
+  "description": "Legacy pillar suite: roundtrip/exact 2W lands on end.",
+  "category": "nominal",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2026-03-15",
+    "str:\"2W\""
+  ]
+}

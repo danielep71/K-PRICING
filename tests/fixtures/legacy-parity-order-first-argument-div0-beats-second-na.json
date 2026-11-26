@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-parity-order-first-argument-div0-beats-second-na",
+  "synthetic": true,
+  "description": "Legacy parity suite: order/first argument DIV0 beats second NA.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "arr1:[str:\"2026-03-15\";err:#DIV/0!]",
+    "arr1:[lng:1;err:#N/A]"
+  ]
+}

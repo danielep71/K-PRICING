@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-pillar-grammar-facade-duplicate",
+  "synthetic": true,
+  "description": "Legacy pillar suite: grammar/facade duplicate.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2026-03-15",
+    "str:\"1M2M\""
+  ]
+}

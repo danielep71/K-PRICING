@@ -22,8 +22,8 @@ Option Private Module
 '   Nothing at module level
 '
 ' BEHAVIOR
-'   RunDateCaseTests runs the suite: 61 cases of up to 30 test cases of one function,
-'   1432 assertions, one per test case, named after it. CertifyDateCases certifies its
+'   RunDateCaseTests runs the suite: 65 cases of up to 30 test cases of one function,
+'   1561 assertions, one per test case, named after it. CertifyDateCases certifies its
 '   normal run and saves its log, its certification log and its results file
 '
 ' ERROR POLICY
@@ -48,8 +48,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "date-cases"        'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 61                  'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 1432                'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 65                  'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 1561                'Assertions a complete run evaluates
 
 
 '
@@ -259,6 +259,7 @@ Private Sub RunSuite()
         CaseAddDays01
         CaseAddDays02
         CaseAddDays03
+        CaseAddDays04
         CaseAddWeeks01
         CaseAddWeeks02
         CaseAddMonths01
@@ -269,6 +270,7 @@ Private Sub RunSuite()
         CaseNthWeekdayOfMonth01
         CaseNthWeekdayOfMonth02
         CaseNthWeekdayOfMonth03
+        CaseNthWeekdayOfMonth04
         CaseLastWeekdayOfMonth01
         CaseLastWeekdayOfMonth02
         CasePillarFromDates01
@@ -282,6 +284,8 @@ Private Sub RunSuite()
         CasePillarFromDates09
         CasePillarFromDates10
         CasePillarFromDates11
+        CasePillarFromDates12
+        CasePillarFromDates13
         CaseDateFromPillar01
         CaseDateFromPillar02
         CaseDateFromPillar03
@@ -329,7 +333,7 @@ Private Sub CaseDayOfWeek01()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_DayOfWeek, from control-weekbase-array-1d-single
-'   to shape-control-1d-pair, called from VBA.
+'   to matrix-dayofweek-datein-propagated, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -426,6 +430,38 @@ Private Sub CaseDayOfWeek01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(2024, 2, 11), True))
         TEST_Harness.AssertEqualText "control-weekbase-true", "lng:7", Actual
         TEST_Harness.RecordTextResult "control-weekbase-true", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/array input.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(TEST_DateCaseSupport.A1(1&, 2&)))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-array-input", "arr2:1x2[err:#NUM!;err:#NUM!]", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-array-input", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/locale text.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek("31/12/2026"))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-locale-text", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-locale-text", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/numeric control.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(2026, 3, 15), 1&))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-numeric-control", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-numeric-control", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/propagate in control slot.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(2026, 3, 15), CVErr(2042)))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-propagate-in-control-slot", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-propagate-in-control-slot", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/propagate NUM.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(CVErr(2036)))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-propagate-num", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-propagate-num", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/window below.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek("1900-02-28"))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-window-below", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-window-below", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/window serial 60.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(60#))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-window-serial-60", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-window-serial-60", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Legacy parity suite: facade/multi-cell control.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek("2026-03-15", TEST_DateCaseSupport.A1(True, False)))
+        TEST_Harness.AssertEqualText "legacy-parity-facade-multi-cell-control", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-parity-facade-multi-cell-control", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
     'DateIn: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "matrix-dayofweek-datein-array-1x1", "lng:6", Actual
@@ -462,38 +498,6 @@ Private Sub CaseDayOfWeek01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(CVErr(2042)))
         TEST_Harness.AssertEqualText "matrix-dayofweek-datein-propagated", "err:#N/A", Actual
         TEST_Harness.RecordTextResult "matrix-dayofweek-datein-propagated", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'A valid scalar call.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(2024, 2, 10)))
-        TEST_Harness.AssertEqualText "matrix-dayofweek-ok", "lng:6", Actual
-        TEST_Harness.RecordTextResult "matrix-dayofweek-ok", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'The call: CAPACITY_EXCEEDED, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(TEST_DateCaseSupport.F2(1, 100001, DateSerial(2024, 2, 10))))
-        TEST_Harness.AssertEqualText "policy-dayofweek-call-capacity-exceeded", "err:#NUM!", Actual
-        TEST_Harness.RecordTextResult "policy-dayofweek-call-capacity-exceeded", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'The call: SHAPE_UNSUPPORTED, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(TEST_DateCaseSupport.A1()))
-        TEST_Harness.AssertEqualText "policy-dayofweek-call-shape-unsupported", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "policy-dayofweek-call-shape-unsupported", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'DateIn: DATE_TEXT_LOCALE, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek("10/02/2024"))
-        TEST_Harness.AssertEqualText "policy-dayofweek-datein-date-text-locale", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "policy-dayofweek-datein-date-text-locale", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'DateIn: DATE_TEXT_NUMERIC, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek("45332"))
-        TEST_Harness.AssertEqualText "policy-dayofweek-datein-date-text-numeric", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "policy-dayofweek-datein-date-text-numeric", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'DateIn: DATE_TYPE_REJECTED, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(True))
-        TEST_Harness.AssertEqualText "policy-dayofweek-datein-date-type-rejected", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "policy-dayofweek-datein-date-type-rejected", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'DateIn: INPUT_BLANK_REQUIRED, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(Empty))
-        TEST_Harness.AssertEqualText "policy-dayofweek-datein-input-blank-required", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "policy-dayofweek-datein-input-blank-required", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'A two-element 1-D control is not scalar.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(TEST_DateCaseSupport.A2(1, 2, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)), TEST_DateCaseSupport.A1(False, True)))
-        TEST_Harness.AssertEqualText "shape-control-1d-pair", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "shape-control-1d-pair", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -517,8 +521,8 @@ Private Sub CaseDayOfWeek02()
 '                              CASES OF DAYOFWEEK
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_DayOfWeek, from surface-dayofweek-bad-datein
-'   to weekday-sunday-base-2000-03-31, called from VBA.
+'   Replays 30 worksheet-function cases of KPR_Dates_DayOfWeek, from matrix-dayofweek-ok
+'   to weekday-monday-base-9999-12-31, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -563,6 +567,38 @@ Private Sub CaseDayOfWeek02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'A valid scalar call.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(2024, 2, 10)))
+        TEST_Harness.AssertEqualText "matrix-dayofweek-ok", "lng:6", Actual
+        TEST_Harness.RecordTextResult "matrix-dayofweek-ok", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'The call: CAPACITY_EXCEEDED, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(TEST_DateCaseSupport.F2(1, 100001, DateSerial(2024, 2, 10))))
+        TEST_Harness.AssertEqualText "policy-dayofweek-call-capacity-exceeded", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "policy-dayofweek-call-capacity-exceeded", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'The call: SHAPE_UNSUPPORTED, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(TEST_DateCaseSupport.A1()))
+        TEST_Harness.AssertEqualText "policy-dayofweek-call-shape-unsupported", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "policy-dayofweek-call-shape-unsupported", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'DateIn: DATE_TEXT_LOCALE, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek("10/02/2024"))
+        TEST_Harness.AssertEqualText "policy-dayofweek-datein-date-text-locale", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "policy-dayofweek-datein-date-text-locale", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'DateIn: DATE_TEXT_NUMERIC, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek("45332"))
+        TEST_Harness.AssertEqualText "policy-dayofweek-datein-date-text-numeric", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "policy-dayofweek-datein-date-text-numeric", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'DateIn: DATE_TYPE_REJECTED, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(True))
+        TEST_Harness.AssertEqualText "policy-dayofweek-datein-date-type-rejected", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "policy-dayofweek-datein-date-type-rejected", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'DateIn: INPUT_BLANK_REQUIRED, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(Empty))
+        TEST_Harness.AssertEqualText "policy-dayofweek-datein-input-blank-required", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "policy-dayofweek-datein-input-blank-required", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'A two-element 1-D control is not scalar.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(TEST_DateCaseSupport.A2(1, 2, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)), TEST_DateCaseSupport.A1(False, True)))
+        TEST_Harness.AssertEqualText "shape-control-1d-pair", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "shape-control-1d-pair", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
     'An invalid DateIn is an element-level #VALUE!.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek("2024/02/10"))
         TEST_Harness.AssertEqualText "surface-dayofweek-bad-datein", "err:#VALUE!", Actual
@@ -651,38 +687,6 @@ Private Sub CaseDayOfWeek02()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(9999, 12, 31)))
         TEST_Harness.AssertEqualText "weekday-monday-base-9999-12-31", "lng:5", Actual
         TEST_Harness.RecordTextResult "weekday-monday-base-9999-12-31", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'Sunday base, Sunday is 1 and Saturday is 7.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1900, 3, 1), False))
-        TEST_Harness.AssertEqualText "weekday-sunday-base-1900-03-01", "lng:5", Actual
-        TEST_Harness.RecordTextResult "weekday-sunday-base-1900-03-01", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'Sunday base, Sunday is 1 and Saturday is 7.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1900, 3, 31), False))
-        TEST_Harness.AssertEqualText "weekday-sunday-base-1900-03-31", "lng:7", Actual
-        TEST_Harness.RecordTextResult "weekday-sunday-base-1900-03-31", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'Sunday base, Sunday is 1 and Saturday is 7.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1900, 4, 15), False))
-        TEST_Harness.AssertEqualText "weekday-sunday-base-1900-04-15", "lng:1", Actual
-        TEST_Harness.RecordTextResult "weekday-sunday-base-1900-04-15", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'Sunday base, Sunday is 1 and Saturday is 7.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1900, 12, 31), False))
-        TEST_Harness.AssertEqualText "weekday-sunday-base-1900-12-31", "lng:2", Actual
-        TEST_Harness.RecordTextResult "weekday-sunday-base-1900-12-31", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'Sunday base, Sunday is 1 and Saturday is 7.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1901, 1, 1), False))
-        TEST_Harness.AssertEqualText "weekday-sunday-base-1901-01-01", "lng:3", Actual
-        TEST_Harness.RecordTextResult "weekday-sunday-base-1901-01-01", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'Sunday base, Sunday is 1 and Saturday is 7.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1999, 12, 31), False))
-        TEST_Harness.AssertEqualText "weekday-sunday-base-1999-12-31", "lng:6", Actual
-        TEST_Harness.RecordTextResult "weekday-sunday-base-1999-12-31", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'Sunday base, Sunday is 1 and Saturday is 7.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(2000, 2, 29), False))
-        TEST_Harness.AssertEqualText "weekday-sunday-base-2000-02-29", "lng:3", Actual
-        TEST_Harness.RecordTextResult "weekday-sunday-base-2000-02-29", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
-    'Sunday base, Sunday is 1 and Saturday is 7.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(2000, 3, 31), False))
-        TEST_Harness.AssertEqualText "weekday-sunday-base-2000-03-31", "lng:6", Actual
-        TEST_Harness.RecordTextResult "weekday-sunday-base-2000-03-31", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -706,7 +710,7 @@ Private Sub CaseDayOfWeek03()
 '                              CASES OF DAYOFWEEK
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 12 worksheet-function cases of KPR_Dates_DayOfWeek, from weekday-sunday-base-2023-02-28
+'   Replays 20 worksheet-function cases of KPR_Dates_DayOfWeek, from weekday-sunday-base-1900-03-01
 '   to weekday-sunday-base-9999-12-31, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -752,6 +756,38 @@ Private Sub CaseDayOfWeek03()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'Sunday base, Sunday is 1 and Saturday is 7.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1900, 3, 1), False))
+        TEST_Harness.AssertEqualText "weekday-sunday-base-1900-03-01", "lng:5", Actual
+        TEST_Harness.RecordTextResult "weekday-sunday-base-1900-03-01", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Sunday base, Sunday is 1 and Saturday is 7.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1900, 3, 31), False))
+        TEST_Harness.AssertEqualText "weekday-sunday-base-1900-03-31", "lng:7", Actual
+        TEST_Harness.RecordTextResult "weekday-sunday-base-1900-03-31", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Sunday base, Sunday is 1 and Saturday is 7.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1900, 4, 15), False))
+        TEST_Harness.AssertEqualText "weekday-sunday-base-1900-04-15", "lng:1", Actual
+        TEST_Harness.RecordTextResult "weekday-sunday-base-1900-04-15", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Sunday base, Sunday is 1 and Saturday is 7.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1900, 12, 31), False))
+        TEST_Harness.AssertEqualText "weekday-sunday-base-1900-12-31", "lng:2", Actual
+        TEST_Harness.RecordTextResult "weekday-sunday-base-1900-12-31", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Sunday base, Sunday is 1 and Saturday is 7.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1901, 1, 1), False))
+        TEST_Harness.AssertEqualText "weekday-sunday-base-1901-01-01", "lng:3", Actual
+        TEST_Harness.RecordTextResult "weekday-sunday-base-1901-01-01", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Sunday base, Sunday is 1 and Saturday is 7.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(1999, 12, 31), False))
+        TEST_Harness.AssertEqualText "weekday-sunday-base-1999-12-31", "lng:6", Actual
+        TEST_Harness.RecordTextResult "weekday-sunday-base-1999-12-31", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Sunday base, Sunday is 1 and Saturday is 7.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(2000, 2, 29), False))
+        TEST_Harness.AssertEqualText "weekday-sunday-base-2000-02-29", "lng:3", Actual
+        TEST_Harness.RecordTextResult "weekday-sunday-base-2000-02-29", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+    'Sunday base, Sunday is 1 and Saturday is 7.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(2000, 3, 31), False))
+        TEST_Harness.AssertEqualText "weekday-sunday-base-2000-03-31", "lng:6", Actual
+        TEST_Harness.RecordTextResult "weekday-sunday-base-2000-03-31", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
     'Sunday base, Sunday is 1 and Saturday is 7.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DayOfWeek(DateSerial(2023, 2, 28), False))
         TEST_Harness.AssertEqualText "weekday-sunday-base-2023-02-28", "lng:3", Actual
@@ -824,7 +860,7 @@ Private Sub CaseDaysInMonth01()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_DaysInMonth, from boundary-daysinmonth-1900-03-01
-'   to matrix-daysinmonth-datein-propagated, called from VBA.
+'   to matrix-daysinmonth-datein-invalid-b, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -953,6 +989,10 @@ Private Sub CaseDaysInMonth01()
         Actual = TEST_DateCaseSupport.EncodeFilled(KPR_Dates_DaysInMonth(TEST_DateCaseSupport.F2(1, 100000, CVErr(2042))))
         TEST_Harness.AssertEqualText "capacity-propagated-100000", "fill2:1x100000[err:#N/A]", Actual
         TEST_Harness.RecordTextResult "capacity-propagated-100000", vbNullString, "days_in_month", vbNullString, vbNullString, Actual
+    'Legacy parity suite: facade/2x2 rectangle.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInMonth(TEST_DateCaseSupport.A2(2, 2, "2024-02-10", "2025-02-10", "2026-02-10", "2028-02-10")))
+        TEST_Harness.AssertEqualText "legacy-parity-facade-2x2-rectangle", "arr2:2x2[lng:29;lng:28;lng:28;lng:29]", Actual
+        TEST_Harness.RecordTextResult "legacy-parity-facade-2x2-rectangle", vbNullString, "days_in_month", vbNullString, vbNullString, Actual
     'DateIn: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInMonth(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "matrix-daysinmonth-datein-array-1x1", "lng:29", Actual
@@ -985,10 +1025,6 @@ Private Sub CaseDaysInMonth01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInMonth("2024-02-30"))
         TEST_Harness.AssertEqualText "matrix-daysinmonth-datein-invalid-b", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "matrix-daysinmonth-datein-invalid-b", vbNullString, "days_in_month", vbNullString, vbNullString, Actual
-    'DateIn: an incoming error propagates.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInMonth(CVErr(2042)))
-        TEST_Harness.AssertEqualText "matrix-daysinmonth-datein-propagated", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-daysinmonth-datein-propagated", vbNullString, "days_in_month", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -1012,7 +1048,7 @@ Private Sub CaseDaysInMonth02()
 '                             CASES OF DAYSINMONTH
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 9 worksheet-function cases of KPR_Dates_DaysInMonth, from matrix-daysinmonth-ok
+'   Replays 10 worksheet-function cases of KPR_Dates_DaysInMonth, from matrix-daysinmonth-datein-propagated
 '   to surface-daysinmonth-ok, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -1058,6 +1094,10 @@ Private Sub CaseDaysInMonth02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'DateIn: an incoming error propagates.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInMonth(CVErr(2042)))
+        TEST_Harness.AssertEqualText "matrix-daysinmonth-datein-propagated", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "matrix-daysinmonth-datein-propagated", vbNullString, "days_in_month", vbNullString, vbNullString, Actual
     'A valid scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInMonth(DateSerial(2024, 2, 10)))
         TEST_Harness.AssertEqualText "matrix-daysinmonth-ok", "lng:29", Actual
@@ -1117,8 +1157,8 @@ Private Sub CaseDaysInYear01()
 '                             CASES OF DAYSINYEAR
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_DaysInYear, from matrix-daysinyear-ok
-'   to year-daysinyear-domain-negative, called from VBA.
+'   Replays 30 worksheet-function cases of KPR_Dates_DaysInYear, from legacy-surface-yearin-10000
+'   to year-daysinyear-domain-0, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -1163,6 +1203,18 @@ Private Sub CaseDaysInYear01()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'Legacy surface suite: yearin/10000.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(10000&))
+        TEST_Harness.AssertEqualText "legacy-surface-yearin-10000", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-yearin-10000", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
+    'Legacy surface suite: yearin/DaysInYear 1900.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(1900&))
+        TEST_Harness.AssertEqualText "legacy-surface-yearin-daysinyear-1900", "lng:365", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-yearin-daysinyear-1900", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
+    'Legacy surface suite: yearin/DaysInYear 9999.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(9999&))
+        TEST_Harness.AssertEqualText "legacy-surface-yearin-daysinyear-9999", "lng:365", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-yearin-daysinyear-9999", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
     'A valid scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(2024#))
         TEST_Harness.AssertEqualText "matrix-daysinyear-ok", "lng:366", Actual
@@ -1271,18 +1323,6 @@ Private Sub CaseDaysInYear01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(0#))
         TEST_Harness.AssertEqualText "year-daysinyear-domain-0", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "year-daysinyear-domain-0", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
-    'Strict integer year, domain 1900-9999.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(10000#))
-        TEST_Harness.AssertEqualText "year-daysinyear-domain-10000", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "year-daysinyear-domain-10000", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
-    'Strict integer year, domain 1900-9999.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(1899#))
-        TEST_Harness.AssertEqualText "year-daysinyear-domain-1899", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "year-daysinyear-domain-1899", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
-    'Strict integer year, domain 1900-9999.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(-1#))
-        TEST_Harness.AssertEqualText "year-daysinyear-domain-negative", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "year-daysinyear-domain-negative", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -1306,7 +1346,7 @@ Private Sub CaseDaysInYear02()
 '                             CASES OF DAYSINYEAR
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 8 worksheet-function cases of KPR_Dates_DaysInYear, from year-daysinyear-error
+'   Replays 11 worksheet-function cases of KPR_Dates_DaysInYear, from year-daysinyear-domain-10000
 '   to year-daysinyear-vba-date, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -1352,6 +1392,18 @@ Private Sub CaseDaysInYear02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'Strict integer year, domain 1900-9999.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(10000#))
+        TEST_Harness.AssertEqualText "year-daysinyear-domain-10000", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "year-daysinyear-domain-10000", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
+    'Strict integer year, domain 1900-9999.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(1899#))
+        TEST_Harness.AssertEqualText "year-daysinyear-domain-1899", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "year-daysinyear-domain-1899", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
+    'Strict integer year, domain 1900-9999.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(-1#))
+        TEST_Harness.AssertEqualText "year-daysinyear-domain-negative", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "year-daysinyear-domain-negative", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
     'Strict integer year, domain 1900-9999.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DaysInYear(CVErr(2042)))
         TEST_Harness.AssertEqualText "year-daysinyear-error", "err:#N/A", Actual
@@ -1408,7 +1460,7 @@ Private Sub CaseBeginOfMonth01()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_BeginOfMonth, from boundary-beginofmonth-1900-03-01
-'   to matrix-beginofmonth-ok, called from VBA.
+'   to matrix-beginofmonth-datein-invalid-a, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -1533,6 +1585,18 @@ Private Sub CaseBeginOfMonth01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth(DateSerial(9999, 12, 31)))
         TEST_Harness.AssertEqualText "boundary-beginofmonth-9999-12-31", "date:9999-12-01", Actual
         TEST_Harness.RecordTextResult "boundary-beginofmonth-9999-12-31", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/min accepted.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth("1900-03-01"))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-min-accepted", "date:1900-03-01", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-min-accepted", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy host suite: host/guard passes DayOfWeek path.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth("2026-03-15"))
+        TEST_Harness.AssertEqualText "legacy-host-host-guard-passes-dayofweek-path", "date:2026-03-01", Actual
+        TEST_Harness.RecordTextResult "legacy-host-host-guard-passes-dayofweek-path", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy parity suite: facade/3x1 column.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth(TEST_DateCaseSupport.A2(3, 1, "2026-01-31", "2026-02-28", "2026-03-31")))
+        TEST_Harness.AssertEqualText "legacy-parity-facade-3x1-column", "arr2:3x1[date:2026-01-01;date:2026-02-01;date:2026-03-01]", Actual
+        TEST_Harness.RecordTextResult "legacy-parity-facade-3x1-column", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
     'DateIn: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "matrix-beginofmonth-datein-array-1x1", "date:2024-02-01", Actual
@@ -1561,18 +1625,6 @@ Private Sub CaseBeginOfMonth01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth(DateSerial(1900, 2, 28)))
         TEST_Harness.AssertEqualText "matrix-beginofmonth-datein-invalid-a", "err:#NUM!", Actual
         TEST_Harness.RecordTextResult "matrix-beginofmonth-datein-invalid-a", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'DateIn: a second invalid-domain value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth("2024-02-30"))
-        TEST_Harness.AssertEqualText "matrix-beginofmonth-datein-invalid-b", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofmonth-datein-invalid-b", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'DateIn: an incoming error propagates.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth(CVErr(2042)))
-        TEST_Harness.AssertEqualText "matrix-beginofmonth-datein-propagated", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofmonth-datein-propagated", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'A valid scalar call.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth(DateSerial(2024, 2, 10)))
-        TEST_Harness.AssertEqualText "matrix-beginofmonth-ok", "date:2024-02-01", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofmonth-ok", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -1596,7 +1648,7 @@ Private Sub CaseBeginOfMonth02()
 '                            CASES OF BEGINOFMONTH
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 8 worksheet-function cases of KPR_Dates_BeginOfMonth, from policy-beginofmonth-call-capacity-exceeded
+'   Replays 11 worksheet-function cases of KPR_Dates_BeginOfMonth, from matrix-beginofmonth-datein-invalid-b
 '   to surface-beginofmonth-ok, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -1642,6 +1694,18 @@ Private Sub CaseBeginOfMonth02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'DateIn: a second invalid-domain value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth("2024-02-30"))
+        TEST_Harness.AssertEqualText "matrix-beginofmonth-datein-invalid-b", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofmonth-datein-invalid-b", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'DateIn: an incoming error propagates.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth(CVErr(2042)))
+        TEST_Harness.AssertEqualText "matrix-beginofmonth-datein-propagated", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofmonth-datein-propagated", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'A valid scalar call.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth(DateSerial(2024, 2, 10)))
+        TEST_Harness.AssertEqualText "matrix-beginofmonth-ok", "date:2024-02-01", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofmonth-ok", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
     'The call: CAPACITY_EXCEEDED, a case the completeness policy requires.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfMonth(TEST_DateCaseSupport.F2(1, 100001, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "policy-beginofmonth-call-capacity-exceeded", "err:#NUM!", Actual
@@ -2076,7 +2140,7 @@ Private Sub CaseEndOfMonth03()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_EndOfMonth, from date-input-text-format-2-0-2-4-0-2-1-0-sp-0-0-col-0-0
-'   to matrix-endofmonth-datein-array-1x1, called from VBA.
+'   to legacy-parity-facade-1x1-wrapper, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -2237,10 +2301,10 @@ Private Sub CaseEndOfMonth03()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfMonth(CVErr(2042)))
         TEST_Harness.AssertEqualText "host-propagated-na-direct", "err:#N/A", Actual
         TEST_Harness.RecordTextResult "host-propagated-na-direct", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
-    'DateIn: a 1x1 array is the scalar call.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfMonth(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 10))))
-        TEST_Harness.AssertEqualText "matrix-endofmonth-datein-array-1x1", "date:2024-02-29", Actual
-        TEST_Harness.RecordTextResult "matrix-endofmonth-datein-array-1x1", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'Legacy parity suite: facade/1x1 wrapper.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfMonth(TEST_DateCaseSupport.A1("2026-03-15")))
+        TEST_Harness.AssertEqualText "legacy-parity-facade-1x1-wrapper", "date:2026-03-31", Actual
+        TEST_Harness.RecordTextResult "legacy-parity-facade-1x1-wrapper", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -2264,7 +2328,7 @@ Private Sub CaseEndOfMonth04()
 '                             CASES OF ENDOFMONTH
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 26 worksheet-function cases of KPR_Dates_EndOfMonth, from matrix-endofmonth-datein-array-column
+'   Replays 28 worksheet-function cases of KPR_Dates_EndOfMonth, from legacy-parity-facade-jagged
 '   to surface-endofmonth-ok, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -2310,6 +2374,14 @@ Private Sub CaseEndOfMonth04()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'Legacy parity suite: facade/jagged.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfMonth(TEST_DateCaseSupport.A1("2026-03-15", TEST_DateCaseSupport.A1("x"))))
+        TEST_Harness.AssertEqualText "legacy-parity-facade-jagged", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-parity-facade-jagged", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'DateIn: a 1x1 array is the scalar call.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfMonth(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 10))))
+        TEST_Harness.AssertEqualText "matrix-endofmonth-datein-array-1x1", "date:2024-02-29", Actual
+        TEST_Harness.RecordTextResult "matrix-endofmonth-datein-array-1x1", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
     'DateIn: a column keeps its orientation.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfMonth(TEST_DateCaseSupport.A2(3, 1, DateSerial(2024, 2, 10), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30))))
         TEST_Harness.AssertEqualText "matrix-endofmonth-datein-array-column", "arr2:3x1[date:2024-02-29;date:1900-03-31;date:2023-11-30]", Actual
@@ -2438,7 +2510,7 @@ Private Sub CaseBeginOfQuarter01()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_BeginOfQuarter, from boundary-beginofquarter-1900-03-01
-'   to matrix-beginofquarter-ok, called from VBA.
+'   to matrix-beginofquarter-datein-array-row, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -2563,6 +2635,30 @@ Private Sub CaseBeginOfQuarter01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(DateSerial(9999, 12, 31)))
         TEST_Harness.AssertEqualText "boundary-beginofquarter-9999-12-31", "date:9999-10-01", Actual
         TEST_Harness.RecordTextResult "boundary-beginofquarter-9999-12-31", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: floor/BeginOfQuarter 1900.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter("1900-03-01"))
+        TEST_Harness.AssertEqualText "legacy-surface-floor-beginofquarter-1900", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-floor-beginofquarter-1900", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: floor/BeginOfQuarter Q2 1900.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter("1900-04-01"))
+        TEST_Harness.AssertEqualText "legacy-surface-floor-beginofquarter-q2-1900", "date:1900-04-01", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-floor-beginofquarter-q2-1900", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: quarter/begin Q1.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter("2026-02-10"))
+        TEST_Harness.AssertEqualText "legacy-surface-quarter-begin-q1", "date:2026-01-01", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-quarter-begin-q1", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: quarter/begin Q2.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter("2026-05-31"))
+        TEST_Harness.AssertEqualText "legacy-surface-quarter-begin-q2", "date:2026-04-01", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-quarter-begin-q2", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: quarter/begin Q3.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter("2026-07-01"))
+        TEST_Harness.AssertEqualText "legacy-surface-quarter-begin-q3", "date:2026-07-01", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-quarter-begin-q3", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: quarter/begin Q4.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter("2026-12-31"))
+        TEST_Harness.AssertEqualText "legacy-surface-quarter-begin-q4", "date:2026-10-01", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-quarter-begin-q4", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
     'DateIn: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-array-1x1", "date:2024-01-01", Actual
@@ -2579,30 +2675,6 @@ Private Sub CaseBeginOfQuarter01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(2007))))
         TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-array-row", "arr2:1x3[date:2024-01-01;err:#NUM!;err:#DIV/0!]", Actual
         TEST_Harness.RecordTextResult "matrix-beginofquarter-datein-array-row", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'DateIn: the highest supported value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(DateSerial(9999, 12, 31)))
-        TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-edge-high", "date:9999-10-01", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofquarter-datein-edge-high", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'DateIn: the lowest supported value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(DateSerial(1900, 3, 1)))
-        TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-edge-low", "err:#NUM!", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofquarter-datein-edge-low", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'DateIn: an invalid-domain value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(DateSerial(1900, 2, 28)))
-        TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-invalid-a", "err:#NUM!", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofquarter-datein-invalid-a", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'DateIn: a second invalid-domain value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter("2024-02-30"))
-        TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-invalid-b", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofquarter-datein-invalid-b", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'DateIn: an incoming error propagates.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(CVErr(2042)))
-        TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-propagated", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofquarter-datein-propagated", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'A valid scalar call.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(DateSerial(2024, 2, 10)))
-        TEST_Harness.AssertEqualText "matrix-beginofquarter-ok", "date:2024-01-01", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofquarter-ok", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -2626,7 +2698,7 @@ Private Sub CaseBeginOfQuarter02()
 '                           CASES OF BEGINOFQUARTER
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 8 worksheet-function cases of KPR_Dates_BeginOfQuarter, from policy-beginofquarter-call-capacity-exceeded
+'   Replays 14 worksheet-function cases of KPR_Dates_BeginOfQuarter, from matrix-beginofquarter-datein-edge-high
 '   to surface-beginofquarter-ok, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -2672,6 +2744,30 @@ Private Sub CaseBeginOfQuarter02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'DateIn: the highest supported value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(DateSerial(9999, 12, 31)))
+        TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-edge-high", "date:9999-10-01", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofquarter-datein-edge-high", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'DateIn: the lowest supported value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(DateSerial(1900, 3, 1)))
+        TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-edge-low", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofquarter-datein-edge-low", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'DateIn: an invalid-domain value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(DateSerial(1900, 2, 28)))
+        TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-invalid-a", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofquarter-datein-invalid-a", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'DateIn: a second invalid-domain value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter("2024-02-30"))
+        TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-invalid-b", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofquarter-datein-invalid-b", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'DateIn: an incoming error propagates.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(CVErr(2042)))
+        TEST_Harness.AssertEqualText "matrix-beginofquarter-datein-propagated", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofquarter-datein-propagated", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'A valid scalar call.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(DateSerial(2024, 2, 10)))
+        TEST_Harness.AssertEqualText "matrix-beginofquarter-ok", "date:2024-01-01", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofquarter-ok", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
     'The call: CAPACITY_EXCEEDED, a case the completeness policy requires.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfQuarter(TEST_DateCaseSupport.F2(1, 100001, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "policy-beginofquarter-call-capacity-exceeded", "err:#NUM!", Actual
@@ -2728,7 +2824,7 @@ Private Sub CaseEndOfQuarter01()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_EndOfQuarter, from boundary-endofquarter-1900-03-01
-'   to matrix-endofquarter-ok, called from VBA.
+'   to matrix-endofquarter-datein-array-row, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -2853,6 +2949,30 @@ Private Sub CaseEndOfQuarter01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(DateSerial(9999, 12, 31)))
         TEST_Harness.AssertEqualText "boundary-endofquarter-9999-12-31", "date:9999-12-31", Actual
         TEST_Harness.RecordTextResult "boundary-endofquarter-9999-12-31", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: floor/EndOfQuarter 1900-03-01.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter("1900-03-01"))
+        TEST_Harness.AssertEqualText "legacy-surface-floor-endofquarter-1900-03-01", "date:1900-03-31", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-floor-endofquarter-1900-03-01", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: quarter/end at ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter("9999-11-11"))
+        TEST_Harness.AssertEqualText "legacy-surface-quarter-end-at-ceiling", "date:9999-12-31", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-quarter-end-at-ceiling", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: quarter/end Q1 leap.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter("2024-01-15"))
+        TEST_Harness.AssertEqualText "legacy-surface-quarter-end-q1-leap", "date:2024-03-31", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-quarter-end-q1-leap", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: quarter/end Q2.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter("2026-04-01"))
+        TEST_Harness.AssertEqualText "legacy-surface-quarter-end-q2", "date:2026-06-30", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-quarter-end-q2", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: quarter/end Q3.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter("2026-09-30"))
+        TEST_Harness.AssertEqualText "legacy-surface-quarter-end-q3", "date:2026-09-30", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-quarter-end-q3", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: quarter/end Q4 year edge.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter("2026-10-01"))
+        TEST_Harness.AssertEqualText "legacy-surface-quarter-end-q4-year-edge", "date:2026-12-31", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-quarter-end-q4-year-edge", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
     'DateIn: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "matrix-endofquarter-datein-array-1x1", "date:2024-03-31", Actual
@@ -2869,30 +2989,6 @@ Private Sub CaseEndOfQuarter01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(1900, 2, 28), CVErr(2007))))
         TEST_Harness.AssertEqualText "matrix-endofquarter-datein-array-row", "arr2:1x3[date:2024-03-31;err:#NUM!;err:#DIV/0!]", Actual
         TEST_Harness.RecordTextResult "matrix-endofquarter-datein-array-row", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
-    'DateIn: the highest supported value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(DateSerial(9999, 12, 31)))
-        TEST_Harness.AssertEqualText "matrix-endofquarter-datein-edge-high", "date:9999-12-31", Actual
-        TEST_Harness.RecordTextResult "matrix-endofquarter-datein-edge-high", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
-    'DateIn: the lowest supported value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(DateSerial(1900, 3, 1)))
-        TEST_Harness.AssertEqualText "matrix-endofquarter-datein-edge-low", "date:1900-03-31", Actual
-        TEST_Harness.RecordTextResult "matrix-endofquarter-datein-edge-low", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
-    'DateIn: an invalid-domain value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(DateSerial(1900, 2, 28)))
-        TEST_Harness.AssertEqualText "matrix-endofquarter-datein-invalid-a", "err:#NUM!", Actual
-        TEST_Harness.RecordTextResult "matrix-endofquarter-datein-invalid-a", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
-    'DateIn: a second invalid-domain value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter("2024-02-30"))
-        TEST_Harness.AssertEqualText "matrix-endofquarter-datein-invalid-b", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "matrix-endofquarter-datein-invalid-b", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
-    'DateIn: an incoming error propagates.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(CVErr(2042)))
-        TEST_Harness.AssertEqualText "matrix-endofquarter-datein-propagated", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-endofquarter-datein-propagated", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
-    'A valid scalar call.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(DateSerial(2024, 2, 10)))
-        TEST_Harness.AssertEqualText "matrix-endofquarter-ok", "date:2024-03-31", Actual
-        TEST_Harness.RecordTextResult "matrix-endofquarter-ok", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -2916,7 +3012,7 @@ Private Sub CaseEndOfQuarter02()
 '                            CASES OF ENDOFQUARTER
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 8 worksheet-function cases of KPR_Dates_EndOfQuarter, from policy-endofquarter-call-capacity-exceeded
+'   Replays 14 worksheet-function cases of KPR_Dates_EndOfQuarter, from matrix-endofquarter-datein-edge-high
 '   to surface-endofquarter-ok, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -2962,6 +3058,30 @@ Private Sub CaseEndOfQuarter02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'DateIn: the highest supported value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(DateSerial(9999, 12, 31)))
+        TEST_Harness.AssertEqualText "matrix-endofquarter-datein-edge-high", "date:9999-12-31", Actual
+        TEST_Harness.RecordTextResult "matrix-endofquarter-datein-edge-high", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'DateIn: the lowest supported value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(DateSerial(1900, 3, 1)))
+        TEST_Harness.AssertEqualText "matrix-endofquarter-datein-edge-low", "date:1900-03-31", Actual
+        TEST_Harness.RecordTextResult "matrix-endofquarter-datein-edge-low", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'DateIn: an invalid-domain value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(DateSerial(1900, 2, 28)))
+        TEST_Harness.AssertEqualText "matrix-endofquarter-datein-invalid-a", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "matrix-endofquarter-datein-invalid-a", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'DateIn: a second invalid-domain value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter("2024-02-30"))
+        TEST_Harness.AssertEqualText "matrix-endofquarter-datein-invalid-b", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "matrix-endofquarter-datein-invalid-b", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'DateIn: an incoming error propagates.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(CVErr(2042)))
+        TEST_Harness.AssertEqualText "matrix-endofquarter-datein-propagated", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "matrix-endofquarter-datein-propagated", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'A valid scalar call.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(DateSerial(2024, 2, 10)))
+        TEST_Harness.AssertEqualText "matrix-endofquarter-ok", "date:2024-03-31", Actual
+        TEST_Harness.RecordTextResult "matrix-endofquarter-ok", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
     'The call: CAPACITY_EXCEEDED, a case the completeness policy requires.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfQuarter(TEST_DateCaseSupport.F2(1, 100001, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "policy-endofquarter-call-capacity-exceeded", "err:#NUM!", Actual
@@ -3018,7 +3138,7 @@ Private Sub CaseBeginOfYear01()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_BeginOfYear, from boundary-beginofyear-1900-03-01
-'   to matrix-beginofyear-ok, called from VBA.
+'   to matrix-beginofyear-datein-edge-high, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -3143,6 +3263,26 @@ Private Sub CaseBeginOfYear01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(DateSerial(9999, 12, 31)))
         TEST_Harness.AssertEqualText "boundary-beginofyear-9999-12-31", "date:9999-01-01", Actual
         TEST_Harness.RecordTextResult "boundary-beginofyear-9999-12-31", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: floor/BeginOfYear 1900.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear("1900-03-01"))
+        TEST_Harness.AssertEqualText "legacy-surface-floor-beginofyear-1900", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-floor-beginofyear-1900", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: floor/BeginOfYear 1900-12-31.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear("1900-12-31"))
+        TEST_Harness.AssertEqualText "legacy-surface-floor-beginofyear-1900-12-31", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-floor-beginofyear-1900-12-31", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: year/begin.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear("2026-07-04"))
+        TEST_Harness.AssertEqualText "legacy-surface-year-begin", "date:2026-01-01", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-year-begin", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: year/begin at floor year+1.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear("1901-06-15"))
+        TEST_Harness.AssertEqualText "legacy-surface-year-begin-at-floor-year-1", "date:1901-01-01", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-year-begin-at-floor-year-1", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: year/begin leap.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear("2024-12-31"))
+        TEST_Harness.AssertEqualText "legacy-surface-year-begin-leap", "date:2024-01-01", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-year-begin-leap", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
     'DateIn: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "matrix-beginofyear-datein-array-1x1", "date:2024-01-01", Actual
@@ -3163,26 +3303,6 @@ Private Sub CaseBeginOfYear01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(DateSerial(9999, 12, 31)))
         TEST_Harness.AssertEqualText "matrix-beginofyear-datein-edge-high", "date:9999-01-01", Actual
         TEST_Harness.RecordTextResult "matrix-beginofyear-datein-edge-high", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'DateIn: the lowest supported value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(DateSerial(1900, 3, 1)))
-        TEST_Harness.AssertEqualText "matrix-beginofyear-datein-edge-low", "err:#NUM!", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofyear-datein-edge-low", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'DateIn: an invalid-domain value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(DateSerial(1900, 2, 28)))
-        TEST_Harness.AssertEqualText "matrix-beginofyear-datein-invalid-a", "err:#NUM!", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofyear-datein-invalid-a", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'DateIn: a second invalid-domain value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear("2024-02-30"))
-        TEST_Harness.AssertEqualText "matrix-beginofyear-datein-invalid-b", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofyear-datein-invalid-b", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'DateIn: an incoming error propagates.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(CVErr(2042)))
-        TEST_Harness.AssertEqualText "matrix-beginofyear-datein-propagated", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofyear-datein-propagated", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
-    'A valid scalar call.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(DateSerial(2024, 2, 10)))
-        TEST_Harness.AssertEqualText "matrix-beginofyear-ok", "date:2024-01-01", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofyear-ok", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -3206,7 +3326,7 @@ Private Sub CaseBeginOfYear02()
 '                             CASES OF BEGINOFYEAR
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 8 worksheet-function cases of KPR_Dates_BeginOfYear, from policy-beginofyear-call-capacity-exceeded
+'   Replays 13 worksheet-function cases of KPR_Dates_BeginOfYear, from matrix-beginofyear-datein-edge-low
 '   to surface-beginofyear-ok, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -3252,6 +3372,26 @@ Private Sub CaseBeginOfYear02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'DateIn: the lowest supported value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(DateSerial(1900, 3, 1)))
+        TEST_Harness.AssertEqualText "matrix-beginofyear-datein-edge-low", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofyear-datein-edge-low", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'DateIn: an invalid-domain value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(DateSerial(1900, 2, 28)))
+        TEST_Harness.AssertEqualText "matrix-beginofyear-datein-invalid-a", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofyear-datein-invalid-a", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'DateIn: a second invalid-domain value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear("2024-02-30"))
+        TEST_Harness.AssertEqualText "matrix-beginofyear-datein-invalid-b", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofyear-datein-invalid-b", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'DateIn: an incoming error propagates.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(CVErr(2042)))
+        TEST_Harness.AssertEqualText "matrix-beginofyear-datein-propagated", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofyear-datein-propagated", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+    'A valid scalar call.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(DateSerial(2024, 2, 10)))
+        TEST_Harness.AssertEqualText "matrix-beginofyear-ok", "date:2024-01-01", Actual
+        TEST_Harness.RecordTextResult "matrix-beginofyear-ok", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
     'The call: CAPACITY_EXCEEDED, a case the completeness policy requires.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_BeginOfYear(TEST_DateCaseSupport.F2(1, 100001, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "policy-beginofyear-call-capacity-exceeded", "err:#NUM!", Actual
@@ -3308,7 +3448,7 @@ Private Sub CaseEndOfYear01()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_EndOfYear, from boundary-endofyear-1900-03-01
-'   to matrix-endofyear-ok, called from VBA.
+'   to matrix-endofyear-datein-invalid-a, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -3433,6 +3573,18 @@ Private Sub CaseEndOfYear01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear(DateSerial(9999, 12, 31)))
         TEST_Harness.AssertEqualText "boundary-endofyear-9999-12-31", "date:9999-12-31", Actual
         TEST_Harness.RecordTextResult "boundary-endofyear-9999-12-31", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: floor/EndOfYear 1900.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear("1900-03-01"))
+        TEST_Harness.AssertEqualText "legacy-surface-floor-endofyear-1900", "date:1900-12-31", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-floor-endofyear-1900", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: year/end.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear("2026-01-01"))
+        TEST_Harness.AssertEqualText "legacy-surface-year-end", "date:2026-12-31", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-year-end", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: year/end at ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear("9999-01-01"))
+        TEST_Harness.AssertEqualText "legacy-surface-year-end-at-ceiling", "date:9999-12-31", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-year-end-at-ceiling", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
     'DateIn: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "matrix-endofyear-datein-array-1x1", "date:2024-12-31", Actual
@@ -3461,18 +3613,6 @@ Private Sub CaseEndOfYear01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear(DateSerial(1900, 2, 28)))
         TEST_Harness.AssertEqualText "matrix-endofyear-datein-invalid-a", "err:#NUM!", Actual
         TEST_Harness.RecordTextResult "matrix-endofyear-datein-invalid-a", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
-    'DateIn: a second invalid-domain value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear("2024-02-30"))
-        TEST_Harness.AssertEqualText "matrix-endofyear-datein-invalid-b", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "matrix-endofyear-datein-invalid-b", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
-    'DateIn: an incoming error propagates.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear(CVErr(2042)))
-        TEST_Harness.AssertEqualText "matrix-endofyear-datein-propagated", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-endofyear-datein-propagated", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
-    'A valid scalar call.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear(DateSerial(2024, 2, 10)))
-        TEST_Harness.AssertEqualText "matrix-endofyear-ok", "date:2024-12-31", Actual
-        TEST_Harness.RecordTextResult "matrix-endofyear-ok", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -3496,7 +3636,7 @@ Private Sub CaseEndOfYear02()
 '                              CASES OF ENDOFYEAR
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 8 worksheet-function cases of KPR_Dates_EndOfYear, from policy-endofyear-call-capacity-exceeded
+'   Replays 11 worksheet-function cases of KPR_Dates_EndOfYear, from matrix-endofyear-datein-invalid-b
 '   to surface-endofyear-ok, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -3542,6 +3682,18 @@ Private Sub CaseEndOfYear02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'DateIn: a second invalid-domain value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear("2024-02-30"))
+        TEST_Harness.AssertEqualText "matrix-endofyear-datein-invalid-b", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "matrix-endofyear-datein-invalid-b", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'DateIn: an incoming error propagates.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear(CVErr(2042)))
+        TEST_Harness.AssertEqualText "matrix-endofyear-datein-propagated", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "matrix-endofyear-datein-propagated", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+    'A valid scalar call.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear(DateSerial(2024, 2, 10)))
+        TEST_Harness.AssertEqualText "matrix-endofyear-ok", "date:2024-12-31", Actual
+        TEST_Harness.RecordTextResult "matrix-endofyear-ok", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
     'The call: CAPACITY_EXCEEDED, a case the completeness policy requires.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_EndOfYear(TEST_DateCaseSupport.F2(1, 100001, DateSerial(2024, 2, 10))))
         TEST_Harness.AssertEqualText "policy-endofyear-call-capacity-exceeded", "err:#NUM!", Actual
@@ -4467,8 +4619,8 @@ Private Sub CaseIsLeapYear01()
 '                             CASES OF ISLEAPYEAR
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_IsLeapYear, from matrix-isleapyear-ok
-'   to year-isleapyear-domain-1899, called from VBA.
+'   Replays 30 worksheet-function cases of KPR_Dates_IsLeapYear, from legacy-surface-yearin-1899
+'   to year-isleapyear-blank, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -4513,6 +4665,22 @@ Private Sub CaseIsLeapYear01()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'Legacy surface suite: yearin/1899.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(1899&))
+        TEST_Harness.AssertEqualText "legacy-surface-yearin-1899", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-yearin-1899", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
+    'Legacy surface suite: yearin/IsLeapYear 1900 century.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(1900&))
+        TEST_Harness.AssertEqualText "legacy-surface-yearin-isleapyear-1900-century", "bool:FALSE", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-yearin-isleapyear-1900-century", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
+    'Legacy surface suite: yearin/IsLeapYear 2000 century.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(2000&))
+        TEST_Harness.AssertEqualText "legacy-surface-yearin-isleapyear-2000-century", "bool:TRUE", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-yearin-isleapyear-2000-century", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
+    'Legacy surface suite: yearin/IsLeapYear 2026.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(2026&))
+        TEST_Harness.AssertEqualText "legacy-surface-yearin-isleapyear-2026", "bool:FALSE", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-yearin-isleapyear-2026", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
     'A valid scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(2024#))
         TEST_Harness.AssertEqualText "matrix-isleapyear-ok", "bool:TRUE", Actual
@@ -4617,22 +4785,6 @@ Private Sub CaseIsLeapYear01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(Empty))
         TEST_Harness.AssertEqualText "year-isleapyear-blank", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "year-isleapyear-blank", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
-    'Strict integer year, domain 1900-9999.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(True))
-        TEST_Harness.AssertEqualText "year-isleapyear-bool", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "year-isleapyear-bool", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
-    'Strict integer year, domain 1900-9999.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(0#))
-        TEST_Harness.AssertEqualText "year-isleapyear-domain-0", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "year-isleapyear-domain-0", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
-    'Strict integer year, domain 1900-9999.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(10000#))
-        TEST_Harness.AssertEqualText "year-isleapyear-domain-10000", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "year-isleapyear-domain-10000", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
-    'Strict integer year, domain 1900-9999.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(1899#))
-        TEST_Harness.AssertEqualText "year-isleapyear-domain-1899", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "year-isleapyear-domain-1899", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -4656,7 +4808,7 @@ Private Sub CaseIsLeapYear02()
 '                             CASES OF ISLEAPYEAR
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 9 worksheet-function cases of KPR_Dates_IsLeapYear, from year-isleapyear-domain-negative
+'   Replays 13 worksheet-function cases of KPR_Dates_IsLeapYear, from year-isleapyear-bool
 '   to year-isleapyear-vba-date, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -4702,6 +4854,22 @@ Private Sub CaseIsLeapYear02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'Strict integer year, domain 1900-9999.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(True))
+        TEST_Harness.AssertEqualText "year-isleapyear-bool", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "year-isleapyear-bool", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
+    'Strict integer year, domain 1900-9999.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(0#))
+        TEST_Harness.AssertEqualText "year-isleapyear-domain-0", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "year-isleapyear-domain-0", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
+    'Strict integer year, domain 1900-9999.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(10000#))
+        TEST_Harness.AssertEqualText "year-isleapyear-domain-10000", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "year-isleapyear-domain-10000", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
+    'Strict integer year, domain 1900-9999.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(1899#))
+        TEST_Harness.AssertEqualText "year-isleapyear-domain-1899", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "year-isleapyear-domain-1899", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
     'Strict integer year, domain 1900-9999.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_IsLeapYear(-1#))
         TEST_Harness.AssertEqualText "year-isleapyear-domain-negative", "err:#VALUE!", Actual
@@ -4951,7 +5119,7 @@ Private Sub CaseAddDays02()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_AddDays, from integer-input-residue-below
-'   to policy-adddays-call-shape-unsupported, called from VBA.
+'   to matrix-adddays-datein-edge-high, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -5036,6 +5204,66 @@ Private Sub CaseAddDays02()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays(DateSerial(2024, 1, 31), 0#))
         TEST_Harness.AssertEqualText "integer-input-zero", "date:2024-01-31", Actual
         TEST_Harness.RecordTextResult "integer-input-zero", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy parity suite: facade/3x1 vs 1x3 mismatch.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays(TEST_DateCaseSupport.A2(3, 1, "2026-01-31", "2026-02-28", "2026-03-31"), TEST_DateCaseSupport.A1(1&, 2&, 3&)))
+        TEST_Harness.AssertEqualText "legacy-parity-facade-3x1-vs-1x3-mismatch", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-parity-facade-3x1-vs-1x3-mismatch", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy parity suite: facade/scalar expands.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays(TEST_DateCaseSupport.A2(3, 1, "2026-01-31", "2026-02-28", "2026-03-31"), 1&))
+        TEST_Harness.AssertEqualText "legacy-parity-facade-scalar-expands", "arr2:3x1[date:2026-02-01;date:2026-03-01;date:2026-04-01]", Actual
+        TEST_Harness.RecordTextResult "legacy-parity-facade-scalar-expands", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy parity suite: order/first argument DIV0 beats second NA.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays(TEST_DateCaseSupport.A1("2026-03-15", CVErr(2007)), TEST_DateCaseSupport.A1(1&, CVErr(2042))))
+        TEST_Harness.AssertEqualText "legacy-parity-order-first-argument-div0-beats-second-na", "arr2:1x2[date:2026-03-16;err:#DIV/0!]", Actual
+        TEST_Harness.RecordTextResult "legacy-parity-order-first-argument-div0-beats-second-na", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy parity suite: order/first argument NA beats second DIV0.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays(TEST_DateCaseSupport.A1("2026-03-15", CVErr(2042)), TEST_DateCaseSupport.A1(1&, CVErr(2007))))
+        TEST_Harness.AssertEqualText "legacy-parity-order-first-argument-na-beats-second-div0", "arr2:1x2[date:2026-03-16;err:#N/A]", Actual
+        TEST_Harness.RecordTextResult "legacy-parity-order-first-argument-na-beats-second-div0", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: adddays/below floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("1900-03-01", -1&))
+        TEST_Harness.AssertEqualText "legacy-surface-adddays-below-floor", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-adddays-below-floor", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: adddays/fractional.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("2026-03-15", 1.5#))
+        TEST_Harness.AssertEqualText "legacy-surface-adddays-fractional", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-adddays-fractional", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: adddays/leap crossing.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("2024-02-28", 1&))
+        TEST_Harness.AssertEqualText "legacy-surface-adddays-leap-crossing", "date:2024-02-29", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-adddays-leap-crossing", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: adddays/max shift in window.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("1900-03-01", 2958404&))
+        TEST_Harness.AssertEqualText "legacy-surface-adddays-max-shift-in-window", "date:9999-12-31", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-adddays-max-shift-in-window", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: adddays/negative.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("2026-03-15", -15&))
+        TEST_Harness.AssertEqualText "legacy-surface-adddays-negative", "date:2026-02-28", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-adddays-negative", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: adddays/past ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("9999-12-31", 1&))
+        TEST_Harness.AssertEqualText "legacy-surface-adddays-past-ceiling", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-adddays-past-ceiling", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: adddays/positive.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("2026-03-15", 10&))
+        TEST_Harness.AssertEqualText "legacy-surface-adddays-positive", "date:2026-03-25", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-adddays-positive", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: adddays/propagates.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("2026-03-15", CVErr(2042)))
+        TEST_Harness.AssertEqualText "legacy-surface-adddays-propagates", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-adddays-propagates", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: adddays/year crossing.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("2026-12-31", 1&))
+        TEST_Harness.AssertEqualText "legacy-surface-adddays-year-crossing", "date:2027-01-01", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-adddays-year-crossing", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: adddays/zero.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("2026-03-15", 0&))
+        TEST_Harness.AssertEqualText "legacy-surface-adddays-zero", "date:2026-03-15", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-adddays-zero", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: order/count after good date.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("2026-03-15", "bad"))
+        TEST_Harness.AssertEqualText "legacy-surface-order-count-after-good-date", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-order-count-after-good-date", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
     'DateIn: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 10)), 20#))
         TEST_Harness.AssertEqualText "matrix-adddays-datein-array-1x1", "date:2024-03-01", Actual
@@ -5056,6 +5284,75 @@ Private Sub CaseAddDays02()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays(DateSerial(9999, 12, 31), 20#))
         TEST_Harness.AssertEqualText "matrix-adddays-datein-edge-high", "err:#NUM!", Actual
         TEST_Harness.RecordTextResult "matrix-adddays-datein-edge-high", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseAddDays03()
+
+'
+'------------------------------------------------------------------------------
+'                               CASES OF ADDDAYS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_AddDays, from matrix-adddays-datein-edge-low
+'   to shape-broadcast-second, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_AddDays, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "add-days-03"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'DateIn: the lowest supported value.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays(DateSerial(1900, 3, 1), 20#))
         TEST_Harness.AssertEqualText "matrix-adddays-datein-edge-low", "date:1900-03-21", Actual
@@ -5116,75 +5413,6 @@ Private Sub CaseAddDays02()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays(TEST_DateCaseSupport.A1(), 10&))
         TEST_Harness.AssertEqualText "policy-adddays-call-shape-unsupported", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "policy-adddays-call-shape-unsupported", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CaseAddDays03()
-
-'
-'------------------------------------------------------------------------------
-'                               CASES OF ADDDAYS
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 25 worksheet-function cases of KPR_Dates_AddDays, from policy-adddays-datein-date-text-locale
-'   to surface-adddays-ok, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_AddDays, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "add-days-03"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     'DateIn: DATE_TEXT_LOCALE, a case the completeness policy requires.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays("10/02/2024", 10&))
         TEST_Harness.AssertEqualText "policy-adddays-datein-date-text-locale", "err:#VALUE!", Actual
@@ -5245,6 +5473,75 @@ Private Sub CaseAddDays03()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays(DateSerial(2024, 1, 31), TEST_DateCaseSupport.A2(1, 3, 1#, 2#, 3#)))
         TEST_Harness.AssertEqualText "shape-broadcast-second", "arr2:1x3[date:2024-02-01;date:2024-02-02;date:2024-02-03]", Actual
         TEST_Harness.RecordTextResult "shape-broadcast-second", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseAddDays04()
+
+'
+'------------------------------------------------------------------------------
+'                               CASES OF ADDDAYS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 10 worksheet-function cases of KPR_Dates_AddDays, from shape-elementwise
+'   to surface-adddays-ok, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_AddDays, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "add-days-04"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Identical shapes evaluate element for element.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddDays(TEST_DateCaseSupport.A2(2, 2, DateSerial(2024, 1, 31), DateSerial(2024, 1, 31), DateSerial(2024, 1, 31), DateSerial(2024, 1, 31)), TEST_DateCaseSupport.A2(2, 2, 1#, -1#, 0#, 29#)))
         TEST_Harness.AssertEqualText "shape-elementwise", "arr2:2x2[date:2024-02-01;date:2024-01-30;date:2024-01-31;date:2024-02-29]", Actual
@@ -5309,7 +5606,7 @@ Private Sub CaseAddWeeks01()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_AddWeeks, from arithmetic-addweeks-1900-03-07-minus1
-'   to policy-addweeks-datein-date-text-locale, called from VBA.
+'   to matrix-addweeks-nweeks-propagated, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -5382,6 +5679,26 @@ Private Sub CaseAddWeeks01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(DateSerial(9999, 12, 25), 1#))
         TEST_Harness.AssertEqualText "arithmetic-addweeks-9999-12-25-1", "err:#NUM!", Actual
         TEST_Harness.RecordTextResult "arithmetic-addweeks-9999-12-25-1", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/first argument wins.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks("31/12/2026", CVErr(2042)))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-first-argument-wins", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-first-argument-wins", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/fractional weeks.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(DateSerial(2026, 3, 15), 2.5#))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-fractional-weeks", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-fractional-weeks", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/out of long weeks.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(DateSerial(2026, 3, 15), 2147483648#))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-out-of-long-weeks", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-out-of-long-weeks", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy boundary suite: facade/propagate in integer slot.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(DateSerial(2026, 3, 15), CVErr(2042)))
+        TEST_Harness.AssertEqualText "legacy-boundary-facade-propagate-in-integer-slot", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "legacy-boundary-facade-propagate-in-integer-slot", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy host suite: host/guard passes arithmetic path.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks("2026-03-15", 1&))
+        TEST_Harness.AssertEqualText "legacy-host-host-guard-passes-arithmetic-path", "date:2026-03-22", Actual
+        TEST_Harness.RecordTextResult "legacy-host-host-guard-passes-arithmetic-path", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
     'DateIn: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 10)), 3#))
         TEST_Harness.AssertEqualText "matrix-addweeks-datein-array-1x1", "date:2024-03-02", Actual
@@ -5454,26 +5771,6 @@ Private Sub CaseAddWeeks01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(DateSerial(2024, 2, 10), CVErr(2042)))
         TEST_Harness.AssertEqualText "matrix-addweeks-nweeks-propagated", "err:#N/A", Actual
         TEST_Harness.RecordTextResult "matrix-addweeks-nweeks-propagated", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-    'A valid scalar call.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(DateSerial(2024, 2, 10), 3#))
-        TEST_Harness.AssertEqualText "matrix-addweeks-ok", "date:2024-03-02", Actual
-        TEST_Harness.RecordTextResult "matrix-addweeks-ok", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-    'The call: CAPACITY_EXCEEDED, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(TEST_DateCaseSupport.F2(1, 100001, DateSerial(2024, 2, 10)), 2&))
-        TEST_Harness.AssertEqualText "policy-addweeks-call-capacity-exceeded", "err:#NUM!", Actual
-        TEST_Harness.RecordTextResult "policy-addweeks-call-capacity-exceeded", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-    'The call: SHAPE_MISMATCH, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(TEST_DateCaseSupport.A2(1, 2, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)), TEST_DateCaseSupport.A2(2, 1, 2&, 2&)))
-        TEST_Harness.AssertEqualText "policy-addweeks-call-shape-mismatch", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "policy-addweeks-call-shape-mismatch", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-    'The call: SHAPE_UNSUPPORTED, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(TEST_DateCaseSupport.A1(), 2&))
-        TEST_Harness.AssertEqualText "policy-addweeks-call-shape-unsupported", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "policy-addweeks-call-shape-unsupported", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-    'DateIn: DATE_TEXT_LOCALE, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks("10/02/2024", 2&))
-        TEST_Harness.AssertEqualText "policy-addweeks-datein-date-text-locale", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "policy-addweeks-datein-date-text-locale", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -5497,7 +5794,7 @@ Private Sub CaseAddWeeks02()
 '                              CASES OF ADDWEEKS
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 7 worksheet-function cases of KPR_Dates_AddWeeks, from policy-addweeks-datein-date-text-numeric
+'   Replays 12 worksheet-function cases of KPR_Dates_AddWeeks, from matrix-addweeks-ok
 '   to surface-addweeks-ok, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -5543,6 +5840,26 @@ Private Sub CaseAddWeeks02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'A valid scalar call.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(DateSerial(2024, 2, 10), 3#))
+        TEST_Harness.AssertEqualText "matrix-addweeks-ok", "date:2024-03-02", Actual
+        TEST_Harness.RecordTextResult "matrix-addweeks-ok", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'The call: CAPACITY_EXCEEDED, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(TEST_DateCaseSupport.F2(1, 100001, DateSerial(2024, 2, 10)), 2&))
+        TEST_Harness.AssertEqualText "policy-addweeks-call-capacity-exceeded", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "policy-addweeks-call-capacity-exceeded", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'The call: SHAPE_MISMATCH, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(TEST_DateCaseSupport.A2(1, 2, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)), TEST_DateCaseSupport.A2(2, 1, 2&, 2&)))
+        TEST_Harness.AssertEqualText "policy-addweeks-call-shape-mismatch", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "policy-addweeks-call-shape-mismatch", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'The call: SHAPE_UNSUPPORTED, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks(TEST_DateCaseSupport.A1(), 2&))
+        TEST_Harness.AssertEqualText "policy-addweeks-call-shape-unsupported", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "policy-addweeks-call-shape-unsupported", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'DateIn: DATE_TEXT_LOCALE, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks("10/02/2024", 2&))
+        TEST_Harness.AssertEqualText "policy-addweeks-datein-date-text-locale", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "policy-addweeks-datein-date-text-locale", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
     'DateIn: DATE_TEXT_NUMERIC, a case the completeness policy requires.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddWeeks("45332", 2&))
         TEST_Harness.AssertEqualText "policy-addweeks-datein-date-text-numeric", "err:#VALUE!", Actual
@@ -5784,7 +6101,7 @@ Private Sub CaseAddMonths02()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_AddMonths, from control-keepeom-text
-'   to policy-addmonths-nmonths-input-blank-required, called from VBA.
+'   to policy-addmonths-datein-date-text-numeric, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -5841,6 +6158,18 @@ Private Sub CaseAddMonths02()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths("bad", 1#, 1#))
         TEST_Harness.AssertEqualText "control-precedence-control-before-element", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "control-precedence-control-before-element", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: clip/AddMonths Apr30+1 clip.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths("2026-04-30", 1&))
+        TEST_Harness.AssertEqualText "legacy-surface-clip-addmonths-apr30-1-clip", "date:2026-05-30", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-clip-addmonths-apr30-1-clip", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: clip/AddMonths Apr30+1 keepEOM.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths("2026-04-30", 1&, True))
+        TEST_Harness.AssertEqualText "legacy-surface-clip-addmonths-apr30-1-keepeom", "date:2026-05-31", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-clip-addmonths-apr30-1-keepeom", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: clip/AddMonths Jan31+1.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths("2026-01-31", 1&))
+        TEST_Harness.AssertEqualText "legacy-surface-clip-addmonths-jan31-1", "date:2026-02-28", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-clip-addmonths-jan31-1", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
     'DateIn: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 1, 31)), 1#))
         TEST_Harness.AssertEqualText "matrix-addmonths-datein-array-1x1", "date:2024-02-29", Actual
@@ -5937,18 +6266,6 @@ Private Sub CaseAddMonths02()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths("45332", 1&))
         TEST_Harness.AssertEqualText "policy-addmonths-datein-date-text-numeric", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "policy-addmonths-datein-date-text-numeric", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-    'DateIn: DATE_TYPE_REJECTED, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths(True, 1&))
-        TEST_Harness.AssertEqualText "policy-addmonths-datein-date-type-rejected", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "policy-addmonths-datein-date-type-rejected", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-    'DateIn: INPUT_BLANK_REQUIRED, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths(Empty, 1&))
-        TEST_Harness.AssertEqualText "policy-addmonths-datein-input-blank-required", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "policy-addmonths-datein-input-blank-required", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-    'nMonths: INPUT_BLANK_REQUIRED, a case the completeness policy requires.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths(DateSerial(2024, 1, 31), Empty))
-        TEST_Harness.AssertEqualText "policy-addmonths-nmonths-input-blank-required", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "policy-addmonths-nmonths-input-blank-required", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -5972,7 +6289,7 @@ Private Sub CaseAddMonths03()
 '                              CASES OF ADDMONTHS
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 6 worksheet-function cases of KPR_Dates_AddMonths, from propagation-control-error-call
+'   Replays 9 worksheet-function cases of KPR_Dates_AddMonths, from policy-addmonths-datein-date-type-rejected
 '   to surface-addmonths-ok, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -6018,6 +6335,18 @@ Private Sub CaseAddMonths03()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'DateIn: DATE_TYPE_REJECTED, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths(True, 1&))
+        TEST_Harness.AssertEqualText "policy-addmonths-datein-date-type-rejected", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "policy-addmonths-datein-date-type-rejected", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'DateIn: INPUT_BLANK_REQUIRED, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths(Empty, 1&))
+        TEST_Harness.AssertEqualText "policy-addmonths-datein-input-blank-required", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "policy-addmonths-datein-input-blank-required", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'nMonths: INPUT_BLANK_REQUIRED, a case the completeness policy requires.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths(DateSerial(2024, 1, 31), Empty))
+        TEST_Harness.AssertEqualText "policy-addmonths-nmonths-input-blank-required", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "policy-addmonths-nmonths-input-blank-required", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
     'An error control propagates at call level before elements.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddMonths(CVErr(2042), 1#, CVErr(2029)))
         TEST_Harness.AssertEqualText "propagation-control-error-call", "err:#NAME?", Actual
@@ -6066,7 +6395,7 @@ Private Sub CaseAddYears01()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_AddYears, from arithmetic-addyears-1900-03-01-minus1
-'   to matrix-addyears-ok, called from VBA.
+'   to matrix-addyears-nyears-invalid-a, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -6155,6 +6484,18 @@ Private Sub CaseAddYears01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears(DateSerial(9999, 1, 1), 1#))
         TEST_Harness.AssertEqualText "arithmetic-addyears-9999-01-01-1", "err:#NUM!", Actual
         TEST_Harness.RecordTextResult "arithmetic-addyears-9999-01-01-1", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: clip/AddYears Feb29+1.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears("2024-02-29", 1&))
+        TEST_Harness.AssertEqualText "legacy-surface-clip-addyears-feb29-1", "date:2025-02-28", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-clip-addyears-feb29-1", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: clip/AddYears Feb29+4.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears("2024-02-29", 4&))
+        TEST_Harness.AssertEqualText "legacy-surface-clip-addyears-feb29-4", "date:2028-02-29", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-clip-addyears-feb29-4", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: clip/AddYears overflow.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears("2026-03-15", 8000&))
+        TEST_Harness.AssertEqualText "legacy-surface-clip-addyears-overflow", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-clip-addyears-overflow", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
     'DateIn: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears(TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 2, 29)), 1#))
         TEST_Harness.AssertEqualText "matrix-addyears-datein-array-1x1", "date:2025-02-28", Actual
@@ -6219,18 +6560,6 @@ Private Sub CaseAddYears01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears(DateSerial(2024, 2, 29), 2.5#))
         TEST_Harness.AssertEqualText "matrix-addyears-nyears-invalid-a", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "matrix-addyears-nyears-invalid-a", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-    'NYears: a second invalid-domain value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears(DateSerial(2024, 2, 29), 1E+20))
-        TEST_Harness.AssertEqualText "matrix-addyears-nyears-invalid-b", "err:#NUM!", Actual
-        TEST_Harness.RecordTextResult "matrix-addyears-nyears-invalid-b", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-    'NYears: an incoming error propagates.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears(DateSerial(2024, 2, 29), CVErr(2042)))
-        TEST_Harness.AssertEqualText "matrix-addyears-nyears-propagated", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-addyears-nyears-propagated", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
-    'A valid scalar call.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears(DateSerial(2024, 2, 29), 1#))
-        TEST_Harness.AssertEqualText "matrix-addyears-ok", "date:2025-02-28", Actual
-        TEST_Harness.RecordTextResult "matrix-addyears-ok", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -6254,7 +6583,7 @@ Private Sub CaseAddYears02()
 '                              CASES OF ADDYEARS
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 14 worksheet-function cases of KPR_Dates_AddYears, from policy-addyears-call-capacity-exceeded
+'   Replays 17 worksheet-function cases of KPR_Dates_AddYears, from matrix-addyears-nyears-invalid-b
 '   to surface-addyears-ok, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -6300,6 +6629,18 @@ Private Sub CaseAddYears02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'NYears: a second invalid-domain value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears(DateSerial(2024, 2, 29), 1E+20))
+        TEST_Harness.AssertEqualText "matrix-addyears-nyears-invalid-b", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "matrix-addyears-nyears-invalid-b", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'NYears: an incoming error propagates.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears(DateSerial(2024, 2, 29), CVErr(2042)))
+        TEST_Harness.AssertEqualText "matrix-addyears-nyears-propagated", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "matrix-addyears-nyears-propagated", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+    'A valid scalar call.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears(DateSerial(2024, 2, 29), 1#))
+        TEST_Harness.AssertEqualText "matrix-addyears-ok", "date:2025-02-28", Actual
+        TEST_Harness.RecordTextResult "matrix-addyears-ok", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
     'The call: CAPACITY_EXCEEDED, a case the completeness policy requires.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_AddYears(TEST_DateCaseSupport.F2(1, 100001, DateSerial(2024, 2, 29)), 1&))
         TEST_Harness.AssertEqualText "policy-addyears-call-capacity-exceeded", "err:#NUM!", Actual
@@ -6379,8 +6720,8 @@ Private Sub CaseNthWeekdayOfMonth01()
 '                          CASES OF NTHWEEKDAYOFMONTH
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_NthWeekdayOfMonth, from locator-nth-1900-1-1-1
-'   to matrix-nthweekdayofmonth-monthin-array-rectangle, called from VBA.
+'   Replays 30 worksheet-function cases of KPR_Dates_NthWeekdayOfMonth, from legacy-host-host-guard-passes-locator-path
+'   to locator-nth-first-failing-year, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -6425,6 +6766,22 @@ Private Sub CaseNthWeekdayOfMonth01()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'Legacy host suite: host/guard passes locator path.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2026&, 3&, 1&, 1&))
+        TEST_Harness.AssertEqualText "legacy-host-host-guard-passes-locator-path", "date:2026-03-02", Actual
+        TEST_Harness.RecordTextResult "legacy-host-host-guard-passes-locator-path", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+    'Legacy parity suite: order/second argument REF beats third NA.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(TEST_DateCaseSupport.A1(2026&, 2026&), TEST_DateCaseSupport.A1(3&, CVErr(2023)), TEST_DateCaseSupport.A1(1&, CVErr(2042)), TEST_DateCaseSupport.A1(1&, 1&)))
+        TEST_Harness.AssertEqualText "legacy-parity-order-second-argument-ref-beats-third-na", "arr2:1x2[date:2026-03-02;err:#REF!]", Actual
+        TEST_Harness.RecordTextResult "legacy-parity-order-second-argument-ref-beats-third-na", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: locator/5th Friday absent.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2026&, 3&, 5&, 5&))
+        TEST_Harness.AssertEqualText "legacy-surface-locator-5th-friday-absent", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-locator-5th-friday-absent", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: locator/5th Monday exists.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2026&, 3&, 1&, 5&))
+        TEST_Harness.AssertEqualText "legacy-surface-locator-5th-monday-exists", "date:2026-03-30", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-locator-5th-monday-exists", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
     'Occurrence n of WdIndex; absent occurrence is OCCURRENCE_ABSENT and a result before...
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(1900#, 1#, 1#, 1#))
         TEST_Harness.AssertEqualText "locator-nth-1900-1-1-1", "err:#NUM!", Actual
@@ -6529,22 +6886,6 @@ Private Sub CaseNthWeekdayOfMonth01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(1899#, 13#, 1#, 1#))
         TEST_Harness.AssertEqualText "locator-nth-first-failing-year", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "locator-nth-first-failing-year", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
-    'Text is rejected at MonthIn.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2024#, "3", 1#, 1#))
-        TEST_Harness.AssertEqualText "locator-nth-month-text", "err:#VALUE!", Actual
-        TEST_Harness.RecordTextResult "locator-nth-month-text", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
-    'MonthIn: a 1x1 array is the scalar call.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2024#, TEST_DateCaseSupport.A2(1, 1, 2#), 5#, 1#))
-        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-monthin-array-1x1", "date:2024-02-02", Actual
-        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-monthin-array-1x1", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
-    'MonthIn: a column keeps its orientation.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2024#, TEST_DateCaseSupport.A2(3, 1, 2#, 1#, 11#), 5#, 1#))
-        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-monthin-array-column", "arr2:3x1[date:2024-02-02;date:2024-01-05;date:2024-11-01]", Actual
-        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-monthin-array-column", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
-    'MonthIn: a rectangle keeps its shape and per-element outcomes.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2024#, TEST_DateCaseSupport.A2(2, 2, 2#, 12#, 13#, 11#), 5#, 1#))
-        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-monthin-array-rectangle", "arr2:2x2[date:2024-02-02;date:2024-12-06;err:#VALUE!;date:2024-11-01]", Actual
-        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-monthin-array-rectangle", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -6568,8 +6909,8 @@ Private Sub CaseNthWeekdayOfMonth02()
 '                          CASES OF NTHWEEKDAYOFMONTH
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_NthWeekdayOfMonth, from matrix-nthweekdayofmonth-monthin-array-row
-'   to matrix-nthweekdayofmonth-yearin-edge-high, called from VBA.
+'   Replays 30 worksheet-function cases of KPR_Dates_NthWeekdayOfMonth, from locator-nth-month-text
+'   to matrix-nthweekdayofmonth-yearin-array-1x1, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -6614,6 +6955,22 @@ Private Sub CaseNthWeekdayOfMonth02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'Text is rejected at MonthIn.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2024#, "3", 1#, 1#))
+        TEST_Harness.AssertEqualText "locator-nth-month-text", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "locator-nth-month-text", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+    'MonthIn: a 1x1 array is the scalar call.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2024#, TEST_DateCaseSupport.A2(1, 1, 2#), 5#, 1#))
+        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-monthin-array-1x1", "date:2024-02-02", Actual
+        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-monthin-array-1x1", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+    'MonthIn: a column keeps its orientation.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2024#, TEST_DateCaseSupport.A2(3, 1, 2#, 1#, 11#), 5#, 1#))
+        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-monthin-array-column", "arr2:3x1[date:2024-02-02;date:2024-01-05;date:2024-11-01]", Actual
+        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-monthin-array-column", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+    'MonthIn: a rectangle keeps its shape and per-element outcomes.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2024#, TEST_DateCaseSupport.A2(2, 2, 2#, 12#, 13#, 11#), 5#, 1#))
+        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-monthin-array-rectangle", "arr2:2x2[date:2024-02-02;date:2024-12-06;err:#VALUE!;date:2024-11-01]", Actual
+        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-monthin-array-rectangle", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
     'MonthIn: a row keeps valid, invalid and error elements at their positions.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2024#, TEST_DateCaseSupport.A2(1, 3, 2#, 0#, CVErr(2007)), 5#, 1#))
         TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-monthin-array-row", "arr2:1x3[date:2024-02-02;err:#VALUE!;err:#DIV/0!]", Actual
@@ -6718,22 +7075,6 @@ Private Sub CaseNthWeekdayOfMonth02()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(TEST_DateCaseSupport.A2(1, 1, 2024#), 2#, 5#, 1#))
         TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-yearin-array-1x1", "date:2024-02-02", Actual
         TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-yearin-array-1x1", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
-    'YearIn: a column keeps its orientation.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(TEST_DateCaseSupport.A2(3, 1, 2024#, 1900#, 2023#), 2#, 5#, 1#))
-        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-yearin-array-column", "arr2:3x1[date:2024-02-02;err:#NUM!;date:2023-02-03]", Actual
-        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-yearin-array-column", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
-    'YearIn: a rectangle keeps its shape and per-element outcomes.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(TEST_DateCaseSupport.A2(2, 2, 2024#, 9999#, 10000#, 2023#), 2#, 5#, 1#))
-        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-yearin-array-rectangle", "arr2:2x2[date:2024-02-02;date:9999-02-05;err:#VALUE!;date:2023-02-03]", Actual
-        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-yearin-array-rectangle", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
-    'YearIn: a row keeps valid, invalid and error elements at their positions.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(TEST_DateCaseSupport.A2(1, 3, 2024#, 1899#, CVErr(2007)), 2#, 5#, 1#))
-        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-yearin-array-row", "arr2:1x3[date:2024-02-02;err:#VALUE!;err:#DIV/0!]", Actual
-        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-yearin-array-row", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
-    'YearIn: the highest supported value.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(9999#, 2#, 5#, 1#))
-        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-yearin-edge-high", "date:9999-02-05", Actual
-        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-yearin-edge-high", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -6757,8 +7098,8 @@ Private Sub CaseNthWeekdayOfMonth03()
 '                          CASES OF NTHWEEKDAYOFMONTH
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 28 worksheet-function cases of KPR_Dates_NthWeekdayOfMonth, from matrix-nthweekdayofmonth-yearin-edge-low
-'   to surface-nthweekdayofmonth-ok, called from VBA.
+'   Replays 30 worksheet-function cases of KPR_Dates_NthWeekdayOfMonth, from matrix-nthweekdayofmonth-yearin-array-column
+'   to surface-nthweekdayofmonth-bad-wdindex, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -6803,6 +7144,22 @@ Private Sub CaseNthWeekdayOfMonth03()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'YearIn: a column keeps its orientation.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(TEST_DateCaseSupport.A2(3, 1, 2024#, 1900#, 2023#), 2#, 5#, 1#))
+        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-yearin-array-column", "arr2:3x1[date:2024-02-02;err:#NUM!;date:2023-02-03]", Actual
+        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-yearin-array-column", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+    'YearIn: a rectangle keeps its shape and per-element outcomes.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(TEST_DateCaseSupport.A2(2, 2, 2024#, 9999#, 10000#, 2023#), 2#, 5#, 1#))
+        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-yearin-array-rectangle", "arr2:2x2[date:2024-02-02;date:9999-02-05;err:#VALUE!;date:2023-02-03]", Actual
+        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-yearin-array-rectangle", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+    'YearIn: a row keeps valid, invalid and error elements at their positions.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(TEST_DateCaseSupport.A2(1, 3, 2024#, 1899#, CVErr(2007)), 2#, 5#, 1#))
+        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-yearin-array-row", "arr2:1x3[date:2024-02-02;err:#VALUE!;err:#DIV/0!]", Actual
+        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-yearin-array-row", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+    'YearIn: the highest supported value.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(9999#, 2#, 5#, 1#))
+        TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-yearin-edge-high", "date:9999-02-05", Actual
+        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-yearin-edge-high", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
     'YearIn: the lowest supported value.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(1900#, 2#, 5#, 1#))
         TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-yearin-edge-low", "err:#NUM!", Actual
@@ -6907,6 +7264,75 @@ Private Sub CaseNthWeekdayOfMonth03()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth(2024#, 2#, "5", 1#))
         TEST_Harness.AssertEqualText "surface-nthweekdayofmonth-bad-wdindex", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "surface-nthweekdayofmonth-bad-wdindex", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseNthWeekdayOfMonth04()
+
+'
+'------------------------------------------------------------------------------
+'                          CASES OF NTHWEEKDAYOFMONTH
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 2 worksheet-function cases of KPR_Dates_NthWeekdayOfMonth, from surface-nthweekdayofmonth-bad-yearin
+'   to surface-nthweekdayofmonth-ok, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_NthWeekdayOfMonth, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "nth-weekday-of-month-04"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'An invalid YearIn is an element-level #VALUE!.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_NthWeekdayOfMonth("2024", 2#, 5#, 1#))
         TEST_Harness.AssertEqualText "surface-nthweekdayofmonth-bad-yearin", "err:#VALUE!", Actual
@@ -6938,8 +7364,8 @@ Private Sub CaseLastWeekdayOfMonth01()
 '                         CASES OF LASTWEEKDAYOFMONTH
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_LastWeekdayOfMonth, from locator-last-1900-2-3
-'   to matrix-lastweekdayofmonth-yearin-array-column, called from VBA.
+'   Replays 30 worksheet-function cases of KPR_Dates_LastWeekdayOfMonth, from legacy-surface-locator-last-sunday
+'   to matrix-lastweekdayofmonth-yearin-array-1x1, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -6984,6 +7410,10 @@ Private Sub CaseLastWeekdayOfMonth01()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'Legacy surface suite: locator/last Sunday.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_LastWeekdayOfMonth(2026&, 3&, 7&))
+        TEST_Harness.AssertEqualText "legacy-surface-locator-last-sunday", "date:2026-03-29", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-locator-last-sunday", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
     'Final occurrence of WdIndex.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_LastWeekdayOfMonth(1900#, 2#, 3#))
         TEST_Harness.AssertEqualText "locator-last-1900-2-3", "err:#NUM!", Actual
@@ -7100,10 +7530,6 @@ Private Sub CaseLastWeekdayOfMonth01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_LastWeekdayOfMonth(TEST_DateCaseSupport.A2(1, 1, 2024#), 2#, 5#))
         TEST_Harness.AssertEqualText "matrix-lastweekdayofmonth-yearin-array-1x1", "date:2024-02-23", Actual
         TEST_Harness.RecordTextResult "matrix-lastweekdayofmonth-yearin-array-1x1", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
-    'YearIn: a column keeps its orientation.
-        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_LastWeekdayOfMonth(TEST_DateCaseSupport.A2(3, 1, 2024#, 1900#, 2023#), 2#, 5#))
-        TEST_Harness.AssertEqualText "matrix-lastweekdayofmonth-yearin-array-column", "arr2:3x1[date:2024-02-23;err:#NUM!;date:2023-02-24]", Actual
-        TEST_Harness.RecordTextResult "matrix-lastweekdayofmonth-yearin-array-column", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -7127,7 +7553,7 @@ Private Sub CaseLastWeekdayOfMonth02()
 '                         CASES OF LASTWEEKDAYOFMONTH
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 26 worksheet-function cases of KPR_Dates_LastWeekdayOfMonth, from matrix-lastweekdayofmonth-yearin-array-rectangle
+'   Replays 27 worksheet-function cases of KPR_Dates_LastWeekdayOfMonth, from matrix-lastweekdayofmonth-yearin-array-column
 '   to surface-lastweekdayofmonth-ok, called from VBA.
 '
 ' WHY THIS EXISTS
@@ -7173,6 +7599,10 @@ Private Sub CaseLastWeekdayOfMonth02()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'YearIn: a column keeps its orientation.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_LastWeekdayOfMonth(TEST_DateCaseSupport.A2(3, 1, 2024#, 1900#, 2023#), 2#, 5#))
+        TEST_Harness.AssertEqualText "matrix-lastweekdayofmonth-yearin-array-column", "arr2:3x1[date:2024-02-23;err:#NUM!;date:2023-02-24]", Actual
+        TEST_Harness.RecordTextResult "matrix-lastweekdayofmonth-yearin-array-column", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
     'YearIn: a rectangle keeps its shape and per-element outcomes.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_LastWeekdayOfMonth(TEST_DateCaseSupport.A2(2, 2, 2024#, 9999#, 10000#, 2023#), 2#, 5#))
         TEST_Harness.AssertEqualText "matrix-lastweekdayofmonth-yearin-array-rectangle", "arr2:2x2[date:2024-02-23;date:9999-02-26;err:#VALUE!;date:2023-02-24]", Actual
@@ -7301,7 +7731,7 @@ Private Sub CasePillarFromDates01()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from control-rounding-array-1x1
-'   to matrix-pillarfromdates-startdate-edge-low, called from VBA.
+'   to legacy-pillar-control-unknown-token, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -7402,10 +7832,328 @@ Private Sub CasePillarFromDates01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), DateSerial(2024, 2, 10), "FLOOR NEAREST"))
         TEST_Harness.AssertEqualText "control-rounding-unknown-two-words", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "control-rounding-unknown-two-words", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: boundary/24d Jan31.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 1, 31), DateSerial(2026, 2, 24), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-boundary-24d-jan31", "str:""3W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-boundary-24d-jan31", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: boundary/24d Mar15.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 8), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-boundary-24d-mar15", "str:""3W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-boundary-24d-mar15", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: boundary/25d Jan31.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 1, 31), DateSerial(2026, 2, 25), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-boundary-25d-jan31", "str:""1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-boundary-25d-jan31", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: boundary/25d Mar15.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 9), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-boundary-25d-mar15", "str:""3W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-boundary-25d-mar15", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: boundary/26d Mar15.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 10), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-boundary-26d-mar15", "str:""1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-boundary-26d-mar15", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: boundary/27d Mar15.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 11), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-boundary-27d-mar15", "str:""1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-boundary-27d-mar15", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: cap/20d ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 4), "CEILING"))
+        TEST_Harness.AssertEqualText "legacy-pillar-cap-20d-ceiling", "str:""3W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-cap-20d-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: cap/20d floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 4), "FLOOR"))
+        TEST_Harness.AssertEqualText "legacy-pillar-cap-20d-floor", "str:""2W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-cap-20d-floor", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: cap/28d ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 12), "CEILING"))
+        TEST_Harness.AssertEqualText "legacy-pillar-cap-28d-ceiling", "str:""1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-cap-28d-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: cap/28d floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 12), "FLOOR"))
+        TEST_Harness.AssertEqualText "legacy-pillar-cap-28d-floor", "str:""3W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-cap-28d-floor", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: control/boolean.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 9), True))
+        TEST_Harness.AssertEqualText "legacy-pillar-control-boolean", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-control-boolean", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: control/empty.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 9), Empty))
+        TEST_Harness.AssertEqualText "legacy-pillar-control-empty", "str:""3W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-control-empty", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: control/mixed case ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 9), "Ceiling"))
+        TEST_Harness.AssertEqualText "legacy-pillar-control-mixed-case-ceiling", "str:""1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-control-mixed-case-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: control/numeric.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 9), 1&))
+        TEST_Harness.AssertEqualText "legacy-pillar-control-numeric", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-control-numeric", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: control/propagates.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 9), CVErr(2042)))
+        TEST_Harness.AssertEqualText "legacy-pillar-control-propagates", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-control-propagates", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: control/unknown token.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 9), "ROUND"))
+        TEST_Harness.AssertEqualText "legacy-pillar-control-unknown-token", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-control-unknown-token", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates02()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from legacy-pillar-eom-jan31-to-mar31-floor
+'   to matrix-pillarfromdates-enddate-array-1x1, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-02"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
+    'Legacy pillar suite: eom/Jan31 to Mar31 floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 1, 31), DateSerial(2026, 3, 31), "FLOOR"))
+        TEST_Harness.AssertEqualText "legacy-pillar-eom-jan31-to-mar31-floor", "str:""2M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-eom-jan31-to-mar31-floor", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: eom/Jan31 to Mar31 nearest.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 1, 31), DateSerial(2026, 3, 31), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-eom-jan31-to-mar31-nearest", "str:""2M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-eom-jan31-to-mar31-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: exact/1M ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 15), "CEILING"))
+        TEST_Harness.AssertEqualText "legacy-pillar-exact-1m-ceiling", "str:""1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-exact-1m-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: exact/1M floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 15), "FLOOR"))
+        TEST_Harness.AssertEqualText "legacy-pillar-exact-1m-floor", "str:""1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-exact-1m-floor", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: exact/2W ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 3, 29), "CEILING"))
+        TEST_Harness.AssertEqualText "legacy-pillar-exact-2w-ceiling", "str:""2W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-exact-2w-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: exact/2W floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 3, 29), "FLOOR"))
+        TEST_Harness.AssertEqualText "legacy-pillar-exact-2w-floor", "str:""2W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-exact-2w-floor", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: exact/2W nearest.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 3, 29), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-exact-2w-nearest", "str:""2W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-exact-2w-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: modes/100d ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 6, 23), "CEILING"))
+        TEST_Harness.AssertEqualText "legacy-pillar-modes-100d-ceiling", "str:""4M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-modes-100d-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: modes/100d floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 6, 23), "FLOOR"))
+        TEST_Harness.AssertEqualText "legacy-pillar-modes-100d-floor", "str:""3M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-modes-100d-floor", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: modes/100d nearest.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 6, 23), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-modes-100d-nearest", "str:""3M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-modes-100d-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: modes/25d ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 9), "CEILING"))
+        TEST_Harness.AssertEqualText "legacy-pillar-modes-25d-ceiling", "str:""1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-modes-25d-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: modes/25d floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 9), "FLOOR"))
+        TEST_Harness.AssertEqualText "legacy-pillar-modes-25d-floor", "str:""3W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-modes-25d-floor", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: modes/30d ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 14), "CEILING"))
+        TEST_Harness.AssertEqualText "legacy-pillar-modes-30d-ceiling", "str:""1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-modes-30d-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: modes/30d floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 14), "FLOOR"))
+        TEST_Harness.AssertEqualText "legacy-pillar-modes-30d-floor", "str:""3W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-modes-30d-floor", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: modes/30d nearest.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 14), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-modes-30d-nearest", "str:""1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-modes-30d-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: negative/25d ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 2, 18), "CEILING"))
+        TEST_Harness.AssertEqualText "legacy-pillar-negative-25d-ceiling", "str:""-1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-negative-25d-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: negative/25d floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 2, 18), "FLOOR"))
+        TEST_Harness.AssertEqualText "legacy-pillar-negative-25d-floor", "str:""-3W""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-negative-25d-floor", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: negative/25d nearest.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 2, 18), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-negative-25d-nearest", "str:""-1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-negative-25d-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: pillar/0D.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 3, 15), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-pillar-0d", "str:""0D""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-pillar-0d", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: pillar/-5D.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 3, 10), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-pillar-5d", "str:""-5D""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-pillar-5d", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: pillar/5D ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 3, 20), "CEILING"))
+        TEST_Harness.AssertEqualText "legacy-pillar-pillar-5d-ceiling", "str:""5D""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-pillar-5d-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: pillar/5D floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 3, 20), "FLOOR"))
+        TEST_Harness.AssertEqualText "legacy-pillar-pillar-5d-floor", "str:""5D""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-pillar-5d-floor", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: pillar/5D nearest.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 3, 20), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-pillar-5d-nearest", "str:""5D""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-pillar-5d-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: tie/month-month ceiling.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 30), "CEILING"))
+        TEST_Harness.AssertEqualText "legacy-pillar-tie-month-month-ceiling", "str:""2M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-tie-month-month-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: tie/month-month floor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 30), "FLOOR"))
+        TEST_Harness.AssertEqualText "legacy-pillar-tie-month-month-floor", "str:""1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-tie-month-month-floor", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: tie/month-month nearest.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2026, 4, 30), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-tie-month-month-nearest", "str:""2M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-tie-month-month-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: window/ceiling gap facade.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(9999, 12, 15), DateSerial(9999, 12, 31), "CEILING"))
+        TEST_Harness.AssertEqualText "legacy-pillar-window-ceiling-gap-facade", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-window-ceiling-gap-facade", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: years/12M.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2027, 3, 15), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-years-12m", "str:""1Y""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-years-12m", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: years/13M.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2026, 3, 15), DateSerial(2027, 4, 15), "NEAREST"))
+        TEST_Harness.AssertEqualText "legacy-pillar-years-13m", "str:""1Y1M""", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-years-13m", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
     'EndDate: a 1x1 array is the scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), TEST_DateCaseSupport.A2(1, 1, DateSerial(2024, 7, 15))))
         TEST_Harness.AssertEqualText "matrix-pillarfromdates-enddate-array-1x1", "str:""6M""", Actual
         TEST_Harness.RecordTextResult "matrix-pillarfromdates-enddate-array-1x1", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates03()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from matrix-pillarfromdates-enddate-array-column
+'   to pillar-format-backward-25-nearest, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-03"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'EndDate: a column keeps its orientation.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), TEST_DateCaseSupport.A2(3, 1, DateSerial(2024, 7, 15), DateSerial(1900, 3, 1), DateSerial(2023, 11, 30))))
         TEST_Harness.AssertEqualText "matrix-pillarfromdates-enddate-array-column", "arr2:3x1[str:""6M"";str:""-123Y10M"";str:""-2M""]", Actual
@@ -7466,75 +8214,6 @@ Private Sub CasePillarFromDates01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(1900, 3, 1), DateSerial(2024, 7, 15)))
         TEST_Harness.AssertEqualText "matrix-pillarfromdates-startdate-edge-low", "str:""124Y4M""", Actual
         TEST_Harness.RecordTextResult "matrix-pillarfromdates-startdate-edge-low", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CasePillarFromDates02()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF PILLARFROMDATES
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from matrix-pillarfromdates-startdate-invalid-a
-'   to pillar-format-backward-30-nearest, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "pillar-from-dates-02"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     'StartDate: an invalid-domain value.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(1900, 2, 28), DateSerial(2024, 7, 15)))
         TEST_Harness.AssertEqualText "matrix-pillarfromdates-startdate-invalid-a", "err:#NUM!", Actual
@@ -7595,6 +8274,75 @@ Private Sub CasePillarFromDates02()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 3, 15), DateSerial(2024, 2, 19), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-backward-25-nearest", "str:""-1M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-backward-25-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates04()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-backward-26-ceiling
+'   to pillar-format-interval-2024-01-15-2024-02-15-ceiling, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-04"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Negative intervals round the magnitude and restore the sign.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 3, 15), DateSerial(2024, 2, 18), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-backward-26-ceiling", "str:""-1M""", Actual
@@ -7655,75 +8403,6 @@ Private Sub CasePillarFromDates02()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 3, 15), DateSerial(2024, 2, 14), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-backward-30-nearest", "str:""-1M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-backward-30-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CasePillarFromDates03()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF PILLARFROMDATES
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-backward-31-ceiling
-'   to pillar-format-interval-2024-01-15-2025-07-15-ceiling, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "pillar-from-dates-03"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     'Negative intervals round the magnitude and restore the sign.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 3, 15), DateSerial(2024, 2, 13), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-backward-31-ceiling", "str:""-2M""", Actual
@@ -7784,6 +8463,75 @@ Private Sub CasePillarFromDates03()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), DateSerial(2024, 2, 15), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-interval-2024-01-15-2024-02-15-ceiling", "str:""1M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-interval-2024-01-15-2024-02-15-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates05()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-interval-2024-01-15-2024-02-15-floor
+'   to pillar-format-interval-2024-03-31-2024-02-29-ceiling, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-05"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Month-family labels, year formatting, exact clip anchors, ties to the larger month count...
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), DateSerial(2024, 2, 15), "FLOOR"))
         TEST_Harness.AssertEqualText "pillar-format-interval-2024-01-15-2024-02-15-floor", "str:""1M""", Actual
@@ -7844,75 +8592,6 @@ Private Sub CasePillarFromDates03()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), DateSerial(2025, 7, 15), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-interval-2024-01-15-2025-07-15-ceiling", "str:""1Y6M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-interval-2024-01-15-2025-07-15-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CasePillarFromDates04()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF PILLARFROMDATES
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-interval-2024-01-15-2025-07-15-floor
-'   to pillar-format-short-4, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "pillar-from-dates-04"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     'Month-family labels, year formatting, exact clip anchors, ties to the larger month count...
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), DateSerial(2025, 7, 15), "FLOOR"))
         TEST_Harness.AssertEqualText "pillar-format-interval-2024-01-15-2025-07-15-floor", "str:""1Y6M""", Actual
@@ -7973,6 +8652,75 @@ Private Sub CasePillarFromDates04()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 3, 31), DateSerial(2024, 2, 29), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-interval-2024-03-31-2024-02-29-ceiling", "str:""-1M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-interval-2024-03-31-2024-02-29-ceiling", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates06()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-interval-2024-03-31-2024-02-29-floor
+'   to pillar-format-transition-2023-01-31-22-nearest, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-06"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Month-family labels, year formatting, exact clip anchors, ties to the larger month count...
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 3, 31), DateSerial(2024, 2, 29), "FLOOR"))
         TEST_Harness.AssertEqualText "pillar-format-interval-2024-03-31-2024-02-29-floor", "str:""-1M""", Actual
@@ -8033,75 +8781,6 @@ Private Sub CasePillarFromDates04()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), DateSerial(2024, 1, 19)))
         TEST_Harness.AssertEqualText "pillar-format-short-4", "str:""4D""", Actual
         TEST_Harness.RecordTextResult "pillar-format-short-4", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CasePillarFromDates05()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF PILLARFROMDATES
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-short-5
-'   to pillar-format-transition-2023-01-31-27-nearest, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "pillar-from-dates-05"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     '0D, exact signed days below seven, exact 1W-3W anchors.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), DateSerial(2024, 1, 20)))
         TEST_Harness.AssertEqualText "pillar-format-short-5", "str:""5D""", Actual
@@ -8162,6 +8841,75 @@ Private Sub CasePillarFromDates05()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2023, 1, 31), DateSerial(2023, 2, 22), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2023-01-31-22-nearest", "str:""3W""", Actual
         TEST_Harness.RecordTextResult "pillar-format-transition-2023-01-31-22-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates07()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-transition-2023-01-31-23-ceiling
+'   to pillar-format-transition-2023-01-31-32-nearest, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-07"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     '3W/1M transition derived from calendar-day distance; ties take the month.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2023, 1, 31), DateSerial(2023, 2, 23), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2023-01-31-23-ceiling", "str:""1M""", Actual
@@ -8222,75 +8970,6 @@ Private Sub CasePillarFromDates05()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2023, 1, 31), DateSerial(2023, 2, 27), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2023-01-31-27-nearest", "str:""1M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-transition-2023-01-31-27-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CasePillarFromDates06()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF PILLARFROMDATES
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-transition-2023-01-31-28-ceiling
-'   to pillar-format-transition-2023-02-01-26-nearest, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "pillar-from-dates-06"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     '3W/1M transition derived from calendar-day distance; ties take the month.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2023, 1, 31), DateSerial(2023, 2, 28), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2023-01-31-28-ceiling", "str:""1M""", Actual
@@ -8351,6 +9030,75 @@ Private Sub CasePillarFromDates06()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2023, 1, 31), DateSerial(2023, 3, 4), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2023-01-31-32-nearest", "str:""1M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-transition-2023-01-31-32-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates08()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-transition-2023-02-01-22-ceiling
+'   to pillar-format-transition-2023-02-01-31-nearest, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-08"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     '3W/1M transition derived from calendar-day distance; ties take the month.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2023, 2, 1), DateSerial(2023, 2, 23), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2023-02-01-22-ceiling", "str:""1M""", Actual
@@ -8411,75 +9159,6 @@ Private Sub CasePillarFromDates06()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2023, 2, 1), DateSerial(2023, 2, 27), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2023-02-01-26-nearest", "str:""1M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-transition-2023-02-01-26-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CasePillarFromDates07()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF PILLARFROMDATES
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-transition-2023-02-01-27-ceiling
-'   to pillar-format-transition-2024-01-15-25-nearest, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "pillar-from-dates-07"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     '3W/1M transition derived from calendar-day distance; ties take the month.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2023, 2, 1), DateSerial(2023, 2, 28), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2023-02-01-27-ceiling", "str:""1M""", Actual
@@ -8540,6 +9219,75 @@ Private Sub CasePillarFromDates07()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2023, 2, 1), DateSerial(2023, 3, 4), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2023-02-01-31-nearest", "str:""1M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-transition-2023-02-01-31-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates09()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-transition-2023-02-01-32-ceiling
+'   to pillar-format-transition-2024-01-15-30-nearest, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-09"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     '3W/1M transition derived from calendar-day distance; ties take the month.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2023, 2, 1), DateSerial(2023, 3, 5), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2023-02-01-32-ceiling", "str:""2M""", Actual
@@ -8600,75 +9348,6 @@ Private Sub CasePillarFromDates07()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), DateSerial(2024, 2, 9), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-01-15-25-nearest", "str:""3W""", Actual
         TEST_Harness.RecordTextResult "pillar-format-transition-2024-01-15-25-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CasePillarFromDates08()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF PILLARFROMDATES
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-transition-2024-01-15-26-ceiling
-'   to pillar-format-transition-2024-01-31-24-nearest, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "pillar-from-dates-08"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     '3W/1M transition derived from calendar-day distance; ties take the month.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), DateSerial(2024, 2, 10), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-01-15-26-ceiling", "str:""1M""", Actual
@@ -8729,6 +9408,75 @@ Private Sub CasePillarFromDates08()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), DateSerial(2024, 2, 14), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-01-15-30-nearest", "str:""1M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-transition-2024-01-15-30-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates10()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-transition-2024-01-15-31-ceiling
+'   to pillar-format-transition-2024-01-31-29-nearest, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-10"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     '3W/1M transition derived from calendar-day distance; ties take the month.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), DateSerial(2024, 2, 15), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-01-15-31-ceiling", "str:""1M""", Actual
@@ -8789,75 +9537,6 @@ Private Sub CasePillarFromDates08()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 31), DateSerial(2024, 2, 24), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-01-31-24-nearest", "str:""3W""", Actual
         TEST_Harness.RecordTextResult "pillar-format-transition-2024-01-31-24-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CasePillarFromDates09()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF PILLARFROMDATES
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-transition-2024-01-31-25-ceiling
-'   to pillar-format-transition-2024-04-15-23-nearest, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "pillar-from-dates-09"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     '3W/1M transition derived from calendar-day distance; ties take the month.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 31), DateSerial(2024, 2, 25), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-01-31-25-ceiling", "str:""1M""", Actual
@@ -8918,6 +9597,75 @@ Private Sub CasePillarFromDates09()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 31), DateSerial(2024, 2, 29), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-01-31-29-nearest", "str:""1M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-transition-2024-01-31-29-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates11()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-transition-2024-01-31-30-ceiling
+'   to pillar-format-transition-2024-04-15-28-nearest, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-11"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     '3W/1M transition derived from calendar-day distance; ties take the month.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 31), DateSerial(2024, 3, 1), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-01-31-30-ceiling", "str:""2M""", Actual
@@ -8978,75 +9726,6 @@ Private Sub CasePillarFromDates09()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 4, 15), DateSerial(2024, 5, 8), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-04-15-23-nearest", "str:""3W""", Actual
         TEST_Harness.RecordTextResult "pillar-format-transition-2024-04-15-23-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CasePillarFromDates10()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF PILLARFROMDATES
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-transition-2024-04-15-24-ceiling
-'   to policy-pillarfromdates-call-shape-unsupported, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "pillar-from-dates-10"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     '3W/1M transition derived from calendar-day distance; ties take the month.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 4, 15), DateSerial(2024, 5, 9), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-04-15-24-ceiling", "str:""1M""", Actual
@@ -9107,6 +9786,75 @@ Private Sub CasePillarFromDates10()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 4, 15), DateSerial(2024, 5, 13), "NEAREST"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-04-15-28-nearest", "str:""1M""", Actual
         TEST_Harness.RecordTextResult "pillar-format-transition-2024-04-15-28-nearest", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates12()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_PillarFromDates, from pillar-format-transition-2024-04-15-29-ceiling
+'   to shape-pillar-vector, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-12"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     '3W/1M transition derived from calendar-day distance; ties take the month.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 4, 15), DateSerial(2024, 5, 14), "CEILING"))
         TEST_Harness.AssertEqualText "pillar-format-transition-2024-04-15-29-ceiling", "str:""1M""", Actual
@@ -9167,75 +9915,6 @@ Private Sub CasePillarFromDates10()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(TEST_DateCaseSupport.A1(), DateSerial(2024, 4, 15)))
         TEST_Harness.AssertEqualText "policy-pillarfromdates-call-shape-unsupported", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "policy-pillarfromdates-call-shape-unsupported", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CasePillarFromDates11()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF PILLARFROMDATES
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 18 worksheet-function cases of KPR_Dates_PillarFromDates, from policy-pillarfromdates-enddate-date-text-locale
-'   to surface-pillarfromdates-ok, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "pillar-from-dates-11"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     'EndDate: DATE_TEXT_LOCALE, a case the completeness policy requires.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(DateSerial(2024, 1, 15), "10/02/2024"))
         TEST_Harness.AssertEqualText "policy-pillarfromdates-enddate-date-text-locale", "err:#VALUE!", Actual
@@ -9296,6 +9975,75 @@ Private Sub CasePillarFromDates11()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates(TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 1, 15), DateSerial(2024, 1, 20), DateSerial(2023, 12, 15)), DateSerial(2024, 2, 10), "FLOOR"))
         TEST_Harness.AssertEqualText "shape-pillar-vector", "arr2:1x3[str:""3W"";str:""3W"";str:""1M""]", Actual
         TEST_Harness.RecordTextResult "shape-pillar-vector", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarFromDates13()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF PILLARFROMDATES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 3 worksheet-function cases of KPR_Dates_PillarFromDates, from surface-pillarfromdates-bad-enddate
+'   to surface-pillarfromdates-ok, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-from-dates-13"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'An invalid EndDate is an element-level #VALUE!.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_PillarFromDates("2024-01-15", "2024/02/10"))
         TEST_Harness.AssertEqualText "surface-pillarfromdates-bad-enddate", "err:#VALUE!", Actual
@@ -9331,8 +10079,8 @@ Private Sub CaseDateFromPillar01()
 '                           CASES OF DATEFROMPILLAR
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_DateFromPillar, from matrix-datefrompillar-ok
-'   to pillar-parse-edge-1900-03-01-minus-1-d, called from VBA.
+'   Replays 30 worksheet-function cases of KPR_Dates_DateFromPillar, from legacy-pillar-grammar-facade-duplicate
+'   to matrix-datefrompillar-startdate-invalid-b, called from VBA.
 '
 ' WHY THIS EXISTS
 '   Each assertion compares one case's encoded result with its expected file.
@@ -9377,6 +10125,54 @@ Private Sub CaseDateFromPillar01()
 '------------------------------------------------------------------------------
 ' RUN CASES
 '------------------------------------------------------------------------------
+    'Legacy pillar suite: grammar/facade duplicate.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2026, 3, 15), "1M2M"))
+        TEST_Harness.AssertEqualText "legacy-pillar-grammar-facade-duplicate", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-grammar-facade-duplicate", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: grammar/facade overflow first then unknown.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2026, 3, 15), "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999M1X"))
+        TEST_Harness.AssertEqualText "legacy-pillar-grammar-facade-overflow-first-then-unknown", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-grammar-facade-overflow-first-then-unknown", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: grammar/facade oversized unknown unit.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2026, 3, 15), "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999X"))
+        TEST_Harness.AssertEqualText "legacy-pillar-grammar-facade-oversized-unknown-unit", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-grammar-facade-oversized-unknown-unit", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: grammar/facade propagates.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2026, 3, 15), CVErr(2042)))
+        TEST_Harness.AssertEqualText "legacy-pillar-grammar-facade-propagates", "err:#N/A", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-grammar-facade-propagates", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: grammar/facade signed alias.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2026, 3, 15), "-ON"))
+        TEST_Harness.AssertEqualText "legacy-pillar-grammar-facade-signed-alias", "err:#VALUE!", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-grammar-facade-signed-alias", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: range/facade oversized month quantity.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2026, 3, 15), "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999M"))
+        TEST_Harness.AssertEqualText "legacy-pillar-range-facade-oversized-month-quantity", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-range-facade-oversized-month-quantity", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: range/facade year aggregate overflow.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2026, 3, 15), "20000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000Y"))
+        TEST_Harness.AssertEqualText "legacy-pillar-range-facade-year-aggregate-overflow", "err:#NUM!", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-range-facade-year-aggregate-overflow", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: roundtrip/25d nearest lands on anchor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2026, 3, 15), "3W"))
+        TEST_Harness.AssertEqualText "legacy-pillar-roundtrip-25d-nearest-lands-on-anchor", "date:2026-04-05", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-roundtrip-25d-nearest-lands-on-anchor", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: roundtrip/26d nearest lands on anchor.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2026, 3, 15), "1M"))
+        TEST_Harness.AssertEqualText "legacy-pillar-roundtrip-26d-nearest-lands-on-anchor", "date:2026-04-15", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-roundtrip-26d-nearest-lands-on-anchor", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+    'Legacy pillar suite: roundtrip/exact 2W lands on end.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2026, 3, 15), "2W"))
+        TEST_Harness.AssertEqualText "legacy-pillar-roundtrip-exact-2w-lands-on-end", "date:2026-03-29", Actual
+        TEST_Harness.RecordTextResult "legacy-pillar-roundtrip-exact-2w-lands-on-end", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: rename/DateFromPillar 1M.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar("2026-01-31", "1M"))
+        TEST_Harness.AssertEqualText "legacy-surface-rename-datefrompillar-1m", "date:2026-02-28", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-rename-datefrompillar-1m", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+    'Legacy surface suite: rename/DateFromPillar -2W.
+        Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar("2026-03-15", "-2W"))
+        TEST_Harness.AssertEqualText "legacy-surface-rename-datefrompillar-2w", "date:2026-03-01", Actual
+        TEST_Harness.RecordTextResult "legacy-surface-rename-datefrompillar-2w", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
     'A valid scalar call.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 1, 15), "6M"))
         TEST_Harness.AssertEqualText "matrix-datefrompillar-ok", "date:2024-07-15", Actual
@@ -9449,6 +10245,75 @@ Private Sub CaseDateFromPillar01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar("2024-02-30", "6M"))
         TEST_Harness.AssertEqualText "matrix-datefrompillar-startdate-invalid-b", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "matrix-datefrompillar-startdate-invalid-b", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseDateFromPillar02()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF DATEFROMPILLAR
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_DateFromPillar, from matrix-datefrompillar-startdate-propagated
+'   to pillar-parse-malformed-o-n-1-d, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_DateFromPillar, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "date-from-pillar-02"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'StartDate: an incoming error propagates.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(CVErr(2042), "6M"))
         TEST_Harness.AssertEqualText "matrix-datefrompillar-startdate-propagated", "err:#N/A", Actual
@@ -9497,75 +10362,6 @@ Private Sub CaseDateFromPillar01()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(1900, 3, 1), "-1D"))
         TEST_Harness.AssertEqualText "pillar-parse-edge-1900-03-01-minus-1-d", "err:#NUM!", Actual
         TEST_Harness.RecordTextResult "pillar-parse-edge-1900-03-01-minus-1-d", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CaseDateFromPillar02()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF DATEFROMPILLAR
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_DateFromPillar, from pillar-parse-edge-1900-03-01-o-n
-'   to pillar-parse-s15-1-m, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_DateFromPillar, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "date-from-pillar-02"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     'A valid token whose result leaves the window is PILLAR_AGGREGATE_RANGE.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(1900, 3, 1), "ON"))
         TEST_Harness.AssertEqualText "pillar-parse-edge-1900-03-01-o-n", "date:1900-03-02", Actual
@@ -9638,6 +10434,75 @@ Private Sub CaseDateFromPillar02()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 1, 15), "ON1D"))
         TEST_Harness.AssertEqualText "pillar-parse-malformed-o-n-1-d", "err:#VALUE!", Actual
         TEST_Harness.RecordTextResult "pillar-parse-malformed-o-n-1-d", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseDateFromPillar03()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF DATEFROMPILLAR
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_DateFromPillar, from pillar-parse-malformed-plus
+'   to pillar-parse-s15-minus-2-w-3-d, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_DateFromPillar, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "date-from-pillar-03"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Malformed token is rejected with its registry condition.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 1, 15), "+"))
         TEST_Harness.AssertEqualText "pillar-parse-malformed-plus", "err:#VALUE!", Actual
@@ -9686,75 +10551,6 @@ Private Sub CaseDateFromPillar02()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 1, 15), "1M"))
         TEST_Harness.AssertEqualText "pillar-parse-s15-1-m", "date:2024-02-15", Actual
         TEST_Harness.RecordTextResult "pillar-parse-s15-1-m", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CaseDateFromPillar03()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF DATEFROMPILLAR
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_DateFromPillar, from pillar-parse-s15-1-m-sp
-'   to pillar-parse-s31-minus-2-m, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_DateFromPillar, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "date-from-pillar-03"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     'Accepted grammar; months apply first with clip semantics, then days.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 1, 15), "1M "))
         TEST_Harness.AssertEqualText "pillar-parse-s15-1-m-sp", "date:2024-02-15", Actual
@@ -9827,6 +10623,75 @@ Private Sub CaseDateFromPillar03()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 1, 15), "-2W3D"))
         TEST_Harness.AssertEqualText "pillar-parse-s15-minus-2-w-3-d", "date:2023-12-29", Actual
         TEST_Harness.RecordTextResult "pillar-parse-s15-minus-2-w-3-d", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseDateFromPillar04()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF DATEFROMPILLAR
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 30 worksheet-function cases of KPR_Dates_DateFromPillar, from pillar-parse-s15-o-n
+'   to pillar-roundtrip-2024-01-15-2024-02-15-1m, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_DateFromPillar, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "date-from-pillar-04"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Accepted grammar; months apply first with clip semantics, then days.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 1, 15), "ON"))
         TEST_Harness.AssertEqualText "pillar-parse-s15-o-n", "date:2024-01-16", Actual
@@ -9875,75 +10740,6 @@ Private Sub CaseDateFromPillar03()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 1, 31), "-2M"))
         TEST_Harness.AssertEqualText "pillar-parse-s31-minus-2-m", "date:2023-11-30", Actual
         TEST_Harness.RecordTextResult "pillar-parse-s31-minus-2-m", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CaseDateFromPillar04()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF DATEFROMPILLAR
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 30 worksheet-function cases of KPR_Dates_DateFromPillar, from pillar-parse-s31n-1-m
-'   to propagation-pillar-n-a, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_DateFromPillar, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "date-from-pillar-04"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     'Month delta first with clip, then the exact day delta.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2023, 1, 31), "1M"))
         TEST_Harness.AssertEqualText "pillar-parse-s31n-1-m", "date:2023-02-28", Actual
@@ -10016,6 +10812,75 @@ Private Sub CaseDateFromPillar04()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 1, 15), "1M"))
         TEST_Harness.AssertEqualText "pillar-roundtrip-2024-01-15-2024-02-15-1m", "date:2024-02-15", Actual
         TEST_Harness.RecordTextResult "pillar-roundtrip-2024-01-15-2024-02-15-1m", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseDateFromPillar05()
+
+'
+'------------------------------------------------------------------------------
+'                           CASES OF DATEFROMPILLAR
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Replays 21 worksheet-function cases of KPR_Dates_DateFromPillar, from pillar-roundtrip-2024-01-15-2025-07-15-1y6m
+'   to surface-datefrompillar-ok, called from VBA.
+'
+' WHY THIS EXISTS
+'   Each assertion compares one case's encoded result with its expected file.
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calls the function with each case's arguments, encodes the result, asserts it
+'   under the case's id and records it for the exact accuracy contracts.
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   KPR_Dates_DateFromPillar, TEST_DateCaseSupport, TEST_Harness
+'
+' NOTES
+'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Actual          As String       'The encoded result of the case
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "date-from-pillar-05"
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Re-parsing the emitted NEAREST token '1Y6M' equals EndDate 2025-07-15; rounded intervals...
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 1, 15), "1Y6M"))
         TEST_Harness.AssertEqualText "pillar-roundtrip-2024-01-15-2025-07-15-1y6m", "date:2025-07-15", Actual
@@ -10064,75 +10929,6 @@ Private Sub CaseDateFromPillar04()
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 2, 10), CVErr(2042)))
         TEST_Harness.AssertEqualText "propagation-pillar-n-a", "err:#N/A", Actual
         TEST_Harness.RecordTextResult "propagation-pillar-n-a", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
-
-'------------------------------------------------------------------------------
-' EXIT PROCEDURE
-'------------------------------------------------------------------------------
-    'Exit before the error handler
-        Exit Sub
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
-CaseFailed:
-    'Record the unexpected error against the case
-        TEST_Harness.RecordCaseError
-
-End Sub
-
-Private Sub CaseDateFromPillar05()
-
-'
-'------------------------------------------------------------------------------
-'                           CASES OF DATEFROMPILLAR
-'------------------------------------------------------------------------------
-' PURPOSE
-'   Replays 9 worksheet-function cases of KPR_Dates_DateFromPillar, from propagation-pillar-name
-'   to surface-datefrompillar-ok, called from VBA.
-'
-' WHY THIS EXISTS
-'   Each assertion compares one case's encoded result with its expected file.
-'
-' INPUTS
-'   None
-'
-' RETURNS
-'   Nothing
-'
-' BEHAVIOR
-'   Calls the function with each case's arguments, encodes the result, asserts it
-'   under the case's id and records it for the exact accuracy contracts.
-'
-' ERROR POLICY
-'   An unexpected error is recorded against the case by
-'   TEST_Harness.RecordCaseError and does not stop the run
-'
-' DEPENDENCIES
-'   KPR_Dates_DateFromPillar, TEST_DateCaseSupport, TEST_Harness
-'
-' NOTES
-'   Generated by tools/gen_date_case_suite.py from tests/fixtures/
-'
-' UPDATED
-'   2026-11-26
-'------------------------------------------------------------------------------
-
-'------------------------------------------------------------------------------
-' DECLARE
-'------------------------------------------------------------------------------
-    Dim Actual          As String       'The encoded result of the case
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Record an unexpected error against the case
-        On Error GoTo CaseFailed
-    'Start the case
-        TEST_Harness.BeginCase "date-from-pillar-05"
-
-'------------------------------------------------------------------------------
-' RUN CASES
-'------------------------------------------------------------------------------
     'Incoming errors propagate verbatim at a Pillar position.
         Actual = TEST_DateCaseSupport.Encode(KPR_Dates_DateFromPillar(DateSerial(2024, 2, 10), CVErr(2029)))
         TEST_Harness.AssertEqualText "propagation-pillar-name", "err:#NAME?", Actual

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-boundary-facade-numeric-control",
+  "synthetic": true,
+  "description": "Legacy boundary suite: facade/numeric control.",
+  "category": "invalid",
+  "calculation": "CALC-02",
+  "function": "KPR_Dates_DayOfWeek",
+  "context": "direct",
+  "arguments": [
+    "date:2026-03-15",
+    "lng:1"
+  ]
+}

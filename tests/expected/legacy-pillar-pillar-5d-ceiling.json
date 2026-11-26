@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "kind": "test-expected",
+  "fixture": "legacy-pillar-pillar-5d-ceiling",
+  "outputs": [
+    {
+      "quantity": "pillar_token",
+      "scope": null,
+      "rule": null,
+      "text": "str:\"5D\"",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Ported from the earlier project's pillar regression suite (pillar/5D ceiling); the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    }
+  ]
+}

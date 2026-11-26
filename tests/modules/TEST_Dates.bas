@@ -52,7 +52,7 @@ Option Private Module
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "dates"             'Suite name in the run log
     Private Const EXPECTED_CASES        As Long = 4                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 81                'Assertions a complete run evaluates
+    Private Const EXPECTED_ASSERTIONS   As Long = 85                'Assertions a complete run evaluates
 
     'The native error numbers that the Conditions table lists, and one an error passed in may hold
     Private Const ERROR_VALUE           As Long = 2015                  '#VALUE!
@@ -78,7 +78,7 @@ Public Sub RunDateTests()
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
 '   RESULT=PASS; suite=dates; operation=PASS; completeness=COMPLETE; cases=4;
-'   assertions=81; failures=0; cleanup=PASS; recovery=NONE
+'   assertions=85; failures=0; cleanup=PASS; recovery=NONE
 '
 ' WHY THIS EXISTS
 '   One entry point runs the suite and reports it through the harness, so that a run is
@@ -537,7 +537,7 @@ Private Sub CaseControls()
 '                         CHECK THE OPTIONAL CONTROLS
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Omitted, Empty and Missing controls select the default; one element is a scalar. 6 assertions.
+'   Omitted, Empty and Missing controls select the default; one element is a scalar. 10 assertions.
 '
 ' WHY THIS EXISTS
 '   Part of the evidence that the array rules hold as the calculation contracts state them
@@ -580,10 +580,14 @@ Private Sub CaseControls()
         TEST_Harness.AssertEqualDouble "omitted", 3, KPR_Dates_DayOfWeek(46351#)
         TEST_Harness.AssertEqualDouble "empty", 3, KPR_Dates_DayOfWeek(46351#, Empty)
         TEST_Harness.AssertEqualDouble "forwarded-missing", 3, ForwardDayOfWeek(46351#)
+        TEST_Harness.AssertEqualDouble "forwarded-missing-keep-eom", 45380, ForwardAddMonths(45351#, 1)
+        TEST_Harness.AssertEqualText "forwarded-missing-rounding-below-half", "1W", ForwardPillarFromDates(46023#, 46033#)
+        TEST_Harness.AssertEqualText "forwarded-missing-rounding-above-half", "2W", ForwardPillarFromDates(46023#, 46034#)
     'A one-element control is a scalar
         TEST_Harness.AssertEqualDouble "one-element", 4, KPR_Dates_DayOfWeek(46351#, Array(False))
-    'Rounding text is trimmed and folded in ASCII
+    'Rounding text is trimmed of spaces and tabs and folded in ASCII
         TEST_Harness.AssertEqualText "rounding-empty", "3M", KPR_Dates_PillarFromDates(46023#, 46123#, Empty)
+        TEST_Harness.AssertEqualText "rounding-padded-tab", "3W", KPR_Dates_PillarFromDates(46096#, 46121#, "  floor" & vbTab)
     'A control never vectorizes: its array is CONTROL_NOT_SCALAR, not a shape
         TEST_Harness.AssertErrorValue "control-array", _
             ERROR_VALUE, _
@@ -659,5 +663,113 @@ Private Function ForwardDayOfWeek( _
 '------------------------------------------------------------------------------
     'WeekBase is Missing when the caller left it out
         ForwardDayOfWeek = KPR_Dates_DayOfWeek(DateIn, WeekBase)
+
+End Function
+
+Private Function ForwardAddMonths( _
+    ByVal DateIn As Variant, _
+    ByVal nMonths As Variant, _
+    Optional ByVal Opt_KeepEOM As Variant) As Variant
+
+'
+'------------------------------------------------------------------------------
+'                          FORWARD AN OMITTED CONTROL
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Calls KPR_Dates_AddMonths with its own omitted Optional argument, which arrives as Missing.
+'
+' WHY THIS EXISTS
+'   A VBA caller that forwards an omitted Optional argument passes Missing, which must select the
+'   default like an omitted control (data contract, Control values)
+'
+' INPUTS
+'   DateIn
+'     The date
+'
+'   nMonths
+'     The months to add
+'
+'   Opt_KeepEOM
+'     Left out, so that it is Missing
+'
+' RETURNS
+'   Variant
+'     The result of KPR_Dates_AddMonths
+'
+' BEHAVIOR
+'   Forwards every argument
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   KPR_Dates_AddMonths
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' FORWARD
+'------------------------------------------------------------------------------
+    'Opt_KeepEOM is Missing when the caller left it out
+        ForwardAddMonths = KPR_Dates_AddMonths(DateIn, nMonths, Opt_KeepEOM)
+
+End Function
+
+Private Function ForwardPillarFromDates( _
+    ByVal StartDate As Variant, _
+    ByVal EndDate As Variant, _
+    Optional ByVal Opt_Rounding As Variant) As Variant
+
+'
+'------------------------------------------------------------------------------
+'                          FORWARD AN OMITTED CONTROL
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Calls KPR_Dates_PillarFromDates with its own omitted Optional argument, which arrives as Missing.
+'
+' WHY THIS EXISTS
+'   A VBA caller that forwards an omitted Optional argument passes Missing, which must select the
+'   default like an omitted control (data contract, Control values)
+'
+' INPUTS
+'   StartDate
+'     The anchor date
+'
+'   EndDate
+'     The end date
+'
+'   Opt_Rounding
+'     Left out, so that it is Missing
+'
+' RETURNS
+'   Variant
+'     The result of KPR_Dates_PillarFromDates
+'
+' BEHAVIOR
+'   Forwards every argument
+'
+' ERROR POLICY
+'   None
+'
+' DEPENDENCIES
+'   KPR_Dates_PillarFromDates
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' FORWARD
+'------------------------------------------------------------------------------
+    'Opt_Rounding is Missing when the caller left it out
+        ForwardPillarFromDates = KPR_Dates_PillarFromDates(StartDate, EndDate, Opt_Rounding)
 
 End Function

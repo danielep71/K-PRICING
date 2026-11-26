@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "legacy-host-host-guard-passes-locator-path",
+  "synthetic": true,
+  "description": "Legacy host suite: host/guard passes locator path.",
+  "category": "nominal",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "lng:2026",
+    "lng:3",
+    "lng:1",
+    "lng:1"
+  ]
+}
