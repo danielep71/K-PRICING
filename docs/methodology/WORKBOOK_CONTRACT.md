@@ -38,7 +38,9 @@ These defaults hold unless a decision below replaces one:
   or a hard-coded address. `M_Ranges` reads only the Range objects that a
   worksheet function receives as arguments, and `M_Host` only
   `Application.Caller` and the `Date1904` of the caller's own workbook;
-  neither addresses a sheet. Core, classes and the facade never touch a
+  `M_Register` only gives the 22 functions of its own workbook their
+  Insert Function descriptions (`Application.MacroOptions`); none addresses a
+  sheet. Core, classes and the facade never touch a
   workbook object: the facade passes a Range argument to `M_Ranges` unread,
   and its one call to the Excel object model is `Application.Volatile` in
   `KPR_Dates_HostDateSystem`.
