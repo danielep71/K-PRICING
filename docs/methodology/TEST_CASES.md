@@ -215,7 +215,9 @@ every output a text and its `scope` `null`:
   when every position of a filled array fails alike.
 
 The level of a condition is the one the data contract's *Conditions* table
-gives it. `tests/derivations/date_layer_reference.py` computes every expected
+gives it. The project suite `TEST_DateCases` replays the cases whose caller is
+VBA in Excel ([harness guide](TEST_HARNESS.md#modules)); a worksheet caller's
+cases need a worksheet. `tests/derivations/date_layer_reference.py` computes every expected
 output of these cases from the contracts, so they are `illustrative`.
 
 What JSON cannot hold stays a VBA test: an object, a Range, of several areas or

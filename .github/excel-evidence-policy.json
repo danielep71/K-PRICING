@@ -9,7 +9,13 @@
     "expected_cases": 14,
     "expected_assertions": 34
   },
-  "suites": [],
+  "suites": [
+    {"name": "date-cases", "source": "tests/modules/TEST_DateCases.bas",
+     "certification_entry_point": "CertifyDateCases", "expected_cases": 61,
+     "expected_assertions": 1432, "log": "date-cases.log",
+     "certification_log": "date-cases-certification.log",
+     "results": "date-cases-results.json"}
+  ],
   "modes": [
     {"mode": "NORMAL", "log": "examples.log", "must_pass": true},
     {"mode": "INJECTED_FAILURE", "log": "injected.log", "must_pass": false},
