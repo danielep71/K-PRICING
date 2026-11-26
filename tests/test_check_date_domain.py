@@ -251,6 +251,40 @@ class HostGuardTest(unittest.TestCase):
         self.assertFalse(any("reads an argument before" in message
                              for message in messages(sources)))
 
+    def test_a_reader_on_the_line_of_the_guard_is_ordered_by_position(self) -> None:
+        reader = "M_Ranges.TryDescribeArgument(Values(1), Kinds(1), RowCounts(1), ColCounts(1), Condition)"
+        before = (f"        Flag = {reader}: If Not M_Host.TryCheckHost(Condition) Then",
+                  f"        If {reader} And M_Host.TryCheckHost(Condition) Then",
+                  f"        Flag = {reader}: Flag = M_Host.TryCheckHost(Condition): If Not Flag Then")
+        for line in before:
+            with self.subTest(line=line):
+                sources = replaced(FACADE, GUARD, line)
+                self.assertTrue(any("reads an argument before TryCheckHost" in message
+                                    for message in messages(sources)), line)
+
+    def test_a_reader_on_the_line_of_the_guard_but_after_it_is_accepted(self) -> None:
+        reader = "M_Ranges.TryDescribeArgument(Values(1), Kinds(1), RowCounts(1), ColCounts(1), Condition)"
+        sources = replaced(FACADE, GUARD, f"        If Not M_Host.TryCheckHost(Condition) And {reader} Then")
+        self.assertFalse(any("reads an argument before" in message for message in messages(sources)))
+
+    def test_a_longer_name_is_not_a_call_of_the_required_procedure(self) -> None:
+        sources = replaced(FACADE, "KPR_Dates_DaysInMonth = EvaluateCall(dfDaysInMonth, Values)",
+                           "KPR_Dates_DaysInMonth = EvaluateCallUnchecked(dfDaysInMonth, Values)")
+        sources[FACADE] = sources[FACADE].replace(
+            "Private Function EvaluateCall(", "Private Function EvaluateCallUnchecked(Fn, V) As Variant\n"
+            "        EvaluateCallUnchecked = Empty\nEnd Function\n\nPrivate Function EvaluateCall(", 1)
+        self.assertTrue(any("KPR_Dates_DaysInMonth must call EvaluateCall exactly once" in message
+                            for message in messages(sources)), messages(sources))
+
+    def test_a_longer_host_name_is_not_the_host_guard_or_reader(self) -> None:
+        sources = replaced(FACADE, GUARD, "        If Not M_Host.TryCheckHostLater(Condition) Then")
+        self.assertTrue(any("EvaluateCall must call TryCheckHost exactly once" in message
+                            for message in messages(sources)), messages(sources))
+        sources = replaced(FACADE, "        If Not M_Host.TryReadHostDateSystem(DateSystem, Condition) Then",
+                           "        If Not M_Host.TryReadHostDateSystemNow(DateSystem, Condition) Then")
+        self.assertTrue(any("must call TryReadHostDateSystem exactly once" in message
+                            for message in messages(sources)), messages(sources))
+
     def test_the_evaluator_reading_the_host_itself_is_rejected(self) -> None:
         for call in ("If Not M_Host.TryReadHostDateSystem(I, Condition) Then Exit Function",
                      "Ok = m_host.tryreadhostdatesystem(I, Condition)",

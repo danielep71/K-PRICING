@@ -185,11 +185,12 @@ def executable(procedure: Procedure) -> list[tuple[int, str]]:
 
 def calls_of(statements: Sequence[tuple[int, str]], name: str) -> list[int]:
     """The lines whose statements call ``name``, qualified or not, never as an assignment target."""
-    pattern = re.compile(rf"(?<![\w.])(?:[A-Za-z_]\w*\s*\.\s*)?{name}\s*\(?", re.I)
+    pattern = re.compile(rf"(?<![\w.])(?:[A-Za-z_]\w*\s*\.\s*)?{name}(?!\w)\s*\(?", re.I)
     found = []
     for line, statement in statements:
         for match in pattern.finditer(statement):
-            if not re.match(rf"\s*{name}\s*=", statement[match.start():], re.I):
+            if not re.match(rf"\s*(?:[A-Za-z_]\w*\s*\.\s*)?{name}(?!\w)\s*=", statement[match.start():],
+                            re.I):
                 found.append(line)
     return found
 
@@ -234,10 +235,15 @@ def evaluator_findings(procedure: Procedure | None, readers: re.Pattern[str]) ->
     if len(guards) != 1:
         return [*reads, Finding(FACADE, procedure.line, f"{EVALUATOR} must call {CHECK} exactly "
                                 f"once; it calls it {len(guards)} times")]
-    return reads + [Finding(FACADE, line, f"{EVALUATOR} reads an argument before {CHECK}: the host rule "
-                    "comes first")
-            for line, statement in body
-            if line < guards[0] and readers.search(statement)]
+    guard = re.compile(rf"(?<![\w.])(?:[A-Za-z_]\w*\s*\.\s*)?{CHECK}(?!\w)", re.I)
+    where, found = next((index, hit) for index, (_, statement) in enumerate(body)
+                        if (hit := guard.search(statement)))
+    early = [Finding(FACADE, line, f"{EVALUATOR} reads an argument before {CHECK}: the host rule "
+                     "comes first")
+             for index, (line, statement) in enumerate(body[:where + 1])
+             if (match := readers.search(statement)) and (
+                 index < where or match.start() < found.start())]
+    return reads + early
 
 
 def host_module_findings(text: str) -> list[Finding]:
