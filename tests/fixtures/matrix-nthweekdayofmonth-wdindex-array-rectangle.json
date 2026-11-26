@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-nthweekdayofmonth-wdindex-array-rectangle",
+  "synthetic": true,
+  "description": "WdIndex: a rectangle keeps its shape and per-element outcomes.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "num:2",
+    "arr2:2x2[num:5;num:7;num:8;num:3]",
+    "num:1"
+  ]
+}

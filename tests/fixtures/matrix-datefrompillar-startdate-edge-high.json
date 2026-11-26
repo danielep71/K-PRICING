@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-datefrompillar-startdate-edge-high",
+  "synthetic": true,
+  "description": "StartDate: the highest supported value.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:9999-12-31",
+    "str:\"6M\""
+  ]
+}

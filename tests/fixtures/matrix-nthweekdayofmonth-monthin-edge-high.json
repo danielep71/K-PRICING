@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-nthweekdayofmonth-monthin-edge-high",
+  "synthetic": true,
+  "description": "MonthIn: the highest supported value.",
+  "category": "boundary",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "num:12",
+    "num:5",
+    "num:1"
+  ]
+}

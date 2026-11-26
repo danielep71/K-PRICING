@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-nthweekdayofmonth-yearin-array-column",
+  "synthetic": true,
+  "description": "YearIn: a column keeps its orientation.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "arr2:3x1[num:2024;num:1900;num:2023]",
+    "num:2",
+    "num:5",
+    "num:1"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-format-error-start-text",
+  "synthetic": true,
+  "description": "StartDate parse failure.",
+  "category": "invalid",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "str:\"bad\"",
+    "date:2024-01-15"
+  ]
+}

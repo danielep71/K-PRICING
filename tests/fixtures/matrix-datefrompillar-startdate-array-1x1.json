@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-datefrompillar-startdate-array-1x1",
+  "synthetic": true,
+  "description": "StartDate: a 1x1 array is the scalar call.",
+  "category": "nominal",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x1[date:2024-01-15]",
+    "str:\"6M\""
+  ]
+}

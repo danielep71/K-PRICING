@@ -137,6 +137,22 @@ Use only the categories an entry needs.
   static checks were run. Nothing was run in Excel, so what the Insert Function
   dialog shows is not yet verified
   ([#10](https://github.com/danielep71/K-PRICING/issues/10)).
+- The date layer's 1,361 test cases, converted from the project's earlier
+  fixture set into a third case form, the worksheet-function case: one call of
+  a `KPR_Dates_*` function, its caller (VBA, a 1900 or a 1904 worksheet) and
+  its arguments as encoded values, which can hold an Excel error, `Empty`, a
+  `Date`, an array or a 100,001-element call
+  ([worksheet-function cases](docs/methodology/TEST_CASES.md#worksheet-function-cases)).
+  The expected file holds the result and, for a failing call, its condition.
+  `tests/derivations/date_layer_reference.py`, the earlier reference model
+  carried over, recomputes every expected value from the contracts without VBA
+  or Excel, so the values are `illustrative`; `tools/check_test_cases.py`
+  checks the new form, and `tools/check_derivations.py`, which now runs several
+  cases at a time, compares all of them. The cases are 601 `nominal`, 246
+  `boundary` and 514 `invalid`. None was run in Excel: the runner is
+  [#13](https://github.com/danielep71/K-PRICING/issues/13) and the `independent` values from
+  Excel are [#14](https://github.com/danielep71/K-PRICING/issues/14)
+  ([#11](https://github.com/danielep71/K-PRICING/issues/11)).
 
 ### Changed
 

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-lastweekdayofmonth-ws1904",
+  "synthetic": true,
+  "description": "A 1904 worksheet call is one call-level #N/A.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_LastWeekdayOfMonth",
+  "context": "ws1904",
+  "arguments": [
+    "num:2024",
+    "num:2",
+    "num:5"
+  ]
+}

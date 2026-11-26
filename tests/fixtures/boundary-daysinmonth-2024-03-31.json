@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "boundary-daysinmonth-2024-03-31",
+  "synthetic": true,
+  "description": "Gregorian boundaries; a boundary is a result and is window-gated.",
+  "category": "boundary",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_DaysInMonth",
+  "context": "direct",
+  "arguments": [
+    "date:2024-03-31"
+  ]
+}

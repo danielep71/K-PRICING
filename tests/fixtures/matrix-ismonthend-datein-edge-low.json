@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-ismonthend-datein-edge-low",
+  "synthetic": true,
+  "description": "DateIn: the lowest supported value.",
+  "category": "boundary",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsMonthEnd",
+  "context": "direct",
+  "arguments": [
+    "date:1900-03-01"
+  ]
+}

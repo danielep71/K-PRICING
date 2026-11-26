@@ -14,12 +14,13 @@ integrity** runs it ([checking](#checking)). It never runs a calculation.
 ## Files
 
 A case is one fixture and one expected-result file. The fixture takes one of
-two forms:
+three forms:
 
 | File | Holds |
 | --- | --- |
 | `tests/fixtures/<case-id>.json` | A JSON fixture: synthetic inputs as records, grouped by dataset |
 | `tests/fixtures/<case-id>/` | A [file-based case](#file-based-cases): a `case.json` manifest and one directory per variant, holding input files |
+| `tests/fixtures/<case-id>.json` | A [worksheet-function case](#worksheet-function-cases): one call of a worksheet function, with its arguments as encoded values |
 | `tests/expected/<case-id>.json` | Expected results, each with its provenance |
 | `tests/derivations/<name>.py` | Optional: a script that computes expected values from the documented method, separately from the code under test |
 | `tests/accuracy/contracts.json` | Optional: the [accuracy contracts](#accuracy-contracts), each stating the worst error a calculation guarantees over a set of cases |
@@ -30,17 +31,22 @@ two forms:
   read. Use a **file-based case** to test the import of the files the
   [data contract](DATA_CONTRACT.md) defines, where the file itself matters:
   delimiters, headers, encodings, decimal separators, line endings, a
-  malformed line, or a reconciliation against control totals.
+  malformed line, or a reconciliation against control totals. Use a
+  **worksheet-function case** to test one call of a worksheet function, whose
+  arguments may be any value a worksheet or VBA passes: an Excel error,
+  `Empty`, an array.
 - Case IDs are lowercase kebab-case, equal to the file or directory names,
   and never reused. A case has one form, never both.
-- A case whose expected values are all `illustrative` starts with
-  `illustrative-`, and only such a case may.
+- A JSON fixture or file-based case whose expected values are all
+  `illustrative` starts with `illustrative-`, and only such a case may. A
+  worksheet-function case is named for what it tests, whatever its classes, so
+  it keeps its ID when an `independent` value is added to it.
 - Every fixture has an expected file, and every expected file a fixture.
 - JSON files are UTF-8, stored with LF. All data is **synthetic**: never real
   positions, counterparties, clients, amounts or market data.
 
 `illustrative-format-example` and `illustrative-file-import-example` show the
-two forms and hold no regulatory value. They use the illustrative entries of
+first two forms and hold no regulatory value. They use the illustrative entries of
 the methodology guides; remove them when you replace those.
 
 <a id="fixture-format"></a>
@@ -148,6 +154,73 @@ tests/fixtures/illustrative-file-import-example/
 
 The other rules are the same for both forms. The category applies to every
 variant, so an `invalid` case needs a `_status` text output in each variant.
+
+<a id="worksheet-function-cases"></a>
+
+## Worksheet-function cases
+
+The cases of the date layer's 22 worksheet functions call a function, not a
+calculation over datasets. Their arguments are worksheet values, which the
+[fixture format](#fixture-format) cannot hold: an Excel error, `Empty`, a
+`Date`, an array, or a number where a date is expected.
+
+```json
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-datefrompillar-pillar-array-rectangle",
+  "synthetic": true,
+  "description": "Pillar: a rectangle keeps its shape and per-element outcomes.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": ["date:2024-01-15", "arr2:2x2[str:\"6M\";str:\"ON\";bool:TRUE;str:\"3M\"]"]
+}
+```
+
+| Rule | Detail |
+| --- | --- |
+| Envelope | `schema_version` (1), `kind` (`test-call-fixture`), `id`, `synthetic` (`true`), `description`, `category`, `calculation`, `function`, `context` and `arguments` are required, and no other key is allowed. Every key is checked in every category: what an `invalid` case breaks is an argument's value, not the fixture |
+| Function | A function of the table of [date-layer contracts](CALCULATION_CONTRACTS.md#date-layer-contracts); `calculation` is its contract |
+| Context | The caller: `direct` (a call from VBA, under the 1900 serial contract), `ws1900` or `ws1904` (a worksheet formula in a workbook on that date system) |
+| Arguments | The arguments in signature order, each an encoded value (below), at least the required ones and at most all of them. An optional argument left out is not listed, so only trailing ones can be left out |
+
+**Encoded values.** Each argument, and each expected result, is one text:
+
+| Encoding | Value |
+| --- | --- |
+| `date:2024-02-29` | A `Date` |
+| `datetime:2024-02-29T13:30:00` | A `Date` with a time of day |
+| `num:45292.5` | A `Double`, the worksheet's number type |
+| `lng:5` | A `Long` |
+| `str:"text"` | A `String` of printable ASCII, as a JSON string, so that outer spaces show |
+| `bool:TRUE`, `bool:FALSE` | A `Boolean` |
+| `empty`, `null` | `Empty`, `Null` |
+| `err:#N/A` | An Excel error: `#NULL!`, `#DIV/0!`, `#VALUE!`, `#REF!`, `#NAME?`, `#NUM!` or `#N/A` |
+| `arr1:[a;b;c]` | A one-dimensional array, read as a row |
+| `arr2:2x3[a;b;c;d;e;f]` | A two-dimensional array, its items by rows |
+| `fill2:1x100000[a]` | A two-dimensional array with the same value in every position, so that a case at the capacity limit stays small |
+
+**Expected file.** It has the [expected-result format](#expected-format), with
+every output a text and its `scope` `null`:
+
+- the result, under the contract's output quantity, as an encoded value: the
+  function's value, an array of the arguments' shape, or the Excel error of a
+  failing call;
+- for a call that fails, at a call or element level, the contract's `_status`
+  quantity, whose text is the [condition](DATA_CONTRACT.md#conditions): one
+  identifier for a scalar result or a call-level failure; for an array, each
+  failing position as `r1c2=<condition>`, separated by `;`, or `all=<condition>`
+  when every position of a filled array fails alike.
+
+The level of a condition is the one the data contract's *Conditions* table
+gives it. `tests/derivations/date_layer_reference.py` computes every expected
+output of these cases from the contracts, so they are `illustrative`.
+
+What JSON cannot hold stays a VBA test: an object, a Range, of several areas or
+not, a jagged array, a `Decimal`, and the host state of a worksheet caller
+whose date system cannot be read.
 
 <a id="expected-format"></a>
 
@@ -745,6 +818,9 @@ It checks:
 - strict JSON, with no duplicate key and only finite numbers, in every
   category;
 - the harness metadata of every fixture;
+- for a worksheet-function case, every key: the function against the table of
+  date-layer contracts, with its contract and number of arguments, the
+  context, and that each argument is an encoded value;
 - for a file-based case:
   - the whole manifest;
   - the variant names, and that each variant holds only files the data
@@ -768,6 +844,8 @@ It checks:
 - the reference class, its source against the register, and its script;
 - the `illustrative` naming rules, and a `_status` text output in every
   `invalid` case;
+- for a worksheet-function case, that every output is a text and that each
+  result that is not a `_status` is an encoded value;
 - the [traceability table](VALIDATION_PLAN.md#traceability) of the validation
   plan: each row's source, VBA procedures and cases exist, its calculation
   step is one that the *Rules* table of its calculation contract lists, each

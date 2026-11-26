@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-datefrompillar-pillar-array-rectangle",
+  "synthetic": true,
+  "description": "Pillar: a rectangle keeps its shape and per-element outcomes.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "arr2:2x2[str:\"6M\";str:\"ON\";bool:TRUE;str:\"3M\"]"
+  ]
+}

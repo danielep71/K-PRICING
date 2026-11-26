@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "kind": "test-expected",
+  "fixture": "pillar-format-transition-2024-01-15-23-floor",
+  "outputs": [
+    {
+      "quantity": "pillar_token",
+      "scope": null,
+      "rule": null,
+      "text": "str:\"3W\"",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Converted from the project's earlier date-layer fixture set; the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    }
+  ]
+}

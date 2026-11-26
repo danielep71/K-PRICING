@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-reject-text-1800-02-30",
+  "synthetic": true,
+  "description": "Year below 1900 is DATE_WINDOW before component checks.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "str:\"1800-02-30\""
+  ]
+}

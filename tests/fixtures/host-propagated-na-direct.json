@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "host-propagated-na-direct",
+  "synthetic": true,
+  "description": "A propagated #N/A is value-identical to host #N/A; provenance is the condition.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "err:#N/A"
+  ]
+}

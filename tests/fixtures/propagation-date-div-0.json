@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "propagation-date-div-0",
+  "synthetic": true,
+  "description": "Incoming errors propagate verbatim at a date position.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "err:#DIV/0!"
+  ]
+}

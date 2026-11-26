@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-four-argument-broadcast",
+  "synthetic": true,
+  "description": "One non-scalar argument.",
+  "category": "nominal",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "arr2:1x3[num:1;num:2;num:3]",
+    "num:1",
+    "num:1"
+  ]
+}

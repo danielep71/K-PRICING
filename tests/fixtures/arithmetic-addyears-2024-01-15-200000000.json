@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "arithmetic-addyears-2024-01-15-200000000",
+  "synthetic": true,
+  "description": "Exact day/week shifts and clip-mode month shifts; every result is window-gated and overflow returns #NUM!.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddYears",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "num:200000000"
+  ]
+}

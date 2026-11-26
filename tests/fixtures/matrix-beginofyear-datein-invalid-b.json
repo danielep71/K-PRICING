@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-beginofyear-datein-invalid-b",
+  "synthetic": true,
+  "description": "DateIn: a second invalid-domain value.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_BeginOfYear",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024-02-30\""
+  ]
+}

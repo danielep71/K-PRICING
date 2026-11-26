@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-nthweekdayofmonth-yearin-edge-low",
+  "synthetic": true,
+  "description": "YearIn: the lowest supported value.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:1900",
+    "num:2",
+    "num:5",
+    "num:1"
+  ]
+}

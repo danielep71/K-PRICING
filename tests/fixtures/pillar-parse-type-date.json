@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-parse-type-date",
+  "synthetic": true,
+  "description": "Non-text payloads; a blank required value is INPUT_BLANK_REQUIRED.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "date:2024-01-01"
+  ]
+}

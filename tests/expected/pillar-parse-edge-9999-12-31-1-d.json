@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "kind": "test-expected",
+  "fixture": "pillar-parse-edge-9999-12-31-1-d",
+  "outputs": [
+    {
+      "quantity": "pillar_date",
+      "scope": null,
+      "rule": null,
+      "text": "err:#NUM!",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Converted from the project's earlier date-layer fixture set; the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    },
+    {
+      "quantity": "date_from_pillar_status",
+      "scope": null,
+      "rule": null,
+      "text": "PILLAR_AGGREGATE_RANGE",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Converted from the project's earlier date-layer fixture set; the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-addmonths-nmonths-array-column",
+  "synthetic": true,
+  "description": "NMonths: a column keeps its orientation.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-31",
+    "arr2:3x1[num:1;num:-2147483648;num:-45]"
+  ]
+}

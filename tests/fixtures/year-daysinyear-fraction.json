@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "year-daysinyear-fraction",
+  "synthetic": true,
+  "description": "Strict integer year, domain 1900-9999.",
+  "category": "invalid",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_DaysInYear",
+  "context": "direct",
+  "arguments": [
+    "num:2024.5"
+  ]
+}

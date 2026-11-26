@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-isyearend-datein-invalid-a",
+  "synthetic": true,
+  "description": "DateIn: an invalid-domain value.",
+  "category": "invalid",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsYearEnd",
+  "context": "direct",
+  "arguments": [
+    "date:1900-02-28"
+  ]
+}

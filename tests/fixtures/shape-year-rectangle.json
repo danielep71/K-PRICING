@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-year-rectangle",
+  "synthetic": true,
+  "description": "Vectorized year predicate.",
+  "category": "nominal",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_IsLeapYear",
+  "context": "direct",
+  "arguments": [
+    "arr2:2x2[num:1900;num:2000;num:2024;num:2023]"
+  ]
+}

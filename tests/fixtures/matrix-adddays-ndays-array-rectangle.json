@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-adddays-ndays-array-rectangle",
+  "synthetic": true,
+  "description": "NDays: a rectangle keeps its shape and per-element outcomes.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-10",
+    "arr2:2x2[num:20;num:2147483647;num:1E+20;num:-45]"
+  ]
+}

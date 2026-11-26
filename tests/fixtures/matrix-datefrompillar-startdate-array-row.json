@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-datefrompillar-startdate-array-row",
+  "synthetic": true,
+  "description": "StartDate: a row keeps valid, invalid and error elements at their positions.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x3[date:2024-01-15;date:1900-02-28;err:#DIV/0!]",
+    "str:\"6M\""
+  ]
+}

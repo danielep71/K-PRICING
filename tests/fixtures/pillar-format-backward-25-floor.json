@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-format-backward-25-floor",
+  "synthetic": true,
+  "description": "Negative intervals round the magnitude and restore the sign.",
+  "category": "nominal",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2024-03-15",
+    "date:2024-02-19",
+    "str:\"FLOOR\""
+  ]
+}

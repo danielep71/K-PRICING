@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "arithmetic-addyears-1900-03-01-minus1",
+  "synthetic": true,
+  "description": "Exact day/week shifts and clip-mode month shifts; every result is window-gated and overflow returns #NUM!.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddYears",
+  "context": "direct",
+  "arguments": [
+    "date:1900-03-01",
+    "num:-1"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-addmonths-datein-invalid-a",
+  "synthetic": true,
+  "description": "DateIn: an invalid-domain value.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "date:1900-02-28",
+    "num:1"
+  ]
+}

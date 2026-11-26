@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "surface-datefrompillar-bad-startdate",
+  "synthetic": true,
+  "description": "An invalid StartDate is an element-level #VALUE!.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024/02/10\"",
+    "str:\"6M\""
+  ]
+}

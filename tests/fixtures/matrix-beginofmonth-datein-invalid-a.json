@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-beginofmonth-datein-invalid-a",
+  "synthetic": true,
+  "description": "DateIn: an invalid-domain value.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_BeginOfMonth",
+  "context": "direct",
+  "arguments": [
+    "date:1900-02-28"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-addmonths-nmonths-propagated",
+  "synthetic": true,
+  "description": "NMonths: an incoming error propagates.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-31",
+    "err:#N/A"
+  ]
+}

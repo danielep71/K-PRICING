@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-pillarfromdates-startdate-edge-low",
+  "synthetic": true,
+  "description": "StartDate: the lowest supported value.",
+  "category": "boundary",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:1900-03-01",
+    "date:2024-07-15"
+  ]
+}

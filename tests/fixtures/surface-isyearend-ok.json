@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "surface-isyearend-ok",
+  "synthetic": true,
+  "description": "Supported surface, ISO text inputs.",
+  "category": "nominal",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsYearEnd",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024-12-31\""
+  ]
+}

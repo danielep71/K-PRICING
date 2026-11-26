@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "control-rounding-unknown",
+  "synthetic": true,
+  "description": "Opt_Rounding is trimmed text NEAREST, FLOOR or CEILING.",
+  "category": "invalid",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "date:2024-02-10",
+    "str:\"ROUND\""
+  ]
+}

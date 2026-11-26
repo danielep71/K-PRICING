@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-isquarterend-datein-invalid-b",
+  "synthetic": true,
+  "description": "DateIn: a second invalid-domain value.",
+  "category": "invalid",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsQuarterEnd",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024-02-30\""
+  ]
+}

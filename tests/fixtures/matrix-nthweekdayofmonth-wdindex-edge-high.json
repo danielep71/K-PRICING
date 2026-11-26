@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-nthweekdayofmonth-wdindex-edge-high",
+  "synthetic": true,
+  "description": "WdIndex: the highest supported value.",
+  "category": "boundary",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "num:2",
+    "num:7",
+    "num:1"
+  ]
+}

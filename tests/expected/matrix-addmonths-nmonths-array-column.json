@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "kind": "test-expected",
+  "fixture": "matrix-addmonths-nmonths-array-column",
+  "outputs": [
+    {
+      "quantity": "shifted_date",
+      "scope": null,
+      "rule": null,
+      "text": "arr2:3x1[date:2024-02-29;err:#NUM!;date:2020-04-30]",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Converted from the project's earlier date-layer fixture set; the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    },
+    {
+      "quantity": "date_shift_status",
+      "scope": null,
+      "rule": null,
+      "text": "r2c1=RESULT_WINDOW",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Converted from the project's earlier date-layer fixture set; the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    }
+  ]
+}

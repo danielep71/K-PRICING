@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "host-array-ws1904",
+  "synthetic": true,
+  "description": "One call-level #N/A, no array.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "ws1904",
+  "arguments": [
+    "arr2:1x3[date:2024-02-10;date:2024-02-10;date:2024-02-10]"
+  ]
+}

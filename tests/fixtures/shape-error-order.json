@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-error-order",
+  "synthetic": true,
+  "description": "The first error in signature order propagates at each position.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x2[err:#REF!;date:2024-01-31]",
+    "arr2:1x2[err:#DIV/0!;err:#N/A]"
+  ]
+}

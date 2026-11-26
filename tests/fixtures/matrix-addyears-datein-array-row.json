@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-addyears-datein-array-row",
+  "synthetic": true,
+  "description": "DateIn: a row keeps valid, invalid and error elements at their positions.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddYears",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x3[date:2024-02-29;date:1900-02-28;err:#DIV/0!]",
+    "num:1"
+  ]
+}

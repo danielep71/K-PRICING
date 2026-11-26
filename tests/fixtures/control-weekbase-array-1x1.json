@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "control-weekbase-array-1x1",
+  "synthetic": true,
+  "description": "Opt_WeekBaseMonday accepts omitted, Empty or native Boolean only.",
+  "category": "nominal",
+  "calculation": "CALC-02",
+  "function": "KPR_Dates_DayOfWeek",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-11",
+    "arr2:1x1[bool:FALSE]"
+  ]
+}

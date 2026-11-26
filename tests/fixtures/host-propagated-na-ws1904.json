@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "host-propagated-na-ws1904",
+  "synthetic": true,
+  "description": "In a 1904 worksheet the same input is host refusal, not propagation.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "ws1904",
+  "arguments": [
+    "err:#N/A"
+  ]
+}

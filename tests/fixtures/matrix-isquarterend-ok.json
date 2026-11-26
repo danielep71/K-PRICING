@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-isquarterend-ok",
+  "synthetic": true,
+  "description": "A valid scalar call.",
+  "category": "nominal",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsQuarterEnd",
+  "context": "direct",
+  "arguments": [
+    "date:2024-03-31"
+  ]
+}

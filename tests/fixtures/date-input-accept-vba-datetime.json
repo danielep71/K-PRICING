@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-accept-vba-datetime",
+  "synthetic": true,
+  "description": "Native Date with a time component; time removed.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "datetime:2024-02-10T23:59:59"
+  ]
+}

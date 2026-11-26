@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-daysinyear-yearin-array-rectangle",
+  "synthetic": true,
+  "description": "YearIn: a rectangle keeps its shape and per-element outcomes.",
+  "category": "invalid",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_DaysInYear",
+  "context": "direct",
+  "arguments": [
+    "arr2:2x2[num:2024;num:9999;num:10000;num:2023]"
+  ]
+}

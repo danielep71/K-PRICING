@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-isquarterend-datein-array-1x1",
+  "synthetic": true,
+  "description": "DateIn: a 1x1 array is the scalar call.",
+  "category": "nominal",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsQuarterEnd",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x1[date:2024-03-31]"
+  ]
+}

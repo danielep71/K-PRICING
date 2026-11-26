@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "year-isleapyear-1901",
+  "synthetic": true,
+  "description": "Gregorian leap rule on a calendar year; no window gate.",
+  "category": "nominal",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_IsLeapYear",
+  "context": "direct",
+  "arguments": [
+    "num:1901"
+  ]
+}

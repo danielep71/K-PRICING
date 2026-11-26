@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-jagged",
+  "synthetic": true,
+  "description": "A jagged array is SHAPE_UNSUPPORTED, found during materialization.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "arr1:[arr1:[date:2024-01-10;date:2024-02-10];date:2024-02-10]"
+  ]
+}

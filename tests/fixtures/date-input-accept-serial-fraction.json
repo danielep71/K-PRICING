@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-accept-serial-fraction",
+  "synthetic": true,
+  "description": "Numeric serial with time fraction; fraction removed.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:45332.75"
+  ]
+}

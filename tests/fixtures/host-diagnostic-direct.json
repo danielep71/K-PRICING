@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "host-diagnostic-direct",
+  "synthetic": true,
+  "description": "No worksheet host: 1900 serial contract.",
+  "category": "nominal",
+  "calculation": "CALC-10",
+  "function": "KPR_Dates_HostDateSystem",
+  "context": "direct",
+  "arguments": []
+}

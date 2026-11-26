@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-parse-start-before-pillar",
+  "synthetic": true,
+  "description": "StartDate is evaluated before Pillar.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "str:\"bad\"",
+    "str:\"1X\""
+  ]
+}

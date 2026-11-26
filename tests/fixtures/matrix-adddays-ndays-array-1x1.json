@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-adddays-ndays-array-1x1",
+  "synthetic": true,
+  "description": "NDays: a 1x1 array is the scalar call.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-10",
+    "arr2:1x1[num:20]"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-scalar-1d-single",
+  "synthetic": true,
+  "description": "A one-element 1-D array is scalar.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "arr1:[date:2024-02-10]"
+  ]
+}

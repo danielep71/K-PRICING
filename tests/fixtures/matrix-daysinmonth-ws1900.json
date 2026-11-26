@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-daysinmonth-ws1900",
+  "synthetic": true,
+  "description": "A valid 1900 worksheet call evaluates normally.",
+  "category": "nominal",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_DaysInMonth",
+  "context": "ws1900",
+  "arguments": [
+    "date:2024-02-10"
+  ]
+}

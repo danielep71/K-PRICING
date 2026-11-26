@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-pillarfromdates-enddate-array-column",
+  "synthetic": true,
+  "description": "EndDate: a column keeps its orientation.",
+  "category": "nominal",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "arr2:3x1[date:2024-07-15;date:1900-03-01;date:2023-11-30]"
+  ]
+}

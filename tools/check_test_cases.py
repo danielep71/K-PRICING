@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import codecs
+import datetime
 import json
 import math
 import re
@@ -94,6 +95,15 @@ SUFFIXES = ("_amount", "_weight", "_factor", "_years", "_count", "_rate", "_date
 HARNESS_KEYS = frozenset({"schema_version", "kind", "id", "synthetic", "description",
                           "category", "reporting_date"})
 FIXTURE_KEYS = HARNESS_KEYS | {"calculation", "reporting_currency_code", "datasets"}
+# A worksheet-function case: one call of a function of the date layer.
+CALL_KIND = "test-call-fixture"
+CALL_KEYS = frozenset({"schema_version", "kind", "id", "synthetic", "description", "category",
+                       "calculation", "function", "context", "arguments"})
+CONTEXTS = frozenset({"direct", "ws1900", "ws1904"})
+# A row of the calculation contracts' table of worksheet functions: the
+# function, its arguments in code spans (optional ones in brackets) and its
+# contract.
+FUNCTION_ROW = re.compile(r"^\|\s*`(\w+)`\s*\|(.*)\|.*\|\s*`(CALC-\d+)`\s*\|$")
 RECORD_KEYS = frozenset({"id", "inputs"})
 EXPECTED_KEYS = frozenset({"schema_version", "kind", "fixture", "outputs"})
 EXPECTED_FILE_KEYS = frozenset({"schema_version", "kind", "fixture", "variants"})
@@ -122,6 +132,9 @@ class Methodology:
     # The datasets of the machine-readable contract by file or sheet, read only
     # when there is a file-based case; None when it is missing or not valid.
     contract: dict[str, check_data_contract.Dataset] | None = None
+    # The worksheet functions: their contract and their required and total
+    # number of arguments.
+    functions: dict[str, tuple[str, int, int]] = field(default_factory=dict)
 
 
 @dataclass
@@ -137,6 +150,8 @@ class Case:
     # The reference classes of the outputs of each calculation step, by rule.
     step_classes: dict[str, set[str]] = field(default_factory=dict)
     expected_files: int = 0
+    # A worksheet-function case, whose outputs are encoded values.
+    call: bool = False
 
 
 @dataclass
@@ -346,7 +361,23 @@ def read_methodology(root: Path, report: Report, file_based: bool = False) -> Me
         datasets=declared(root, "DATA_CONTRACT.md", "Datasets", ROW, report),
         sources=declared(root, "SOURCES.md", "Register", ROW, report),
         files=dataset_files(root, report),
-        contract=read_contract(root, report) if file_based else None)
+        contract=read_contract(root, report) if file_based else None,
+        functions=worksheet_functions(root))
+
+
+def worksheet_functions(root: Path) -> dict[str, tuple[str, int, int]]:
+    """Each worksheet function of the calculation contracts' table: its contract and
+    its required and total numbers of arguments."""
+    path = root / METHODOLOGY / "CALCULATION_CONTRACTS.md"
+    if not path.is_file():
+        return {}  # Reported by declared().
+    functions: dict[str, tuple[str, int, int]] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if match := FUNCTION_ROW.match(line.strip()):
+            spans = CODE_SPAN.findall(match.group(2))
+            required = sum(1 for span in spans if not span.startswith("["))
+            functions[match.group(1)] = (match.group(3), required, len(spans))
+    return functions
 
 
 def input_value_problem(key: str, value: object) -> str | None:
@@ -415,8 +446,8 @@ def harness_problems(data: dict[str, Any], stem: str, kind: str = "test-fixture"
     if data["kind"] != kind:
         problems.append(f"kind is not {kind!r}")
     if data["id"] != stem or not CASE_ID.fullmatch(stem):
-        problems.append("id is not the kebab-case file name" if kind == "test-fixture"
-                        else "id is not the kebab-case directory name")
+        problems.append("id is not the kebab-case directory name" if kind == "test-file-fixture"
+                        else "id is not the kebab-case file name")
     if data["synthetic"] is not True:
         problems.append("synthetic is not true")
     if not is_text(data["description"]):
@@ -478,6 +509,8 @@ def check_fixture(path: Path, root: Path, method: Methodology, report: Report) -
     if not isinstance(data, dict):
         report.add(where, "is not an object")
         return None
+    if data.get("kind") == CALL_KIND:
+        return check_call_fixture(data, path.stem, method, where, report)
     invalid = data.get("category") == "invalid"
     # An invalid case may miss a calculation input, but holds no key outside the
     # fixture keys.
@@ -493,6 +526,144 @@ def check_fixture(path: Path, root: Path, method: Methodology, report: Report) -
         # checked, and its outputs are not cross-checked against them.
         return Case("invalid", None, {})
     return check_calculation_inputs(data, path.stem, method, where, report)
+
+
+ERROR_VALUES = frozenset({"#NULL!", "#DIV/0!", "#VALUE!", "#REF!", "#NAME?", "#NUM!", "#N/A"})
+LONG_RANGE = (-2147483648, 2147483647)
+NUMBER_TEXT = re.compile(r"-?[0-9]+(?:\.[0-9]+)?(?:E[+-][0-9]+)?")
+SCALAR_TEXT = re.compile(r"[^;\]]*")
+DIMENSIONS = re.compile(r"([0-9]+)x([0-9]+)\[")
+
+
+class EncodingError(ValueError):
+    """A text that is not an encoded worksheet value."""
+
+
+def scalar_problem(kind: str, payload: str) -> str | None:
+    """Why the payload of a scalar of this kind is not valid, if it is not."""
+    if kind == "date" and is_date(payload):
+        return None
+    if kind == "datetime":
+        try:
+            datetime.datetime.fromisoformat(payload)
+            return None if "T" in payload else "a datetime needs a time"
+        except ValueError:
+            return f"{payload!r} is not an ISO date and time"
+    if kind == "num" and NUMBER_TEXT.fullmatch(payload):
+        return None
+    if kind == "lng" and re.fullmatch(r"-?[0-9]+", payload) and \
+            LONG_RANGE[0] <= int(payload) <= LONG_RANGE[1]:
+        return None
+    if kind == "bool" and payload in ("TRUE", "FALSE"):
+        return None
+    if kind == "err" and payload in ERROR_VALUES:
+        return None
+    if kind in ("date", "num", "lng", "bool", "err"):
+        return f"{payload!r} is not a valid {kind}"
+    return f"unknown value kind {kind!r}"
+
+
+def parse_encoded(text: str, pos: int = 0) -> int:
+    """Read one encoded value from pos; return where it ends, or raise EncodingError."""
+    for word in ("empty", "null"):
+        if text.startswith(word, pos) and not text.startswith(word + ":", pos):
+            return pos + len(word)
+    colon = text.find(":", pos)
+    if colon < 0:
+        raise EncodingError(f"no value kind at {pos}")
+    kind = text[pos:colon]
+    pos = colon + 1
+    if kind == "str":
+        try:
+            payload, end = json.JSONDecoder().raw_decode(text, pos)
+        except ValueError as error:
+            raise EncodingError(f"a str is not a JSON string at {pos}") from error
+        if not isinstance(payload, str) or any(not " " <= char <= "~" for char in payload):
+            raise EncodingError("a str holds printable ASCII text only")
+        return int(end)
+    if kind in ("arr1", "arr2", "fill2"):
+        return parse_array(text, pos, kind)
+    match = SCALAR_TEXT.match(text, pos)
+    payload = match.group(0) if match else ""
+    if problem := scalar_problem(kind, payload):
+        raise EncodingError(problem)
+    return pos + len(payload)
+
+
+def parse_array(text: str, pos: int, kind: str) -> int:
+    """Read the dimensions and items of an array encoding after its kind."""
+    rows = cols = 0
+    if kind != "arr1":
+        match = DIMENSIONS.match(text, pos)
+        if match is None:
+            raise EncodingError(f"{kind} needs RxC dimensions at {pos}")
+        rows, cols = int(match.group(1)), int(match.group(2))
+        pos = match.end() - 1
+    if not text.startswith("[", pos):
+        raise EncodingError(f"{kind} needs [ at {pos}")
+    pos += 1
+    items = 0
+    if not text.startswith("]", pos):
+        pos = parse_encoded(text, pos)
+        items = 1
+        while text.startswith(";", pos):
+            pos = parse_encoded(text, pos + 1)
+            items += 1
+    if not text.startswith("]", pos):
+        raise EncodingError(f"{kind} needs ] at {pos}")
+    if kind == "arr2" and (rows < 1 or cols < 1 or items != rows * cols):
+        raise EncodingError("an arr2 holds rows x cols items")
+    if kind == "fill2" and (rows < 1 or cols < 1 or items != 1):
+        raise EncodingError("a fill2 holds one item and at least 1x1 positions")
+    return pos + 1
+
+
+def encoding_problem(text: object) -> str | None:
+    """Why a text is not one encoded worksheet value, if it is not."""
+    if not isinstance(text, str):
+        return "is not a text"
+    try:
+        end = parse_encoded(text)
+    except EncodingError as error:
+        return f"is not an encoded value: {error}"
+    return None if end == len(text) else f"has trailing text at {end}"
+
+
+def check_call_fixture(data: dict[str, Any], case_id: str, method: Methodology, where: str,
+                       report: Report) -> Case | None:
+    """Check a worksheet-function case: one call, every key checked in every category."""
+    if problem := keys_problem(data, CALL_KEYS):
+        report.add(where, problem)
+        return None
+    problems = harness_problems({**data, "reporting_date": "2000-01-01"}, case_id, CALL_KIND)
+    if problem := declared_problem("calculation", data["calculation"], method.calculations,
+                                   CALCULATION_ID, case_id, "CALCULATION_CONTRACTS.md"):
+        problems.append(problem)
+    function = data["function"]
+    known = method.functions.get(function) if isinstance(function, str) else None
+    arguments = data["arguments"]
+    if known is None:
+        problems.append(f"function {function!r} is not a worksheet function of the "
+                        "calculation contracts")
+    elif known[0] != data["calculation"]:
+        problems.append(f"function {function} has the contract {known[0]}, not "
+                        f"{data['calculation']}")
+    elif isinstance(arguments, list) and not known[1] <= len(arguments) <= known[2]:
+        problems.append(f"function {function} takes {known[1]} to {known[2]} arguments, "
+                        f"not {len(arguments)}")
+    if data["context"] not in CONTEXTS:
+        problems.append(f"context {data['context']!r} is not one of "
+                        f"{', '.join(sorted(CONTEXTS))}")
+    if not isinstance(arguments, list):
+        problems.append("arguments is not a list")
+    else:
+        for index, argument in enumerate(arguments):
+            if problem := encoding_problem(argument):
+                problems.append(f"arguments[{index}] {problem}")
+    for problem in problems:
+        report.add(where, problem)
+    calculation = data["calculation"] if isinstance(data["calculation"], str) else None
+    return Case(str(data["category"]), calculation, {}, call=True)
 
 
 def check_content(entry: Path, text: str, root: Path, method: Methodology,
@@ -709,6 +880,12 @@ def check_output(output: object, case_id: str, case: Case, method: Methodology,
     if problems:
         return problems
     quantity = output["quantity"]
+    if case.call:
+        if "text" not in output:
+            problems.append("an output of a worksheet-function case is a text")
+        elif not str(quantity).endswith("_status") and \
+                (problem := encoding_problem(output["text"])):
+            problems.append(f"text {problem}")
     if not isinstance(quantity, str) or not SNAKE.fullmatch(quantity):
         problems.append(f"quantity {quantity!r} is not lower snake case")
     elif quantity.startswith("illustrative_") and not case_id.startswith("illustrative-"):
@@ -795,7 +972,8 @@ def check_cases(cases: Mapping[str, Case], report: Report) -> None:
                  else f"{FIXTURES.as_posix()}/{case_id}.json")
         if case.expected_files == 0:
             report.add(where, "has no expected file")
-        elif (case.classes == {"illustrative"}) != case_id.startswith("illustrative-"):
+        elif not case.call and \
+                (case.classes == {"illustrative"}) != case_id.startswith("illustrative-"):
             report.add(where, "the illustrative- prefix must be used exactly when every "
                               "expected value is illustrative")
 

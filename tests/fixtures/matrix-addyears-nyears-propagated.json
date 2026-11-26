@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-addyears-nyears-propagated",
+  "synthetic": true,
+  "description": "NYears: an incoming error propagates.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddYears",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-29",
+    "err:#N/A"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-lastweekdayofmonth-monthin-array-rectangle",
+  "synthetic": true,
+  "description": "MonthIn: a rectangle keeps its shape and per-element outcomes.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_LastWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "arr2:2x2[num:2;num:12;num:13;num:11]",
+    "num:5"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "integer-input-fraction-half",
+  "synthetic": true,
+  "description": "Fractional value is never truncated.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-31",
+    "num:0.5"
+  ]
+}

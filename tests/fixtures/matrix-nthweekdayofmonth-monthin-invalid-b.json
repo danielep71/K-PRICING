@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-nthweekdayofmonth-monthin-invalid-b",
+  "synthetic": true,
+  "description": "MonthIn: a second invalid-domain value.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "num:13",
+    "num:5",
+    "num:1"
+  ]
+}

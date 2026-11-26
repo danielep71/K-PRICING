@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-text-numeric-plus-dot-5",
+  "synthetic": true,
+  "description": "'+.5' is numeric-looking text, never a serial.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "str:\"+.5\""
+  ]
+}

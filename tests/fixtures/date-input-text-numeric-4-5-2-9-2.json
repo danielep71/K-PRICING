@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-text-numeric-4-5-2-9-2",
+  "synthetic": true,
+  "description": "'45292' is numeric-looking text, never a serial.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "str:\"45292\""
+  ]
+}

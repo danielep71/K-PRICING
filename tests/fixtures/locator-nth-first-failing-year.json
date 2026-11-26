@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "locator-nth-first-failing-year",
+  "synthetic": true,
+  "description": "The first failing argument in signature order determines the result.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:1899",
+    "num:13",
+    "num:1",
+    "num:1"
+  ]
+}

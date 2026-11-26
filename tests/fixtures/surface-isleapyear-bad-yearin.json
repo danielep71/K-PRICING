@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "surface-isleapyear-bad-yearin",
+  "synthetic": true,
+  "description": "An invalid YearIn is an element-level #VALUE!.",
+  "category": "invalid",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_IsLeapYear",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024\""
+  ]
+}

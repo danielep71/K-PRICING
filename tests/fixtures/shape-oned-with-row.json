@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-oned-with-row",
+  "synthetic": true,
+  "description": "A 1-D array and a 1x3 array share the 1x3 shape.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "arr1:[date:2024-01-31;date:2024-01-31;date:2024-01-31]",
+    "arr2:1x3[num:1;num:2;num:3]"
+  ]
+}

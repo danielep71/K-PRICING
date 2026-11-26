@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "integer-input-tolerance-inside",
+  "synthetic": true,
+  "description": "1E-10 from 3 is inside the tolerance.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-31",
+    "num:3.0000000001"
+  ]
+}

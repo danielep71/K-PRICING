@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-daysinmonth-datein-invalid-a",
+  "synthetic": true,
+  "description": "DateIn: an invalid-domain value.",
+  "category": "invalid",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_DaysInMonth",
+  "context": "direct",
+  "arguments": [
+    "date:1900-02-28"
+  ]
+}

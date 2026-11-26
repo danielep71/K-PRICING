@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "host-shift-ws1904",
+  "synthetic": true,
+  "description": "Every value-taking function is guarded.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "ws1904",
+  "arguments": [
+    "date:2024-02-10",
+    "num:1"
+  ]
+}

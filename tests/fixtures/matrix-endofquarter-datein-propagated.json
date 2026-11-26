@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-endofquarter-datein-propagated",
+  "synthetic": true,
+  "description": "DateIn: an incoming error propagates.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfQuarter",
+  "context": "direct",
+  "arguments": [
+    "err:#N/A"
+  ]
+}

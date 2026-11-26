@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-broadcast-second",
+  "synthetic": true,
+  "description": "Scalar expands to 1x3.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-31",
+    "arr2:1x3[num:1;num:2;num:3]"
+  ]
+}

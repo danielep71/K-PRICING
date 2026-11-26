@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-text-impossible-2-0-2-5-0-2-2-9",
+  "synthetic": true,
+  "description": "'2025-02-29' names a date that does not exist.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "str:\"2025-02-29\""
+  ]
+}

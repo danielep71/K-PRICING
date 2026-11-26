@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-beginofyear-ok",
+  "synthetic": true,
+  "description": "A valid scalar call.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_BeginOfYear",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-10"
+  ]
+}

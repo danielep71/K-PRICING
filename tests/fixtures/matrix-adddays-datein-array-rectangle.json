@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-adddays-datein-array-rectangle",
+  "synthetic": true,
+  "description": "DateIn: a rectangle keeps its shape and per-element outcomes.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "arr2:2x2[date:2024-02-10;date:9999-12-31;str:\"2024-02-30\";date:2023-11-30]",
+    "num:20"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-format-transition-2024-04-15-32-ceiling",
+  "synthetic": true,
+  "description": "3W/1M transition derived from calendar-day distance; ties take the month.",
+  "category": "nominal",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2024-04-15",
+    "date:2024-05-17",
+    "str:\"CEILING\""
+  ]
+}

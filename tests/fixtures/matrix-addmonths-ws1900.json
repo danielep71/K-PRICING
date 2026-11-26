@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-addmonths-ws1900",
+  "synthetic": true,
+  "description": "A valid 1900 worksheet call evaluates normally.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "ws1900",
+  "arguments": [
+    "date:2024-01-31",
+    "num:1"
+  ]
+}

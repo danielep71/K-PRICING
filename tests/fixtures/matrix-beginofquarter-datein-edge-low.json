@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-beginofquarter-datein-edge-low",
+  "synthetic": true,
+  "description": "DateIn: the lowest supported value.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_BeginOfQuarter",
+  "context": "direct",
+  "arguments": [
+    "date:1900-03-01"
+  ]
+}

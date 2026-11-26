@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-format-short-7",
+  "synthetic": true,
+  "description": "0D, exact signed days below seven, exact 1W-3W anchors.",
+  "category": "nominal",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "date:2024-01-22"
+  ]
+}

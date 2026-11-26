@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-parse-s31-1-d-1-m",
+  "synthetic": true,
+  "description": "Month delta first with clip, then the exact day delta.",
+  "category": "nominal",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-31",
+    "str:\"1D1M\""
+  ]
+}

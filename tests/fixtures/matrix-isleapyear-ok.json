@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-isleapyear-ok",
+  "synthetic": true,
+  "description": "A valid scalar call.",
+  "category": "nominal",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_IsLeapYear",
+  "context": "direct",
+  "arguments": [
+    "num:2024"
+  ]
+}

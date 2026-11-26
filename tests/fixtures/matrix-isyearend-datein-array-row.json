@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-isyearend-datein-array-row",
+  "synthetic": true,
+  "description": "DateIn: a row keeps valid, invalid and error elements at their positions.",
+  "category": "invalid",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsYearEnd",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x3[date:2024-12-31;date:1900-02-28;err:#DIV/0!]"
+  ]
+}

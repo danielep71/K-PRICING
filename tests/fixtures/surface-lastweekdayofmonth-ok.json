@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "surface-lastweekdayofmonth-ok",
+  "synthetic": true,
+  "description": "Supported surface, ISO text inputs.",
+  "category": "nominal",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_LastWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "num:2",
+    "num:5"
+  ]
+}

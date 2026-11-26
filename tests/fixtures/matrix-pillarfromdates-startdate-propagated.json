@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-pillarfromdates-startdate-propagated",
+  "synthetic": true,
+  "description": "StartDate: an incoming error propagates.",
+  "category": "invalid",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "err:#N/A",
+    "date:2024-07-15"
+  ]
+}

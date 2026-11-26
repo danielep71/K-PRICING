@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "propagation-parse-before-error",
+  "synthetic": true,
+  "description": "The first failing argument wins.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "str:\"bad\"",
+    "err:#N/A"
+  ]
+}
