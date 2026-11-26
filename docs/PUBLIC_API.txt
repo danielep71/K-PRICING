@@ -174,3 +174,9 @@ M_Ranges	Function	TryReadControl
 # SIG	M_Ranges	Function	TryReadControl	Public Function TryReadControl(ByVal ValueIn As Variant, ByRef ScalarOut As Variant, ByRef Condition As KPRCondition) As Boolean
 M_Ranges	Function	TryReadScalar
 # SIG	M_Ranges	Function	TryReadScalar	Public Function TryReadScalar(ByVal ValueIn As Variant, ByRef ScalarOut As Variant) As Boolean
+M_Register	Const	FUNCTION_COUNT
+# SIG	M_Register	Const	FUNCTION_COUNT	Public Const FUNCTION_COUNT As Long = 22
+M_Register	Function	RegisterFunctions
+# SIG	M_Register	Function	RegisterFunctions	Public Function RegisterFunctions() As Long
+M_Register	Function	UnregisterFunctions
+# SIG	M_Register	Function	UnregisterFunctions	Public Function UnregisterFunctions() As Long

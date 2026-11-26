@@ -127,6 +127,16 @@ Use only the categories an entry needs.
   optional arguments, and the functions gave the same results as the ones they
   replace on 29,440 combinations of arguments. Nothing was run in Excel
   ([#8](https://github.com/danielep71/K-PRICING/issues/8)).
+- The registration of the 22 worksheet functions, the adapter `M_Register` in
+  `src/workbook/`: `RegisterFunctions` gives each `KPR_Dates_*` function the
+  category `KPR Dates`, its description and one description per argument for
+  the Insert Function dialog, and `UnregisterFunctions` returns them to the User
+  Defined category with no description; both can run again without adding an
+  entry. The texts are those of the facade's documentation, and a Python test
+  keeps them equal to it and to the signatures of the supported API. Only the
+  static checks were run. Nothing was run in Excel, so what the Insert Function
+  dialog shows is not yet verified
+  ([#10](https://github.com/danielep71/K-PRICING/issues/10)).
 
 ### Changed
 
