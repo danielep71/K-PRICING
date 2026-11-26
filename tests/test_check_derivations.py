@@ -154,10 +154,19 @@ class DerivationTest(unittest.TestCase):
         self.assertEqual(check({"lf": 100.0, "gone": 1.0}), ([], 1))
 
     def test_main_reports_the_verdict(self) -> None:
-        with contextlib.redirect_stdout(io.StringIO()) as printed:
-            self.assertEqual(check_derivations.main(["--root", str(ROOT)]), 0)
-        # Any number of named scripts, so that the project may change its cases.
-        self.assertIn("derivations: PASS (", printed.getvalue())
+        # The repository's own cases are compared by test_repository_derivations_agree;
+        # running all of them again here would only double the time.
+        script = printing([{"quantity": "total_amount", "scope": None, "value": 100.0}])
+        with tempfile.TemporaryDirectory() as directory, \
+                contextlib.redirect_stdout(io.StringIO()) as printed:
+            root = Path(directory)
+            for path, text in {"tests/fixtures/case-one.json": "{}",
+                               "tests/expected/case-one.json": json.dumps({"outputs": [output()]}),
+                               SCRIPT: script}.items():
+                (root / path).parent.mkdir(parents=True, exist_ok=True)
+                (root / path).write_text(text, encoding="utf-8")
+            self.assertEqual(check_derivations.main(["--root", directory]), 0)
+        self.assertIn("derivations: PASS (1 derived value(s) compared", printed.getvalue())
         with tempfile.TemporaryDirectory() as empty, \
                 contextlib.redirect_stdout(io.StringIO()) as printed:
             self.assertEqual(check_derivations.main(["--root", empty]), 0)
