@@ -318,6 +318,10 @@ compared without letter case (Decision (#4)):
   may appear once: `1M2M` is rejected, never summed into `3M`.
 - A quantity is whole and written; a decimal or missing quantity, an unknown
   unit or a partial parse is rejected.
+- The components are read from left to right, and the first fault decides the
+  condition: `1M2M3X` repeats `M` before its unknown unit, so it is
+  `PILLAR_DUPLICATE_UNIT`, and `1Y2M3W4D5Y` repeats `Y` in its fifth
+  component.
 
 How a token moves a date is `CALC-08`, and the subset that
 `KPR_Dates_PillarFromDates` writes is `CALC-09`.

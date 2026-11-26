@@ -92,5 +92,26 @@ class ShapeTest(unittest.TestCase):
                          ["err:#NUM!", "CAPACITY_EXCEEDED"])
 
 
+def date_from_pillar(pillar: str) -> list[str]:
+    """The texts of the outputs of KPR_Dates_DateFromPillar(2024-01-01, pillar)."""
+    return [str(item["text"]) for item in DERIVE(
+        {"function": "KPR_Dates_DateFromPillar", "context": "direct",
+         "arguments": ["date:2024-01-01", pillar]})]
+
+
+class PillarTest(unittest.TestCase):
+    def test_the_first_fault_from_the_left_decides(self) -> None:
+        # Five components: the fifth repeats Y, so it is a duplicate, not a count.
+        self.assertEqual(date_from_pillar('str:"1Y2M3W4D5Y"'),
+                         ["err:#VALUE!", "PILLAR_DUPLICATE_UNIT"])
+        self.assertEqual(date_from_pillar('str:"1M2M3X"'),
+                         ["err:#VALUE!", "PILLAR_DUPLICATE_UNIT"])
+        self.assertEqual(date_from_pillar('str:"1M3X2M"'),
+                         ["err:#VALUE!", "PILLAR_TOKEN_MALFORMED"])
+
+    def test_four_distinct_units_are_read(self) -> None:
+        self.assertEqual(date_from_pillar('str:"1Y2M3W4D"'), ["date:2025-03-26"])
+
+
 if __name__ == "__main__":
     unittest.main()

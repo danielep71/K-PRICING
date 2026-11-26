@@ -11,11 +11,16 @@ call and, when the call fails, its condition, as docs/methodology/TEST_CASES.md
     python -I tests/derivations/date_layer_reference.py tests/fixtures/<case-id>.json
 
 The model is the oracle of the project's earlier date-layer fixture generator,
-carried over with two corrections: a number given as a Double, as a date serial
-or a whole number, is read in its binary value, as VBA holds it; and an empty
-array, or one that holds an array, is SHAPE_UNSUPPORTED at a control and at a
-value argument, as the stages of Arrays and evaluation say. Its values are illustrative: the project
-derived them.
+carried over with three corrections:
+
+- a number given as a Double, as a date serial or a whole number, is read in
+  its binary value, as VBA holds it;
+- an empty array, or one that holds an array, is SHAPE_UNSUPPORTED at a
+  control and at a value argument, at the stage Arrays and evaluation gives;
+- a pillar token is read from left to right, and its first fault decides its
+  condition.
+
+Its values are illustrative: the project derived them.
 """
 
 from __future__ import annotations
@@ -356,7 +361,6 @@ DOMAINS = {
     "occurrence": (1, 5, "DOMAIN_OCCURRENCE"),
 }
 PILLAR_ALIASES = {"ON": 1, "O/N": 1, "TN": 2, "T/N": 2}
-PILLAR_BODY = re.compile(r"(?:[0-9]+[YMWD]){1,4}")
 PILLAR_COMPONENT = re.compile(r"([0-9]+)([YMWD])")
 
 
@@ -379,13 +383,22 @@ def parse_pillar(value: Val) -> tuple[int, int] | Fail:
             return fail("#VALUE!", "PILLAR_ALIAS_SIGNED")
         sign = -1 if token[0] == "-" else 1
         body = token[1:]
-    if not PILLAR_BODY.fullmatch(body):
-        return fail("#VALUE!", "PILLAR_TOKEN_MALFORMED")
+    # The components are read from left to right and the first fault decides:
+    # a repeated unit is PILLAR_DUPLICATE_UNIT as soon as it appears, so four
+    # distinct units are the limit without a separate count.
     quantities: dict[str, int] = {}
-    for amount, unit in PILLAR_COMPONENT.findall(body):
+    position = 0
+    if not body:
+        return fail("#VALUE!", "PILLAR_TOKEN_MALFORMED")
+    while position < len(body):
+        component = PILLAR_COMPONENT.match(body, position)
+        if component is None:
+            return fail("#VALUE!", "PILLAR_TOKEN_MALFORMED")
+        amount, unit = component.groups()
         if unit in quantities:
             return fail("#VALUE!", "PILLAR_DUPLICATE_UNIT")
         quantities[unit] = int(amount)
+        position = component.end()
     months = 12 * quantities.get("Y", 0) + quantities.get("M", 0)
     days = 7 * quantities.get("W", 0) + quantities.get("D", 0)
     return (sign * months, sign * days)

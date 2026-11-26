@@ -148,8 +148,10 @@ Use only the categories an entry needs.
   carried over, recomputes every expected value from the contracts without VBA
   or Excel, so the values are `illustrative`; it now reads a number given as a
   `Double`, a date serial or a whole number, in its binary value, as VBA
-  does, and refuses an empty or nested array at a control or a value as
-  `SHAPE_UNSUPPORTED`; neither correction changes a converted case; `tools/check_test_cases.py`
+  does, refuses an empty or nested array at a control or a value as
+  `SHAPE_UNSUPPORTED`, and reads a pillar token from left to right, its first
+  fault deciding its condition, as the data contract now states; no
+  correction changes a converted case; `tools/check_test_cases.py`
   checks the new form, and `tools/check_derivations.py`, which now runs several
   cases at a time, compares all of them. The cases are 601 `nominal`, 246
   `boundary` and 514 `invalid`. None was run in Excel: the runner is
