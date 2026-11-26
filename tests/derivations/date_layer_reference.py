@@ -11,8 +11,10 @@ call and, when the call fails, its condition, as docs/methodology/TEST_CASES.md
     python -I tests/derivations/date_layer_reference.py tests/fixtures/<case-id>.json
 
 The model is the oracle of the project's earlier date-layer fixture generator,
-carried over with one correction: a number given as a Double, as a date serial
-or a whole number, is read in its binary value, as VBA holds it. Its values are illustrative: the project
+carried over with two corrections: a number given as a Double, as a date serial
+or a whole number, is read in its binary value, as VBA holds it; and an empty
+array, or one that holds an array, is SHAPE_UNSUPPORTED at a control and at a
+value argument, as the stages of Arrays and evaluation say. Its values are illustrative: the project
 derived them.
 """
 
@@ -714,11 +716,15 @@ def evaluate(function: str, args: list[Val], context: str) -> Outcome:
     width = len(spec.params)
     values = args[:width]
     controls_in = args[width:] + [MISSING] * (len(spec.controls) - len(args[width:]))
-    if any(v.kind == "arr1" and not v.items for v in values):
+    # Stage 2: an empty array, at a value or a control, has no supported shape.
+    if any(v.kind == "arr1" and not v.items for v in [*values, *controls_in]):
         return call_level("#VALUE!", "SHAPE_UNSUPPORTED")
     for control in controls_in:
         if control.kind in ARRAY_KINDS and shape_of(control) is not None:
             return call_level("#VALUE!", "CONTROL_NOT_SCALAR")
+        # A one-element control that holds an array is no scalar to unwrap.
+        if holds_array(control):
+            return call_level("#VALUE!", "SHAPE_UNSUPPORTED")
     controls: list[bool | str] = []
     for (_, kind), control in zip(spec.controls, controls_in):
         resolved = parse_control(kind, unwrap(control))
@@ -728,12 +734,21 @@ def evaluate(function: str, args: list[Val], context: str) -> Outcome:
     shapes = {shape for shape in map(shape_of, values) if shape is not None}
     if len(shapes) > 1:
         return call_level("#VALUE!", "SHAPE_MISMATCH")
-    if not shapes:
-        return as_outcome(evaluate_element(spec, [unwrap(v) for v in values], controls))
-    rows, cols = shapes.pop()
+    rows, cols = next(iter(shapes)) if shapes else (1, 1)
     if rows * cols > CAPACITY:
         return call_level("#NUM!", "CAPACITY_EXCEEDED")
+    # An array held as an element is found only when the elements are read,
+    # after the capacity check, and refuses the whole call.
+    if any(holds_array(v) for v in values):
+        return call_level("#VALUE!", "SHAPE_UNSUPPORTED")
+    if not shapes:
+        return as_outcome(evaluate_element(spec, [unwrap(v) for v in values], controls))
     return evaluate_array(spec, values, controls, rows, cols)
+
+
+def holds_array(value: Val) -> bool:
+    """Whether an array argument holds an array as one of its elements."""
+    return value.kind in ARRAY_KINDS and any(item.kind in ARRAY_KINDS for item in value.items)
 
 
 def evaluate_array(spec: Spec, values: list[Val], controls: list[bool | str],

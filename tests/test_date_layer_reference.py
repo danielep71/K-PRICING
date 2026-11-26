@@ -68,5 +68,29 @@ class DateSerialTest(unittest.TestCase):
                          ["err:#NUM!", "DATE_WINDOW"])
 
 
+def day_of_week(*arguments: str) -> list[str]:
+    """The texts of the outputs of KPR_Dates_DayOfWeek(arguments) called from VBA."""
+    return [str(item["text"]) for item in DERIVE(
+        {"function": "KPR_Dates_DayOfWeek", "context": "direct", "arguments": list(arguments)})]
+
+
+class ShapeTest(unittest.TestCase):
+    def test_an_empty_or_nested_control_has_no_supported_shape(self) -> None:
+        self.assertEqual(day_of_week("date:2024-01-01", "arr1:[]"),
+                         ["err:#VALUE!", "SHAPE_UNSUPPORTED"])
+        self.assertEqual(day_of_week("date:2024-01-01", "arr1:[arr1:[bool:TRUE]]"),
+                         ["err:#VALUE!", "SHAPE_UNSUPPORTED"])
+        self.assertEqual(day_of_week("date:2024-01-01", "arr1:[bool:TRUE;bool:FALSE]"),
+                         ["err:#VALUE!", "CONTROL_NOT_SCALAR"])
+
+    def test_a_nested_value_refuses_the_call_after_the_capacity_check(self) -> None:
+        self.assertEqual(day_of_week("arr1:[arr1:[date:2024-01-01]]"),
+                         ["err:#VALUE!", "SHAPE_UNSUPPORTED"])
+        self.assertEqual(day_of_week("fill2:2x2[arr1:[date:2024-01-01]]"),
+                         ["err:#VALUE!", "SHAPE_UNSUPPORTED"])
+        self.assertEqual(day_of_week("fill2:1x100001[arr1:[date:2024-01-01]]"),
+                         ["err:#NUM!", "CAPACITY_EXCEEDED"])
+
+
 if __name__ == "__main__":
     unittest.main()
