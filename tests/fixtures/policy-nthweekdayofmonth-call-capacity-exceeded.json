@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-nthweekdayofmonth-call-capacity-exceeded",
+  "synthetic": true,
+  "description": "The call: CAPACITY_EXCEEDED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "fill2:1x100001[lng:2024]",
+    "lng:2",
+    "lng:1",
+    "lng:2"
+  ]
+}

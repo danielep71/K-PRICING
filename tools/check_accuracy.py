@@ -85,7 +85,11 @@ decision, which states the earlier exposures, ends these comparisons until
 its own exposure is recorded.
 
 The error is |a - e| for an absolute contract and |a - e| / |e| for a relative
-one; a relative error at e = 0 is 0 when a = 0 and infinite otherwise. A
+one; a relative error at e = 0 is 0 when a = 0 and infinite otherwise. An
+exact contract reads text outputs, such as an encoded date or Excel error: its
+error is 0 when the result is the expected text and 1 otherwise, and its
+threshold and target are 0. A result of a text output holds a text instead of
+a value. A
 contract proves only what its cases and their references prove: an
 illustrative contract validates nothing.
 """
@@ -147,12 +151,16 @@ POINT_KEYS = frozenset({"case", "variant"})
 SCOPE_KEYS = frozenset({"dataset", "record"})
 RESULTS_KEYS = frozenset({"schema_version", "kind", "commit", "results"})
 RESULT_KEYS = frozenset({"case", "variant", "quantity", "scope", "value"})
+# A result of a text output, such as an encoded date or Excel error, has a text.
+TEXT_RESULT_KEYS = frozenset({"case", "variant", "quantity", "scope", "text"})
 # Each pattern must match a whole value (fullmatch): "$" would also accept a
 # trailing line break. Digits are ASCII: \d would also accept other scripts' digits.
 CONTRACT_ID = re.compile(r"ACC-[0-9]+")
 INVARIANT_ID = re.compile(r"INV-[0-9]+")
 INDEPENDENT = frozenset({"published", "independent"})
-METRICS = frozenset({"absolute", "relative"})
+METRICS = frozenset({"absolute", "relative", "exact"})
+# The exact metric compares texts: a result is the expected text or it is not.
+EXACT = "exact"
 STATUSES = frozenset({"draft", "frozen"})
 TAG = re.compile(r"v[0-9]+\.[0-9]+\.[0-9]+")
 SHA = re.compile(r"[0-9a-f]{40}")
@@ -160,17 +168,21 @@ DIGEST = re.compile(r"[0-9a-f]{64}")
 
 # A result's identity: case, variant (None for a JSON fixture), quantity and scope.
 Key = tuple[str, str | None, str, str | None]
+# A result: a number, or the text of a text output.
+Result = float | str
 
 
 @dataclass(frozen=True)
 class Output:
-    """One expected number of a case."""
+    """One expected number of a case, or one expected text, whose value and
+    tolerances are then 0 and unused."""
 
     key: Key
     value: float
     absolute: float
     relative: float
     reference: str
+    text: str | None = None
 
     def bound(self) -> float:
         """How far a result may lie from the expected value: its own tolerance."""
@@ -247,7 +259,8 @@ def label(key: Key) -> str:
 
 
 def case_outputs(root: Path, case: str, report: Report) -> tuple[str | None, list[Output]]:
-    """A case's calculation and its expected numbers; (None, []) when it has no fixture."""
+    """A case's calculation and its expected numbers and texts; (None, []) when it has no
+    fixture."""
     fixture = root / FIXTURES / f"{case}.json"
     manifest = root / FIXTURES / case / MANIFEST
     path = fixture if fixture.is_file() else manifest
@@ -264,6 +277,13 @@ def case_outputs(root: Path, case: str, report: Report) -> tuple[str | None, lis
     outputs = []
     for variant, items in groups.items():
         for item in items if isinstance(items, list) else []:
+            if isinstance(item, dict) and isinstance(item.get("text"), str):
+                reference = item.get("reference")
+                key = (case, variant, str(item.get("quantity")), scope_text(item.get("scope")))
+                outputs.append(Output(key, 0.0, 0.0, 0.0, str(
+                    reference.get("class") if isinstance(reference, dict) else None),
+                    text=item["text"]))
+                continue
             tolerance = item.get("tolerance") if isinstance(item, dict) else None
             if not isinstance(item, dict) or not is_number(item.get("value")) or \
                     not isinstance(tolerance, dict) or not is_number(tolerance.get("absolute")) or \
@@ -297,6 +317,19 @@ def target_problems(data: Mapping[str, Any]) -> list[str]:
     return []
 
 
+def metric_problems(data: Mapping[str, Any]) -> list[str]:
+    """What is wrong with a contract's metric, threshold and target."""
+    problems = []
+    if not one_of(data.get("metric"), METRICS):
+        problems.append("metric is not absolute, relative or exact")
+    elif data["metric"] == EXACT and (data.get("threshold") != 0 or data.get("target", 0) != 0):
+        # A text is right or wrong: no error between the two can be allowed.
+        problems.append("an exact contract has threshold 0 and, if any, target 0")
+    if not is_number(data.get("threshold")) or data["threshold"] < 0:
+        problems.append("threshold is not a finite number of at least 0")
+    return problems + target_problems(data)
+
+
 def is_design_path(value: object) -> bool:
     """A repository path, with forward slashes and no "..", to a file below one of
     DESIGN_HOMES."""
@@ -320,11 +353,7 @@ def contract_problems(data: Mapping[str, Any]) -> list[str]:
         problems.append("quantities is not a non-empty list of lower snake case names")
     elif len(set(quantities)) != len(quantities):
         problems.append("quantities lists a name twice")
-    if not one_of(data.get("metric"), METRICS):
-        problems.append("metric is not absolute or relative")
-    if not is_number(data.get("threshold")) or data["threshold"] < 0:
-        problems.append("threshold is not a finite number of at least 0")
-    problems += target_problems(data)
+    problems += metric_problems(data)
     if "design" in data and not is_design_path(data["design"]):
         problems.append("design is not a path to a file under "
                         f"{' or '.join(DESIGN_HOMES)}")
@@ -571,10 +600,14 @@ def contract_outputs(root: Path, contract: Contract, calculations: Mapping[str, 
             if calculation != contract.calculation:
                 report.add(where, f"case {case} tests {calculation}, not "
                                   f"{contract.calculation}")
-            mine = [output for output in outputs if output.key[2] in contract.quantities]
+            # An exact contract reads texts, the others numbers.
+            exact = contract.metric == EXACT
+            mine = [output for output in outputs if output.key[2] in contract.quantities
+                    and (output.text is not None) == exact]
             for quantity in contract.quantities:
                 if not any(output.key[2] == quantity for output in mine):
-                    report.add(where, f"case {case} has no expected number for {quantity}")
+                    kind = "text" if exact else "number"
+                    report.add(where, f"case {case} has no expected {kind} for {quantity}")
             splits[split] += mine
     return splits
 
@@ -594,7 +627,9 @@ def invariant_cases(root: Path, invariant: Invariant, calculations: Mapping[str,
             continue
         if calculation != invariant.calculation:
             report.add(where, f"case {case} tests {calculation}, not {invariant.calculation}")
-        found[case] = [output for output in outputs if output.key[2] in invariant.quantities]
+        # An invariant reads numbers: a text output has none.
+        found[case] = [output for output in outputs if output.key[2] in invariant.quantities
+                       and output.text is None]
     return found
 
 
@@ -1066,7 +1101,7 @@ def error(metric: str, actual: float, expected: float) -> float:
 
 
 def read_results(path: Path, root: Path, candidate: str | None,
-                 report: Report) -> dict[Key, float] | None:
+                 report: Report) -> dict[Key, Result] | None:
     """The results of the candidate's run; None when the file is unusable or of another commit."""
     where = str(path)
     data = load_json(path, root, report)
@@ -1090,12 +1125,15 @@ def read_results(path: Path, root: Path, candidate: str | None,
         report.add(where, f"results are of commit {commit[:12]}, not of the candidate "
                           f"{candidate[:12]}")
         return None
-    results: dict[Key, float] = {}
+    results: dict[Key, Result] = {}
     for index, item in enumerate(data["results"]):
-        if not isinstance(item, dict) or item.keys() != RESULT_KEYS or \
-                not is_number(item["value"]):
+        numeric = isinstance(item, dict) and item.keys() == RESULT_KEYS and \
+            is_number(item["value"])
+        textual = isinstance(item, dict) and item.keys() == TEXT_RESULT_KEYS and \
+            isinstance(item["text"], str)
+        if not numeric and not textual:
             report.add(where, f"results[{index}] is not case, variant, quantity, scope and a "
-                              "finite value")
+                              "finite value or a text")
             continue
         if not isinstance(item["case"], str) or not isinstance(item["quantity"], str) or \
                 not isinstance(item["variant"], (str, type(None))):
@@ -1106,15 +1144,15 @@ def read_results(path: Path, root: Path, candidate: str | None,
                scope_text(item["scope"]))
         if key in results:
             report.add(where, f"results[{index}] repeats {label(key)}")
-        results[key] = float(item["value"])
+        results[key] = float(item["value"]) if numeric else str(item["text"])
     return results
 
 
 def merged_results(paths: Sequence[Path], root: Path, candidate: str | None,
-                   report: Report) -> dict[Key, float] | None:
+                   report: Report) -> dict[Key, Result] | None:
     """The results of every file together; None when one is unusable. A result that
     two files both hold is a finding: each output is computed by one suite."""
-    merged: dict[Key, float] = {}
+    merged: dict[Key, Result] = {}
     origin: dict[Key, Path] = {}
     usable = True
     for path in paths:
@@ -1146,7 +1184,7 @@ def summary(contract: Contract, split: str, worst: float, exposures: int | None 
     return line
 
 
-def measure(contract: Contract, splits: Mapping[str, list[Output]], results: Mapping[Key, float],
+def measure(contract: Contract, splits: Mapping[str, list[Output]], results: Mapping[Key, Result],
             report: Report, where: str, exposures: int = 0,
             sealed: str | None = None) -> list[str]:
     """Each output against its own tolerance and the contract; one summary line per split.
@@ -1165,6 +1203,17 @@ def measure(contract: Contract, splits: Mapping[str, list[Output]], results: Map
             if actual is None:
                 report.add(where, f"no result for {label(output.key)}")
                 continue
+            if output.text is not None:
+                # An exact output: the result is its text, or it is wrong.
+                if actual != output.text:
+                    report.add(where, f"{label(output.key)} is {actual!r}, expected "
+                                      f"{output.text!r}")
+                    worst = max(worst, 1.0)
+                continue
+            if isinstance(actual, str):
+                report.add(where, f"{label(output.key)} is the text {actual!r}, expected a "
+                                  "number")
+                continue
             bound = output.bound()
             if abs(actual - output.value) > bound:
                 report.add(where, f"{label(output.key)} is {actual!r}, expected "
@@ -1179,8 +1228,13 @@ def measure(contract: Contract, splits: Mapping[str, list[Output]], results: Map
     return lines
 
 
+def number(result: Result | None) -> float | None:
+    """A numeric result, or None for a missing or text one, which no invariant reads."""
+    return result if isinstance(result, float) else None
+
+
 def check_invariant(root: Path, invariant: Invariant, calculations: Mapping[str, bool],
-                    results: Mapping[Key, float] | None, report: Report, where: str) -> list[str]:
+                    results: Mapping[Key, Result] | None, report: Report, where: str) -> list[str]:
     """The invariant on the expected values, then on the results when there are any;
     its measurement line. A break is a finding whatever any contract's status."""
     terms = invariant_terms(root, invariant, calculations, report, where)
@@ -1188,7 +1242,7 @@ def check_invariant(root: Path, invariant: Invariant, calculations: Mapping[str,
         report.add(where, f"the expected values break it: {violation}")
     if results is None:
         return []
-    verdict = evaluate(invariant, terms, lambda output: results.get(output.key))
+    verdict = evaluate(invariant, terms, lambda output: number(results.get(output.key)))
     for output in verdict.missing:
         report.add(where, f"no result for {label(output.key)}")
     for violation in verdict.violations:
@@ -1198,7 +1252,7 @@ def check_invariant(root: Path, invariant: Invariant, calculations: Mapping[str,
 
 def check_contract(root: Path, contract: Contract, min_holdout: int,
                    calculations: Mapping[str, bool], record: Record | None,
-                   results: Mapping[Key, float] | None, report: Report) -> list[str]:
+                   results: Mapping[Key, Result] | None, report: Report) -> list[str]:
     """One contract against its cases and its exposures, and against the results when
     there are any; its measurement lines."""
     at = f"{REGISTRY.as_posix()}: {contract.id}"

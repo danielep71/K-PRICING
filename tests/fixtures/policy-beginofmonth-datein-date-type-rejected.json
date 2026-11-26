@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-beginofmonth-datein-date-type-rejected",
+  "synthetic": true,
+  "description": "DateIn: DATE_TYPE_REJECTED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_BeginOfMonth",
+  "context": "direct",
+  "arguments": [
+    "bool:TRUE"
+  ]
+}

@@ -146,6 +146,87 @@ def results(**values: float) -> dict[str, Any]:
          "value": value} for case, value in values.items()]}
 
 
+TEXT_QUANTITY = "shifted_date"
+EXACT_CONTRACT = {
+    "id": "ACC-04", "calculation": "CALC-02", "regime": "Date layer", "quantities": [TEXT_QUANTITY],
+    "metric": "exact", "threshold": 0, "target": 0, "provenance": "Synthetic fixture",
+    "status": "draft", "decision": None, "calibration_cases": ["text-calibration"],
+    "holdout_cases": ["text-holdout"],
+}
+
+
+def text_case(root: Path, case: str, text: str) -> None:
+    """A CALC-02 case whose one output is the text of an encoded date."""
+    fixture = {"schema_version": 1, "kind": "test-fixture", "id": case, "synthetic": True,
+               "description": "Synthetic", "category": "nominal", "calculation": "CALC-02",
+               "reporting_date": "2026-01-02", "reporting_currency_code": "EUR",
+               "datasets": {"DS-01": [{"id": "P1", "inputs": {"currency_code": "EUR"}}]}}
+    expected = {"schema_version": 1, "kind": "test-expected", "fixture": case, "outputs": [
+        {"quantity": TEXT_QUANTITY, "scope": None, "rule": None, "text": text,
+         "reference": {"class": "illustrative"}}]}
+    (root / "tests/fixtures" / f"{case}.json").write_text(json.dumps(fixture), "utf-8")
+    (root / "tests/expected" / f"{case}.json").write_text(json.dumps(expected), "utf-8")
+
+
+def exact_findings(contract: dict[str, Any], measured: dict[str, Any] | None = None
+                   ) -> tuple[list[str], list[str]]:
+    """The findings and lines of an exact contract over two text cases, measured on the
+    results ``measured`` gives by case, a text or a number, when given."""
+    with repository(registry(contract)) as root:
+        text_case(root, "text-calibration", "date:2024-01-02")
+        text_case(root, "text-holdout", "err:#NUM!")
+        path = None
+        if measured is not None:
+            path = root / "results.json"
+            items = [{"case": case, "variant": None, "quantity": TEXT_QUANTITY, "scope": None,
+                      ("text" if isinstance(value, str) else "value"): value}
+                     for case, value in measured.items()]
+            path.write_text(json.dumps({"schema_version": 1, "kind": "test-results",
+                                        "commit": CANDIDATE, "results": items}), "utf-8")
+        found, _, lines = check_accuracy.check(root, path, CANDIDATE)
+        return found, lines
+
+
+class ExactTest(unittest.TestCase):
+    def assertFinding(self, found: list[str], text: str) -> None:
+        self.assertTrue(any(text in item for item in found), found)
+
+    def test_an_exact_contract_reads_text_outputs(self) -> None:
+        self.assertEqual(exact_findings(EXACT_CONTRACT)[0], [])
+
+    def test_an_exact_contract_allows_no_error(self) -> None:
+        for change in ({"threshold": 0.5}, {"target": 1}):
+            with self.subTest(change=change):
+                self.assertFinding(exact_findings({**EXACT_CONTRACT, **change})[0],
+                                   "an exact contract has threshold 0 and, if any, target 0")
+
+    def test_a_numeric_contract_needs_numbers_and_an_exact_one_texts(self) -> None:
+        found = exact_findings({**EXACT_CONTRACT, "metric": "absolute", "threshold": 0.01})[0]
+        self.assertFinding(found, "case text-calibration has no expected number for "
+                                  "shifted_date")
+        with repository(registry(EXACT_CONTRACT)) as root:
+            demo_case(root, "text-calibration", 1.0)
+            text_case(root, "text-holdout", "err:#NUM!")
+            found = check_accuracy.check(root, None, CANDIDATE)[0]
+        self.assertFinding(found, "case text-calibration has no expected text for shifted_date")
+
+    def test_the_result_is_the_expected_text_or_it_is_wrong(self) -> None:
+        found, lines = exact_findings(EXACT_CONTRACT, {"text-calibration": "date:2024-01-02"})
+        self.assertEqual(found, [])
+        self.assertIn("ACC-04 calibration: worst exact error 0.0, threshold 0.0, target 0.0", lines)
+        found, lines = exact_findings(EXACT_CONTRACT, {"text-calibration": "date:2024-01-03"})
+        self.assertFinding(found, "text-calibration shifted_date is 'date:2024-01-03', "
+                                  "expected 'date:2024-01-02'")
+        self.assertFinding(found, "worst exact error 1.0 over calibration cases exceeds "
+                                  "the threshold 0")
+
+    def test_a_number_for_a_text_output_is_wrong(self) -> None:
+        found = exact_findings(EXACT_CONTRACT, {"text-calibration": 45293.0})[0]
+        self.assertFinding(found, "text-calibration shifted_date is 45293.0, expected "
+                                  "'date:2024-01-02'")
+        self.assertFinding(found, "worst exact error 1.0 over calibration cases")
+
+
 class RegistryTest(unittest.TestCase):
     def assertFinding(self, found: list[str], text: str) -> None:
         self.assertTrue(any(text in item for item in found), found)
@@ -175,11 +256,11 @@ class RegistryTest(unittest.TestCase):
             "id is not ACC-<number>": {"id": "X-1"},
             "regime is not a text": {"regime": " "},
             "quantities is not a non-empty list": {"quantities": []},
-            "metric is not absolute or relative": {"metric": "squared"},
+            "metric is not absolute, relative or exact": {"metric": "squared"},
             "threshold is not a finite number of at least 0": {"threshold": -1},
             "status is not draft or frozen": {"status": "final"},
             # An array or an object cannot be hashed: a finding, not a traceback.
-            "metric is not absolute or relative ": {"metric": ["absolute"]},
+            "metric is not absolute, relative or exact ": {"metric": ["absolute"]},
             "status is not draft or frozen ": {"status": {}},
             "a frozen contract names the decision": {"decision": None},
             "holdout_cases is not a list of case IDs": {"holdout_cases": "demo-holdout-1"},

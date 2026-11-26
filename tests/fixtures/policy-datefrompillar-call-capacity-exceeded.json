@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-datefrompillar-call-capacity-exceeded",
+  "synthetic": true,
+  "description": "The call: CAPACITY_EXCEEDED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "fill2:1x100001[date:2024-01-15]",
+    "str:\"3M\""
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-lastweekdayofmonth-yearin-input-blank-required",
+  "synthetic": true,
+  "description": "YearIn: INPUT_BLANK_REQUIRED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_LastWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "empty",
+    "lng:2",
+    "lng:5"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-pillarfromdates-enddate-date-type-rejected",
+  "synthetic": true,
+  "description": "EndDate: DATE_TYPE_REJECTED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "bool:TRUE"
+  ]
+}

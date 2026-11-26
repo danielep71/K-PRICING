@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-lastweekdayofmonth-call-shape-mismatch",
+  "synthetic": true,
+  "description": "The call: SHAPE_MISMATCH, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_LastWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x2[lng:2024;lng:2024]",
+    "arr2:2x1[lng:2;lng:2]",
+    "lng:5"
+  ]
+}

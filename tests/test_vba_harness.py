@@ -126,7 +126,14 @@ class ExampleSuiteTest(unittest.TestCase):
             else {"contracts": []}
         expected = []
         for contract in registry["contracts"]:
-            for case in [*contract["calibration_cases"], *contract["holdout_cases"]]:
+            cases = [*contract["calibration_cases"], *contract["holdout_cases"]]
+            # The worksheet-function cases are recorded by the date layer's own suite
+            # (#13), on its results file, not by the example suite.
+            if any(json.loads((ROOT / "tests/fixtures" / f"{case}.json").read_text(
+                    encoding="utf-8")).get("kind") == "test-call-fixture"
+                   for case in cases if (ROOT / "tests/fixtures" / f"{case}.json").is_file()):
+                continue
+            for case in cases:
                 data = json.loads((ROOT / "tests/expected" / f"{case}.json")
                                   .read_text(encoding="utf-8"))
                 groups = [(None, data["outputs"])] if "outputs" in data \

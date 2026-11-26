@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-pillarfromdates-call-capacity-exceeded",
+  "synthetic": true,
+  "description": "The call: CAPACITY_EXCEEDED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "fill2:1x100001[date:2024-01-15]",
+    "date:2024-04-15"
+  ]
+}

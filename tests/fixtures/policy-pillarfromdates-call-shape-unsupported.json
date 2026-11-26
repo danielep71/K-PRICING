@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-pillarfromdates-call-shape-unsupported",
+  "synthetic": true,
+  "description": "The call: SHAPE_UNSUPPORTED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "arr1:[]",
+    "date:2024-04-15"
+  ]
+}

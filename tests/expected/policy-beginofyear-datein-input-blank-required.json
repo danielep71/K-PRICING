@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "kind": "test-expected",
+  "fixture": "policy-beginofyear-datein-input-blank-required",
+  "outputs": [
+    {
+      "quantity": "period_begin_date",
+      "scope": null,
+      "rule": null,
+      "text": "err:#VALUE!",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Authored for the completeness policy of the validation plan; the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    },
+    {
+      "quantity": "period_boundary_status",
+      "scope": null,
+      "rule": null,
+      "text": "INPUT_BLANK_REQUIRED",
+      "reference": {
+        "class": "illustrative",
+        "source": null,
+        "locator": null,
+        "derivation": "Authored for the completeness policy of the validation plan; the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "script": "tests/derivations/date_layer_reference.py",
+        "derived_by": "Daniele Penza",
+        "reviewed_by": null,
+        "date": "2026-11-26"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-isyearend-datein-input-blank-required",
+  "synthetic": true,
+  "description": "DateIn: INPUT_BLANK_REQUIRED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsYearEnd",
+  "context": "direct",
+  "arguments": [
+    "empty"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-nthweekdayofmonth-wdindex-integer-fraction",
+  "synthetic": true,
+  "description": "WdIndex: INTEGER_FRACTION, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "lng:2024",
+    "lng:2",
+    "num:2.5",
+    "lng:2"
+  ]
+}

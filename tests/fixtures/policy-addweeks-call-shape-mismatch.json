@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-addweeks-call-shape-mismatch",
+  "synthetic": true,
+  "description": "The call: SHAPE_MISMATCH, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddWeeks",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x2[date:2024-02-10;date:2024-02-10]",
+    "arr2:2x1[lng:2;lng:2]"
+  ]
+}

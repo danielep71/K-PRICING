@@ -82,13 +82,27 @@ def call_case_files() -> frozenset[str]:
 CALL_CASE_FILES = call_case_files()
 
 
+def drop_call_contracts(root: Path) -> None:
+    """Remove from the copied registry the contracts over worksheet-function cases,
+    which the fixture repository leaves out."""
+    registry = root / check_accuracy.REGISTRY
+    if not registry.is_file():
+        return
+    data = json.loads(registry.read_text(encoding="utf-8"))
+    data["contracts"] = [
+        contract for contract in data["contracts"]
+        if not any(f"tests/fixtures/{case}.json" in CALL_CASE_FILES
+                   for case in [*contract["calibration_cases"], *contract["holdout_cases"]])]
+    registry.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
 def make_repository(policy: bytes | None = None, *, with_policy: bool = True,
                     with_cases: bool = True, with_form: bool = True,
                     extra: dict[str, bytes] | None = None) -> tuple[Path, str]:
     """A temporary repository whose one commit holds the working tree's modules and
     evidence policy, or ``policy`` in its place, or no policy at all, and with
     ``with_cases`` the working tree's test cases, except the worksheet-function cases,
-    and accuracy contracts. The files
+    and accuracy contracts, except those over the worksheet-function cases. The files
     of ``extra`` are written last, so they may replace any of these."""
     root = Path(tempfile.mkdtemp(prefix="excel-run-repository-"))
     if with_policy:
@@ -110,6 +124,7 @@ def make_repository(policy: bytes | None = None, *, with_policy: bool = True,
             target = root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes((SOURCE / name).read_bytes())
+        drop_call_contracts(root)
     for name, data in [*(FORM.items() if with_form else ()), *(extra or {}).items()]:
         (root / name).parent.mkdir(parents=True, exist_ok=True)
         (root / name).write_bytes(data)
@@ -1248,8 +1263,9 @@ class ResultsTest(unittest.TestCase):
                       "no target\n", check_excel_run.report(self.commit, result))
 
     def test_the_repository_contracts_are_measured(self) -> None:
-        # One line for each split of this repository's contracts that lists a case.
-        registry = SOURCE / check_accuracy.REGISTRY
+        # One line for each split of this repository's contracts that lists a case, as
+        # the fixture repository holds them: without those over worksheet-function cases.
+        registry = ROOT / check_accuracy.REGISTRY
         if registry.is_file():
             data = json.loads(registry.read_text(encoding="utf-8"))
             expected = [f"{contract['id']} {split}" for contract in data["contracts"]

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-addweeks-nweeks-input-blank-required",
+  "synthetic": true,
+  "description": "nWeeks: INPUT_BLANK_REQUIRED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddWeeks",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-10",
+    "empty"
+  ]
+}

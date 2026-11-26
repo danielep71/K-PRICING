@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-isquarterend-call-shape-unsupported",
+  "synthetic": true,
+  "description": "The call: SHAPE_UNSUPPORTED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsQuarterEnd",
+  "context": "direct",
+  "arguments": [
+    "arr1:[]"
+  ]
+}

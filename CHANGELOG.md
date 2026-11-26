@@ -158,6 +158,20 @@ Use only the categories an entry needs.
   [#13](https://github.com/danielep71/K-PRICING/issues/13) and the `independent` values from
   Excel are [#14](https://github.com/danielep71/K-PRICING/issues/14)
   ([#11](https://github.com/danielep71/K-PRICING/issues/11)).
+- The date layer's accuracy contracts and completeness policy. An accuracy
+  contract can now use the `exact` metric, for a text output such as an
+  encoded date or Excel error: a result is the expected text or it is wrong,
+  with threshold and target 0, and a results file holds a `text` for it.
+  `ACC-02` to `ACC-23`, one for each `KPR_Dates_*` function, are `exact` and
+  draft until the `independent` values of
+  [#14](https://github.com/danielep71/K-PRICING/issues/14). The completeness
+  policy ([validation plan](docs/methodology/VALIDATION_PLAN.md#date-layer-completeness))
+  lists the case categories each function needs and the conditions each of
+  its arguments, its call and its result need, and
+  `tests/test_date_layer_completeness.py` fails on any that no case covers;
+  145 cases were added to meet it, so the date layer has 1,506. Nothing was
+  run in Excel
+  ([#12](https://github.com/danielep71/K-PRICING/issues/12)).
 
 ### Changed
 

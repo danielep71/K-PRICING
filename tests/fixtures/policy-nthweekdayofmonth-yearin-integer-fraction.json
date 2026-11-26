@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-nthweekdayofmonth-yearin-integer-fraction",
+  "synthetic": true,
+  "description": "YearIn: INTEGER_FRACTION, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2.5",
+    "lng:2",
+    "lng:1",
+    "lng:2"
+  ]
+}
