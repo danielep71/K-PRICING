@@ -1,0 +1,319 @@
+#!/usr/bin/env python3
+"""Generate tests/modules/TEST_WorksheetCases.bas, the suite of the worksheet callers' cases.
+
+The suite replays every worksheet-function case of tests/fixtures/ whose caller is
+a worksheet (context "ws1900" or "ws1904"): in a scratch workbook of the case's
+date system, it writes the case's arguments to cells, calculates a formula that
+calls the function on them, encodes the cell's value as the expected files do,
+asserts that the text equals the expected one, and records it for the exact
+accuracy contracts (docs/methodology/TEST_CASES.md). The cases of a VBA caller
+are in TEST_DateCases, which tools/gen_date_case_suite.py writes.
+
+Each Case procedure runs up to GROUP cases of one date system in one scratch
+workbook, and asserts last that the workbook was closed and the calculation mode
+restored. An assertion is named after its case.
+
+    python tools/gen_worksheet_case_suite.py --write   # regenerate the module
+    python tools/gen_worksheet_case_suite.py --check   # fail if the module is stale
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import sys
+from collections.abc import Sequence
+from pathlib import Path
+from types import ModuleType
+from typing import Any
+
+import gen_date_case_suite as base
+
+ROOT = Path(__file__).resolve().parents[1]
+MODULE = Path("tests/modules/TEST_WorksheetCases.bas")
+SUITE_NAME = "worksheet-cases"
+GROUP = 30
+UPDATED = "2026-11-26"
+CONTEXTS = {"ws1900": False, "ws1904": True}
+SCRATCH_ASSERTION = "scratch-closed"
+
+header = base.header
+section = base.section
+literal = base.literal
+comment = base.comment
+expression = base.expression
+
+
+def cases(root: Path, model: ModuleType) -> list[dict[str, Any]]:
+    """The worksheet callers' cases, by context, then by id."""
+    found = []
+    for path in sorted((root / base.FIXTURES).glob("*.json")):
+        fixture = json.loads(path.read_text(encoding="utf-8"))
+        if fixture.get("kind") != "test-call-fixture" or fixture["context"] not in CONTEXTS:
+            continue
+        expected = json.loads((root / base.EXPECTED / path.name).read_text(encoding="utf-8"))
+        quantity = model.CONTRACTS[fixture["function"]][1]
+        result = next(output["text"] for output in expected["outputs"]
+                      if output["quantity"] == quantity)
+        if result.startswith(("arr", "fill")):
+            raise ValueError(f"{fixture['id']}: a worksheet case expects one cell, not {result}")
+        found.append({"id": fixture["id"], "function": fixture["function"],
+                      "context": fixture["context"], "description": fixture["description"],
+                      "arguments": fixture["arguments"], "quantity": quantity,
+                      "expected": result})
+    return sorted(found, key=lambda case: (list(CONTEXTS).index(case["context"]), case["id"]))
+
+
+def groups(found: list[dict[str, Any]]) -> list[tuple[str, str, list[dict[str, Any]]]]:
+    """(procedure, case id, cases): up to GROUP cases of one context each."""
+    made = []
+    for context in CONTEXTS:
+        mine = [case for case in found if case["context"] == context]
+        for index in range(math.ceil(len(mine) / GROUP)):
+            part = mine[index * GROUP:(index + 1) * GROUP]
+            made.append((f"Case{context.capitalize()}Part{index + 1:02d}",
+                         f"{context}-{index + 1:02d}", part))
+    return made
+
+
+def case_procedure(name: str, case_id: str, part: list[dict[str, Any]],
+                   model: ModuleType) -> list[str]:
+    context = part[0]["context"]
+    system = context.removeprefix("ws")
+    lines = [f"Private Sub {name}()", ""]
+    lines += header(f"CASES OF A {system} WORKSHEET", [
+        ("PURPOSE", [f"Replays {len(part)} worksheet-function cases of a worksheet caller in the "
+                     f"{system} date system,",
+                     f"from {part[0]['id']} to {part[-1]['id']}."]),
+        ("WHY THIS EXISTS", ["Each assertion compares one case's encoded result with its "
+                             "expected file."]),
+        ("INPUTS", ["None"]),
+        ("RETURNS", ["Nothing"]),
+        ("BEHAVIOR", [f"Opens a scratch workbook in the {system} date system, calculates each "
+                      "case's formula on",
+                      "its arguments' cells, asserts the encoded result under the case's id and "
+                      "records it for",
+                      "the exact accuracy contracts. Closes the workbook on every path and "
+                      "asserts that it did."]),
+        ("ERROR POLICY", ["An unexpected error is kept, the workbook closed, and the error "
+                          "recorded against",
+                          "the case by TEST_Harness.RecordCaseError; it does not stop the run"]),
+        ("DEPENDENCIES", ["TEST_WorksheetSupport, TEST_DateCaseSupport, TEST_Harness"]),
+        ("NOTES", ["Generated by tools/gen_worksheet_case_suite.py from tests/fixtures/"]),
+        ("UPDATED", [UPDATED]),
+    ])
+    lines += ["", *section("DECLARE"),
+              "    Dim Sheet           As Worksheet    'The scratch sheet",
+              "    Dim Actual          As String       'The encoded result of a case",
+              "    Dim Detail          As String       'What closing the workbook could not "
+              "restore",
+              "    Dim ErrNumber       As Long         'Error of the case; 0 for none",
+              "    Dim ErrSource       As String       'Its source",
+              "    Dim ErrDescription  As String       'Its description", "",
+              *section("INITIALIZE"),
+              "    'Record an unexpected error against the case",
+              "        On Error GoTo CaseFailed",
+              "    'Start the case",
+              f"        TEST_Harness.BeginCase {literal(case_id)}",
+              "    'Close the scratch workbook on every path",
+              "        On Error GoTo Failed", "",
+              *section("RUN CASES"),
+              f"    'Open a scratch workbook in the {system} date system",
+              f"        Set Sheet = TEST_WorksheetSupport.OpenScratch({CONTEXTS[context]})"]
+    for case in part:
+        values = [model.decode(text) for text in case["arguments"]]
+        arguments = "".join(f", {expression(value)}" for value in values)
+        kind = case["expected"].split(":", 1)[0]
+        lines += [comment(case["description"]),
+                  f"        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "
+                  f"{literal(case['function'])}, {literal(kind)}{arguments})",
+                  f"        TEST_Harness.AssertEqualText {literal(case['id'])}, "
+                  f"{literal(case['expected'])}, Actual",
+                  f"        TEST_Harness.RecordTextResult {literal(case['id'])}, vbNullString, "
+                  f"{literal(case['quantity'])}, vbNullString, vbNullString, Actual"]
+    lines += ["", *section("EXIT PROCEDURE"), "CleanUp:",
+              "    'Restore normal error handling", "        On Error GoTo 0",
+              "    'Close the scratch workbook and restore the calculation mode",
+              "        Detail = TEST_WorksheetSupport.CloseScratch()",
+              f"        TEST_Harness.AssertTrue {literal(SCRATCH_ASSERTION)}, "
+              "Len(Detail) = 0, Detail",
+              "    'Record the case's error, once Excel is restored",
+              "        If ErrNumber <> 0 Then",
+              "            Err.Number = ErrNumber",
+              "            Err.Source = ErrSource",
+              "            Err.Description = ErrDescription",
+              "            TEST_Harness.RecordCaseError",
+              "        End If",
+              "    'Exit before the error handlers", "        Exit Sub", "",
+              *section("ERROR HANDLER"), "Failed:",
+              "    'Keep the case's error and close the workbook",
+              "        ErrNumber = Err.Number", "        ErrSource = Err.Source",
+              "        ErrDescription = Err.Description", "        Resume CleanUp", "",
+              "CaseFailed:", "    'Record the unexpected error against the case",
+              "        TEST_Harness.RecordCaseError", "", "End Sub", ""]
+    return lines
+
+
+def module(root: Path) -> str:
+    """The text of the generated module, with CRLF line endings."""
+    model = base.load_model(root)
+    found = cases(root, model)
+    made = groups(found)
+    assertions = len(found) + len(made)
+    lines = [f'Attribute VB_Name = "{MODULE.stem}"', "", "Option Explicit",
+             "Option Private Module", "", "'", base.RULE, f"' MODULE: {MODULE.stem}", base.RULE]
+    body = [
+        ("PURPOSE", ["The worksheet-function cases of the date layer whose caller is a "
+                     "worksheet, replayed as",
+                     "formulas in a scratch workbook of the case's date system: each result is "
+                     "compared, as",
+                     "encoded text, with its expected file"]),
+        ("WHY THIS EXISTS", ["A worksheet caller reads its date system from its workbook and its "
+                             "arguments from",
+                             "Ranges; only a formula in a workbook of that date system tests that "
+                             "path"]),
+        ("INPUTS", ["None at module level"]),
+        ("RETURNS", ["Nothing at module level"]),
+        ("BEHAVIOR", [f"RunWorksheetCaseTests runs the suite: {len(made)} cases of up to {GROUP} "
+                      "test cases of one date",
+                      f"system, {assertions} assertions: one per test case, named after it, and "
+                      f"{SCRATCH_ASSERTION} per case.",
+                      "CertifyWorksheetCases certifies its normal run and saves its log, its "
+                      "certification log",
+                      "and its results file"]),
+        ("ERROR POLICY", ["As TEST_Harness.EndRun: a run that does not pass raises "
+                          "TEST_Harness.ERR_TEST_FAILED,",
+                          "or the unexpected error that escaped the runner"]),
+        ("DEPENDENCIES", ["KPR_Dates, TEST_WorksheetSupport, TEST_DateCaseSupport, "
+                          "TEST_Harness; the Excel object model"]),
+        ("NOTES", ["- GENERATED by tools/gen_worksheet_case_suite.py from tests/fixtures/ and "
+                   "tests/expected/:",
+                   "  never edit it by hand; regenerate it with --write",
+                   "- It opens and closes scratch workbooks and changes no cell of this "
+                   "workbook",
+                   "- Option Private Module keeps the suite out of the workbook's external "
+                   "surface"]),
+        ("UPDATED", [UPDATED]),
+    ]
+    for index, (name, text) in enumerate(body):
+        lines.append(f"' {name}")
+        lines += [f"'   {line}" for line in text]
+        if index < len(body) - 1:
+            lines.append("'")
+    lines += [base.RULE, "", *section("PRIVATE CONSTANTS"),
+              "    'A complete run starts every case and evaluates every assertion once",
+              f'    Private Const SUITE_NAME            As String = "{SUITE_NAME}"'
+              "   'Suite name in the run log",
+              f"    Private Const EXPECTED_CASES        As Long = {len(made)}"
+              "                   'Cases a complete run starts",
+              f"    Private Const EXPECTED_ASSERTIONS   As Long = {assertions}"
+              "                  'Assertions a complete run evaluates", "", "",
+              "'", base.RULE, "'", "'" + "ENTRY POINTS".center(78).rstrip(), "'", base.RULE,
+              "'", ""]
+    lines += ["Public Sub RunWorksheetCaseTests()", ""]
+    lines += header("RUN THE SUITE", [
+        ("PURPOSE", ["Runs every case of the suite once, in its normal mode."]),
+        ("WHY THIS EXISTS", ["The entry point to type in the Immediate window."]),
+        ("INPUTS", ["None"]), ("RETURNS", ["Nothing"]),
+        ("BEHAVIOR", ["Runs RunSuite."]),
+        ("ERROR POLICY", ["As RunSuite"]),
+        ("DEPENDENCIES", ["RunSuite"]), ("NOTES", ["None"]), ("UPDATED", [UPDATED])])
+    lines += ["", *section("RUN"), "    'Run the suite", "        RunSuite", "", "End Sub", ""]
+    lines += ["Public Sub CertifyWorksheetCases( _", "    ByVal Folder As String, _",
+              "    ByVal Fixtures As String)", ""]
+    lines += header("CERTIFY THE SUITE", [
+        ("PURPOSE", ["Certifies the suite's normal run and saves its evidence in the folder."]),
+        ("WHY THIS EXISTS", ["The certification entry point that .github/"
+                             "excel-evidence-policy.json names."]),
+        ("INPUTS", ["Folder", "  The evidence folder.", "",
+                    "Fixtures", "  The tests/fixtures/ folder, which this generated suite "
+                    "does not read."]),
+        ("RETURNS", ["Nothing"]),
+        ("BEHAVIOR", ["Runs the suite, saves its log, certifies the run, saves its results "
+                      "and then the",
+                      "certification log."]),
+        ("ERROR POLICY", ["TEST_Harness.EndCertification raises when the certification did "
+                          "not pass."]),
+        ("DEPENDENCIES", ["RunSuite, TEST_Harness"]), ("NOTES", ["None"]),
+        ("UPDATED", [UPDATED])])
+    lines += ["", *section("DECLARE"),
+              "    Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none",
+              "    Dim RunErrorDescription     As String   'Its description", "",
+              *section("CERTIFY"),
+              "    'Refuse state left by an earlier run and start the certification",
+              "        TEST_Harness.BeginCertification SUITE_NAME",
+              "    'Run the suite and capture the error that ended it",
+              "        On Error Resume Next", "        RunSuite",
+              "        RunErrorNumber = Err.Number",
+              "        RunErrorDescription = Err.Description",
+              "    'Restore normal error handling", "        On Error GoTo 0",
+              "    'Save the log, certify the run and save its results",
+              f'        TEST_Harness.SaveLog Folder & "\\{SUITE_NAME}.log"',
+              '        TEST_Harness.CertifyRun "NORMAL", True, RunErrorNumber, '
+              "RunErrorDescription",
+              f'        TEST_Harness.SaveResults Folder & "\\{SUITE_NAME}-results.json"',
+              "    'Save the certification log, raising when the certification did not pass",
+              f'        TEST_Harness.EndCertification Folder & "\\{SUITE_NAME}-'
+              'certification.log"', "", "End Sub", "",
+              "'", base.RULE, "'", "'" + "RUNNER".center(78).rstrip(), "'", base.RULE, "'", ""]
+    lines += ["Private Sub RunSuite()", ""]
+    lines += header("RUN EVERY CASE", [
+        ("PURPOSE", ["Runs every case once, in a fixed order, between BeginRun and EndRun."]),
+        ("WHY THIS EXISTS", ["The certification reads the cases this runner calls."]),
+        ("INPUTS", ["None"]), ("RETURNS", ["Nothing"]),
+        ("BEHAVIOR", ["Starts the run, calls each case, then reports the run."]),
+        ("ERROR POLICY", ["As TEST_Harness.EndRun"]),
+        ("DEPENDENCIES", ["TEST_Harness"]), ("NOTES", ["None"]), ("UPDATED", [UPDATED])])
+    lines += ["", *section("DECLARE"),
+              "    Dim ErrNumber       As Long     'Runner error number; 0 for none",
+              "    Dim ErrSource       As String   'Runner error source",
+              "    Dim ErrDescription  As String   'Runner error description", "",
+              *section("RUN"),
+              "    'Start the run; a refused start propagates directly",
+              '        TEST_Harness.BeginRun SUITE_NAME, "NORMAL", EXPECTED_CASES, '
+              "EXPECTED_ASSERTIONS",
+              "    'Send an error that escapes a case to the runner handler",
+              "        On Error GoTo RunFailed", "    'Run every case in a fixed order"]
+    lines += [f"        {name}" for name, _, _ in made]
+    lines += ["", "Finish:", "    'Restore normal error handling", "        On Error GoTo 0",
+              "    'Report the run, raising its failure or the escaped error",
+              "        TEST_Harness.EndRun ErrNumber, ErrSource, ErrDescription", "",
+              *section("EXIT PROCEDURE"), "    'Exit before the error handler",
+              "        Exit Sub", "", *section("ERROR HANDLER"), "RunFailed:",
+              "    'Keep the escaped error for EndRun", "        ErrNumber = Err.Number",
+              "        ErrSource = Err.Source", "        ErrDescription = Err.Description",
+              "        Resume Finish", "", "End Sub", "",
+              "'", base.RULE, "'", "'" + "CASES".center(78).rstrip(), "'", base.RULE, "'", ""]
+    for name, case_id, part in made:
+        lines += case_procedure(name, case_id, part, model)
+    while lines and lines[-1] == "":
+        lines.pop()
+    return "\r\n".join(lines) + "\r\n"
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
+    action = parser.add_mutually_exclusive_group(required=True)
+    action.add_argument("--write", action="store_true", help="regenerate the module")
+    action.add_argument("--check", action="store_true", help="fail if the module is stale")
+    parser.add_argument("--root", type=Path, default=ROOT)
+    args = parser.parse_args(argv)
+    root = args.root.resolve()
+    text = module(root)
+    path = root / MODULE
+    if args.write:
+        path.write_bytes(text.encode("ascii"))
+        print(f"worksheet-case-suite: wrote {MODULE.as_posix()}")
+        return 0
+    current = path.read_bytes().decode("ascii") if path.is_file() else None
+    if current != text:
+        print(f"FAIL: {MODULE.as_posix()} is stale; run python tools/gen_worksheet_case_suite.py "
+              "--write")
+        return 1
+    print(f"worksheet-case-suite: PASS ({MODULE.as_posix()} matches the cases)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

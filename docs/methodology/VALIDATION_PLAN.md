@@ -188,12 +188,14 @@ reference model; every other check is a literal assertion of a VBA suite.
 | Controls | `core-err-parse` (`bool-control`, `rounding-control`), `core-array` (`unwrap-control`, `regression-shapes`), `dates` (`controls`: a forwarded `Missing` and a tab-padded `Opt_Rounding`) |
 | Boundaries | `core-err-parse` (`date-window`) and 12 `regression-boundary-*` cases |
 | Conditions and their errors | `core-err-parse` (`err-constructors`, `condition-registry`, `unmapped-conditions`) |
-| Host | 3 `regression-host-*` cases and the `KPR_Dates_HostDateSystem` cases; the host probes in Excel |
+| Host | 3 `regression-host-*` cases and the `KPR_Dates_HostDateSystem` cases; `excel-host` (`date-system-toggle`: one workbook from 1900 to 1904 and back, on an ordinary recalculation) |
 | Pillars | `core-dates` (`parse-pillar`, `add-pillar`, `format-pillar`, `pillar-regression`) and 55 `regression-pillar-*` cases |
 | Function surface | 49 `regression-surface-*` cases |
-| Shapes | `core-array`, with `regression-shapes` for an error scalar, the 250 by 400 block and a one-cell two-dimensional control |
+| Shapes | `core-array`, with `regression-shapes` for an error scalar, the 250 by 400 block and a one-cell two-dimensional control; `ranges`, and `excel-host` (`range-block`: a block of a workbook's cells with a blank and an error, a column, a Range beyond the used range, the selection unchanged) |
 | Array and scalar parity | 10 `regression-parity-*` cases; every array case states each element's value, derived element by element |
-| Worksheet-function cases | `date-cases` |
+| Worksheet-function cases | `date-cases` for a VBA caller; `worksheet-cases` for a worksheet caller in either date system |
+| Multi-cell results | `excel-host` (`spill`: a dynamic-array formula spills one result per row, an element's error beside its neighbours, and nothing under 1904) |
+| Function registration | `excel-host` (`registration`: registering and unregistering, each twice, reach the 22 functions and leave the session unchanged) |
 
 No case holds a `LongLong`: one cannot be built on a 32-bit host, so a suite
 that held one would not run there.

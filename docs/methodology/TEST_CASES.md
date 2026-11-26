@@ -216,8 +216,9 @@ every output a text and its `scope` `null`:
 
 The level of a condition is the one the data contract's *Conditions* table
 gives it. The project suite `TEST_DateCases` replays the cases whose caller is
-VBA in Excel ([harness guide](TEST_HARNESS.md#modules)); a worksheet caller's
-cases need a worksheet. `tests/derivations/date_layer_reference.py` computes every expected
+VBA in Excel ([harness guide](TEST_HARNESS.md#modules)), and `TEST_WorksheetCases`
+those of a worksheet caller, as formulas in a scratch workbook of the case's date
+system that read their arguments from cells. `tests/derivations/date_layer_reference.py` computes every expected
 output of these cases from the contracts, so they are `illustrative`.
 
 What JSON cannot hold stays a VBA test: an object, a Range, of several areas or
