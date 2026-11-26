@@ -136,6 +136,28 @@ def formula(short: str, values: list[str]) -> str:
     raise ValueError(f"no Excel identity for {short}")
 
 
+# The calculation-contract step that each covered function's result tests.
+RULES = {
+    "DayOfWeek": "CALC-02.1", "DaysInMonth": "CALC-03.2", "DaysInYear": "CALC-03.3",
+    "IsLeapYear": "CALC-03.4", "BeginOfMonth": "CALC-04.2", "BeginOfQuarter": "CALC-04.2",
+    "BeginOfYear": "CALC-04.2", "EndOfMonth": "CALC-04.3", "EndOfQuarter": "CALC-04.3",
+    "EndOfYear": "CALC-04.3", "IsMonthEnd": "CALC-05.1", "IsQuarterEnd": "CALC-05.1",
+    "IsYearEnd": "CALC-05.1", "AddDays": "CALC-06.1", "AddWeeks": "CALC-06.2",
+    "AddMonths": "CALC-06.3", "AddYears": "CALC-06.5", "NthWeekdayOfMonth": "CALC-07.2",
+    "LastWeekdayOfMonth": "CALC-07.4",
+}
+
+
+def rule(function: str, text: str) -> str:
+    """The step a covered case's result tests, from its function and its formula."""
+    short = function.removeprefix("KPR_Dates_")
+    if short == "DayOfWeek" and text.endswith(",1)"):
+        return "CALC-02.2"
+    if short == "AddMonths" and text.startswith("IF("):
+        return "CALC-06.4"
+    return RULES[short]
+
+
 COVERED_FUNCTIONS = frozenset({
     "DayOfWeek", "DaysInMonth", "DaysInYear", "IsLeapYear", "BeginOfMonth", "EndOfMonth",
     "BeginOfQuarter", "EndOfQuarter", "BeginOfYear", "EndOfYear", "IsMonthEnd",
@@ -416,7 +438,8 @@ def coverage(root: Path) -> dict[str, Any]:
         counts[(case["function"], "covered")] += 1
     for case in excluded:
         counts[(case["function"], case["reason"])] += 1
-    return {"covered": [{key: case[key] for key in ("id", "formula", "expected")}
+    return {"covered": [{**{key: case[key] for key in ("id", "formula", "expected")},
+                         "rule": rule(case["function"], case["formula"])}
                         for case in covered],
             "excluded": [{key: case[key] for key in ("id", "reason")} for case in excluded],
             "counts": [{"function": function, "outcome": outcome, "cases": number}

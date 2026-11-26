@@ -6,15 +6,15 @@
     {
       "quantity": "period_end_flag",
       "scope": null,
-      "rule": null,
+      "rule": "CALC-05.1",
       "text": "bool:FALSE",
       "reference": {
-        "class": "illustrative",
-        "source": null,
-        "locator": null,
-        "derivation": "Converted from the project's earlier date-layer fixture set; the result, and on failure the condition, are computed by the reference model of the date-layer contracts",
+        "class": "independent",
+        "source": "IMPL-01",
+        "locator": "excel-oracle case boundary-isquarterend-2024-02-28: DATE(2024,2,28)=EOMONTH(DATE(YEAR(DATE(2024,2,28)),INT((MONTH(DATE(2024,2,28))-1)/3)*3+3,1),0)",
+        "derivation": "Computed by Excel's worksheet functions as the formula of the locator, in the project suite excel-oracle (docs/methodology/EXCEL_ORACLE.md), in the Excel run of 573884baeb42, which passed (https://github.com/danielep71/K-PRICING/issues/14#issuecomment-7199627903); the reference model of the date-layer contracts gives the same value",
         "script": "tests/derivations/date_layer_reference.py",
-        "derived_by": "Daniele Penza",
+        "derived_by": "Microsoft Excel 16.0 build 20527, 64-bit",
         "reviewed_by": null,
         "date": "2026-11-26"
       }
