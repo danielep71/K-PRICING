@@ -61,13 +61,6 @@ Option Private Module
     Private mFact(1 To 4, 1 To 3) As Variant
 
 
-'------------------------------------------------------------------------------
-' PRIVATE STATE
-'------------------------------------------------------------------------------
-    'The arguments of each assertion of the last probe, by assertion and argument
-    Private mFact(1 To 4, 1 To 3) As Variant
-
-
 '
 '------------------------------------------------------------------------------
 '
