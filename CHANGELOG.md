@@ -230,6 +230,17 @@ Use only the categories an entry needs.
 
 ### Validation
 
+- Excel run of `10706ac88fd7fe04f1905f0aabe59c17e50a4695` on 2026-11-26,
+  recorded with `tools/devbuild/excel_run.py` in Excel for Microsoft 365
+  (build 16.0.20527, 64-bit) on Windows 11: every suite of the evidence
+  policy certified, `examples`, `core-err-parse`, `core-dates`, `core-array`,
+  `ranges`, `dates`, `date-cases`, `worksheet-cases` and `excel-host`;
+  `excel-run: PASS`, `Binding: VERIFIED`, compile `ON_DEMAND`. The
+  calibration cases of `ACC-02` to `ACC-23` have an exact error of 0; their
+  holdouts stay sealed while the contracts are draft. The
+  [host policy](INSTALLATION.md#%EF%B8%8F-host-policy) records the
+  environment
+  ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
 - The five date-layer suites ran in Excel for Microsoft 365 (build
   16.0.20527, 64-bit) on the development workbook, after a clean compile:
   `TEST_CoreErrParse` 467, `TEST_CoreDates` 2,083, `TEST_CoreArray` 122,
