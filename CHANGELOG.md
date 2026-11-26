@@ -182,6 +182,16 @@ Use only the categories an entry needs.
   Excel; in LibreOffice the facade cannot read a `Date` argument, so it is no
   early warning there
   ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
+- The suites `core-err-parse`, `core-dates`, `core-array`, `ranges` and
+  `dates` are now certified: the evidence policy lists them with their
+  certification entry points, so an Excel run records them as evidence. Their
+  assertions were made in helper procedures, which the certification does not
+  read; each helper is now a `Probe*` procedure that keeps the values to
+  compare, and the case asserts them under literal names. The names and their
+  order equal those of the Excel run of 2026-11-26, assertion for assertion
+  (467, 2,083, 122, 62 and 81), and `tests/test_project_suites.py` fails when a
+  project suite's source no longer reads as its counts state
+  ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
 
 ### Changed
 

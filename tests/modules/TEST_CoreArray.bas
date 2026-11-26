@@ -25,8 +25,8 @@ Option Private Module
 '
 ' BEHAVIOR
 '   RunCoreArrayTests runs the suite. Option Private Module keeps it out of the workbook's
-'   external surface. The cases build their inputs in memory and change no Excel state. The
-'   suite is not certified: it is not listed in .github/excel-evidence-policy.json
+'   external surface. The cases build their inputs in memory and change no Excel state.
+'   CertifyCoreArray certifies its normal run, as .github/excel-evidence-policy.json lists it
 '
 ' ERROR POLICY
 '   As TEST_Harness.EndRun: a run that does not pass raises TEST_Harness.ERR_TEST_FAILED,
@@ -52,6 +52,13 @@ Option Private Module
     Private Const SUITE_NAME            As String = "core-array"        'Suite name in the run log
     Private Const EXPECTED_CASES        As Long = 8                 'Cases a complete run starts
     Private Const EXPECTED_ASSERTIONS   As Long = 122               'Assertions a complete run evaluates
+
+
+'------------------------------------------------------------------------------
+' PRIVATE STATE
+'------------------------------------------------------------------------------
+    'The arguments of each assertion of the last probe, by assertion and argument
+    Private mFact(1 To 4, 1 To 3) As Variant
 
 
 '
@@ -145,6 +152,72 @@ RunFailed:
         ErrDescription = Err.Description
     'Finish the run with the captured error
         Resume Finish
+
+End Sub
+
+Public Sub CertifyCoreArray( _
+    ByVal Folder As String, _
+    ByVal Fixtures As String)
+
+'
+'------------------------------------------------------------------------------
+'                              CERTIFY THE SUITE
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Certifies the suite's normal run and saves its evidence in the folder.
+'
+' WHY THIS EXISTS
+'   The certification entry point that .github/excel-evidence-policy.json names.
+'
+' INPUTS
+'   Folder
+'     The evidence folder.
+'
+'   Fixtures
+'     The tests/fixtures/ folder, which this suite does not read.
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Runs RunCoreArrayTests, saves its log, certifies the run, then saves the certification log.
+'
+' ERROR POLICY
+'   TEST_Harness.EndCertification raises when the certification did not pass.
+'
+' DEPENDENCIES
+'   RunCoreArrayTests, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
+    Dim RunErrorDescription     As String   'Its description
+
+'------------------------------------------------------------------------------
+' CERTIFY
+'------------------------------------------------------------------------------
+    'Refuse state left by an earlier run and start the certification
+        TEST_Harness.BeginCertification SUITE_NAME
+    'Run the suite and capture the error that ended it
+        On Error Resume Next
+        RunCoreArrayTests
+        RunErrorNumber = Err.Number
+        RunErrorDescription = Err.Description
+    'Restore normal error handling
+        On Error GoTo 0
+    'Save the log and certify the run
+        TEST_Harness.SaveLog Folder & "\core-array.log"
+        TEST_Harness.CertifyRun "NORMAL", True, RunErrorNumber, RunErrorDescription
+    'Save the certification log, raising when the certification did not pass
+        TEST_Harness.EndCertification Folder & "\core-array-certification.log"
 
 End Sub
 
@@ -291,23 +364,63 @@ Private Sub CaseClassifyShape()
 ' RUN CASE
 '------------------------------------------------------------------------------
     'Scalars and one-element arrays are scalars
-        CheckShape "scalar", 7, cdNone, skScalar, 1, 1
-        CheckShape "empty-value", Empty, cdNone, skScalar, 1, 1
-        CheckShape "one-element-row", Array(7), cdNone, skScalar, 1, 1
+        ProbeShape 7, cdNone, skScalar, 1, 1
+        TEST_Harness.AssertTrue "scalar-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "scalar-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "scalar-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "scalar-size", mFact(4, 1), mFact(4, 2)
+        ProbeShape Empty, cdNone, skScalar, 1, 1
+        TEST_Harness.AssertTrue "empty-value-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "empty-value-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "empty-value-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "empty-value-size", mFact(4, 1), mFact(4, 2)
+        ProbeShape Array(7), cdNone, skScalar, 1, 1
+        TEST_Harness.AssertTrue "one-element-row-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "one-element-row-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "one-element-row-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "one-element-row-size", mFact(4, 1), mFact(4, 2)
         ReDim One(1 To 1, 1 To 1)
-        CheckShape "one-by-one", One, cdNone, skScalar, 1, 1
+        ProbeShape One, cdNone, skScalar, 1, 1
+        TEST_Harness.AssertTrue "one-by-one-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "one-by-one-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "one-by-one-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "one-by-one-size", mFact(4, 1), mFact(4, 2)
     'A one-dimensional array is a row; a two-dimensional one keeps its size
-        CheckShape "row", Array(1, 2, 3), cdNone, skArray, 1, 3
+        ProbeShape Array(1, 2, 3), cdNone, skArray, 1, 3
+        TEST_Harness.AssertTrue "row-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "row-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "row-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "row-size", mFact(4, 1), mFact(4, 2)
         ReDim Table(1 To 2, 1 To 3)
-        CheckShape "block", Table, cdNone, skArray, 2, 3
+        ProbeShape Table, cdNone, skArray, 2, 3
+        TEST_Harness.AssertTrue "block-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "block-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "block-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "block-size", mFact(4, 1), mFact(4, 2)
         ReDim Offset(5 To 7, -1 To 0)
-        CheckShape "block-with-offsets", Offset, cdNone, skArray, 3, 2
+        ProbeShape Offset, cdNone, skArray, 3, 2
+        TEST_Harness.AssertTrue "block-with-offsets-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "block-with-offsets-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "block-with-offsets-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "block-with-offsets-size", mFact(4, 1), mFact(4, 2)
     'An empty array, a third dimension and an object are not shapes
-        CheckShape "empty-array", Array(), cdShapeUnsupported, 0, 0, 0
+        ProbeShape Array(), cdShapeUnsupported, 0, 0, 0
+        TEST_Harness.AssertTrue "empty-array-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "empty-array-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "empty-array-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "empty-array-size", mFact(4, 1), mFact(4, 2)
         ReDim Cube(1 To 2, 1 To 2, 1 To 2)
-        CheckShape "three-dimensional", Cube, cdShapeUnsupported, 0, 0, 0
+        ProbeShape Cube, cdShapeUnsupported, 0, 0, 0
+        TEST_Harness.AssertTrue "three-dimensional-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "three-dimensional-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "three-dimensional-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "three-dimensional-size", mFact(4, 1), mFact(4, 2)
         Set Item = New Collection
-        CheckShape "object", Item, cdShapeUnsupported, 0, 0, 0
+        ProbeShape Item, cdShapeUnsupported, 0, 0, 0
+        TEST_Harness.AssertTrue "object-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "object-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "object-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "object-size", mFact(4, 1), mFact(4, 2)
         Set Item = Nothing
 
 '------------------------------------------------------------------------------
@@ -873,23 +986,53 @@ Private Sub CaseUnwrapControl()
 ' RUN CASE
 '------------------------------------------------------------------------------
     'Empty, a scalar and one-element arrays unwrap
-        CheckControl "empty", Empty, cdNone, ""
-        CheckControl "boolean", True, cdNone, CStr(True)
-        CheckControl "row-of-one", Array("FLOOR"), cdNone, "FLOOR"
+        ProbeControl Empty, cdNone, ""
+        TEST_Harness.AssertTrue "empty-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "empty-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "empty-value", mFact(3, 1), mFact(3, 2)
+        ProbeControl True, cdNone, CStr(True)
+        TEST_Harness.AssertTrue "boolean-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "boolean-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "boolean-value", mFact(3, 1), mFact(3, 2)
+        ProbeControl Array("FLOOR"), cdNone, "FLOOR"
+        TEST_Harness.AssertTrue "row-of-one-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "row-of-one-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "row-of-one-value", mFact(3, 1), mFact(3, 2)
     'More than one element is not a scalar, and 100,001 is not a capacity failure
-        CheckControl "row-of-two", Array(1, 2), cdControlNotScalar, "UNTOUCHED"
+        ProbeControl Array(1, 2), cdControlNotScalar, "UNTOUCHED"
+        TEST_Harness.AssertTrue "row-of-two-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "row-of-two-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "row-of-two-value", mFact(3, 1), mFact(3, 2)
         ReDim Block(1 To 2, 1 To 2)
-        CheckControl "block", Block, cdControlNotScalar, "UNTOUCHED"
+        ProbeControl Block, cdControlNotScalar, "UNTOUCHED"
+        TEST_Harness.AssertTrue "block-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "block-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "block-value", mFact(3, 1), mFact(3, 2)
         ReDim Large(1 To 100001)
-        CheckControl "over-cap", Large, cdControlNotScalar, "UNTOUCHED"
+        ProbeControl Large, cdControlNotScalar, "UNTOUCHED"
+        TEST_Harness.AssertTrue "over-cap-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "over-cap-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "over-cap-value", mFact(3, 1), mFact(3, 2)
     'An empty array, a jagged element and an object are not shapes
-        CheckControl "empty-array", Array(), cdShapeUnsupported, "UNTOUCHED"
-        CheckControl "jagged", Array(Array(1)), cdShapeUnsupported, "UNTOUCHED"
+        ProbeControl Array(), cdShapeUnsupported, "UNTOUCHED"
+        TEST_Harness.AssertTrue "empty-array-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "empty-array-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "empty-array-value", mFact(3, 1), mFact(3, 2)
+        ProbeControl Array(Array(1)), cdShapeUnsupported, "UNTOUCHED"
+        TEST_Harness.AssertTrue "jagged-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "jagged-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "jagged-value", mFact(3, 1), mFact(3, 2)
         Set Item = New Collection
-        CheckControl "object", Item, cdShapeUnsupported, "UNTOUCHED"
+        ProbeControl Item, cdShapeUnsupported, "UNTOUCHED"
+        TEST_Harness.AssertTrue "object-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "object-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "object-value", mFact(3, 1), mFact(3, 2)
     'A one-element array holding an object is not a control
         Set Holder(1) = Item
-        CheckControl "object-element", Holder, cdShapeUnsupported, "UNTOUCHED"
+        ProbeControl Holder, cdShapeUnsupported, "UNTOUCHED"
+        TEST_Harness.AssertTrue "object-element-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "object-element-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "object-element-value", mFact(3, 1), mFact(3, 2)
         Set Holder(1) = Nothing
         Set Item = Nothing
 
@@ -916,8 +1059,7 @@ End Sub
 '------------------------------------------------------------------------------
 '
 
-Private Sub CheckShape( _
-    ByVal Label As String, _
+Private Sub ProbeShape( _
     ByVal ValueIn As Variant, _
     ByVal ExpectedCondition As KPRCondition, _
     ByVal ExpectedKind As KPRArgShape, _
@@ -926,7 +1068,7 @@ Private Sub CheckShape( _
 
 '
 '------------------------------------------------------------------------------
-'                        CHECK THE SHAPE OF AN ARGUMENT
+'                        PROBE THE SHAPE OF AN ARGUMENT
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Describes an argument and checks the condition and, on success, its kind and size. 4
@@ -988,33 +1130,31 @@ Private Sub CheckShape( _
 '------------------------------------------------------------------------------
 ' CHECK
 '------------------------------------------------------------------------------
-        TEST_Harness.AssertTrue Label & "-accepted", Accepted = (ExpectedCondition = cdNone), "the acceptance differs"
-        TEST_Harness.AssertEqualText Label & "-condition", _
-            CORE_Err.ConditionName(ExpectedCondition), _
-            CORE_Err.ConditionName(Condition)
+        mFact(1, 1) = (Accepted = (ExpectedCondition = cdNone))
+        mFact(1, 2) = "the acceptance differs"
+        mFact(2, 1) = CORE_Err.ConditionName(ExpectedCondition)
+        mFact(2, 2) = CORE_Err.ConditionName(Condition)
     'A rejection leaves the shape unassigned
         If ExpectedCondition <> cdNone Then
             ExpectedKind = -1
             ExpectedRows = -1
             ExpectedCols = -1
         End If
-        TEST_Harness.AssertEqualDouble Label & "-kind", ExpectedKind, Kind
-        TEST_Harness.AssertTrue Label & "-size", _
-            (RowCount = ExpectedRows) And (ColCount = ExpectedCols), _
-            _
-            "size " & RowCount & " by " & ColCount & ", expected " & ExpectedRows & " by " & ExpectedCols
+        mFact(3, 1) = ExpectedKind
+        mFact(3, 2) = Kind
+        mFact(4, 1) = (RowCount = ExpectedRows) And (ColCount = ExpectedCols)
+        mFact(4, 2) = "size " & RowCount & " by " & ColCount & ", expected " & ExpectedRows & " by " & ExpectedCols
 
 End Sub
 
-Private Sub CheckControl( _
-    ByVal Label As String, _
+Private Sub ProbeControl( _
     ByVal ValueIn As Variant, _
     ByVal ExpectedCondition As KPRCondition, _
     ByVal ExpectedText As String)
 
 '
 '------------------------------------------------------------------------------
-'                          CHECK AN OPTIONAL CONTROL
+'                          PROBE AN OPTIONAL CONTROL
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Unwraps a control and checks the condition and, on success, its value as text. 3
@@ -1071,10 +1211,11 @@ Private Sub CheckControl( _
 '------------------------------------------------------------------------------
 ' CHECK
 '------------------------------------------------------------------------------
-        TEST_Harness.AssertTrue Label & "-accepted", Accepted = (ExpectedCondition = cdNone), "the acceptance differs"
-        TEST_Harness.AssertEqualText Label & "-condition", _
-            CORE_Err.ConditionName(ExpectedCondition), _
-            CORE_Err.ConditionName(Condition)
-        TEST_Harness.AssertEqualText Label & "-value", ExpectedText, CStr(ScalarOut)
+        mFact(1, 1) = (Accepted = (ExpectedCondition = cdNone))
+        mFact(1, 2) = "the acceptance differs"
+        mFact(2, 1) = CORE_Err.ConditionName(ExpectedCondition)
+        mFact(2, 2) = CORE_Err.ConditionName(Condition)
+        mFact(3, 1) = ExpectedText
+        mFact(3, 2) = CStr(ScalarOut)
 
 End Sub

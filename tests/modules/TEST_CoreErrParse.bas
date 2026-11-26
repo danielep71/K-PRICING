@@ -24,8 +24,8 @@ Option Private Module
 ' BEHAVIOR
 '   RunCoreErrParseTests runs the suite. Option Private Module keeps it out of the
 '   workbook's external surface. The cases build their inputs in memory and change no
-'   Excel state. The suite is not certified: it is not listed in
-'   .github/excel-evidence-policy.json, and holds no case of the date functions
+'   Excel state. It holds no case of the date functions. CertifyCoreErrParse certifies its normal run,
+'   as .github/excel-evidence-policy.json lists it
 '
 ' ERROR POLICY
 '   As TEST_Harness.EndRun: a run that does not pass raises
@@ -64,6 +64,13 @@ Option Private Module
     Private Const SENTINEL_SERIAL       As Double = 36526#              '2000-01-01
     Private Const SENTINEL_LONG         As Long = 424242                'A Long no case parses
     Private Const SENTINEL_TOKEN        As String = "UNTOUCHED"         'A token no parser returns
+
+
+'------------------------------------------------------------------------------
+' PRIVATE STATE
+'------------------------------------------------------------------------------
+    'The arguments of each assertion of the last probe, by assertion and argument
+    Private mFact(1 To 4, 1 To 3) As Variant
 
 
 '
@@ -160,6 +167,72 @@ RunFailed:
         ErrDescription = Err.Description
     'Finish the run with the captured error
         Resume Finish
+
+End Sub
+
+Public Sub CertifyCoreErrParse( _
+    ByVal Folder As String, _
+    ByVal Fixtures As String)
+
+'
+'------------------------------------------------------------------------------
+'                              CERTIFY THE SUITE
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Certifies the suite's normal run and saves its evidence in the folder.
+'
+' WHY THIS EXISTS
+'   The certification entry point that .github/excel-evidence-policy.json names.
+'
+' INPUTS
+'   Folder
+'     The evidence folder.
+'
+'   Fixtures
+'     The tests/fixtures/ folder, which this suite does not read.
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Runs RunCoreErrParseTests, saves its log, certifies the run, then saves the certification log.
+'
+' ERROR POLICY
+'   TEST_Harness.EndCertification raises when the certification did not pass.
+'
+' DEPENDENCIES
+'   RunCoreErrParseTests, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
+    Dim RunErrorDescription     As String   'Its description
+
+'------------------------------------------------------------------------------
+' CERTIFY
+'------------------------------------------------------------------------------
+    'Refuse state left by an earlier run and start the certification
+        TEST_Harness.BeginCertification SUITE_NAME
+    'Run the suite and capture the error that ended it
+        On Error Resume Next
+        RunCoreErrParseTests
+        RunErrorNumber = Err.Number
+        RunErrorDescription = Err.Description
+    'Restore normal error handling
+        On Error GoTo 0
+    'Save the log and certify the run
+        TEST_Harness.SaveLog Folder & "\core-err-parse.log"
+        TEST_Harness.CertifyRun "NORMAL", True, RunErrorNumber, RunErrorDescription
+    'Save the certification log, raising when the certification did not pass
+        TEST_Harness.EndCertification Folder & "\core-err-parse-certification.log"
 
 End Sub
 
@@ -285,41 +358,103 @@ Private Sub CaseConditionRegistry()
 ' RUN CASE
 '------------------------------------------------------------------------------
     'The 29 conditions of the Conditions table that map to an error
-        CheckCondition "DATE_TEXT_FORMAT", cdDateTextFormat, ERROR_VALUE_CODE
-        CheckCondition "DATE_TEXT_LOCALE", cdDateTextLocale, ERROR_VALUE_CODE
-        CheckCondition "DATE_TEXT_NUMERIC", cdDateTextNumeric, ERROR_VALUE_CODE
-        CheckCondition "DATE_TEXT_IMPOSSIBLE", cdDateTextImpossible, ERROR_VALUE_CODE
-        CheckCondition "DATE_TYPE_REJECTED", cdDateTypeRejected, ERROR_VALUE_CODE
-        CheckCondition "DATE_WINDOW", cdDateWindow, ERROR_NUM_CODE
-        CheckCondition "INPUT_BLANK_REQUIRED", cdInputBlankRequired, ERROR_VALUE_CODE
-        CheckCondition "INTEGER_FRACTION", cdIntegerFraction, ERROR_VALUE_CODE
-        CheckCondition "INTEGER_TYPE_REJECTED", cdIntegerTypeRejected, ERROR_VALUE_CODE
-        CheckCondition "INTEGER_RANGE", cdIntegerRange, ERROR_NUM_CODE
-        CheckCondition "DOMAIN_YEAR", cdDomainYear, ERROR_VALUE_CODE
-        CheckCondition "DOMAIN_MONTH", cdDomainMonth, ERROR_VALUE_CODE
-        CheckCondition "DOMAIN_WEEKDAY", cdDomainWeekday, ERROR_VALUE_CODE
-        CheckCondition "DOMAIN_OCCURRENCE", cdDomainOccurrence, ERROR_VALUE_CODE
-        CheckCondition "OCCURRENCE_ABSENT", cdOccurrenceAbsent, ERROR_NUM_CODE
-        CheckCondition "RESULT_WINDOW", cdResultWindow, ERROR_NUM_CODE
-        CheckCondition "PILLAR_TYPE_REJECTED", cdPillarTypeRejected, ERROR_VALUE_CODE
-        CheckCondition "PILLAR_TOKEN_MALFORMED", cdPillarTokenMalformed, ERROR_VALUE_CODE
-        CheckCondition "PILLAR_DUPLICATE_UNIT", cdPillarDuplicateUnit, ERROR_VALUE_CODE
-        CheckCondition "PILLAR_ALIAS_SIGNED", cdPillarAliasSigned, ERROR_VALUE_CODE
-        CheckCondition "PILLAR_AGGREGATE_RANGE", cdPillarAggregateRange, ERROR_NUM_CODE
-        CheckCondition "CONTROL_TYPE_REJECTED", cdControlTypeRejected, ERROR_VALUE_CODE
-        CheckCondition "CONTROL_TOKEN_UNKNOWN", cdControlTokenUnknown, ERROR_VALUE_CODE
-        CheckCondition "CONTROL_NOT_SCALAR", cdControlNotScalar, ERROR_VALUE_CODE
-        CheckCondition "SHAPE_UNSUPPORTED", cdShapeUnsupported, ERROR_VALUE_CODE
-        CheckCondition "SHAPE_MISMATCH", cdShapeMismatch, ERROR_VALUE_CODE
-        CheckCondition "CAPACITY_EXCEEDED", cdCapacityExceeded, ERROR_NUM_CODE
-        CheckCondition "HOST_DATE1904", cdHostDate1904, ERROR_NA_CODE
-        CheckCondition "HOST_UNRESOLVED", cdHostUnresolved, ERROR_NA_CODE
+        ProbeCondition "DATE_TEXT_FORMAT", cdDateTextFormat, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "DATE_TEXT_FORMAT-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "DATE_TEXT_FORMAT-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "DATE_TEXT_LOCALE", cdDateTextLocale, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "DATE_TEXT_LOCALE-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "DATE_TEXT_LOCALE-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "DATE_TEXT_NUMERIC", cdDateTextNumeric, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "DATE_TEXT_NUMERIC-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "DATE_TEXT_NUMERIC-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "DATE_TEXT_IMPOSSIBLE", cdDateTextImpossible, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "DATE_TEXT_IMPOSSIBLE-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "DATE_TEXT_IMPOSSIBLE-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "DATE_TYPE_REJECTED", cdDateTypeRejected, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "DATE_TYPE_REJECTED-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "DATE_TYPE_REJECTED-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "DATE_WINDOW", cdDateWindow, ERROR_NUM_CODE
+        TEST_Harness.AssertEqualText "DATE_WINDOW-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "DATE_WINDOW-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "INPUT_BLANK_REQUIRED", cdInputBlankRequired, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "INPUT_BLANK_REQUIRED-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "INPUT_BLANK_REQUIRED-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "INTEGER_FRACTION", cdIntegerFraction, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "INTEGER_FRACTION-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "INTEGER_FRACTION-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "INTEGER_TYPE_REJECTED", cdIntegerTypeRejected, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "INTEGER_TYPE_REJECTED-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "INTEGER_TYPE_REJECTED-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "INTEGER_RANGE", cdIntegerRange, ERROR_NUM_CODE
+        TEST_Harness.AssertEqualText "INTEGER_RANGE-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "INTEGER_RANGE-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "DOMAIN_YEAR", cdDomainYear, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "DOMAIN_YEAR-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "DOMAIN_YEAR-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "DOMAIN_MONTH", cdDomainMonth, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "DOMAIN_MONTH-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "DOMAIN_MONTH-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "DOMAIN_WEEKDAY", cdDomainWeekday, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "DOMAIN_WEEKDAY-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "DOMAIN_WEEKDAY-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "DOMAIN_OCCURRENCE", cdDomainOccurrence, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "DOMAIN_OCCURRENCE-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "DOMAIN_OCCURRENCE-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "OCCURRENCE_ABSENT", cdOccurrenceAbsent, ERROR_NUM_CODE
+        TEST_Harness.AssertEqualText "OCCURRENCE_ABSENT-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "OCCURRENCE_ABSENT-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "RESULT_WINDOW", cdResultWindow, ERROR_NUM_CODE
+        TEST_Harness.AssertEqualText "RESULT_WINDOW-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "RESULT_WINDOW-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "PILLAR_TYPE_REJECTED", cdPillarTypeRejected, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "PILLAR_TYPE_REJECTED-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "PILLAR_TYPE_REJECTED-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "PILLAR_TOKEN_MALFORMED", cdPillarTokenMalformed, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "PILLAR_TOKEN_MALFORMED-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "PILLAR_TOKEN_MALFORMED-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "PILLAR_DUPLICATE_UNIT", cdPillarDuplicateUnit, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "PILLAR_DUPLICATE_UNIT-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "PILLAR_DUPLICATE_UNIT-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "PILLAR_ALIAS_SIGNED", cdPillarAliasSigned, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "PILLAR_ALIAS_SIGNED-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "PILLAR_ALIAS_SIGNED-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "PILLAR_AGGREGATE_RANGE", cdPillarAggregateRange, ERROR_NUM_CODE
+        TEST_Harness.AssertEqualText "PILLAR_AGGREGATE_RANGE-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "PILLAR_AGGREGATE_RANGE-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "CONTROL_TYPE_REJECTED", cdControlTypeRejected, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "CONTROL_TYPE_REJECTED-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "CONTROL_TYPE_REJECTED-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "CONTROL_TOKEN_UNKNOWN", cdControlTokenUnknown, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "CONTROL_TOKEN_UNKNOWN-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "CONTROL_TOKEN_UNKNOWN-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "CONTROL_NOT_SCALAR", cdControlNotScalar, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "CONTROL_NOT_SCALAR-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "CONTROL_NOT_SCALAR-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "SHAPE_UNSUPPORTED", cdShapeUnsupported, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "SHAPE_UNSUPPORTED-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "SHAPE_UNSUPPORTED-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "SHAPE_MISMATCH", cdShapeMismatch, ERROR_VALUE_CODE
+        TEST_Harness.AssertEqualText "SHAPE_MISMATCH-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "SHAPE_MISMATCH-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "CAPACITY_EXCEEDED", cdCapacityExceeded, ERROR_NUM_CODE
+        TEST_Harness.AssertEqualText "CAPACITY_EXCEEDED-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "CAPACITY_EXCEEDED-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "HOST_DATE1904", cdHostDate1904, ERROR_NA_CODE
+        TEST_Harness.AssertEqualText "HOST_DATE1904-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "HOST_DATE1904-error", mFact(2, 1), mFact(2, 2)
+        ProbeCondition "HOST_UNRESOLVED", cdHostUnresolved, ERROR_NA_CODE
+        TEST_Harness.AssertEqualText "HOST_UNRESOLVED-identifier", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertErrorValue "HOST_UNRESOLVED-error", mFact(2, 1), mFact(2, 2)
     'The conditions that map to none: no identifier for success or an unknown code,
     'and an identifier for each propagation condition
-        CheckName "success", cdNone, vbNullString
-        CheckName "unknown", 99, vbNullString
-        CheckName "INPUT_ERROR_PROPAGATED", cdInputErrorPropagated, "INPUT_ERROR_PROPAGATED"
-        CheckName "CONTROL_ERROR_PROPAGATED", cdControlErrorPropagated, "CONTROL_ERROR_PROPAGATED"
+        ProbeName cdNone, vbNullString
+        TEST_Harness.AssertEqualText "success-identifier", mFact(1, 1), mFact(1, 2)
+        ProbeName 99, vbNullString
+        TEST_Harness.AssertEqualText "unknown-identifier", mFact(1, 1), mFact(1, 2)
+        ProbeName cdInputErrorPropagated, "INPUT_ERROR_PROPAGATED"
+        TEST_Harness.AssertEqualText "INPUT_ERROR_PROPAGATED-identifier", mFact(1, 1), mFact(1, 2)
+        ProbeName cdControlErrorPropagated, "CONTROL_ERROR_PROPAGATED"
+        TEST_Harness.AssertEqualText "CONTROL_ERROR_PROPAGATED-identifier", mFact(1, 1), mFact(1, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -384,10 +519,22 @@ Private Sub CaseUnmappedConditions()
 ' RUN CASE
 '------------------------------------------------------------------------------
     'None of these has a worksheet error
-        CheckUnmapped "success", cdNone
-        CheckUnmapped "input-error-propagated", cdInputErrorPropagated
-        CheckUnmapped "control-error-propagated", cdControlErrorPropagated
-        CheckUnmapped "unknown", 99
+        ProbeUnmapped cdNone
+        TEST_Harness.AssertRaised "success-number", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "success-source", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "success-description", mFact(3, 1), mFact(3, 2)
+        ProbeUnmapped cdInputErrorPropagated
+        TEST_Harness.AssertRaised "input-error-propagated-number", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "input-error-propagated-source", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "input-error-propagated-description", mFact(3, 1), mFact(3, 2)
+        ProbeUnmapped cdControlErrorPropagated
+        TEST_Harness.AssertRaised "control-error-propagated-number", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "control-error-propagated-source", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "control-error-propagated-description", mFact(3, 1), mFact(3, 2)
+        ProbeUnmapped 99
+        TEST_Harness.AssertRaised "unknown-number", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "unknown-source", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "unknown-description", mFact(3, 1), mFact(3, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -457,27 +604,75 @@ Private Sub CaseDateAccepted()
 ' RUN CASE
 '------------------------------------------------------------------------------
     'A native Date, with and without a time of day
-        CheckDate "date-value", DateSerial(2026, 12, 31), 46387#, cdNone
+        ProbeDate DateSerial(2026, 12, 31), 46387#, cdNone
+        TEST_Harness.AssertTrue "date-value-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "date-value-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "date-value-value", mFact(3, 1), mFact(3, 2)
         WithTime = DateSerial(2026, 12, 31) + TimeSerial(13, 45, 0)
-        CheckDate "date-with-time", WithTime, 46387#, cdNone
+        ProbeDate WithTime, 46387#, cdNone
+        TEST_Harness.AssertTrue "date-with-time-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "date-with-time-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "date-with-time-value", mFact(3, 1), mFact(3, 2)
     'Numbers of every numeric type, which keep their whole part
-        CheckDate "double", 46387#, 46387#, cdNone
-        CheckDate "double-with-time", 46387.75, 46387#, cdNone
-        CheckDate "long", CLng(46387), 46387#, cdNone
-        CheckDate "integer", CInt(100), 100#, cdNone
-        CheckDate "single", CSng(46387.5), 46387#, cdNone
-        CheckDate "currency", CCur(46387), 46387#, cdNone
-        CheckDate "byte", CByte(100), 100#, cdNone
-        CheckDate "decimal", CDec(46387.25), 46387#, cdNone
+        ProbeDate 46387#, 46387#, cdNone
+        TEST_Harness.AssertTrue "double-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "double-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "double-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate 46387.75, 46387#, cdNone
+        TEST_Harness.AssertTrue "double-with-time-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "double-with-time-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "double-with-time-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CLng(46387), 46387#, cdNone
+        TEST_Harness.AssertTrue "long-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "long-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "long-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CInt(100), 100#, cdNone
+        TEST_Harness.AssertTrue "integer-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "integer-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "integer-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CSng(46387.5), 46387#, cdNone
+        TEST_Harness.AssertTrue "single-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "single-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "single-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CCur(46387), 46387#, cdNone
+        TEST_Harness.AssertTrue "currency-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "currency-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "currency-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CByte(100), 100#, cdNone
+        TEST_Harness.AssertTrue "byte-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "byte-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "byte-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CDec(46387.25), 46387#, cdNone
+        TEST_Harness.AssertTrue "decimal-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "decimal-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "decimal-value", mFact(3, 1), mFact(3, 2)
     'A Decimal a hair below the next day keeps the day before; a Double conversion would not
         BelowNextDay = CDec(46388) - CDec(1) / CDec(100000000000000#)
-        CheckDate "decimal-below-next-day", BelowNextDay, 46387#, cdNone
+        ProbeDate BelowNextDay, 46387#, cdNone
+        TEST_Harness.AssertTrue "decimal-below-next-day-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "decimal-below-next-day-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "decimal-below-next-day-value", mFact(3, 1), mFact(3, 2)
     'Exact ISO text, with the edges of the window and leap days
-        CheckDate "iso-text", "2026-12-31", 46387#, cdNone
-        CheckDate "iso-leap-day", "2024-02-29", 45351#, cdNone
-        CheckDate "iso-leap-century", "2000-02-29", 36585#, cdNone
-        CheckDate "iso-first-day", "1900-03-01", 61#, cdNone
-        CheckDate "iso-last-day", "9999-12-31", 2958465#, cdNone
+        ProbeDate "2026-12-31", 46387#, cdNone
+        TEST_Harness.AssertTrue "iso-text-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "iso-text-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "iso-text-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2024-02-29", 45351#, cdNone
+        TEST_Harness.AssertTrue "iso-leap-day-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "iso-leap-day-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "iso-leap-day-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2000-02-29", 36585#, cdNone
+        TEST_Harness.AssertTrue "iso-leap-century-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "iso-leap-century-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "iso-leap-century-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "1900-03-01", 61#, cdNone
+        TEST_Harness.AssertTrue "iso-first-day-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "iso-first-day-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "iso-first-day-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "9999-12-31", 2958465#, cdNone
+        TEST_Harness.AssertTrue "iso-last-day-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "iso-last-day-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "iso-last-day-value", mFact(3, 1), mFact(3, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -542,39 +737,129 @@ Private Sub CaseDateTextRejected()
 ' RUN CASE
 '------------------------------------------------------------------------------
     'Text that is not exact ISO and neither locale- nor number-shaped
-        CheckDate "format-short-month-day", "2026-1-5", 0#, cdDateTextFormat
-        CheckDate "format-slash-year-first", "2026/01/05", 0#, cdDateTextFormat
-        CheckDate "format-trailing-blank", "2024-02-10 ", 0#, cdDateTextFormat
-        CheckDate "format-leading-blank", " 2024-02-10", 0#, cdDateTextFormat
-        CheckDate "format-time-suffix", "2024-02-10 12.30", 0#, cdDateTextFormat
-        CheckDate "format-empty", "", 0#, cdDateTextFormat
-        CheckDate "format-sign-only", "+", 0#, cdDateTextFormat
-        CheckDate "format-point-only", ".", 0#, cdDateTextFormat
-        CheckDate "format-two-points", "1.2.3", 0#, cdDateTextFormat
-        CheckDate "format-letter-digit", "2026-01-0A", 0#, cdDateTextFormat
-        CheckDate "format-timestamp", "2026-01-05T10:00", 0#, cdDateTextFormat
-        CheckDate "format-localized-digit", "2026-01-0" & ChrW(&H665), 0#, cdDateTextFormat
+        ProbeDate "2026-1-5", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-short-month-day-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-short-month-day-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-short-month-day-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026/01/05", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-slash-year-first-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-slash-year-first-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-slash-year-first-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2024-02-10 ", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-trailing-blank-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-trailing-blank-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-trailing-blank-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate " 2024-02-10", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-leading-blank-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-leading-blank-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-leading-blank-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2024-02-10 12.30", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-time-suffix-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-time-suffix-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-time-suffix-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-empty-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-empty-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-empty-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "+", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-sign-only-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-sign-only-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-sign-only-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate ".", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-point-only-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-point-only-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-point-only-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "1.2.3", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-two-points-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-two-points-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-two-points-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-01-0A", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-letter-digit-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-letter-digit-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-letter-digit-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-01-05T10:00", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-timestamp-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-timestamp-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-timestamp-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-01-0" & ChrW(&H665), 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "format-localized-digit-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "format-localized-digit-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "format-localized-digit-value", mFact(3, 1), mFact(3, 2)
     'Text shaped like a locale date
-        CheckDate "locale-day-first", "31/12/2026", 0#, cdDateTextLocale
-        CheckDate "locale-month-first", "12/31/2026", 0#, cdDateTextLocale
-        CheckDate "locale-dots", "10.02.2024", 0#, cdDateTextLocale
-        CheckDate "locale-short-year", "5/1/26", 0#, cdDateTextLocale
+        ProbeDate "31/12/2026", 0#, cdDateTextLocale
+        TEST_Harness.AssertTrue "locale-day-first-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "locale-day-first-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "locale-day-first-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "12/31/2026", 0#, cdDateTextLocale
+        TEST_Harness.AssertTrue "locale-month-first-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "locale-month-first-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "locale-month-first-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "10.02.2024", 0#, cdDateTextLocale
+        TEST_Harness.AssertTrue "locale-dots-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "locale-dots-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "locale-dots-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "5/1/26", 0#, cdDateTextLocale
+        TEST_Harness.AssertTrue "locale-short-year-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "locale-short-year-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "locale-short-year-value", mFact(3, 1), mFact(3, 2)
     'Text that looks like a number, never read as a serial
-        CheckDate "numeric-serial", "61", 0#, cdDateTextNumeric
-        CheckDate "numeric-serial-45292", "45292", 0#, cdDateTextNumeric
-        CheckDate "numeric-serial-with-time", "45292.5", 0#, cdDateTextNumeric
-        CheckDate "numeric-trailing-point", "1.", 0#, cdDateTextNumeric
-        CheckDate "numeric-leading-point", ".5", 0#, cdDateTextNumeric
-        CheckDate "numeric-negative", "-61", 0#, cdDateTextNumeric
-        CheckDate "numeric-positive", "+7", 0#, cdDateTextNumeric
+        ProbeDate "61", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "numeric-serial-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "numeric-serial-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "numeric-serial-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "45292", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "numeric-serial-45292-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "numeric-serial-45292-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "numeric-serial-45292-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "45292.5", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "numeric-serial-with-time-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "numeric-serial-with-time-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "numeric-serial-with-time-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "1.", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "numeric-trailing-point-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "numeric-trailing-point-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "numeric-trailing-point-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate ".5", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "numeric-leading-point-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "numeric-leading-point-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "numeric-leading-point-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "-61", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "numeric-negative-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "numeric-negative-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "numeric-negative-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "+7", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "numeric-positive-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "numeric-positive-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "numeric-positive-value", mFact(3, 1), mFact(3, 2)
     'Exact ISO text naming a date that does not exist, 1900-02-29 included
-        CheckDate "impossible-feb-29-common", "2025-02-29", 0#, cdDateTextImpossible
-        CheckDate "impossible-feb-29-1900", "1900-02-29", 0#, cdDateTextImpossible
-        CheckDate "impossible-month-13", "2026-13-01", 0#, cdDateTextImpossible
-        CheckDate "impossible-month-0", "2026-00-10", 0#, cdDateTextImpossible
-        CheckDate "impossible-day-32", "2026-01-32", 0#, cdDateTextImpossible
-        CheckDate "impossible-day-0", "2026-01-00", 0#, cdDateTextImpossible
-        CheckDate "impossible-april-31", "2026-04-31", 0#, cdDateTextImpossible
+        ProbeDate "2025-02-29", 0#, cdDateTextImpossible
+        TEST_Harness.AssertTrue "impossible-feb-29-common-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "impossible-feb-29-common-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "impossible-feb-29-common-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "1900-02-29", 0#, cdDateTextImpossible
+        TEST_Harness.AssertTrue "impossible-feb-29-1900-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "impossible-feb-29-1900-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "impossible-feb-29-1900-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-13-01", 0#, cdDateTextImpossible
+        TEST_Harness.AssertTrue "impossible-month-13-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "impossible-month-13-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "impossible-month-13-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-00-10", 0#, cdDateTextImpossible
+        TEST_Harness.AssertTrue "impossible-month-0-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "impossible-month-0-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "impossible-month-0-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-01-32", 0#, cdDateTextImpossible
+        TEST_Harness.AssertTrue "impossible-day-32-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "impossible-day-32-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "impossible-day-32-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-01-00", 0#, cdDateTextImpossible
+        TEST_Harness.AssertTrue "impossible-day-0-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "impossible-day-0-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "impossible-day-0-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-04-31", 0#, cdDateTextImpossible
+        TEST_Harness.AssertTrue "impossible-april-31-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "impossible-april-31-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "impossible-april-31-value", mFact(3, 1), mFact(3, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -645,12 +930,27 @@ Private Sub CaseDateTypeRejected()
     'An object is never a date
         Set Item = New Collection
     'A blank is contract-invalid, not a zero serial
-        CheckDate "empty", Empty, 0#, cdInputBlankRequired
+        ProbeDate Empty, 0#, cdInputBlankRequired
+        TEST_Harness.AssertTrue "empty-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "empty-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "empty-value", mFact(3, 1), mFact(3, 2)
     'Every other type is a rejected type
-        CheckDate "null", Null, 0#, cdDateTypeRejected
-        CheckDate "boolean", True, 0#, cdDateTypeRejected
-        CheckDate "error-value", CORE_Err.ErrValue(), 0#, cdDateTypeRejected
-        CheckDate "object", Item, 0#, cdDateTypeRejected
+        ProbeDate Null, 0#, cdDateTypeRejected
+        TEST_Harness.AssertTrue "null-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "null-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "null-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate True, 0#, cdDateTypeRejected
+        TEST_Harness.AssertTrue "boolean-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "boolean-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "boolean-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CORE_Err.ErrValue(), 0#, cdDateTypeRejected
+        TEST_Harness.AssertTrue "error-value-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "error-value-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "error-value-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate Item, 0#, cdDateTypeRejected
+        TEST_Harness.AssertTrue "object-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "object-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "object-value", mFact(3, 1), mFact(3, 2)
     'Release the object
         Set Item = Nothing
 
@@ -721,23 +1021,68 @@ Private Sub CaseDateWindow()
 ' RUN CASE
 '------------------------------------------------------------------------------
     'The window is serial 61 to 2958465, applied to the date-only value
-        CheckDate "serial-60", 60#, 0#, cdDateWindow
-        CheckDate "serial-61", 61#, 61#, cdNone
-        CheckDate "serial-zero", 0#, 0#, cdDateWindow
-        CheckDate "serial-negative", -1#, 0#, cdDateWindow
-        CheckDate "serial-max", 2958465#, 2958465#, cdNone
-        CheckDate "serial-over-max", 2958466#, 0#, cdDateWindow
-        CheckDate "serial-last-day-with-time", 2958465.99, 2958465#, cdNone
-        CheckDate "serial-below-min-with-time", 60.99, 0#, cdDateWindow
-        CheckDate "date-below-min", DateSerial(1899, 12, 31), 0#, cdDateWindow
-        CheckDate "text-1899", "1899-12-31", 0#, cdDateWindow
-        CheckDate "text-year-zero", "0000-01-01", 0#, cdDateWindow
-        CheckDate "text-year-50", "0050-01-01", 0#, cdDateWindow
-        CheckDate "text-1900-02-28", "1900-02-28", 0#, cdDateWindow
-        CheckDate "text-1900-01-01", "1900-01-01", 0#, cdDateWindow
+        ProbeDate 60#, 0#, cdDateWindow
+        TEST_Harness.AssertTrue "serial-60-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "serial-60-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "serial-60-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate 61#, 61#, cdNone
+        TEST_Harness.AssertTrue "serial-61-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "serial-61-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "serial-61-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate 0#, 0#, cdDateWindow
+        TEST_Harness.AssertTrue "serial-zero-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "serial-zero-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "serial-zero-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate -1#, 0#, cdDateWindow
+        TEST_Harness.AssertTrue "serial-negative-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "serial-negative-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "serial-negative-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate 2958465#, 2958465#, cdNone
+        TEST_Harness.AssertTrue "serial-max-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "serial-max-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "serial-max-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate 2958466#, 0#, cdDateWindow
+        TEST_Harness.AssertTrue "serial-over-max-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "serial-over-max-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "serial-over-max-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate 2958465.99, 2958465#, cdNone
+        TEST_Harness.AssertTrue "serial-last-day-with-time-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "serial-last-day-with-time-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "serial-last-day-with-time-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate 60.99, 0#, cdDateWindow
+        TEST_Harness.AssertTrue "serial-below-min-with-time-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "serial-below-min-with-time-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "serial-below-min-with-time-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate DateSerial(1899, 12, 31), 0#, cdDateWindow
+        TEST_Harness.AssertTrue "date-below-min-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "date-below-min-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "date-below-min-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "1899-12-31", 0#, cdDateWindow
+        TEST_Harness.AssertTrue "text-1899-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "text-1899-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "text-1899-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "0000-01-01", 0#, cdDateWindow
+        TEST_Harness.AssertTrue "text-year-zero-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "text-year-zero-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "text-year-zero-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "0050-01-01", 0#, cdDateWindow
+        TEST_Harness.AssertTrue "text-year-50-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "text-year-50-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "text-year-50-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "1900-02-28", 0#, cdDateWindow
+        TEST_Harness.AssertTrue "text-1900-02-28-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "text-1900-02-28-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "text-1900-02-28-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "1900-01-01", 0#, cdDateWindow
+        TEST_Harness.AssertTrue "text-1900-01-01-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "text-1900-01-01-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "text-1900-01-01-value", mFact(3, 1), mFact(3, 2)
     'A Decimal a hair below serial 61 floors to 60, outside the window
         BelowMin = CDec(61) - CDec(1) / CDec(100000000000000#)
-        CheckDate "decimal-below-min", BelowMin, 0#, cdDateWindow
+        ProbeDate BelowMin, 0#, cdDateWindow
+        TEST_Harness.AssertTrue "decimal-below-min-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "decimal-below-min-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "decimal-below-min-value", mFact(3, 1), mFact(3, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -812,21 +1157,66 @@ Private Sub CaseLongAccepted()
         Residue = (0.1 + 0.2) * 10#
         DecimalInside = CDec(3) + CDec(999999999) / CDec(1000000000000000000#)
     'Whole numbers of every numeric type, and values within 1E-9 of a whole number
-        CheckLong "integer", CInt(7), 7, cdNone
-        CheckLong "long", CLng(-5), -5, cdNone
-        CheckLong "byte", CByte(200), 200, cdNone
-        CheckLong "single", CSng(12), 12, cdNone
-        CheckLong "double-whole", 3#, 3, cdNone
-        CheckLong "zero", 0#, 0, cdNone
-        CheckLong "currency", CCur(40), 40, cdNone
-        CheckLong "decimal", CDec(12), 12, cdNone
-        CheckLong "long-min", -2147483648#, -2147483647 - 1, cdNone
-        CheckLong "long-max", 2147483647#, 2147483647, cdNone
-        CheckLong "residue", Residue, 3, cdNone
-        CheckLong "inside-high", 3.0000000001, 3, cdNone
-        CheckLong "inside-low", 2.9999999999, 3, cdNone
-        CheckLong "negative-inside", -2.9999999999, -3, cdNone
-        CheckLong "decimal-inside", DecimalInside, 3, cdNone
+        ProbeLong CInt(7), 7, cdNone
+        TEST_Harness.AssertTrue "integer-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "integer-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "integer-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong CLng(-5), -5, cdNone
+        TEST_Harness.AssertTrue "long-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "long-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "long-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong CByte(200), 200, cdNone
+        TEST_Harness.AssertTrue "byte-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "byte-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "byte-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong CSng(12), 12, cdNone
+        TEST_Harness.AssertTrue "single-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "single-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "single-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 3#, 3, cdNone
+        TEST_Harness.AssertTrue "double-whole-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "double-whole-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "double-whole-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 0#, 0, cdNone
+        TEST_Harness.AssertTrue "zero-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "zero-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "zero-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong CCur(40), 40, cdNone
+        TEST_Harness.AssertTrue "currency-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "currency-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "currency-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong CDec(12), 12, cdNone
+        TEST_Harness.AssertTrue "decimal-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "decimal-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "decimal-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong -2147483648#, -2147483647 - 1, cdNone
+        TEST_Harness.AssertTrue "long-min-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "long-min-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "long-min-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 2147483647#, 2147483647, cdNone
+        TEST_Harness.AssertTrue "long-max-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "long-max-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "long-max-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong Residue, 3, cdNone
+        TEST_Harness.AssertTrue "residue-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "residue-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "residue-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 3.0000000001, 3, cdNone
+        TEST_Harness.AssertTrue "inside-high-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "inside-high-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "inside-high-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 2.9999999999, 3, cdNone
+        TEST_Harness.AssertTrue "inside-low-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "inside-low-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "inside-low-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong -2.9999999999, -3, cdNone
+        TEST_Harness.AssertTrue "negative-inside-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "negative-inside-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "negative-inside-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong DecimalInside, 3, cdNone
+        TEST_Harness.AssertTrue "decimal-inside-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "decimal-inside-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "decimal-inside-value", mFact(3, 1), mFact(3, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -903,26 +1293,86 @@ Private Sub CaseLongRejected()
         DecimalAboveMax = CDec(2147483647) + CDec(1) / CDec(10000000000#)
         DecimalBelowMin = CDec(-2147483648#) - CDec(1) / CDec(10000000000#)
     'A real fraction is never truncated or rounded, and the range is tested first
-        CheckLong "fraction-half", 2.5, 0, cdIntegerFraction
-        CheckLong "fraction-small", 3.00000001, 0, cdIntegerFraction
-        CheckLong "fraction-negative-half", -0.5, 0, cdIntegerFraction
-        CheckLong "fraction-positive-half", 0.5, 0, cdIntegerFraction
-        CheckLong "fraction-decimal", DecimalOutside, 0, cdIntegerFraction
-        CheckLong "range-over-max", 2147483648#, 0, cdIntegerRange
-        CheckLong "range-below-min", -2147483649#, 0, cdIntegerRange
-        CheckLong "range-over-max-with-fraction", 2147483647.5, 0, cdIntegerRange
-        CheckLong "range-below-min-with-fraction", -2147483648.5, 0, cdIntegerRange
-        CheckLong "range-decimal-above-max", DecimalAboveMax, 0, cdIntegerRange
-        CheckLong "range-decimal-below-min", DecimalBelowMin, 0, cdIntegerRange
-        CheckLong "range-huge", (10000000000# * 10000000000#), 0, cdIntegerRange
-        CheckLong "type-boolean", True, 0, cdIntegerTypeRejected
-        CheckLong "type-date", DateSerial(2026, 1, 5), 0, cdIntegerTypeRejected
-        CheckLong "type-text-number", "7", 0, cdIntegerTypeRejected
-        CheckLong "type-text-empty", "", 0, cdIntegerTypeRejected
-        CheckLong "type-null", Null, 0, cdIntegerTypeRejected
-        CheckLong "type-object", Item, 0, cdIntegerTypeRejected
-        CheckLong "type-error-value", CORE_Err.ErrValue(), 0, cdIntegerTypeRejected
-        CheckLong "blank", Empty, 0, cdInputBlankRequired
+        ProbeLong 2.5, 0, cdIntegerFraction
+        TEST_Harness.AssertTrue "fraction-half-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "fraction-half-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "fraction-half-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 3.00000001, 0, cdIntegerFraction
+        TEST_Harness.AssertTrue "fraction-small-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "fraction-small-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "fraction-small-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong -0.5, 0, cdIntegerFraction
+        TEST_Harness.AssertTrue "fraction-negative-half-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "fraction-negative-half-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "fraction-negative-half-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 0.5, 0, cdIntegerFraction
+        TEST_Harness.AssertTrue "fraction-positive-half-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "fraction-positive-half-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "fraction-positive-half-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong DecimalOutside, 0, cdIntegerFraction
+        TEST_Harness.AssertTrue "fraction-decimal-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "fraction-decimal-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "fraction-decimal-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 2147483648#, 0, cdIntegerRange
+        TEST_Harness.AssertTrue "range-over-max-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "range-over-max-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "range-over-max-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong -2147483649#, 0, cdIntegerRange
+        TEST_Harness.AssertTrue "range-below-min-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "range-below-min-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "range-below-min-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 2147483647.5, 0, cdIntegerRange
+        TEST_Harness.AssertTrue "range-over-max-with-fraction-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "range-over-max-with-fraction-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "range-over-max-with-fraction-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong -2147483648.5, 0, cdIntegerRange
+        TEST_Harness.AssertTrue "range-below-min-with-fraction-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "range-below-min-with-fraction-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "range-below-min-with-fraction-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong DecimalAboveMax, 0, cdIntegerRange
+        TEST_Harness.AssertTrue "range-decimal-above-max-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "range-decimal-above-max-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "range-decimal-above-max-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong DecimalBelowMin, 0, cdIntegerRange
+        TEST_Harness.AssertTrue "range-decimal-below-min-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "range-decimal-below-min-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "range-decimal-below-min-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong (10000000000# * 10000000000#), 0, cdIntegerRange
+        TEST_Harness.AssertTrue "range-huge-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "range-huge-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "range-huge-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong True, 0, cdIntegerTypeRejected
+        TEST_Harness.AssertTrue "type-boolean-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "type-boolean-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "type-boolean-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong DateSerial(2026, 1, 5), 0, cdIntegerTypeRejected
+        TEST_Harness.AssertTrue "type-date-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "type-date-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "type-date-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong "7", 0, cdIntegerTypeRejected
+        TEST_Harness.AssertTrue "type-text-number-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "type-text-number-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "type-text-number-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong "", 0, cdIntegerTypeRejected
+        TEST_Harness.AssertTrue "type-text-empty-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "type-text-empty-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "type-text-empty-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong Null, 0, cdIntegerTypeRejected
+        TEST_Harness.AssertTrue "type-null-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "type-null-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "type-null-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong Item, 0, cdIntegerTypeRejected
+        TEST_Harness.AssertTrue "type-object-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "type-object-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "type-object-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong CORE_Err.ErrValue(), 0, cdIntegerTypeRejected
+        TEST_Harness.AssertTrue "type-error-value-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "type-error-value-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "type-error-value-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong Empty, 0, cdInputBlankRequired
+        TEST_Harness.AssertTrue "blank-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "blank-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "blank-value", mFact(3, 1), mFact(3, 2)
     'Release the object
         Set Item = Nothing
 
@@ -988,16 +1438,46 @@ Private Sub CaseBoolControl()
 ' RUN CASE
 '------------------------------------------------------------------------------
     'Empty selects the default; only a native Boolean is accepted
-        CheckBool "empty-default-true", Empty, True, True, cdNone
-        CheckBool "empty-default-false", Empty, False, False, cdNone
-        CheckBool "true", True, False, True, cdNone
-        CheckBool "false", False, True, False, cdNone
-        CheckBool "number-zero", 0, True, False, cdControlTypeRejected
-        CheckBool "number-one", 1, False, False, cdControlTypeRejected
-        CheckBool "text-true", "TRUE", False, False, cdControlTypeRejected
-        CheckBool "null", Null, False, False, cdControlTypeRejected
-        CheckBool "date", DateSerial(2026, 1, 5), False, False, cdControlTypeRejected
-        CheckBool "error-value", CORE_Err.ErrValue(), False, False, cdControlTypeRejected
+        ProbeBool Empty, True, True, cdNone
+        TEST_Harness.AssertTrue "empty-default-true-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "empty-default-true-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertTrue "empty-default-true-value", mFact(3, 1), mFact(3, 2)
+        ProbeBool Empty, False, False, cdNone
+        TEST_Harness.AssertTrue "empty-default-false-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "empty-default-false-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertTrue "empty-default-false-value", mFact(3, 1), mFact(3, 2)
+        ProbeBool True, False, True, cdNone
+        TEST_Harness.AssertTrue "true-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "true-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertTrue "true-value", mFact(3, 1), mFact(3, 2)
+        ProbeBool False, True, False, cdNone
+        TEST_Harness.AssertTrue "false-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "false-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertTrue "false-value", mFact(3, 1), mFact(3, 2)
+        ProbeBool 0, True, False, cdControlTypeRejected
+        TEST_Harness.AssertTrue "number-zero-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "number-zero-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertTrue "number-zero-value", mFact(3, 1), mFact(3, 2)
+        ProbeBool 1, False, False, cdControlTypeRejected
+        TEST_Harness.AssertTrue "number-one-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "number-one-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertTrue "number-one-value", mFact(3, 1), mFact(3, 2)
+        ProbeBool "TRUE", False, False, cdControlTypeRejected
+        TEST_Harness.AssertTrue "text-true-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "text-true-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertTrue "text-true-value", mFact(3, 1), mFact(3, 2)
+        ProbeBool Null, False, False, cdControlTypeRejected
+        TEST_Harness.AssertTrue "null-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "null-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertTrue "null-value", mFact(3, 1), mFact(3, 2)
+        ProbeBool DateSerial(2026, 1, 5), False, False, cdControlTypeRejected
+        TEST_Harness.AssertTrue "date-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "date-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertTrue "date-value", mFact(3, 1), mFact(3, 2)
+        ProbeBool CORE_Err.ErrValue(), False, False, cdControlTypeRejected
+        TEST_Harness.AssertTrue "error-value-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "error-value-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertTrue "error-value-value", mFact(3, 1), mFact(3, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -1061,25 +1541,82 @@ Private Sub CaseRoundingControl()
 ' RUN CASE
 '------------------------------------------------------------------------------
     'Empty selects NEAREST; text is trimmed of blanks and tabs and folded in ASCII only
-        CheckRounding "empty", Empty, "NEAREST", cdNone
-        CheckRounding "nearest", "NEAREST", "NEAREST", cdNone
-        CheckRounding "floor", "FLOOR", "FLOOR", cdNone
-        CheckRounding "ceiling", "CEILING", "CEILING", cdNone
-        CheckRounding "lower-case", "floor", "FLOOR", cdNone
-        CheckRounding "mixed-case", "Ceiling", "CEILING", cdNone
-        CheckRounding "padded-with-blanks", "  nearest  ", "NEAREST", cdNone
-        CheckRounding "padded-with-tabs", vbTab & "FLOOR" & vbTab, "FLOOR", cdNone
-        CheckRounding "unknown-token", "ROUND", "", cdControlTokenUnknown
-        CheckRounding "empty-text", "", "", cdControlTokenUnknown
-        CheckRounding "blanks-only", "   ", "", cdControlTokenUnknown
-        CheckRounding "inner-blank", "CE ILING", "", cdControlTokenUnknown
-        CheckRounding "dotless-i", "ce" & ChrW(&H131) & "ling", "", cdControlTokenUnknown
-        CheckRounding "line-feed", vbLf & "FLOOR", "", cdControlTokenUnknown
-        CheckRounding "number", 1, "", cdControlTypeRejected
-        CheckRounding "boolean", True, "", cdControlTypeRejected
-        CheckRounding "null", Null, "", cdControlTypeRejected
-        CheckRounding "date", DateSerial(2026, 1, 5), "", cdControlTypeRejected
-        CheckRounding "error-value", CORE_Err.ErrValue(), "", cdControlTypeRejected
+        ProbeRounding Empty, "NEAREST", cdNone
+        TEST_Harness.AssertTrue "empty-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "empty-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "empty-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding "NEAREST", "NEAREST", cdNone
+        TEST_Harness.AssertTrue "nearest-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "nearest-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "nearest-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding "FLOOR", "FLOOR", cdNone
+        TEST_Harness.AssertTrue "floor-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "floor-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "floor-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding "CEILING", "CEILING", cdNone
+        TEST_Harness.AssertTrue "ceiling-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "ceiling-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "ceiling-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding "floor", "FLOOR", cdNone
+        TEST_Harness.AssertTrue "lower-case-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "lower-case-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "lower-case-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding "Ceiling", "CEILING", cdNone
+        TEST_Harness.AssertTrue "mixed-case-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "mixed-case-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "mixed-case-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding "  nearest  ", "NEAREST", cdNone
+        TEST_Harness.AssertTrue "padded-with-blanks-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "padded-with-blanks-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "padded-with-blanks-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding vbTab & "FLOOR" & vbTab, "FLOOR", cdNone
+        TEST_Harness.AssertTrue "padded-with-tabs-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "padded-with-tabs-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "padded-with-tabs-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding "ROUND", "", cdControlTokenUnknown
+        TEST_Harness.AssertTrue "unknown-token-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "unknown-token-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "unknown-token-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding "", "", cdControlTokenUnknown
+        TEST_Harness.AssertTrue "empty-text-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "empty-text-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "empty-text-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding "   ", "", cdControlTokenUnknown
+        TEST_Harness.AssertTrue "blanks-only-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "blanks-only-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "blanks-only-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding "CE ILING", "", cdControlTokenUnknown
+        TEST_Harness.AssertTrue "inner-blank-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "inner-blank-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "inner-blank-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding "ce" & ChrW(&H131) & "ling", "", cdControlTokenUnknown
+        TEST_Harness.AssertTrue "dotless-i-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "dotless-i-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "dotless-i-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding vbLf & "FLOOR", "", cdControlTokenUnknown
+        TEST_Harness.AssertTrue "line-feed-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "line-feed-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "line-feed-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding 1, "", cdControlTypeRejected
+        TEST_Harness.AssertTrue "number-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "number-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "number-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding True, "", cdControlTypeRejected
+        TEST_Harness.AssertTrue "boolean-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "boolean-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "boolean-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding Null, "", cdControlTypeRejected
+        TEST_Harness.AssertTrue "null-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "null-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "null-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding DateSerial(2026, 1, 5), "", cdControlTypeRejected
+        TEST_Harness.AssertTrue "date-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "date-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "date-token", mFact(3, 1), mFact(3, 2)
+        ProbeRounding CORE_Err.ErrValue(), "", cdControlTypeRejected
+        TEST_Harness.AssertTrue "error-value-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "error-value-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "error-value-token", mFact(3, 1), mFact(3, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -1104,14 +1641,14 @@ End Sub
 '------------------------------------------------------------------------------
 '
 
-Private Sub CheckCondition( _
+Private Sub ProbeCondition( _
     ByVal Identifier As String, _
     ByVal Condition As KPRCondition, _
     ByVal ExpectedCode As Long)
 
 '
 '------------------------------------------------------------------------------
-'                             CHECK ONE CONDITION
+'                             PROBE ONE CONDITION
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Checks the identifier and the native error of one condition. 2 assertions
@@ -1153,22 +1690,21 @@ Private Sub CheckCondition( _
 ' RUN CHECKS
 '------------------------------------------------------------------------------
     'The identifier is the semantic name that test cases and evidence cite
-        TEST_Harness.AssertEqualText Identifier & "-identifier", Identifier, _
-            CORE_Err.ConditionName(Condition)
+        mFact(1, 1) = Identifier
+        mFact(1, 2) = CORE_Err.ConditionName(Condition)
     'The error is the one the data contract's Conditions table gives
-        TEST_Harness.AssertErrorValue Identifier & "-error", ExpectedCode, _
-            CORE_Err.ErrForCondition(Condition)
+        mFact(2, 1) = ExpectedCode
+        mFact(2, 2) = CORE_Err.ErrForCondition(Condition)
 
 End Sub
 
-Private Sub CheckName( _
-    ByVal Label As String, _
+Private Sub ProbeName( _
     ByVal Condition As KPRCondition, _
     ByVal Expected As String)
 
 '
 '------------------------------------------------------------------------------
-'                           CHECK ONE CONDITION NAME
+'                           PROBE ONE CONDITION NAME
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Checks the identifier text of one condition that the mapper does not map.
@@ -1211,17 +1747,17 @@ Private Sub CheckName( _
 ' RUN CHECK
 '------------------------------------------------------------------------------
     'Compare the identifier text
-        TEST_Harness.AssertEqualText Label & "-identifier", Expected, CORE_Err.ConditionName(Condition)
+        mFact(1, 1) = Expected
+        mFact(1, 2) = CORE_Err.ConditionName(Condition)
 
 End Sub
 
-Private Sub CheckUnmapped( _
-    ByVal Label As String, _
+Private Sub ProbeUnmapped( _
     ByVal Condition As KPRCondition)
 
 '
 '------------------------------------------------------------------------------
-'                         CHECK AN UNMAPPED CONDITION
+'                         PROBE AN UNMAPPED CONDITION
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Checks that the mapper raises the one documented error for a condition that has no
@@ -1279,25 +1815,26 @@ Private Sub CheckUnmapped( _
         On Error GoTo 0
 
 '------------------------------------------------------------------------------
-' CHECK ERROR
+' PROBE ERROR
 '------------------------------------------------------------------------------
     'The error is the one internal defect, with its documented source and description
-        TEST_Harness.AssertRaised Label & "-number", CORE_Err.ERR_UNMAPPED_CONDITION, RaisedNumber
-        TEST_Harness.AssertEqualText Label & "-source", "CORE_Err.ErrForCondition", RaisedSource
-        TEST_Harness.AssertEqualText Label & "-description", _
-            "Condition has no worksheet error mapping; this is an internal defect.", RaisedText
+        mFact(1, 1) = CORE_Err.ERR_UNMAPPED_CONDITION
+        mFact(1, 2) = RaisedNumber
+        mFact(2, 1) = "CORE_Err.ErrForCondition"
+        mFact(2, 2) = RaisedSource
+        mFact(3, 1) = "Condition has no worksheet error mapping; this is an internal defect."
+        mFact(3, 2) = RaisedText
 
 End Sub
 
-Private Sub CheckDate( _
-    ByVal Label As String, _
+Private Sub ProbeDate( _
     ByVal ScalarIn As Variant, _
     ByVal ExpectedSerial As Double, _
     ByVal ExpectedCondition As KPRCondition)
 
 '
 '------------------------------------------------------------------------------
-'                            CHECK ONE DATE SCALAR
+'                            PROBE ONE DATE SCALAR
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Parses one scalar as a date and checks the result, the condition and the output.
@@ -1363,26 +1900,26 @@ Private Sub CheckDate( _
         End If
 
 '------------------------------------------------------------------------------
-' CHECK RESULT
+' PROBE RESULT
 '------------------------------------------------------------------------------
     'The result, the condition and the output are three separate facts
-        TEST_Harness.AssertTrue Label & "-result", Accepted = (ExpectedCondition = cdNone), _
-            "the acceptance differs from the expectation"
-        TEST_Harness.AssertEqualText Label & "-condition", _
-            CORE_Err.ConditionName(ExpectedCondition), CORE_Err.ConditionName(Condition)
-        TEST_Harness.AssertEqualDouble Label & "-value", ExpectedValue, VBA.CDbl(ParsedDate)
+        mFact(1, 1) = (Accepted = (ExpectedCondition = cdNone))
+        mFact(1, 2) = "the acceptance differs from the expectation"
+        mFact(2, 1) = CORE_Err.ConditionName(ExpectedCondition)
+        mFact(2, 2) = CORE_Err.ConditionName(Condition)
+        mFact(3, 1) = ExpectedValue
+        mFact(3, 2) = VBA.CDbl(ParsedDate)
 
 End Sub
 
-Private Sub CheckLong( _
-    ByVal Label As String, _
+Private Sub ProbeLong( _
     ByVal ScalarIn As Variant, _
     ByVal ExpectedValue As Long, _
     ByVal ExpectedCondition As KPRCondition)
 
 '
 '------------------------------------------------------------------------------
-'                           CHECK ONE INTEGER SCALAR
+'                           PROBE ONE INTEGER SCALAR
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Parses one scalar as a Long and checks the result, the condition and the output.
@@ -1447,19 +1984,19 @@ Private Sub CheckLong( _
         End If
 
 '------------------------------------------------------------------------------
-' CHECK RESULT
+' PROBE RESULT
 '------------------------------------------------------------------------------
     'The result, the condition and the output are three separate facts
-        TEST_Harness.AssertTrue Label & "-result", Accepted = (ExpectedCondition = cdNone), _
-            "the acceptance differs from the expectation"
-        TEST_Harness.AssertEqualText Label & "-condition", _
-            CORE_Err.ConditionName(ExpectedCondition), CORE_Err.ConditionName(Condition)
-        TEST_Harness.AssertEqualDouble Label & "-value", ExpectedOutput, ParsedLong
+        mFact(1, 1) = (Accepted = (ExpectedCondition = cdNone))
+        mFact(1, 2) = "the acceptance differs from the expectation"
+        mFact(2, 1) = CORE_Err.ConditionName(ExpectedCondition)
+        mFact(2, 2) = CORE_Err.ConditionName(Condition)
+        mFact(3, 1) = ExpectedOutput
+        mFact(3, 2) = ParsedLong
 
 End Sub
 
-Private Sub CheckBool( _
-    ByVal Label As String, _
+Private Sub ProbeBool( _
     ByVal ControlIn As Variant, _
     ByVal DefaultValue As Boolean, _
     ByVal ExpectedValue As Boolean, _
@@ -1467,7 +2004,7 @@ Private Sub CheckBool( _
 
 '
 '------------------------------------------------------------------------------
-'                          CHECK ONE BOOLEAN CONTROL
+'                          PROBE ONE BOOLEAN CONTROL
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Parses one control as a Boolean and checks the result, the condition and the output.
@@ -1536,27 +2073,26 @@ Private Sub CheckBool( _
         End If
 
 '------------------------------------------------------------------------------
-' CHECK RESULT
+' PROBE RESULT
 '------------------------------------------------------------------------------
     'The result, the condition and the output are three separate facts
-        TEST_Harness.AssertTrue Label & "-result", Accepted = (ExpectedCondition = cdNone), _
-            "the acceptance differs from the expectation"
-        TEST_Harness.AssertEqualText Label & "-condition", _
-            CORE_Err.ConditionName(ExpectedCondition), CORE_Err.ConditionName(Condition)
-        TEST_Harness.AssertTrue Label & "-value", ParsedBool = ExpectedOutput, _
-            "the output differs from the expectation"
+        mFact(1, 1) = (Accepted = (ExpectedCondition = cdNone))
+        mFact(1, 2) = "the acceptance differs from the expectation"
+        mFact(2, 1) = CORE_Err.ConditionName(ExpectedCondition)
+        mFact(2, 2) = CORE_Err.ConditionName(Condition)
+        mFact(3, 1) = (ParsedBool = ExpectedOutput)
+        mFact(3, 2) = "the output differs from the expectation"
 
 End Sub
 
-Private Sub CheckRounding( _
-    ByVal Label As String, _
+Private Sub ProbeRounding( _
     ByVal ControlIn As Variant, _
     ByVal ExpectedToken As String, _
     ByVal ExpectedCondition As KPRCondition)
 
 '
 '------------------------------------------------------------------------------
-'                          CHECK ONE ROUNDING CONTROL
+'                          PROBE ONE ROUNDING CONTROL
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Parses one control as a rounding token and checks the result, the condition and the
@@ -1621,13 +2157,14 @@ Private Sub CheckRounding( _
         End If
 
 '------------------------------------------------------------------------------
-' CHECK RESULT
+' PROBE RESULT
 '------------------------------------------------------------------------------
     'The result, the condition and the output are three separate facts
-        TEST_Harness.AssertTrue Label & "-result", Accepted = (ExpectedCondition = cdNone), _
-            "the acceptance differs from the expectation"
-        TEST_Harness.AssertEqualText Label & "-condition", _
-            CORE_Err.ConditionName(ExpectedCondition), CORE_Err.ConditionName(Condition)
-        TEST_Harness.AssertEqualText Label & "-token", ExpectedOutput, TokenOut
+        mFact(1, 1) = (Accepted = (ExpectedCondition = cdNone))
+        mFact(1, 2) = "the acceptance differs from the expectation"
+        mFact(2, 1) = CORE_Err.ConditionName(ExpectedCondition)
+        mFact(2, 2) = CORE_Err.ConditionName(Condition)
+        mFact(3, 1) = ExpectedOutput
+        mFact(3, 2) = TokenOut
 
 End Sub
