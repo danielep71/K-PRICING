@@ -3,6 +3,9 @@
 # [project-public]: every other public declaration under src/.
 # [supported] lists the 22 KPR_Dates_* worksheet functions; [project-public] the rest of src/.
 # Format and change policy: docs/REPOSITORY_STRUCTURE.md, "Public API inventory".
+# Project-public members that no other src/ component calls stay public on purpose:
+# the test suites call ArrayRank, ConditionName, ErrNA, ErrNum, TryReadScalar and
+# ERR_UNMAPPED_CONDITION, and MAX_ELEMENTS is a documented contract constant.
 
 [supported]
 KPR_Dates	Function	KPR_Dates_DayOfWeek
