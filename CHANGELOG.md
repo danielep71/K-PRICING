@@ -242,6 +242,14 @@ Use only the categories an entry needs.
 
 ### Validation
 
+- Excel run of `573884baeb4258a53e8bc7bbe43cbb7c8c44ce5f` on 2026-11-26,
+  the same host as below: every suite of the evidence policy certified,
+  `excel-oracle` included, `excel-run: PASS`, `Binding: VERIFIED`. Excel's own
+  worksheet functions give the expected value of all 416 cases the oracle
+  covers; the values stay `illustrative` until
+  [#48](https://github.com/danielep71/K-PRICING/issues/48) registers Excel
+  as an independent source
+  ([#14](https://github.com/danielep71/K-PRICING/issues/14)).
 - Excel run of `10706ac88fd7fe04f1905f0aabe59c17e50a4695` on 2026-11-26,
   recorded with `tools/devbuild/excel_run.py` in Excel for Microsoft 365
   (build 16.0.20527, 64-bit) on Windows 11: every suite of the evidence

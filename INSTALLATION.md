@@ -33,6 +33,7 @@ Record each host on which a commit has been compiled and run:
 | Tested environment | Commit | Evidence |
 | --- | --- | --- |
 | Microsoft 365 Excel 16.0 build 20527, 64-bit, VBA7, on Windows 11 Enterprise 25H2 (OS build 26200.9974) | `10706ac88fd7fe04f1905f0aabe59c17e50a4695` | Excel run of 2026-11-26 with `tools/devbuild/excel_run.py`: every suite of the evidence policy, `excel-run: PASS`, `Binding: VERIFIED`, compile `ON_DEMAND` ([report](https://github.com/danielep71/K-PRICING/issues/13#issuecomment-7194469480)) |
+| Microsoft 365 Excel 16.0 build 20527, 64-bit, VBA7, on Windows 11 Enterprise 25H2 (OS build 26200.9974) | `573884baeb4258a53e8bc7bbe43cbb7c8c44ce5f` | Excel run of 2026-11-26 with `tools/devbuild/excel_run.py`: every suite of the evidence policy, `excel-oracle` included, `excel-run: PASS`, `Binding: VERIFIED`, compile `ON_DEMAND` ([report](https://github.com/danielep71/K-PRICING/issues/14#issuecomment-7199627903)) |
 
 ## 🔖 Start from an exact revision
 
