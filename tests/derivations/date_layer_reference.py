@@ -11,8 +11,8 @@ call and, when the call fails, its condition, as docs/methodology/TEST_CASES.md
     python -I tests/derivations/date_layer_reference.py tests/fixtures/<case-id>.json
 
 The model is the oracle of the project's earlier date-layer fixture generator,
-carried over with one correction: a whole number given as a Double is checked
-in its binary value, as VBA holds it. Its values are illustrative: the project
+carried over with one correction: a number given as a Double, as a date serial
+or a whole number, is read in its binary value, as VBA holds it. Its values are illustrative: the project
 derived them.
 """
 
@@ -24,7 +24,6 @@ import math
 import re
 import sys
 from dataclasses import dataclass
-from decimal import ROUND_FLOOR, Decimal
 from pathlib import Path
 from typing import Callable, Iterable, NamedTuple, Union
 
@@ -288,10 +287,12 @@ def parse_date(value: Val) -> dt.date | Fail:
     if kind in {"date", "datetime"}:
         ordinal = dt.datetime.fromisoformat(value.payload).date().toordinal()
     elif kind in {"num", "lng"}:
-        serial = Decimal(value.payload).to_integral_value(rounding=ROUND_FLOOR)
+        # A num is a Double: its fraction is removed from its binary value, so
+        # 45292.999999999999, which is 45293 as a Double, is serial 45293.
+        serial = int(value.payload) if kind == "lng" else math.floor(float(value.payload))
         if serial < MIN_ORD - EPOCH_ORD or serial > MAX_ORD - EPOCH_ORD:
             return fail("#NUM!", "DATE_WINDOW")
-        ordinal = EPOCH_ORD + int(serial)
+        ordinal = EPOCH_ORD + serial
     elif kind == "str":
         return parse_date_text(value.payload)
     else:

@@ -31,10 +31,10 @@ def load_derive() -> Callable[[dict[str, object]], list[dict[str, object]]]:
 DERIVE = load_derive()
 
 
-def add_days(days: str) -> list[dict[str, Any]]:
-    """The outputs of KPR_Dates_AddDays(2024-01-01, days) called from VBA."""
+def add_days(days: str, date: str = "date:2024-01-01") -> list[dict[str, Any]]:
+    """The outputs of KPR_Dates_AddDays(date, days) called from VBA."""
     return DERIVE({"function": "KPR_Dates_AddDays", "context": "direct",
-                   "arguments": ["date:2024-01-01", days]})
+                   "arguments": [date, days]})
 
 
 class WholeNumberTest(unittest.TestCase):
@@ -51,6 +51,21 @@ class WholeNumberTest(unittest.TestCase):
 
     def test_a_long_is_exact(self) -> None:
         self.assertEqual([item["text"] for item in add_days("lng:3")], ["date:2024-01-04"])
+
+
+class DateSerialTest(unittest.TestCase):
+    def test_a_double_serial_is_floored_in_its_binary_value(self) -> None:
+        # Both literals round to the next whole number as a Double.
+        self.assertEqual([item["text"] for item in add_days("lng:0", "num:45292.999999999999")],
+                         ["date:2024-01-02"])
+        self.assertEqual([item["text"] for item in add_days("lng:0", "num:60.999999999999999")],
+                         ["date:1900-03-01"])
+
+    def test_a_fraction_is_removed(self) -> None:
+        self.assertEqual([item["text"] for item in add_days("lng:0", "num:45292.75")],
+                         ["date:2024-01-01"])
+        self.assertEqual([item["text"] for item in add_days("lng:0", "num:60.5")],
+                         ["err:#NUM!", "DATE_WINDOW"])
 
 
 if __name__ == "__main__":
