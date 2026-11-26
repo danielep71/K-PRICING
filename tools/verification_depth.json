@@ -244,6 +244,22 @@
       "state": "green"
     },
     {
+      "check": "date-domain",
+      "checker": "python tools/check_date_domain.py",
+      "proofs": [
+        "tests.test_check_date_domain.DayZeroTest.test_a_day_of_zero_is_rejected",
+        "tests.test_check_date_domain.WindowTest.test_a_changed_edge_is_rejected",
+        "tests.test_check_date_domain.HostGuardTest.test_a_function_that_skips_the_evaluator_is_rejected",
+        "tests.test_check_date_domain.HostGuardTest.test_an_argument_read_before_the_host_rule_is_rejected",
+        "tests.test_check_date_domain.VolatilityTest.test_a_function_that_is_volatile_is_rejected",
+        "tests.test_check_date_domain.HostAuthorityTest.test_a_workbook_fallback_is_rejected",
+        "tests.test_check_date_domain.LocaleTest.test_a_regional_conversion_is_rejected",
+        "tests.test_check_date_domain.MainTest.test_exit_status_follows_the_findings"
+      ],
+      "negative_claim": "each date-domain rule rejects a defect made in a copy of the production source: a DateSerial day of zero, a changed or copied window edge, a function that skips the host rule or reads an argument before it, a volatile function other than the diagnostic, a workbook fallback or a second Application.Caller read, and a conversion that depends on regional settings",
+      "state": "green"
+    },
+    {
       "check": "data-contract",
       "checker": "python tools/check_data_contract.py",
       "proofs": [

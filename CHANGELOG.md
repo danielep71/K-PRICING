@@ -192,6 +192,17 @@ Use only the categories an entry needs.
   (467, 2,083, 122, 62 and 81), and `tests/test_project_suites.py` fails when a
   project suite's source no longer reads as its counts state
   ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
+- The `date-domain` check, `tools/check_date_domain.py`, which **Repository
+  integrity** runs: six rules of the date layer that the generic VBA checks
+  do not cover, each tied to the methodology section it enforces and each with
+  a self-test that makes the defect in a copy of the production source: no
+  `DateSerial` day of zero or below, the window pinned in `CORE_Parse` and
+  nowhere copied, the host rule once per call and before any argument,
+  `Application.Volatile` only first in `KPR_Dates_HostDateSystem`,
+  `Application.Caller` only in `M_Host` with no workbook fallback, and no
+  conversion that depends on regional settings. The production source already
+  satisfies all of them; no VBA changed
+  ([#15](https://github.com/danielep71/K-PRICING/issues/15)).
 - `IMPL-01` in the source register: Excel's own worksheet functions, as the
   Excel oracle calls them, in Excel 16.0 build 20527, 64-bit. The 416 expected
   values the oracle confirmed in Excel are `independent`: each cites

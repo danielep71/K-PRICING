@@ -146,6 +146,32 @@ and `CAPACITY_EXCEEDED`, a function of two or more value arguments
 `ERR_UNMAPPED_CONDITION` a defect: no case can hold either, so they are VBA
 tests ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
 
+<a id="date-domain-static-rules"></a>
+
+#### Date-domain static rules
+
+`python tools/check_date_domain.py`, which **Repository integrity** runs as
+`date-domain`, reads the production source under `src/` and enforces the rules
+below, which the generic [VBA checks](../VBA_HOUSE_STYLE.md#static-checks) do
+not cover ([#15](https://github.com/danielep71/K-PRICING/issues/15)). Each rule
+has self-tests in `tests/test_check_date_domain.py` that make the defect in a
+copy of the production source and show the check rejecting it.
+
+| Rule | It fails when | Enforces |
+| --- | --- | --- |
+| `day-zero` | a `DateSerial` call has a literal day of zero or below | [Common rules](CALCULATION_CONTRACTS.md#common-rules), Dates: a month's last day comes from the month's length, `CALC-03` step 2 |
+| `window` | `CORE_Parse` does not declare `WINDOW_MIN_SERIAL` as `61#`, `WINDOW_MAX_SERIAL` as `2958465#`, `WINDOW_MIN_YEAR` as `1900` and `WINDOW_MAX_YEAR` as `9999`, or another place writes an edge of the window out | [Common rules](CALCULATION_CONTRACTS.md#common-rules), Dates: the supported window is 1900-03-01 to 9999-12-31 |
+| `host-guard` | a worksheet function of the facade other than `KPR_Dates_HostDateSystem` does not call `EvaluateCall` exactly once, or applies the host rule itself; `EvaluateCall` does not call `M_Host.TryCheckHost` exactly once, or reads an argument before it; the diagnostic does not call `M_Host.TryReadHostDateSystem` exactly once; another component applies the host rule | [Host and date system](CALCULATION_CONTRACTS.md#host-and-date-system): each public call reads the host once, at its start, before any argument |
+| `volatility` | `Application.Volatile` is called anywhere but as the first statement of `KPR_Dates_HostDateSystem`, with an argument other than `True`, or not exactly once in production | [Host and date system](CALCULATION_CONTRACTS.md#host-and-date-system), and `CALC-10` step 1: only `KPR_Dates_HostDateSystem` is volatile |
+| `host-authority` | `Application.Caller` is read outside `M_Host` or not exactly once there, or `M_Host` or the facade names `ActiveWorkbook`, `ThisWorkbook`, `ActiveSheet`, `ActiveCell`, `Selection` or `Workbooks` | [Host and date system](CALCULATION_CONTRACTS.md#host-and-date-system), steps 1 and 5: only the caller's own workbook decides, and no other is consulted |
+| `locale` | production calls `IsDate`, `DateValue`, `CVDate`, `IsNumeric`, `Format`, `Format$` or `FormatDateTime`, or `CDate` on anything but a variable named `...Serial` | [Date values](DATA_CONTRACT.md#date-values): no parse uses a conversion that depends on regional settings |
+
+The check reads comments out and blanks string literals; it does not compile
+or run VBA, follows no call through a variable, and judges a computed day or a
+`CDate` argument only by its name, so a defect written another way, such as a
+day held in a variable that happens to be zero, stays with the cases and the
+code review.
+
 [Relation tests](TEST_HARNESS.md#relation-tests) check properties, each with
 its corruption check, over the dates whose inputs and intermediate results
 all stay in the window. Each relation holds only there: `BeginOfYear` of a

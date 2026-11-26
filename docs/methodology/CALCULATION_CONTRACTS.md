@@ -27,8 +27,11 @@ says how each argument is read and which error each rejection returns.
   ([SRC-08](SOURCES.md#register)) and VBA holds
   ([SRC-11](SOURCES.md#register)). Every accepted date and every date result
   is a whole day, with no time. A date result outside the window is never
-  returned: it is `RESULT_WINDOW`. No calendar, holiday, business day, day
-  count or roll convention applies: those are later milestones.
+  returned: it is `RESULT_WINDOW`. No date is built with a day of zero or
+  below, as `DateSerial(year, month + 1, 0)` for a month's last day: after
+  December 9999 that overflows the date range, so a month's last day comes
+  from the month's length (`CALC-03` step 2). No calendar, holiday, business
+  day, day count or roll convention applies: those are later milestones.
 - **Precision and rounding:** whole-day arithmetic, with no rounding. The
   only exceptions are stated where they apply: the time of an accepted date
   is removed, a whole-number argument within `1E-9` of a whole number is read
@@ -573,5 +576,6 @@ can tell a library `#N/A` from one passed in.
 | 2026-11-25 | `DayOfWeek` and `WdIndex` are Monday-based by default; `Opt_WeekBaseMonday=FALSE` gives `WEEKDAY`'s numbering | Monday = 1 is the ISO 8601 and market convention | [#4](https://github.com/danielep71/K-PRICING/issues/4) |
 | 2026-11-25 | `AddMonths` clips to the target month's last day; `Opt_KeepEOM` keeps a month end; `AddYears` is twelve months | One month rule for every shift and for pillars | [#4](https://github.com/danielep71/K-PRICING/issues/4) |
 | 2026-11-25 | `PillarFromDates` writes weeks only up to `3W`, chooses among week and month anchors under `FLOOR`, `CEILING` and `NEAREST` with fixed tie-breaks, excludes anchors outside the window, and fails rather than fall back under `CEILING` | Weeks label only the short end of a curve; a label must be repeatable and never silently another mode | [#4](https://github.com/danielep71/K-PRICING/issues/4) |
+| 2026-11-26 | No date is built with a day of zero or below; the window is declared once, in `CORE_Parse`; the host rule runs once per call, before any argument is read, in `EvaluateCall` only; only `KPR_Dates_HostDateSystem` is volatile; only `M_Host` reads `Application.Caller`; no date or number is read by a conversion that depends on regional settings. `tools/check_date_domain.py` enforces them | Each is already a rule of the guides above; a source check keeps a later edit from breaking one without a test that fails first. A day of zero in the month after December 9999 is the one defect that no case reaches | [#15](https://github.com/danielep71/K-PRICING/issues/15) |
 | 2026-11-25 | Every date-layer comparison is exact | The results are whole days, whole numbers, Booleans and texts | [#4](https://github.com/danielep71/K-PRICING/issues/4) |
 | 2026-11-26 | The values that validate `CALC-02` to `CALC-07` are Excel's own worksheet functions, `IMPL-01`, as the [Excel oracle](EXCEL_ORACLE.md) computed them in a passing Excel run; the holdout of `ACC-02` to `ACC-20` is every fifth, by ID, of the function's cases the oracle covers, and every other case calibrates; the contracts stay `draft`, and whether each freezes is decided with the release certification | Excel's functions are an implementation by another author that the date layer never calls; a holdout of `independent` values is what a frozen contract needs, and the release certification runs the candidate the guarantee would cover. `ACC-16` and `ACC-18` hold fewer than `min_holdout_cases` such cases, and `ACC-21` to `ACC-23` none | [#48](https://github.com/danielep71/K-PRICING/issues/48) |

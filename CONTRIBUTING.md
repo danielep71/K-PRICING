@@ -190,6 +190,7 @@ It runs these checks, in this order. `OWNER/REPOSITORY` is the repository that
 | `vba-errors` | `python tools/check_vba_errors.py` |
 | `vba-declares` | `python tools/check_vba_declares.py` |
 | `vba-calls` | `python tools/check_vba_calls.py` (advisory: findings warn, never fail the run) |
+| `date-domain` | `python tools/check_date_domain.py` |
 | `data-contract` | `python tools/check_data_contract.py` |
 | `test-cases` | `python tools/check_test_cases.py` |
 | `derivations` | `python tools/check_derivations.py` |
