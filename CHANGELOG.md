@@ -115,5 +115,17 @@ Use only the categories an entry needs.
   before those two corrections, the split engine gave the same results as the
   engine it replaces on 24 argument shapes. Nothing was run in Excel
   ([#7](https://github.com/danielep71/K-PRICING/issues/7)).
+- The 22 `KPR_Dates_*` worksheet functions, in the facade `KPR_Dates` in
+  `src/modules/`, with the names, signatures, argument order and defaults
+  that `docs/PUBLIC_API.txt` lists as the supported API. Each function checks
+  the calling workbook (the adapter `M_Host` refuses the 1904 date system),
+  reads its arguments in the contract's order and returns its result or an
+  Excel error cell for cell; only `KPR_Dates_HostDateSystem` is volatile. Its
+  tests are `TEST_Dates` (81 assertions). Only the static checks and, as an
+  early warning that is not Excel evidence, a LibreOffice run were done: 72 of
+  the 81 assertions passed, the other 9 meeting LibreOffice's handling of
+  optional arguments, and the functions gave the same results as the ones they
+  replace on 29,440 combinations of arguments. Nothing was run in Excel
+  ([#8](https://github.com/danielep71/K-PRICING/issues/8)).
 
 [Unreleased]: https://github.com/danielep71/K-PRICING/commits/main

@@ -1,10 +1,54 @@
 # Public VBA API inventory.
 # [supported]: the supported API, the public declarations of src/modules/.
 # [project-public]: every other public declaration under src/.
-# [supported] is empty until the facade is ported; [project-public] lists the core.
+# [supported] lists the 22 KPR_Dates_* worksheet functions; [project-public] the rest of src/.
 # Format and change policy: docs/REPOSITORY_STRUCTURE.md, "Public API inventory".
 
 [supported]
+KPR_Dates	Function	KPR_Dates_DayOfWeek
+# SIG	KPR_Dates	Function	KPR_Dates_DayOfWeek	Public Function KPR_Dates_DayOfWeek(ByVal DateIn As Variant, Optional ByVal Opt_WeekBaseMonday As Variant = True) As Variant
+KPR_Dates	Function	KPR_Dates_DaysInMonth
+# SIG	KPR_Dates	Function	KPR_Dates_DaysInMonth	Public Function KPR_Dates_DaysInMonth(ByVal DateIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_DaysInYear
+# SIG	KPR_Dates	Function	KPR_Dates_DaysInYear	Public Function KPR_Dates_DaysInYear(ByVal YearIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_BeginOfMonth
+# SIG	KPR_Dates	Function	KPR_Dates_BeginOfMonth	Public Function KPR_Dates_BeginOfMonth(ByVal DateIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_EndOfMonth
+# SIG	KPR_Dates	Function	KPR_Dates_EndOfMonth	Public Function KPR_Dates_EndOfMonth(ByVal DateIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_BeginOfQuarter
+# SIG	KPR_Dates	Function	KPR_Dates_BeginOfQuarter	Public Function KPR_Dates_BeginOfQuarter(ByVal DateIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_EndOfQuarter
+# SIG	KPR_Dates	Function	KPR_Dates_EndOfQuarter	Public Function KPR_Dates_EndOfQuarter(ByVal DateIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_BeginOfYear
+# SIG	KPR_Dates	Function	KPR_Dates_BeginOfYear	Public Function KPR_Dates_BeginOfYear(ByVal DateIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_EndOfYear
+# SIG	KPR_Dates	Function	KPR_Dates_EndOfYear	Public Function KPR_Dates_EndOfYear(ByVal DateIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_IsMonthEnd
+# SIG	KPR_Dates	Function	KPR_Dates_IsMonthEnd	Public Function KPR_Dates_IsMonthEnd(ByVal DateIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_IsQuarterEnd
+# SIG	KPR_Dates	Function	KPR_Dates_IsQuarterEnd	Public Function KPR_Dates_IsQuarterEnd(ByVal DateIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_IsYearEnd
+# SIG	KPR_Dates	Function	KPR_Dates_IsYearEnd	Public Function KPR_Dates_IsYearEnd(ByVal DateIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_IsLeapYear
+# SIG	KPR_Dates	Function	KPR_Dates_IsLeapYear	Public Function KPR_Dates_IsLeapYear(ByVal YearIn As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_AddDays
+# SIG	KPR_Dates	Function	KPR_Dates_AddDays	Public Function KPR_Dates_AddDays(ByVal DateIn As Variant, ByVal nDays As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_AddWeeks
+# SIG	KPR_Dates	Function	KPR_Dates_AddWeeks	Public Function KPR_Dates_AddWeeks(ByVal DateIn As Variant, ByVal nWeeks As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_AddMonths
+# SIG	KPR_Dates	Function	KPR_Dates_AddMonths	Public Function KPR_Dates_AddMonths(ByVal DateIn As Variant, ByVal nMonths As Variant, Optional ByVal Opt_KeepEOM As Variant = False) As Variant
+KPR_Dates	Function	KPR_Dates_AddYears
+# SIG	KPR_Dates	Function	KPR_Dates_AddYears	Public Function KPR_Dates_AddYears(ByVal DateIn As Variant, ByVal nYears As Variant, Optional ByVal Opt_KeepEOM As Variant = False) As Variant
+KPR_Dates	Function	KPR_Dates_NthWeekdayOfMonth
+# SIG	KPR_Dates	Function	KPR_Dates_NthWeekdayOfMonth	Public Function KPR_Dates_NthWeekdayOfMonth(ByVal YearIn As Variant, ByVal MonthIn As Variant, ByVal WdIndex As Variant, ByVal n As Variant, Optional ByVal Opt_WeekBaseMonday As Variant = True) As Variant
+KPR_Dates	Function	KPR_Dates_LastWeekdayOfMonth
+# SIG	KPR_Dates	Function	KPR_Dates_LastWeekdayOfMonth	Public Function KPR_Dates_LastWeekdayOfMonth(ByVal YearIn As Variant, ByVal MonthIn As Variant, ByVal WdIndex As Variant, Optional ByVal Opt_WeekBaseMonday As Variant = True) As Variant
+KPR_Dates	Function	KPR_Dates_PillarFromDates
+# SIG	KPR_Dates	Function	KPR_Dates_PillarFromDates	Public Function KPR_Dates_PillarFromDates(ByVal StartDate As Variant, ByVal EndDate As Variant, Optional ByVal Opt_Rounding As Variant = "NEAREST") As Variant
+KPR_Dates	Function	KPR_Dates_DateFromPillar
+# SIG	KPR_Dates	Function	KPR_Dates_DateFromPillar	Public Function KPR_Dates_DateFromPillar(ByVal StartDate As Variant, ByVal Pillar As Variant) As Variant
+KPR_Dates	Function	KPR_Dates_HostDateSystem
+# SIG	KPR_Dates	Function	KPR_Dates_HostDateSystem	Public Function KPR_Dates_HostDateSystem() As Variant
 
 [project-public]
 CORE_Array	Function	AccumulateShape
@@ -115,6 +159,10 @@ CORE_Parse	Const	WINDOW_MIN_SERIAL
 # SIG	CORE_Parse	Const	WINDOW_MIN_SERIAL	Public Const WINDOW_MIN_SERIAL As Double = 61#
 CORE_Parse	Const	WINDOW_MIN_YEAR
 # SIG	CORE_Parse	Const	WINDOW_MIN_YEAR	Public Const WINDOW_MIN_YEAR As Long = 1900
+M_Host	Function	TryCheckHost
+# SIG	M_Host	Function	TryCheckHost	Public Function TryCheckHost(ByRef Condition As KPRCondition) As Boolean
+M_Host	Function	TryReadHostDateSystem
+# SIG	M_Host	Function	TryReadHostDateSystem	Public Function TryReadHostDateSystem(ByRef DateSystem As Long, ByRef Condition As KPRCondition) As Boolean
 M_Ranges	Function	TryDescribeArgument
 # SIG	M_Ranges	Function	TryDescribeArgument	Public Function TryDescribeArgument(ByVal ValueIn As Variant, ByRef Kind As KPRArgShape, ByRef RowCount As Long, ByRef ColCount As Long, ByRef Condition As KPRCondition) As Boolean
 M_Ranges	Function	TryReadArgument

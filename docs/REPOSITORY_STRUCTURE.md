@@ -25,8 +25,8 @@ them are already set in `.gitattributes`, `.editorconfig` and `.gitignore`.
 | `docs/user-manual/` | Optional manual for workbook recipients, one folder per released version (`docs/user-manual/X.Y.Z/MANUAL.md`), built to the PDF attached to the release ([user manual](../RELEASING.md#user-manual)) | Reserved |
 | `src/core/` | Calculations and pure validation, host-independent standard modules | Present, with `CORE_Err`, `CORE_Parse`, `CORE_Dates` and `CORE_Array` |
 | `src/classes/` | Host-independent classes, if the design needs them | Reserved |
-| `src/modules/` | The public facade: the supported entry points | Reserved |
-| `src/workbook/` | Excel adapters, `ThisWorkbook` and sheet document modules, and the optional macro-free `Template.xlsx`, laid out as the [workbook contract](methodology/WORKBOOK_CONTRACT.md) defines | Present, with the adapter `M_Ranges` |
+| `src/modules/` | The public facade: the supported entry points | Present, with `KPR_Dates`, the 22 worksheet functions |
+| `src/workbook/` | Excel adapters, `ThisWorkbook` and sheet document modules, and the optional macro-free `Template.xlsx`, laid out as the [workbook contract](methodology/WORKBOOK_CONTRACT.md) defines | Present, with the adapters `M_Ranges` and `M_Host` |
 | `src/forms/` | UserForms, each `.frm` with its `.frx` | Reserved |
 | `tests/` | Python tests of the repository tooling (`test_*.py`) | Present |
 | `tests/modules/` | VBA test modules: the [test harness](methodology/TEST_HARNESS.md), its example suite, relation tests, case runners and volume benchmarks | Present, with the harness, the example suite and the illustrative relation tests |

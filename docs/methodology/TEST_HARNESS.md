@@ -19,6 +19,7 @@ records.
 | `tests/modules/TEST_CoreDates.bas` | The tests of `CORE_Dates`, `RunCoreDatesTests`: the window and domains, the leap and month-length rules, the period boundaries and tests, the shifts by days and months, the weekday locators and the pillar parser, shift and format, with expected values from `tests/derivations/date_core_reference.py`. It is not certified until the suites of the date layer are ported, and holds no case of a `KPR_Dates_*` function |
 | `tests/modules/TEST_CoreArray.bas` | The tests of `CORE_Array` on plain values, `RunCoreArrayTests`: rank, shape classification, the capacity gate, shape resolution, materialization, element access, output allocation, and the unwrapping of scalars and controls. It is not certified |
 | `tests/modules/TEST_Ranges.bas` | The tests of `M_Ranges` on Ranges of the first worksheet, `RunRangeTests`: the description and the read of cells, blocks, whole columns, two-area Ranges and Ranges over the cap, and the hand-off of other arguments to the core. It reads cells it leaves unchanged, writes nothing, and is not certified |
+| `tests/modules/TEST_Dates.bas` | The tests of the `KPR_Dates` facade, `RunDateTests`: one call of each of the 22 functions, every condition it can meet from VBA, the array rules and the optional controls. Called from VBA, it has no worksheet host; a 1904 workbook and volatility are left to an Excel run. It is not certified |
 
 All of them use `Option Private Module`, so they never become part of the
 workbook's external surface. A production workbook contains none of them.
