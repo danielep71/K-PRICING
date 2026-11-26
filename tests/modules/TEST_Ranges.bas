@@ -24,8 +24,8 @@ Option Private Module
 ' BEHAVIOR
 '   RunRangeTests runs the suite. Option Private Module keeps it out of the workbook's external
 '   surface. The cases read Ranges of the first worksheet, whose cells they leave unchanged, and
-'   write nothing. The suite is not certified: it is not listed in
-'   .github/excel-evidence-policy.json
+'   write nothing. CertifyRanges certifies its normal run, as .github/excel-evidence-policy.json
+'   lists it
 '
 ' ERROR POLICY
 '   As TEST_Harness.EndRun: a run that does not pass raises TEST_Harness.ERR_TEST_FAILED,
@@ -51,6 +51,13 @@ Option Private Module
     Private Const SUITE_NAME            As String = "ranges"            'Suite name in the run log
     Private Const EXPECTED_CASES        As Long = 5                 'Cases a complete run starts
     Private Const EXPECTED_ASSERTIONS   As Long = 62                'Assertions a complete run evaluates
+
+
+'------------------------------------------------------------------------------
+' PRIVATE STATE
+'------------------------------------------------------------------------------
+    'The arguments of each assertion of the last probe, by assertion and argument
+    Private mFact(1 To 4, 1 To 3) As Variant
 
 
 '
@@ -144,6 +151,72 @@ RunFailed:
 
 End Sub
 
+Public Sub CertifyRanges( _
+    ByVal Folder As String, _
+    ByVal Fixtures As String)
+
+'
+'------------------------------------------------------------------------------
+'                              CERTIFY THE SUITE
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Certifies the suite's normal run and saves its evidence in the folder.
+'
+' WHY THIS EXISTS
+'   The certification entry point that .github/excel-evidence-policy.json names.
+'
+' INPUTS
+'   Folder
+'     The evidence folder.
+'
+'   Fixtures
+'     The tests/fixtures/ folder, which this suite does not read.
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Runs RunRangeTests, saves its log, certifies the run, then saves the certification log.
+'
+' ERROR POLICY
+'   TEST_Harness.EndCertification raises when the certification did not pass.
+'
+' DEPENDENCIES
+'   RunRangeTests, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
+    Dim RunErrorDescription     As String   'Its description
+
+'------------------------------------------------------------------------------
+' CERTIFY
+'------------------------------------------------------------------------------
+    'Refuse state left by an earlier run and start the certification
+        TEST_Harness.BeginCertification SUITE_NAME
+    'Run the suite and capture the error that ended it
+        On Error Resume Next
+        RunRangeTests
+        RunErrorNumber = Err.Number
+        RunErrorDescription = Err.Description
+    'Restore normal error handling
+        On Error GoTo 0
+    'Save the log and certify the run
+        TEST_Harness.SaveLog Folder & "\ranges.log"
+        TEST_Harness.CertifyRun "NORMAL", True, RunErrorNumber, RunErrorDescription
+    'Save the certification log, raising when the certification did not pass
+        TEST_Harness.EndCertification Folder & "\ranges-certification.log"
+
+End Sub
+
 '
 '------------------------------------------------------------------------------
 '
@@ -208,17 +281,45 @@ Private Sub CaseDescribeRanges()
     'Read Ranges of the first worksheet
         Set Sheet = ThisWorkbook.Worksheets(1)
     'A cell is a scalar, a block keeps its rows and columns, a column is read at its full height
-        CheckShape "cell", Sheet.Range("B2"), cdNone, skScalar, 1, 1
-        CheckShape "block", Sheet.Range("A1:C2"), cdNone, skArray, 2, 3
-        CheckShape "row", Sheet.Range("A1:D1"), cdNone, skArray, 1, 4
-        CheckShape "whole-column", Sheet.Range("A:A"), cdNone, skArray, Sheet.Rows.Count, 1
+        ProbeShape Sheet.Range("B2"), cdNone, skScalar, 1, 1
+        TEST_Harness.AssertTrue "cell-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "cell-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "cell-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "cell-size", mFact(4, 1), mFact(4, 2)
+        ProbeShape Sheet.Range("A1:C2"), cdNone, skArray, 2, 3
+        TEST_Harness.AssertTrue "block-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "block-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "block-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "block-size", mFact(4, 1), mFact(4, 2)
+        ProbeShape Sheet.Range("A1:D1"), cdNone, skArray, 1, 4
+        TEST_Harness.AssertTrue "row-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "row-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "row-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "row-size", mFact(4, 1), mFact(4, 2)
+        ProbeShape Sheet.Range("A:A"), cdNone, skArray, Sheet.Rows.Count, 1
+        TEST_Harness.AssertTrue "whole-column-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "whole-column-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "whole-column-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "whole-column-size", mFact(4, 1), mFact(4, 2)
     'Two areas are not one rectangle
-        CheckShape "two-areas", Sheet.Range("A1:A2,C1:C2"), cdShapeUnsupported, 0, 0, 0
+        ProbeShape Sheet.Range("A1:A2,C1:C2"), cdShapeUnsupported, 0, 0, 0
+        TEST_Harness.AssertTrue "two-areas-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "two-areas-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "two-areas-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "two-areas-size", mFact(4, 1), mFact(4, 2)
     'A plain array is the core's, and another object is unsupported
         ReDim Table(1 To 2, 1 To 3)
-        CheckShape "plain-array", Table, cdNone, skArray, 2, 3
+        ProbeShape Table, cdNone, skArray, 2, 3
+        TEST_Harness.AssertTrue "plain-array-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "plain-array-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "plain-array-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "plain-array-size", mFact(4, 1), mFact(4, 2)
         Set Item = New Collection
-        CheckShape "other-object", Item, cdShapeUnsupported, 0, 0, 0
+        ProbeShape Item, cdShapeUnsupported, 0, 0, 0
+        TEST_Harness.AssertTrue "other-object-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "other-object-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "other-object-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "other-object-size", mFact(4, 1), mFact(4, 2)
         Set Item = Nothing
 
 '------------------------------------------------------------------------------
@@ -471,13 +572,28 @@ Private Sub CaseReadControls()
     'Read Ranges of the first worksheet
         Set Sheet = ThisWorkbook.Worksheets(1)
     'One cell is a control, and a blank one reads as Empty
-        CheckControl "cell", Sheet.Range("Z1000"), cdNone, ""
+        ProbeControl Sheet.Range("Z1000"), cdNone, ""
+        TEST_Harness.AssertTrue "cell-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "cell-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "cell-value", mFact(3, 1), mFact(3, 2)
     'More cells are not a scalar, even over the cap
-        CheckControl "block", Sheet.Range("A1:B2"), cdControlNotScalar, "UNTOUCHED"
-        CheckControl "over-cap", Sheet.Range("A1:A100001"), cdControlNotScalar, "UNTOUCHED"
+        ProbeControl Sheet.Range("A1:B2"), cdControlNotScalar, "UNTOUCHED"
+        TEST_Harness.AssertTrue "block-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "block-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "block-value", mFact(3, 1), mFact(3, 2)
+        ProbeControl Sheet.Range("A1:A100001"), cdControlNotScalar, "UNTOUCHED"
+        TEST_Harness.AssertTrue "over-cap-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "over-cap-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "over-cap-value", mFact(3, 1), mFact(3, 2)
     'Two areas are not a shape, and a plain array is the core's
-        CheckControl "two-areas", Sheet.Range("A1,C1"), cdShapeUnsupported, "UNTOUCHED"
-        CheckControl "plain", Array("CEILING"), cdNone, "CEILING"
+        ProbeControl Sheet.Range("A1,C1"), cdShapeUnsupported, "UNTOUCHED"
+        TEST_Harness.AssertTrue "two-areas-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "two-areas-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "two-areas-value", mFact(3, 1), mFact(3, 2)
+        ProbeControl Array("CEILING"), cdNone, "CEILING"
+        TEST_Harness.AssertTrue "plain-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "plain-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "plain-value", mFact(3, 1), mFact(3, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -567,7 +683,10 @@ Private Sub CaseRangeElements()
             Not M_Ranges.TryReadArgument(One, Payload, Kind, RowCount, ColCount, Condition), _
             "a Range element was read as a scalar"
         TEST_Harness.AssertTrue "one-scalar", Not M_Ranges.TryReadScalar(One, ScalarOut), "a Range element was unwrapped"
-        CheckControl "one-control", One, cdShapeUnsupported, "UNTOUCHED"
+        ProbeControl One, cdShapeUnsupported, "UNTOUCHED"
+        TEST_Harness.AssertTrue "one-control-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "one-control-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "one-control-value", mFact(3, 1), mFact(3, 2)
         Set One(1) = Nothing
         Set Two(2) = Nothing
 
@@ -594,8 +713,7 @@ End Sub
 '------------------------------------------------------------------------------
 '
 
-Private Sub CheckShape( _
-    ByVal Label As String, _
+Private Sub ProbeShape( _
     ByVal ValueIn As Variant, _
     ByVal ExpectedCondition As KPRCondition, _
     ByVal ExpectedKind As KPRArgShape, _
@@ -604,7 +722,7 @@ Private Sub CheckShape( _
 
 '
 '------------------------------------------------------------------------------
-'                        CHECK THE SHAPE OF AN ARGUMENT
+'                        PROBE THE SHAPE OF AN ARGUMENT
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Describes an argument and checks the condition and, on success, its kind and size. 4
@@ -666,33 +784,31 @@ Private Sub CheckShape( _
 '------------------------------------------------------------------------------
 ' CHECK
 '------------------------------------------------------------------------------
-        TEST_Harness.AssertTrue Label & "-accepted", Accepted = (ExpectedCondition = cdNone), "the acceptance differs"
-        TEST_Harness.AssertEqualText Label & "-condition", _
-            CORE_Err.ConditionName(ExpectedCondition), _
-            CORE_Err.ConditionName(Condition)
+        mFact(1, 1) = (Accepted = (ExpectedCondition = cdNone))
+        mFact(1, 2) = "the acceptance differs"
+        mFact(2, 1) = CORE_Err.ConditionName(ExpectedCondition)
+        mFact(2, 2) = CORE_Err.ConditionName(Condition)
     'A rejection leaves the shape unassigned
         If ExpectedCondition <> cdNone Then
             ExpectedKind = -1
             ExpectedRows = -1
             ExpectedCols = -1
         End If
-        TEST_Harness.AssertEqualDouble Label & "-kind", ExpectedKind, Kind
-        TEST_Harness.AssertTrue Label & "-size", _
-            (RowCount = ExpectedRows) And (ColCount = ExpectedCols), _
-            _
-            "size " & RowCount & " by " & ColCount & ", expected " & ExpectedRows & " by " & ExpectedCols
+        mFact(3, 1) = ExpectedKind
+        mFact(3, 2) = Kind
+        mFact(4, 1) = (RowCount = ExpectedRows) And (ColCount = ExpectedCols)
+        mFact(4, 2) = "size " & RowCount & " by " & ColCount & ", expected " & ExpectedRows & " by " & ExpectedCols
 
 End Sub
 
-Private Sub CheckControl( _
-    ByVal Label As String, _
+Private Sub ProbeControl( _
     ByVal ValueIn As Variant, _
     ByVal ExpectedCondition As KPRCondition, _
     ByVal ExpectedText As String)
 
 '
 '------------------------------------------------------------------------------
-'                          CHECK AN OPTIONAL CONTROL
+'                          PROBE AN OPTIONAL CONTROL
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Unwraps a control and checks the condition and, on success, its value as text. 3
@@ -749,10 +865,11 @@ Private Sub CheckControl( _
 '------------------------------------------------------------------------------
 ' CHECK
 '------------------------------------------------------------------------------
-        TEST_Harness.AssertTrue Label & "-accepted", Accepted = (ExpectedCondition = cdNone), "the acceptance differs"
-        TEST_Harness.AssertEqualText Label & "-condition", _
-            CORE_Err.ConditionName(ExpectedCondition), _
-            CORE_Err.ConditionName(Condition)
-        TEST_Harness.AssertEqualText Label & "-value", ExpectedText, CStr(ScalarOut)
+        mFact(1, 1) = (Accepted = (ExpectedCondition = cdNone))
+        mFact(1, 2) = "the acceptance differs"
+        mFact(2, 1) = CORE_Err.ConditionName(ExpectedCondition)
+        mFact(2, 2) = CORE_Err.ConditionName(Condition)
+        mFact(3, 1) = ExpectedText
+        mFact(3, 2) = CStr(ScalarOut)
 
 End Sub

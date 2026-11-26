@@ -24,8 +24,8 @@ Option Private Module
 ' BEHAVIOR
 '   RunDateTests runs the suite. Option Private Module keeps it out of the workbook's external
 '   surface. The cases call the worksheet functions from VBA, so no worksheet host is identified
-'   and the 1900 serial contract applies; they change no Excel state. The suite is not certified:
-'   it is not listed in .github/excel-evidence-policy.json
+'   and the 1900 serial contract applies; they change no Excel state. CertifyDates certifies
+'   its normal run, as .github/excel-evidence-policy.json lists it
 '
 ' ERROR POLICY
 '   As TEST_Harness.EndRun: a run that does not pass raises TEST_Harness.ERR_TEST_FAILED,
@@ -148,6 +148,72 @@ RunFailed:
         ErrDescription = Err.Description
     'Finish the run with the captured error
         Resume Finish
+
+End Sub
+
+Public Sub CertifyDates( _
+    ByVal Folder As String, _
+    ByVal Fixtures As String)
+
+'
+'------------------------------------------------------------------------------
+'                              CERTIFY THE SUITE
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Certifies the suite's normal run and saves its evidence in the folder.
+'
+' WHY THIS EXISTS
+'   The certification entry point that .github/excel-evidence-policy.json names.
+'
+' INPUTS
+'   Folder
+'     The evidence folder.
+'
+'   Fixtures
+'     The tests/fixtures/ folder, which this suite does not read.
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Runs RunDateTests, saves its log, certifies the run, then saves the certification log.
+'
+' ERROR POLICY
+'   TEST_Harness.EndCertification raises when the certification did not pass.
+'
+' DEPENDENCIES
+'   RunDateTests, TEST_Harness
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
+    Dim RunErrorDescription     As String   'Its description
+
+'------------------------------------------------------------------------------
+' CERTIFY
+'------------------------------------------------------------------------------
+    'Refuse state left by an earlier run and start the certification
+        TEST_Harness.BeginCertification SUITE_NAME
+    'Run the suite and capture the error that ended it
+        On Error Resume Next
+        RunDateTests
+        RunErrorNumber = Err.Number
+        RunErrorDescription = Err.Description
+    'Restore normal error handling
+        On Error GoTo 0
+    'Save the log and certify the run
+        TEST_Harness.SaveLog Folder & "\dates.log"
+        TEST_Harness.CertifyRun "NORMAL", True, RunErrorNumber, RunErrorDescription
+    'Save the certification log, raising when the certification did not pass
+        TEST_Harness.EndCertification Folder & "\dates-certification.log"
 
 End Sub
 
