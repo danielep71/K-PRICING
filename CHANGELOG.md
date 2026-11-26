@@ -192,6 +192,16 @@ Use only the categories an entry needs.
   (467, 2,083, 122, 62 and 81), and `tests/test_project_suites.py` fails when a
   project suite's source no longer reads as its counts state
   ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
+- `IMPL-01` in the source register: Excel's own worksheet functions, as the
+  Excel oracle calls them, in Excel 16.0 build 20527, 64-bit. The 416 expected
+  values the oracle confirmed in Excel are `independent`: each cites
+  `IMPL-01`, its formula, the passing run and the step of its calculation
+  contract. The holdout of `ACC-02` to `ACC-20` is now every fifth, by ID, of
+  the function's covered cases, so it holds only `independent` values; the
+  contracts stay `draft` until the release certification. `ACC-16` and
+  `ACC-18` hold fewer than three such cases. A test keeps the values, the
+  oracle and the holdouts in step
+  ([#48](https://github.com/danielep71/K-PRICING/issues/48)).
 - The Excel oracle, the project suite `excel-oracle`,
   `tests/modules/TEST_ExcelOracle.bas`: 416 of the 1,635 worksheet-function
   cases computed a second time with Excel's own worksheet functions only

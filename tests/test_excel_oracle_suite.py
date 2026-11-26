@@ -73,6 +73,39 @@ class ExcelOracleSuiteTest(unittest.TestCase):
         stated = text[text.index(start) + len(start):text.index("<!-- excel-oracle-coverage:end")]
         self.assertEqual(stated, gen_excel_oracle_suite.coverage_tables(ROOT))
 
+    def test_each_covered_value_is_independent_as_excel_computed_it(self) -> None:
+        covered = {case["id"]: case for case in gen_excel_oracle_suite.coverage(ROOT)["covered"]}
+        cited = {}
+        for path in (ROOT / "tests/expected").glob("*.json"):
+            expected = json.loads(path.read_text(encoding="utf-8"))
+            for output in expected.get("outputs", []):
+                if output["reference"]["source"] == "IMPL-01":
+                    cited[expected["fixture"]] = output
+        self.assertEqual(sorted(cited), sorted(covered))
+        for case_id, output in cited.items():
+            with self.subTest(case=case_id):
+                case = covered[case_id]
+                self.assertEqual(output["reference"]["class"], "independent")
+                self.assertEqual(output["reference"]["locator"],
+                                 f"excel-oracle case {case_id}: {case['formula']}")
+                self.assertEqual((output["rule"], output["text"]),
+                                 (case["rule"], case["expected"]))
+
+    def test_holdouts_hold_only_independent_values_where_excel_covers(self) -> None:
+        covered = {case["id"] for case in gen_excel_oracle_suite.coverage(ROOT)["covered"]}
+        contracts = json.loads((ROOT / "tests/accuracy/contracts.json").read_text(
+            encoding="utf-8"))["contracts"]
+        checked = 0
+        for contract in contracts:
+            cases = set(contract["calibration_cases"]) | set(contract["holdout_cases"])
+            if not cases & covered:
+                continue
+            checked += 1
+            with self.subTest(contract=contract["id"]):
+                self.assertLessEqual(set(contract["holdout_cases"]), covered)
+                self.assertTrue(contract["holdout_cases"])
+        self.assertEqual(checked, 19)
+
     def test_the_policy_states_the_module_counts(self) -> None:
         text = module_text()
         cases = int(re.search(r"EXPECTED_CASES\s+As Long = (\d+)", text).group(1))  # type: ignore[union-attr]

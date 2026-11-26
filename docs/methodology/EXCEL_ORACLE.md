@@ -118,9 +118,15 @@ case is excluded, with its reason, when:
 ## What it proves
 
 A passing `excel-oracle` run shows that Excel's functions give each covered
-case's expected value. It does not change a value's
-[reference class](TEST_CASES.md#reference-classes): the expected values stay
-`illustrative`, and the holdouts of the draft accuracy contracts stay sealed.
-It says nothing about an excluded case, and both computations read a date as
-a serial of the 1900 date system, so an error in that reading is outside its
-reach.
+case's expected value. The covered values are `independent`: each cites
+`IMPL-01`, Excel's worksheet functions in the build of the
+[source register](SOURCES.md), with the case's formula as its locator, the
+Excel run that computed it and the step of the calculation contract it tests
+([#48](https://github.com/danielep71/K-PRICING/issues/48)).
+`tests/test_excel_oracle_suite.py` fails when a covered case and its value
+disagree, so a changed formula or expected value cites `IMPL-01` only after a
+new passing run. The holdouts of `ACC-02` to `ACC-20` hold only covered cases.
+
+The oracle says nothing about an excluded case, whose value stays
+`illustrative`, and both computations read a date as a serial of the 1900
+date system, so an error in that reading is outside its reach.
