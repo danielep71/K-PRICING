@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-datefrompillar-call-shape-mismatch",
+  "synthetic": true,
+  "description": "The call: SHAPE_MISMATCH, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x2[date:2024-01-15;date:2024-01-15]",
+    "arr2:2x1[str:\"3M\";str:\"3M\"]"
+  ]
+}

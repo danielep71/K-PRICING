@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-addyears-opt-keepeom-control-not-scalar",
+  "synthetic": true,
+  "description": "Opt_KeepEOM: CONTROL_NOT_SCALAR, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddYears",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-29",
+    "lng:1",
+    "arr2:1x2[bool:TRUE;bool:FALSE]"
+  ]
+}

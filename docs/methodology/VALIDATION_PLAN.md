@@ -87,7 +87,7 @@ with the [case categories](TEST_CASES.md#categories):
 | `boundary` | The window's edges: 1900-03-01, 9999-12-31, serial 61, and one day beyond each; 1900-02-28 and `1900-02-29` as text; leap days in 2000, 1900 and 2100; month ends of 28, 29, 30 and 31 days; quarter and year ends; shifts whose result lands on an edge and one day past it; `CALC-04` step 4 in 1900; fifth weekdays present and absent; `CALC-07` results in early 1900; pillar intervals of 6 and 7 days and of 24 to 27 days, a 31 January start, and the last fortnight of 9999; whole numbers at `1E-9` from an integer and just beyond, and at the edges of `Long` |
 | `invalid` | Every [condition](DATA_CONTRACT.md#conditions) of every argument a function takes, each with at least one case, as a [worksheet-function case](TEST_CASES.md#worksheet-function-cases) where it can express the input, otherwise as a VBA test |
 
-The 1,361 worksheet-function cases hold, as encoded values, a VBA `Date`,
+The worksheet-function cases hold, as encoded values, a VBA `Date`,
 `Empty`, `Null`, an Excel error, an empty array and the 100,000 and 100,001
 element calls, and the array rules of
 [arrays and evaluation](CALCULATION_CONTRACTS.md#arrays-and-evaluation): a
@@ -97,6 +97,54 @@ first failing argument at a position. Inputs that they cannot express are VBA
 tests, run by the harness ([#13](https://github.com/danielep71/K-PRICING/issues/13)):
 an object, a Range of several areas, a jagged array, a `Decimal`, and the
 order of evaluation.
+
+<a id="date-layer-completeness"></a>
+
+#### Completeness policy
+
+Each value-taking function has at least one `nominal`, one `boundary` and one
+`invalid` worksheet-function case, and an `invalid` case for each condition
+below, at the argument or level it names ([#12](https://github.com/danielep71/K-PRICING/issues/12)).
+`KPR_Dates_HostDateSystem` takes no argument and needs one `nominal` case per
+caller. `tests/test_date_layer_completeness.py` reads these tables and fails on
+any function, argument or condition without a case: it attributes a case's
+condition to the first argument that fails at that position, as the
+evaluation order of the [calculation contracts](CALCULATION_CONTRACTS.md#arrays-and-evaluation) gives.
+
+Every argument needs a case for each condition of its kind:
+
+| Arguments | Kind | Conditions |
+| --- | --- | --- |
+| `DateIn`, `StartDate`, `EndDate` | date | `DATE_TEXT_FORMAT`, `DATE_TEXT_LOCALE`, `DATE_TEXT_NUMERIC`, `DATE_TEXT_IMPOSSIBLE`, `DATE_TYPE_REJECTED`, `DATE_WINDOW`, `INPUT_BLANK_REQUIRED`, `INPUT_ERROR_PROPAGATED` |
+| `YearIn` | year | `INTEGER_TYPE_REJECTED`, `INTEGER_FRACTION`, `INTEGER_RANGE`, `INPUT_BLANK_REQUIRED`, `INPUT_ERROR_PROPAGATED`, `DOMAIN_YEAR` |
+| `MonthIn` | month | `INTEGER_TYPE_REJECTED`, `INTEGER_FRACTION`, `INTEGER_RANGE`, `INPUT_BLANK_REQUIRED`, `INPUT_ERROR_PROPAGATED`, `DOMAIN_MONTH` |
+| `WdIndex` | weekday | `INTEGER_TYPE_REJECTED`, `INTEGER_FRACTION`, `INTEGER_RANGE`, `INPUT_BLANK_REQUIRED`, `INPUT_ERROR_PROPAGATED`, `DOMAIN_WEEKDAY` |
+| `n` | occurrence | `INTEGER_TYPE_REJECTED`, `INTEGER_FRACTION`, `INTEGER_RANGE`, `INPUT_BLANK_REQUIRED`, `INPUT_ERROR_PROPAGATED`, `DOMAIN_OCCURRENCE` |
+| `nDays`, `nWeeks`, `nMonths`, `nYears` | int | `INTEGER_TYPE_REJECTED`, `INTEGER_FRACTION`, `INTEGER_RANGE`, `INPUT_BLANK_REQUIRED`, `INPUT_ERROR_PROPAGATED` |
+| `Pillar` | pillar | `PILLAR_TYPE_REJECTED`, `PILLAR_TOKEN_MALFORMED`, `PILLAR_DUPLICATE_UNIT`, `PILLAR_ALIAS_SIGNED`, `INPUT_BLANK_REQUIRED`, `INPUT_ERROR_PROPAGATED` |
+| `Opt_WeekBaseMonday`, `Opt_KeepEOM` | bool-control | `CONTROL_TYPE_REJECTED`, `CONTROL_NOT_SCALAR`, `CONTROL_ERROR_PROPAGATED` |
+| `Opt_Rounding` | rounding-control | `CONTROL_TYPE_REJECTED`, `CONTROL_NOT_SCALAR`, `CONTROL_ERROR_PROPAGATED`, `CONTROL_TOKEN_UNKNOWN` |
+
+Every value-taking function also needs `HOST_DATE1904`, `SHAPE_UNSUPPORTED`
+and `CAPACITY_EXCEEDED`, a function of two or more value arguments
+`SHAPE_MISMATCH`, and each function below the conditions of its result:
+
+| Function | Result conditions |
+| --- | --- |
+| `KPR_Dates_BeginOfQuarter` | `RESULT_WINDOW` |
+| `KPR_Dates_BeginOfYear` | `RESULT_WINDOW` |
+| `KPR_Dates_AddDays` | `RESULT_WINDOW` |
+| `KPR_Dates_AddWeeks` | `RESULT_WINDOW` |
+| `KPR_Dates_AddMonths` | `RESULT_WINDOW` |
+| `KPR_Dates_AddYears` | `RESULT_WINDOW` |
+| `KPR_Dates_NthWeekdayOfMonth` | `OCCURRENCE_ABSENT`, `RESULT_WINDOW` |
+| `KPR_Dates_LastWeekdayOfMonth` | `RESULT_WINDOW` |
+| `KPR_Dates_DateFromPillar` | `PILLAR_AGGREGATE_RANGE` |
+| `KPR_Dates_PillarFromDates` | `RESULT_WINDOW` |
+
+`HOST_UNRESOLVED` needs a worksheet host whose date system cannot be read, and
+`ERR_UNMAPPED_CONDITION` a defect: no case can hold either, so they are VBA
+tests ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
 
 [Relation tests](TEST_HARNESS.md#relation-tests) check properties, each with
 its corruption check, over the dates whose inputs and intermediate results

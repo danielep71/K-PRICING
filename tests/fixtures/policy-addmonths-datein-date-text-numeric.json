@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-addmonths-datein-date-text-numeric",
+  "synthetic": true,
+  "description": "DateIn: DATE_TEXT_NUMERIC, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "str:\"45332\"",
+    "lng:1"
+  ]
+}

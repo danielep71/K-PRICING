@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-nthweekdayofmonth-opt-weekbasemonday-control-error-propagated",
+  "synthetic": true,
+  "description": "Opt_WeekBaseMonday: CONTROL_ERROR_PROPAGATED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "lng:2024",
+    "lng:2",
+    "lng:1",
+    "lng:2",
+    "err:#N/A"
+  ]
+}

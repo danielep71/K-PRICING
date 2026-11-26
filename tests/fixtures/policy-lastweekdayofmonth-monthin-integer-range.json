@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-lastweekdayofmonth-monthin-integer-range",
+  "synthetic": true,
+  "description": "MonthIn: INTEGER_RANGE, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_LastWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "lng:2024",
+    "num:2147483648",
+    "lng:5"
+  ]
+}

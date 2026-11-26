@@ -449,8 +449,8 @@ blocks, and so can be tighter than what a release may promise.
 | `id` | `ACC-` and a number, unique |
 | `calculation` | A `CALC-` ID declared by the calculation contracts; every case of the contract tests it |
 | `regime` | A free text label, such as the regulation or its version |
-| `quantities` | The outputs the contract covers; every case has an expected number for each |
-| `metric`, `threshold` | `absolute`: the absolute difference between the result and the expected value; `relative`: that difference divided by the expected value's magnitude, which is 0 at an expected 0 only when the result is 0 too. The threshold, the guarantee, is a finite number of at least 0 |
+| `quantities` | The outputs the contract covers; every case has an expected number for each, or an expected text for an `exact` contract |
+| `metric`, `threshold` | `absolute`: the absolute difference between the result and the expected value; `relative`: that difference divided by the expected value's magnitude, which is 0 at an expected 0 only when the result is 0 too; `exact`: for a text output, such as the encoded result of a [worksheet-function case](#worksheet-function-cases), 0 when the result is the expected text and 1 otherwise, with threshold and target 0. The threshold, the guarantee, is a finite number of at least 0 |
 | `target` | Optional: the worst error aimed for, in the same metric, a finite number of at least 0 and no larger than the threshold. Only reported; leave it out for no target. No rule derives the threshold from it: declare each one |
 | `provenance` | Why the threshold, and the target if any, are what they are |
 | `status`, `decision` | `draft`, with `decision` `null`, or `frozen`, with the issue or record that froze it |
@@ -513,7 +513,8 @@ blocks, and so can be tighter than what a release may promise.
 ```
 
 A result names its case, its variant (`null` for a JSON fixture), its
-quantity and its scope as in the expected file. In an Excel run, a suite
+quantity and its scope as in the expected file, and holds a `value`, or a
+`text` for a text output such as `"text": "date:2024-02-29"`. In an Excel run, a suite
 records each result with `TEST_Harness.RecordResult`, and its certification
 saves them with `TEST_Harness.SaveResults` in the evidence folder, with the
 commit of the workbook's build stamp

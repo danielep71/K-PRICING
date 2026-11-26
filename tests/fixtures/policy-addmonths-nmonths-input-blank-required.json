@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-addmonths-nmonths-input-blank-required",
+  "synthetic": true,
+  "description": "nMonths: INPUT_BLANK_REQUIRED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-31",
+    "empty"
+  ]
+}

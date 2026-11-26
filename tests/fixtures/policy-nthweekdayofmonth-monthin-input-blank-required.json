@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "policy-nthweekdayofmonth-monthin-input-blank-required",
+  "synthetic": true,
+  "description": "MonthIn: INPUT_BLANK_REQUIRED, a case the completeness policy requires.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "lng:2024",
+    "empty",
+    "lng:1",
+    "lng:2"
+  ]
+}
