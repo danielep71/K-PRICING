@@ -34,7 +34,7 @@ Option Private Module
 '       AssertTrue, AssertErrorValue, AssertRaised; WithinTolerance is the
 '       comparison rule
 '     - log: Say, Echo, SaveLog, LastResult
-'     - results: RecordResult, SaveResults
+'     - results: RecordResult, RecordTextResult, SaveResults
 '     - recovery: ResetTests
 '     - certification: BeginCertification, CertifyRun, EndCertification
 '   Option Private Module keeps all of them out of the workbook's external
@@ -1586,6 +1586,66 @@ Public Sub RecordResult( _
             ", ""quantity"": " & JsonText(Quantity) & _
             ", ""scope"": " & ScopeJson(Dataset, Record) & _
             ", ""value"": " & NumberText(Value) & "}"
+
+End Sub
+
+Public Sub RecordTextResult( _
+    ByVal CaseId As String, _
+    ByVal VariantName As String, _
+    ByVal Quantity As String, _
+    ByVal Dataset As String, _
+    ByVal Record As String, _
+    ByVal Text As String)
+'
+'------------------------------------------------------------------------------
+'                         RECORD A COMPUTED TEXT RESULT
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Keep one computed text of the running suite for SaveResults: the result
+'   of one expected text output of a test case
+'
+' WHY THIS EXISTS
+'   An exact accuracy contract compares texts, such as an encoded date or
+'   Excel error, which RecordResult cannot hold as a number
+'
+' INPUTS
+'   CaseId, VariantName, Quantity, Dataset, Record
+'     As RecordResult
+'
+'   Text
+'     The result, written as a JSON string
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Keeps the result as one JSON object with a text instead of a value
+'
+' ERROR POLICY
+'   Raises ERR_TEST_USAGE outside a run. A repeated result is kept; the
+'   accuracy check rejects it
+'
+' DEPENDENCIES
+'   RequireActiveRun, JsonText, JsonTextOrNull, ScopeJson
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' RECORD
+'------------------------------------------------------------------------------
+    'Refuse a call outside a run
+        RequireActiveRun "RecordTextResult"
+    'Keep the result as one JSON object
+        mResults.Add "{""case"": " & JsonText(CaseId) & _
+            ", ""variant"": " & JsonTextOrNull(VariantName) & _
+            ", ""quantity"": " & JsonText(Quantity) & _
+            ", ""scope"": " & ScopeJson(Dataset, Record) & _
+            ", ""text"": " & JsonText(Text) & "}"
 
 End Sub
 

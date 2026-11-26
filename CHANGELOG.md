@@ -172,6 +172,16 @@ Use only the categories an entry needs.
   145 cases were added to meet it, so the date layer has 1,506. Nothing was
   run in Excel
   ([#12](https://github.com/danielep71/K-PRICING/issues/12)).
+- The project suite `date-cases`, `tests/modules/TEST_DateCases.bas`, which
+  replays in Excel the 1,432 worksheet-function cases whose caller is VBA: each
+  is one assertion named after the case, comparing the encoded result with its
+  expected file, and one text result for the `exact` contracts, recorded with
+  the harness's new `RecordTextResult`. The suite is generated from the cases
+  by `tools/gen_date_case_suite.py`, and a test fails while it is stale; it is
+  listed in the evidence policy, so an Excel run certifies it. Not yet run in
+  Excel; in LibreOffice the facade cannot read a `Date` argument, so it is no
+  early warning there
+  ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
 
 ### Changed
 

@@ -388,6 +388,11 @@ class RebuildTest(unittest.TestCase):
         """What tools/devbuild/excel_run.py leaves: no export, compile=ON_DEMAND."""
         shutil.rmtree(folder / POLICY.exported)
         write_results(folder, results_document(self.commit, self.root))
+        # The project suites' results files are of the same commit, and hold none.
+        for item in POLICY.project_suites:
+            if item.results is not None:
+                write_results(folder, dict(results_document(self.commit, self.root),
+                                           results=[]), item.results)
         (folder / POLICY.host).write_text(HOST.replace("compile=PASS", "compile=ON_DEMAND"),
                                           encoding="utf-8")
 
