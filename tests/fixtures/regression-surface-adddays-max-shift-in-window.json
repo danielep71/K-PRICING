@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-adddays-max-shift-in-window",
+  "synthetic": true,
+  "description": "Regression case (surface): adddays/max shift in window.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "str:\"1900-03-01\"",
+    "lng:2958404"
+  ]
+}

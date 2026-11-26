@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-parity-facade-3x1-column",
+  "synthetic": true,
+  "description": "Regression case (parity): facade/3x1 column.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_BeginOfMonth",
+  "context": "direct",
+  "arguments": [
+    "arr2:3x1[str:\"2026-01-31\";str:\"2026-02-28\";str:\"2026-03-31\"]"
+  ]
+}

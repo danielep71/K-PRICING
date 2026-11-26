@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-year-end",
+  "synthetic": true,
+  "description": "Regression case (surface): year/end.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfYear",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-01-01\""
+  ]
+}

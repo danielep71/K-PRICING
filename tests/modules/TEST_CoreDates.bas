@@ -53,8 +53,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "core-dates"        'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 12                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 2083               'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 13                 'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 2111               'Assertions a complete run evaluates
 
     'The values an output holds before a call, which a rejection must leave in place
     Private Const SENTINEL_SERIAL       As Double = 36526#              '2000-01-01
@@ -85,8 +85,8 @@ Public Sub RunCoreDatesTests()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
-'   RESULT=PASS; suite=core-dates; operation=PASS; completeness=COMPLETE; cases=12;
-'   assertions=2083; failures=0; cleanup=PASS; recovery=NONE
+'   RESULT=PASS; suite=core-dates; operation=PASS; completeness=COMPLETE; cases=13;
+'   assertions=2111; failures=0; cleanup=PASS; recovery=NONE
 '
 ' WHY THIS EXISTS
 '   One entry point runs the suite and reports it through the harness, so that a run is
@@ -142,6 +142,7 @@ Public Sub RunCoreDatesTests()
         CaseParsePillar
         CaseAddPillar
         CaseFormatPillar
+        CasePillarRegression
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -4017,6 +4018,113 @@ Private Sub CaseFormatPillar()
         TEST_Harness.AssertTrue "9999-12-31_1900-03-01_C-accepted", mFact(1, 1), mFact(1, 2)
         TEST_Harness.AssertEqualText "9999-12-31_1900-03-01_C-condition", mFact(2, 1), mFact(2, 2)
         TEST_Harness.AssertEqualText "9999-12-31_1900-03-01_C-token", mFact(3, 1), mFact(3, 2)
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CasePillarRegression()
+
+'
+'------------------------------------------------------------------------------
+'                        CHECK THE REGRESSION PILLAR TOKENS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Oversized pillar tokens: the grammar decides before the numerical range. 28 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the pillar parser reads tokens as the data contract says
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Parses each token and asserts its result, condition, months and days
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Dates, CORE_Err, TEST_Harness
+'
+' NOTES
+'   CaseParsePillar holds the ordinary tokens; these exceed the Double range
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim HugeDigits      As String   'Four hundred digits, beyond the Double range
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "pillar-regression"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'Digits that no Double holds
+        HugeDigits = String(400, "9")
+    'Digits beyond the Double range are a range failure once the grammar is valid
+        ProbeParsePillar HugeDigits & "M", 0#, 0#, cdPillarAggregateRange
+        TEST_Harness.AssertTrue "oversized-months-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "oversized-months-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "oversized-months-months", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertEqualDouble "oversized-months-days", mFact(4, 1), mFact(4, 2)
+    'A finite year quantity whose month aggregate leaves the Double range
+        ProbeParsePillar "2" & String(307, "0") & "Y", 0#, 0#, cdPillarAggregateRange
+        TEST_Harness.AssertTrue "year-aggregate-overflow-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "year-aggregate-overflow-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "year-aggregate-overflow-months", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertEqualDouble "year-aggregate-overflow-days", mFact(4, 1), mFact(4, 2)
+    'The grammar is checked before any number is converted
+        ProbeParsePillar HugeDigits, 0#, 0#, cdPillarTokenMalformed
+        TEST_Harness.AssertTrue "oversized-missing-unit-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "oversized-missing-unit-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "oversized-missing-unit-months", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertEqualDouble "oversized-missing-unit-days", mFact(4, 1), mFact(4, 2)
+        ProbeParsePillar HugeDigits & "X", 0#, 0#, cdPillarTokenMalformed
+        TEST_Harness.AssertTrue "oversized-unknown-unit-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "oversized-unknown-unit-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "oversized-unknown-unit-months", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertEqualDouble "oversized-unknown-unit-days", mFact(4, 1), mFact(4, 2)
+        ProbeParsePillar "1M" & HugeDigits & "M", 0#, 0#, cdPillarDuplicateUnit
+        TEST_Harness.AssertTrue "oversized-repeated-unit-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "oversized-repeated-unit-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "oversized-repeated-unit-months", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertEqualDouble "oversized-repeated-unit-days", mFact(4, 1), mFact(4, 2)
+        ProbeParsePillar HugeDigits & "M1M", 0#, 0#, cdPillarDuplicateUnit
+        TEST_Harness.AssertTrue "overflow-first-then-duplicate-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "overflow-first-then-duplicate-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "overflow-first-then-duplicate-months", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertEqualDouble "overflow-first-then-duplicate-days", mFact(4, 1), mFact(4, 2)
+        ProbeParsePillar HugeDigits & "M1X", 0#, 0#, cdPillarTokenMalformed
+        TEST_Harness.AssertTrue "overflow-first-then-unknown-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "overflow-first-then-unknown-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "overflow-first-then-unknown-months", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertEqualDouble "overflow-first-then-unknown-days", mFact(4, 1), mFact(4, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE

@@ -221,7 +221,7 @@ cases need a worksheet. `tests/derivations/date_layer_reference.py` computes eve
 output of these cases from the contracts, so they are `illustrative`.
 
 What JSON cannot hold stays a VBA test: an object, a Range, of several areas or
-not, a jagged array, a `Decimal`, and the host state of a worksheet caller
+not, a `Decimal`, and the host state of a worksheet caller
 whose date system cannot be read.
 
 <a id="expected-format"></a>

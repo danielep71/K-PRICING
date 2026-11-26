@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-quarter-end-q4-year-edge",
+  "synthetic": true,
+  "description": "Regression case (surface): quarter/end Q4 year edge.",
+  "category": "boundary",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfQuarter",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-10-01\""
+  ]
+}

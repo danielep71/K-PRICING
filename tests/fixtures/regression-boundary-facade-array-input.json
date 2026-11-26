@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-boundary-facade-array-input",
+  "synthetic": true,
+  "description": "Regression case (boundary): facade/array input.",
+  "category": "invalid",
+  "calculation": "CALC-02",
+  "function": "KPR_Dates_DayOfWeek",
+  "context": "direct",
+  "arguments": [
+    "arr1:[lng:1;lng:2]"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-yearin-daysinyear-1900",
+  "synthetic": true,
+  "description": "Regression case (surface): yearin/DaysInYear 1900.",
+  "category": "nominal",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_DaysInYear",
+  "context": "direct",
+  "arguments": [
+    "lng:1900"
+  ]
+}

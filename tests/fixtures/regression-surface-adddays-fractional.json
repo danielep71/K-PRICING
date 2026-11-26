@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-adddays-fractional",
+  "synthetic": true,
+  "description": "Regression case (surface): adddays/fractional.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "str:\"2026-03-15\"",
+    "num:1.5"
+  ]
+}

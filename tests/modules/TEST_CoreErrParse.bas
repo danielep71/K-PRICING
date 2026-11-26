@@ -52,8 +52,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "core-err-parse"    'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 11                  'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 467                 'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 13                  'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 632                 'Assertions a complete run evaluates
 
     'The native error numbers that the Conditions table lists
     Private Const ERROR_VALUE_CODE      As Long = 2015                  '#VALUE!
@@ -90,7 +90,7 @@ Public Sub RunCoreErrParseTests()
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends
 '   with RESULT=PASS; suite=core-err-parse; operation=PASS; completeness=COMPLETE;
-'   cases=11; assertions=467; failures=0; cleanup=PASS; recovery=NONE
+'   cases=13; assertions=632; failures=0; cleanup=PASS; recovery=NONE
 '
 ' WHY THIS EXISTS
 '   One entry point runs the suite and reports it through the harness, so that a run
@@ -145,6 +145,8 @@ Public Sub RunCoreErrParseTests()
         CaseLongRejected
         CaseBoolControl
         CaseRoundingControl
+        CaseDateRegression
+        CaseLongRegression
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -1617,6 +1619,375 @@ Private Sub CaseRoundingControl()
         TEST_Harness.AssertTrue "error-value-result", mFact(1, 1), mFact(1, 2)
         TEST_Harness.AssertEqualText "error-value-condition", mFact(2, 1), mFact(2, 2)
         TEST_Harness.AssertEqualText "error-value-token", mFact(3, 1), mFact(3, 2)
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseDateRegression()
+
+'
+'------------------------------------------------------------------------------
+'                         CHECK THE REGRESSION DATE INPUTS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Regression date inputs that the cases above do not hold. 114 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date layer reads its arguments as the data contract says
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Parses each input and asserts its result, condition and serial
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Err, CORE_Parse, TEST_Harness
+'
+' NOTES
+'   Each expectation is the data contract's; none is read back from the code under test
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    'None
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "date-regression"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'A native Date and a Date with a time of day keep the day
+        ProbeDate DateSerial(2026, 3, 15), 46096#, cdNone
+        TEST_Harness.AssertTrue "native-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "native-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "native-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate DateSerial(2026, 3, 15) + 0.75, 46096#, cdNone
+        TEST_Harness.AssertTrue "native-with-time-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "native-with-time-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "native-with-time-value", mFact(3, 1), mFact(3, 2)
+    'Each numeric type is a serial, and its fraction is dropped
+        ProbeDate CByte(255), 255#, cdNone
+        TEST_Harness.AssertTrue "byte-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "byte-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "byte-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CInt(1000), 1000#, cdNone
+        TEST_Harness.AssertTrue "integer-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "integer-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "integer-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CLng(46096), 46096#, cdNone
+        TEST_Harness.AssertTrue "long-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "long-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "long-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CSng(46096.75), 46096#, cdNone
+        TEST_Harness.AssertTrue "single-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "single-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "single-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate 46096#, 46096#, cdNone
+        TEST_Harness.AssertTrue "integral-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "integral-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "integral-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate 46096.75, 46096#, cdNone
+        TEST_Harness.AssertTrue "fractional-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "fractional-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "fractional-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CCur(46096.75), 46096#, cdNone
+        TEST_Harness.AssertTrue "currency-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "currency-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "currency-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CDec(46096.75), 46096#, cdNone
+        TEST_Harness.AssertTrue "decimal-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "decimal-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "decimal-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-03-15", 46096#, cdNone
+        TEST_Harness.AssertTrue "iso-exact-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "iso-exact-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "iso-exact-value", mFact(3, 1), mFact(3, 2)
+    'False and the #N/A error value are rejected types
+        ProbeDate False, 0#, cdDateTypeRejected
+        TEST_Harness.AssertTrue "boolean-false-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "boolean-false-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "boolean-false-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate CVErr(2042), 0#, cdDateTypeRejected
+        TEST_Harness.AssertTrue "error-na-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "error-na-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "error-na-value", mFact(3, 1), mFact(3, 2)
+    'Day-first, month-first and short-year text is locale-dependent
+        ProbeDate "31.12.2026", 0#, cdDateTextLocale
+        TEST_Harness.AssertTrue "dotted-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "dotted-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "dotted-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "1/2/26", 0#, cdDateTextLocale
+        TEST_Harness.AssertTrue "short-dmy-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "short-dmy-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "short-dmy-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "10.02/2024", 0#, cdDateTextLocale
+        TEST_Harness.AssertTrue "mixed-separators-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "mixed-separators-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "mixed-separators-value", mFact(3, 1), mFact(3, 2)
+    'Other text that is not yyyy-mm-dd is malformed
+        ProbeDate "2024/02/10", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "year-first-slash-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "year-first-slash-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "year-first-slash-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2024.02.10", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "year-first-dot-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "year-first-dot-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "year-first-dot-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "310/12/2026", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "three-digit-day-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "three-digit-day-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "three-digit-day-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "31/12/20260", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "five-digit-year-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "five-digit-year-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "five-digit-year-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate " 31/12/2026", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "padded-dmy-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "padded-dmy-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "padded-dmy-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate " 2026-03-15", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "leading-space-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "leading-space-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "leading-space-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-03-15 ", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "trailing-space-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "trailing-space-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "trailing-space-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-3-15", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "omitted-zeros-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "omitted-zeros-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "omitted-zeros-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-03-15T00:00", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "time-suffix-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "time-suffix-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "time-suffix-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026_03_15", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "underscores-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "underscores-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "underscores-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "20X6-03-15", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "non-digit-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "non-digit-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "non-digit-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "-", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "sign-only-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "sign-only-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "sign-only-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "46,096", 0#, cdDateTextFormat
+        TEST_Harness.AssertTrue "thousands-separator-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "thousands-separator-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "thousands-separator-value", mFact(3, 1), mFact(3, 2)
+    'Text that reads as a number is a serial written as text
+        ProbeDate "46096", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "serial-digits-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "serial-digits-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "serial-digits-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "46096.75", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "serial-decimal-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "serial-decimal-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "serial-decimal-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "20260315", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "no-separators-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "no-separators-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "no-separators-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "31.12", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "dotted-numeric-shape-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "dotted-numeric-shape-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "dotted-numeric-shape-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "-1.", 0#, cdDateTextNumeric
+        TEST_Harness.AssertTrue "signed-trailing-point-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "signed-trailing-point-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "signed-trailing-point-value", mFact(3, 1), mFact(3, 2)
+    'A well-formed date that the calendar lacks is impossible
+        ProbeDate "2024-02-30", 0#, cdDateTextImpossible
+        TEST_Harness.AssertTrue "feb-30-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "feb-30-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "feb-30-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate "2026-03-00", 0#, cdDateTextImpossible
+        TEST_Harness.AssertTrue "day-00-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "day-00-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "day-00-value", mFact(3, 1), mFact(3, 2)
+    'The last serial with a time of day is accepted; serial 59 is outside the window
+        ProbeDate 2958465.999, 2958465#, cdNone
+        TEST_Harness.AssertTrue "max-serial-with-time-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "max-serial-with-time-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "max-serial-with-time-value", mFact(3, 1), mFact(3, 2)
+        ProbeDate 59#, 0#, cdDateWindow
+        TEST_Harness.AssertTrue "serial-59-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "serial-59-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "serial-59-value", mFact(3, 1), mFact(3, 2)
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseLongRegression()
+
+'
+'------------------------------------------------------------------------------
+'                       CHECK THE REGRESSION INTEGER INPUTS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Regression integer inputs that the cases above do not hold. 51 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the date layer reads its arguments as the data contract says
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Parses each input and asserts its result, condition and value
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Err, CORE_Parse, TEST_Harness
+'
+' NOTES
+'   Each expectation is the data contract's; none is read back from the code under test
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim DecimalOutside  As Variant      'A Decimal 1.000000001E-9 above a whole number
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "long-regression"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'Decimal keeps the offset exactly, which Double would round
+        DecimalOutside = CDec(3) + CDec(1000000001) / CDec(1000000000000000000#)
+    'Whole numbers of every numeric type
+        ProbeLong CByte(12), 12, cdNone
+        TEST_Harness.AssertTrue "byte-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "byte-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "byte-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong CInt(12), 12, cdNone
+        TEST_Harness.AssertTrue "integer-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "integer-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "integer-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong CLng(12), 12, cdNone
+        TEST_Harness.AssertTrue "long-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "long-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "long-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong CDbl(12), 12, cdNone
+        TEST_Harness.AssertTrue "double-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "double-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "double-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong CCur(12), 12, cdNone
+        TEST_Harness.AssertTrue "currency-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "currency-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "currency-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 0, 0, cdNone
+        TEST_Harness.AssertTrue "zero-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "zero-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "zero-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong -12, -12, cdNone
+        TEST_Harness.AssertTrue "negative-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "negative-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "negative-value", mFact(3, 1), mFact(3, 2)
+    'A binary residue below a whole number is within the tolerance
+        ProbeLong (0.7 + 0.1) * 10#, 8, cdNone
+        TEST_Harness.AssertTrue "residue-below-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "residue-below-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "residue-below-value", mFact(3, 1), mFact(3, 2)
+    'A Decimal just outside the 1E-9 tolerance, and plain fractions, are fractions
+        ProbeLong DecimalOutside, 0, cdIntegerFraction
+        TEST_Harness.AssertTrue "decimal-outside-tolerance-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "decimal-outside-tolerance-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "decimal-outside-tolerance-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 2.6, 0, cdIntegerFraction
+        TEST_Harness.AssertTrue "fraction-up-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "fraction-up-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "fraction-up-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 2.4, 0, cdIntegerFraction
+        TEST_Harness.AssertTrue "fraction-down-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "fraction-down-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "fraction-down-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong 3.0000001, 0, cdIntegerFraction
+        TEST_Harness.AssertTrue "tiny-fraction-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "tiny-fraction-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "tiny-fraction-value", mFact(3, 1), mFact(3, 2)
+    'A fractional value above the Long range is out of range
+        ProbeLong 2147483648.5, 0, cdIntegerRange
+        TEST_Harness.AssertTrue "over-range-fractional-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "over-range-fractional-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "over-range-fractional-value", mFact(3, 1), mFact(3, 2)
+    'False, numeric text, other text and a Date are rejected types
+        ProbeLong False, 0, cdIntegerTypeRejected
+        TEST_Harness.AssertTrue "boolean-false-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "boolean-false-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "boolean-false-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong "12", 0, cdIntegerTypeRejected
+        TEST_Harness.AssertTrue "numeric-text-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "numeric-text-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "numeric-text-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong "twelve", 0, cdIntegerTypeRejected
+        TEST_Harness.AssertTrue "text-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "text-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "text-value", mFact(3, 1), mFact(3, 2)
+        ProbeLong DateSerial(2026, 3, 15), 0, cdIntegerTypeRejected
+        TEST_Harness.AssertTrue "date-result", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "date-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "date-value", mFact(3, 1), mFact(3, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE

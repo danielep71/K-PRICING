@@ -63,40 +63,47 @@
         "policy-dayofweek-datein-date-text-locale",
         "policy-dayofweek-datein-date-type-rejected",
         "policy-dayofweek-datein-input-blank-required",
+        "regression-boundary-facade-array-input",
+        "regression-boundary-facade-locale-text",
+        "regression-boundary-facade-propagate-in-control-slot",
+        "regression-boundary-facade-propagate-num",
+        "regression-boundary-facade-window-below",
+        "regression-boundary-facade-window-serial-60",
         "shape-control-1d-pair",
         "surface-dayofweek-bad-datein",
+        "surface-dayofweek-ok",
         "weekday-monday-base-1900-03-01",
-        "weekday-monday-base-1900-03-31",
         "weekday-monday-base-1900-04-15",
         "weekday-monday-base-1900-12-31",
+        "weekday-monday-base-1901-01-01",
         "weekday-monday-base-1999-12-31",
-        "weekday-monday-base-2000-02-29",
         "weekday-monday-base-2000-03-31",
         "weekday-monday-base-2023-02-28",
+        "weekday-monday-base-2024-02-28",
         "weekday-monday-base-2024-02-29",
-        "weekday-monday-base-2024-03-31",
         "weekday-monday-base-2024-06-30",
         "weekday-monday-base-2024-07-01",
+        "weekday-monday-base-2024-09-30",
         "weekday-monday-base-2024-11-30",
-        "weekday-monday-base-2024-12-31",
         "weekday-monday-base-2100-02-28",
         "weekday-monday-base-9999-01-01",
+        "weekday-monday-base-9999-12-31",
         "weekday-sunday-base-1900-03-01",
-        "weekday-sunday-base-1900-03-31",
         "weekday-sunday-base-1900-04-15",
         "weekday-sunday-base-1900-12-31",
+        "weekday-sunday-base-1901-01-01",
         "weekday-sunday-base-1999-12-31",
-        "weekday-sunday-base-2000-02-29",
         "weekday-sunday-base-2000-03-31",
         "weekday-sunday-base-2023-02-28",
+        "weekday-sunday-base-2024-02-28",
         "weekday-sunday-base-2024-02-29",
-        "weekday-sunday-base-2024-03-31",
         "weekday-sunday-base-2024-06-30",
         "weekday-sunday-base-2024-07-01",
+        "weekday-sunday-base-2024-09-30",
         "weekday-sunday-base-2024-11-30",
-        "weekday-sunday-base-2024-12-31",
         "weekday-sunday-base-2100-02-28",
-        "weekday-sunday-base-9999-01-01"
+        "weekday-sunday-base-9999-01-01",
+        "weekday-sunday-base-9999-12-31"
       ],
       "holdout_cases": [
         "control-weekbase-empty",
@@ -105,15 +112,16 @@
         "matrix-dayofweek-datein-invalid-a",
         "matrix-dayofweek-ws1904",
         "policy-dayofweek-datein-date-text-numeric",
-        "surface-dayofweek-ok",
-        "weekday-monday-base-1901-01-01",
-        "weekday-monday-base-2024-02-28",
-        "weekday-monday-base-2024-09-30",
-        "weekday-monday-base-9999-12-31",
-        "weekday-sunday-base-1901-01-01",
-        "weekday-sunday-base-2024-02-28",
-        "weekday-sunday-base-2024-09-30",
-        "weekday-sunday-base-9999-12-31"
+        "regression-boundary-facade-numeric-control",
+        "regression-parity-facade-multi-cell-control",
+        "weekday-monday-base-1900-03-31",
+        "weekday-monday-base-2000-02-29",
+        "weekday-monday-base-2024-03-31",
+        "weekday-monday-base-2024-12-31",
+        "weekday-sunday-base-1900-03-31",
+        "weekday-sunday-base-2000-02-29",
+        "weekday-sunday-base-2024-03-31",
+        "weekday-sunday-base-2024-12-31"
       ]
     },
     {
@@ -162,6 +170,7 @@
         "policy-daysinmonth-datein-date-text-locale",
         "policy-daysinmonth-datein-date-text-numeric",
         "policy-daysinmonth-datein-date-type-rejected",
+        "regression-parity-facade-2x2-rectangle",
         "surface-daysinmonth-bad-datein",
         "surface-daysinmonth-ok"
       ],
@@ -202,37 +211,40 @@
         "matrix-daysinyear-yearin-invalid-b",
         "matrix-daysinyear-yearin-propagated",
         "policy-daysinyear-call-capacity-exceeded",
+        "regression-surface-yearin-10000",
+        "regression-surface-yearin-daysinyear-1900",
+        "regression-surface-yearin-daysinyear-9999",
         "surface-daysinyear-bad-yearin",
-        "surface-daysinyear-ok",
         "year-daysinyear-1900",
         "year-daysinyear-1901",
+        "year-daysinyear-1904",
         "year-daysinyear-2000",
-        "year-daysinyear-2023",
         "year-daysinyear-2024",
         "year-daysinyear-2100",
+        "year-daysinyear-2400",
         "year-daysinyear-9996",
-        "year-daysinyear-9999",
         "year-daysinyear-blank",
         "year-daysinyear-bool",
+        "year-daysinyear-domain-0",
         "year-daysinyear-domain-10000",
-        "year-daysinyear-domain-1899",
         "year-daysinyear-domain-negative",
         "year-daysinyear-error",
+        "year-daysinyear-fraction",
         "year-daysinyear-iso-text",
-        "year-daysinyear-long-2024",
         "year-daysinyear-null",
         "year-daysinyear-range",
+        "year-daysinyear-text-2024",
         "year-daysinyear-vba-date"
       ],
       "holdout_cases": [
         "matrix-daysinyear-yearin-array-1x1",
         "matrix-daysinyear-yearin-edge-low",
         "policy-daysinyear-call-shape-unsupported",
-        "year-daysinyear-1904",
-        "year-daysinyear-2400",
-        "year-daysinyear-domain-0",
-        "year-daysinyear-fraction",
-        "year-daysinyear-text-2024"
+        "surface-daysinyear-ok",
+        "year-daysinyear-2023",
+        "year-daysinyear-9999",
+        "year-daysinyear-domain-1899",
+        "year-daysinyear-long-2024"
       ]
     },
     {
@@ -281,6 +293,9 @@
         "policy-beginofmonth-datein-date-text-numeric",
         "policy-beginofmonth-datein-date-type-rejected",
         "policy-beginofmonth-datein-input-blank-required",
+        "regression-host-host-guard-passes-dayofweek-path",
+        "regression-parity-facade-3x1-column",
+        "surface-beginofmonth-bad-datein",
         "surface-beginofmonth-ok"
       ],
       "holdout_cases": [
@@ -291,7 +306,7 @@
         "matrix-beginofmonth-datein-edge-high",
         "matrix-beginofmonth-ok",
         "policy-beginofmonth-call-shape-unsupported",
-        "surface-beginofmonth-bad-datein"
+        "regression-boundary-facade-min-accepted"
       ]
     },
     {
@@ -400,14 +415,16 @@
         "propagation-date-null",
         "propagation-date-num",
         "propagation-date-ref",
+        "regression-parity-facade-1x1-wrapper",
+        "regression-parity-facade-jagged",
         "shape-column",
         "shape-empty-array",
-        "shape-jagged",
         "shape-one-dimensional",
+        "shape-rectangle-mixed",
         "shape-row",
         "shape-scalar-1d-single",
-        "shape-scalar-1x1",
-        "surface-endofmonth-bad-datein"
+        "surface-endofmonth-bad-datein",
+        "surface-endofmonth-ok"
       ],
       "holdout_cases": [
         "boundary-endofmonth-1901-01-01",
@@ -433,8 +450,8 @@
         "matrix-endofmonth-ok",
         "propagation-date-n-a",
         "propagation-date-value",
-        "shape-rectangle-mixed",
-        "surface-endofmonth-ok"
+        "shape-jagged",
+        "shape-scalar-1x1"
       ]
     },
     {
@@ -483,6 +500,11 @@
         "policy-beginofquarter-datein-date-text-numeric",
         "policy-beginofquarter-datein-date-type-rejected",
         "policy-beginofquarter-datein-input-blank-required",
+        "regression-surface-floor-beginofquarter-q2-1900",
+        "regression-surface-quarter-begin-q1",
+        "regression-surface-quarter-begin-q2",
+        "regression-surface-quarter-begin-q3",
+        "surface-beginofquarter-bad-datein",
         "surface-beginofquarter-ok"
       ],
       "holdout_cases": [
@@ -493,7 +515,8 @@
         "matrix-beginofquarter-datein-edge-high",
         "matrix-beginofquarter-ok",
         "policy-beginofquarter-call-shape-unsupported",
-        "surface-beginofquarter-bad-datein"
+        "regression-surface-floor-beginofquarter-1900",
+        "regression-surface-quarter-begin-q4"
       ]
     },
     {
@@ -542,6 +565,11 @@
         "policy-endofquarter-datein-date-text-numeric",
         "policy-endofquarter-datein-date-type-rejected",
         "policy-endofquarter-datein-input-blank-required",
+        "regression-surface-quarter-end-at-ceiling",
+        "regression-surface-quarter-end-q1-leap",
+        "regression-surface-quarter-end-q2",
+        "regression-surface-quarter-end-q3",
+        "surface-endofquarter-bad-datein",
         "surface-endofquarter-ok"
       ],
       "holdout_cases": [
@@ -552,7 +580,8 @@
         "matrix-endofquarter-datein-edge-high",
         "matrix-endofquarter-ok",
         "policy-endofquarter-call-shape-unsupported",
-        "surface-endofquarter-bad-datein"
+        "regression-surface-floor-endofquarter-1900-03-01",
+        "regression-surface-quarter-end-q4-year-edge"
       ]
     },
     {
@@ -601,6 +630,10 @@
         "policy-beginofyear-datein-date-text-numeric",
         "policy-beginofyear-datein-date-type-rejected",
         "policy-beginofyear-datein-input-blank-required",
+        "regression-surface-floor-beginofyear-1900-12-31",
+        "regression-surface-year-begin",
+        "regression-surface-year-begin-at-floor-year-1",
+        "regression-surface-year-begin-leap",
         "surface-beginofyear-ok"
       ],
       "holdout_cases": [
@@ -611,6 +644,7 @@
         "matrix-beginofyear-datein-edge-high",
         "matrix-beginofyear-ok",
         "policy-beginofyear-call-shape-unsupported",
+        "regression-surface-floor-beginofyear-1900",
         "surface-beginofyear-bad-datein"
       ]
     },
@@ -660,6 +694,9 @@
         "policy-endofyear-datein-date-text-numeric",
         "policy-endofyear-datein-date-type-rejected",
         "policy-endofyear-datein-input-blank-required",
+        "regression-surface-year-end",
+        "regression-surface-year-end-at-ceiling",
+        "surface-endofyear-bad-datein",
         "surface-endofyear-ok"
       ],
       "holdout_cases": [
@@ -670,7 +707,7 @@
         "matrix-endofyear-datein-edge-high",
         "matrix-endofyear-ok",
         "policy-endofyear-call-shape-unsupported",
-        "surface-endofyear-bad-datein"
+        "regression-surface-floor-endofyear-1900"
       ]
     },
     {
@@ -877,26 +914,29 @@
         "matrix-isleapyear-yearin-invalid-b",
         "matrix-isleapyear-yearin-propagated",
         "policy-isleapyear-call-shape-unsupported",
+        "regression-surface-yearin-1899",
+        "regression-surface-yearin-isleapyear-1900-century",
+        "regression-surface-yearin-isleapyear-2000-century",
         "shape-year-rectangle",
         "surface-isleapyear-bad-yearin",
         "surface-isleapyear-ok",
-        "year-isleapyear-1901",
+        "year-isleapyear-1900",
         "year-isleapyear-1904",
         "year-isleapyear-2000",
         "year-isleapyear-2023",
-        "year-isleapyear-2100",
+        "year-isleapyear-2024",
         "year-isleapyear-2400",
         "year-isleapyear-9996",
         "year-isleapyear-9999",
-        "year-isleapyear-bool",
+        "year-isleapyear-blank",
         "year-isleapyear-domain-0",
         "year-isleapyear-domain-10000",
         "year-isleapyear-domain-1899",
-        "year-isleapyear-error",
+        "year-isleapyear-domain-negative",
         "year-isleapyear-fraction",
         "year-isleapyear-iso-text",
         "year-isleapyear-long-2024",
-        "year-isleapyear-range",
+        "year-isleapyear-null",
         "year-isleapyear-text-2024",
         "year-isleapyear-vba-date"
       ],
@@ -904,11 +944,12 @@
         "matrix-isleapyear-ws1904-array",
         "matrix-isleapyear-yearin-edge-high",
         "policy-isleapyear-call-capacity-exceeded",
-        "year-isleapyear-1900",
-        "year-isleapyear-2024",
-        "year-isleapyear-blank",
-        "year-isleapyear-domain-negative",
-        "year-isleapyear-null"
+        "regression-surface-yearin-isleapyear-2026",
+        "year-isleapyear-1901",
+        "year-isleapyear-2100",
+        "year-isleapyear-bool",
+        "year-isleapyear-error",
+        "year-isleapyear-range"
       ]
     },
     {
@@ -987,6 +1028,18 @@
         "propagation-integer-num",
         "propagation-integer-value",
         "propagation-parse-before-error",
+        "regression-parity-facade-3x1-vs-1x3-mismatch",
+        "regression-parity-facade-scalar-expands",
+        "regression-parity-order-first-argument-na-beats-second-div0",
+        "regression-surface-adddays-below-floor",
+        "regression-surface-adddays-fractional",
+        "regression-surface-adddays-leap-crossing",
+        "regression-surface-adddays-negative",
+        "regression-surface-adddays-past-ceiling",
+        "regression-surface-adddays-positive",
+        "regression-surface-adddays-propagates",
+        "regression-surface-adddays-zero",
+        "regression-surface-order-count-after-good-date",
         "shape-broadcast-first",
         "shape-broadcast-second",
         "shape-error-order",
@@ -1014,6 +1067,9 @@
         "policy-adddays-datein-date-text-locale",
         "propagation-integer-div-0",
         "propagation-integer-ref",
+        "regression-parity-order-first-argument-div0-beats-second-na",
+        "regression-surface-adddays-max-shift-in-window",
+        "regression-surface-adddays-year-crossing",
         "shape-elementwise",
         "shape-oned-with-row"
       ]
@@ -1062,6 +1118,10 @@
         "policy-addweeks-datein-date-text-numeric",
         "policy-addweeks-datein-input-blank-required",
         "policy-addweeks-nweeks-input-blank-required",
+        "regression-boundary-facade-first-argument-wins",
+        "regression-boundary-facade-fractional-weeks",
+        "regression-boundary-facade-propagate-in-integer-slot",
+        "regression-host-host-guard-passes-arithmetic-path",
         "surface-addweeks-bad-datein",
         "surface-addweeks-bad-nweeks"
       ],
@@ -1073,6 +1133,7 @@
         "matrix-addweeks-nweeks-propagated",
         "policy-addweeks-call-capacity-exceeded",
         "policy-addweeks-datein-date-type-rejected",
+        "regression-boundary-facade-out-of-long-weeks",
         "surface-addweeks-ok"
       ]
     },
@@ -1142,10 +1203,13 @@
         "policy-addmonths-datein-date-type-rejected",
         "policy-addmonths-datein-input-blank-required",
         "policy-addmonths-nmonths-input-blank-required",
+        "regression-surface-clip-addmonths-apr30-1-clip",
+        "regression-surface-clip-addmonths-apr30-1-keepeom",
+        "regression-surface-clip-addmonths-jan31-1",
         "shape-control-1x1",
-        "shape-control-not-scalar",
         "surface-addmonths-bad-datein",
-        "surface-addmonths-bad-nmonths"
+        "surface-addmonths-bad-nmonths",
+        "surface-addmonths-ok"
       ],
       "holdout_cases": [
         "arithmetic-addmonths-2023-02-28-12-eom-true",
@@ -1161,7 +1225,7 @@
         "matrix-addmonths-ws1904",
         "policy-addmonths-datein-date-text-locale",
         "propagation-control-error-call",
-        "surface-addmonths-ok"
+        "shape-control-not-scalar"
       ]
     },
     {
@@ -1214,8 +1278,10 @@
         "policy-addyears-opt-keepeom-control-error-propagated",
         "policy-addyears-opt-keepeom-control-not-scalar",
         "policy-addyears-opt-keepeom-control-type-rejected",
-        "surface-addyears-bad-nyears",
-        "surface-addyears-ok"
+        "regression-surface-clip-addyears-feb29-4",
+        "regression-surface-clip-addyears-overflow",
+        "surface-addyears-bad-datein",
+        "surface-addyears-bad-nyears"
       ],
       "holdout_cases": [
         "arithmetic-addyears-2024-01-15-2147483647",
@@ -1226,7 +1292,8 @@
         "matrix-addyears-ok",
         "policy-addyears-call-shape-mismatch",
         "policy-addyears-datein-input-blank-required",
-        "surface-addyears-bad-datein"
+        "regression-surface-clip-addyears-feb29-1",
+        "surface-addyears-ok"
       ]
     },
     {
@@ -1311,11 +1378,14 @@
         "policy-nthweekdayofmonth-yearin-input-blank-required",
         "policy-nthweekdayofmonth-yearin-integer-fraction",
         "policy-nthweekdayofmonth-yearin-integer-range",
-        "shape-four-argument-broadcast",
+        "regression-host-host-guard-passes-locator-path",
+        "regression-parity-order-second-argument-ref-beats-third-na",
+        "regression-surface-locator-5th-friday-absent",
+        "regression-surface-locator-5th-monday-exists",
         "surface-nthweekdayofmonth-bad-monthin",
         "surface-nthweekdayofmonth-bad-n",
         "surface-nthweekdayofmonth-bad-wdindex",
-        "surface-nthweekdayofmonth-ok"
+        "surface-nthweekdayofmonth-bad-yearin"
       ],
       "holdout_cases": [
         "locator-nth-2023-2-3-4",
@@ -1335,7 +1405,8 @@
         "policy-nthweekdayofmonth-n-integer-range",
         "policy-nthweekdayofmonth-wdindex-integer-fraction",
         "propagation-locator-first-error",
-        "surface-nthweekdayofmonth-bad-yearin"
+        "shape-four-argument-broadcast",
+        "surface-nthweekdayofmonth-ok"
       ]
     },
     {
@@ -1396,10 +1467,10 @@
         "policy-lastweekdayofmonth-wdindex-integer-range",
         "policy-lastweekdayofmonth-yearin-input-blank-required",
         "policy-lastweekdayofmonth-yearin-integer-fraction",
+        "regression-surface-locator-last-sunday",
         "surface-lastweekdayofmonth-bad-monthin",
         "surface-lastweekdayofmonth-bad-wdindex",
-        "surface-lastweekdayofmonth-bad-yearin",
-        "surface-lastweekdayofmonth-ok"
+        "surface-lastweekdayofmonth-bad-yearin"
       ],
       "holdout_cases": [
         "locator-last-2024-5-5",
@@ -1412,7 +1483,8 @@
         "matrix-lastweekdayofmonth-yearin-propagated",
         "policy-lastweekdayofmonth-monthin-integer-fraction",
         "policy-lastweekdayofmonth-wdindex-input-blank-required",
-        "policy-lastweekdayofmonth-yearin-integer-range"
+        "policy-lastweekdayofmonth-yearin-integer-range",
+        "surface-lastweekdayofmonth-ok"
       ]
     },
     {
@@ -1683,6 +1755,42 @@
         "propagation-start-null",
         "propagation-start-ref",
         "propagation-start-value",
+        "regression-pillar-boundary-24d-jan31",
+        "regression-pillar-boundary-24d-mar15",
+        "regression-pillar-boundary-25d-mar15",
+        "regression-pillar-boundary-26d-mar15",
+        "regression-pillar-boundary-27d-mar15",
+        "regression-pillar-cap-20d-ceiling",
+        "regression-pillar-cap-28d-ceiling",
+        "regression-pillar-cap-28d-floor",
+        "regression-pillar-control-boolean",
+        "regression-pillar-control-empty",
+        "regression-pillar-control-numeric",
+        "regression-pillar-control-propagates",
+        "regression-pillar-control-unknown-token",
+        "regression-pillar-eom-jan31-to-mar31-floor",
+        "regression-pillar-exact-1m-ceiling",
+        "regression-pillar-exact-1m-floor",
+        "regression-pillar-exact-2w-ceiling",
+        "regression-pillar-exact-2w-floor",
+        "regression-pillar-modes-100d-ceiling",
+        "regression-pillar-modes-100d-floor",
+        "regression-pillar-modes-100d-nearest",
+        "regression-pillar-modes-25d-ceiling",
+        "regression-pillar-modes-30d-ceiling",
+        "regression-pillar-modes-30d-floor",
+        "regression-pillar-modes-30d-nearest",
+        "regression-pillar-negative-25d-ceiling",
+        "regression-pillar-negative-25d-nearest",
+        "regression-pillar-pillar-0d",
+        "regression-pillar-pillar-5d",
+        "regression-pillar-pillar-5d-ceiling",
+        "regression-pillar-pillar-5d-nearest",
+        "regression-pillar-tie-month-month-ceiling",
+        "regression-pillar-tie-month-month-floor",
+        "regression-pillar-tie-month-month-nearest",
+        "regression-pillar-years-12m",
+        "regression-pillar-years-13m",
         "shape-pillar-vector",
         "surface-pillarfromdates-bad-enddate",
         "surface-pillarfromdates-ok"
@@ -1751,6 +1859,15 @@
         "policy-pillarfromdates-enddate-date-text-numeric",
         "policy-pillarfromdates-startdate-input-blank-required",
         "propagation-start-num",
+        "regression-pillar-boundary-25d-jan31",
+        "regression-pillar-cap-20d-floor",
+        "regression-pillar-control-mixed-case-ceiling",
+        "regression-pillar-eom-jan31-to-mar31-nearest",
+        "regression-pillar-exact-2w-nearest",
+        "regression-pillar-modes-25d-floor",
+        "regression-pillar-negative-25d-floor",
+        "regression-pillar-pillar-5d-floor",
+        "regression-pillar-window-ceiling-gap-facade",
         "surface-pillarfromdates-bad-startdate"
       ]
     },
@@ -1871,7 +1988,17 @@
         "propagation-pillar-num",
         "propagation-pillar-ref",
         "propagation-pillar-value",
+        "regression-pillar-grammar-facade-duplicate",
+        "regression-pillar-grammar-facade-oversized-unknown-unit",
+        "regression-pillar-grammar-facade-propagates",
+        "regression-pillar-grammar-facade-signed-alias",
+        "regression-pillar-range-facade-oversized-month-quantity",
+        "regression-pillar-roundtrip-25d-nearest-lands-on-anchor",
+        "regression-pillar-roundtrip-26d-nearest-lands-on-anchor",
+        "regression-pillar-roundtrip-exact-2w-lands-on-end",
+        "regression-surface-rename-datefrompillar-1m",
         "shape-pillar-token-vector",
+        "surface-datefrompillar-bad-pillar",
         "surface-datefrompillar-bad-startdate",
         "surface-datefrompillar-ok"
       ],
@@ -1901,7 +2028,9 @@
         "policy-datefrompillar-call-capacity-exceeded",
         "policy-datefrompillar-startdate-date-type-rejected",
         "propagation-pillar-null",
-        "surface-datefrompillar-bad-pillar"
+        "regression-pillar-grammar-facade-overflow-first-then-unknown",
+        "regression-pillar-range-facade-year-aggregate-overflow",
+        "regression-surface-rename-datefrompillar-2w"
       ]
     },
     {

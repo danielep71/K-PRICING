@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-yearin-isleapyear-2000-century",
+  "synthetic": true,
+  "description": "Regression case (surface): yearin/IsLeapYear 2000 century.",
+  "category": "nominal",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_IsLeapYear",
+  "context": "direct",
+  "arguments": [
+    "lng:2000"
+  ]
+}

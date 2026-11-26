@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "regression-surface-adddays-below-floor",
+  "synthetic": true,
+  "description": "Regression case (surface): adddays/below floor.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "str:\"1900-03-01\"",
+    "lng:-1"
+  ]
+}

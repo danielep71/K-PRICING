@@ -50,8 +50,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "core-array"        'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 8                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 122               'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 9                 'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 132               'Assertions a complete run evaluates
 
 
 '------------------------------------------------------------------------------
@@ -77,8 +77,8 @@ Public Sub RunCoreArrayTests()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
-'   RESULT=PASS; suite=core-array; operation=PASS; completeness=COMPLETE; cases=8;
-'   assertions=122; failures=0; cleanup=PASS; recovery=NONE
+'   RESULT=PASS; suite=core-array; operation=PASS; completeness=COMPLETE; cases=9;
+'   assertions=132; failures=0; cleanup=PASS; recovery=NONE
 '
 ' WHY THIS EXISTS
 '   One entry point runs the suite and reports it through the harness, so that a run is
@@ -130,6 +130,7 @@ Public Sub RunCoreArrayTests()
         CaseTraversal
         CaseUnwrapScalar
         CaseUnwrapControl
+        CaseRegressionShapes
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -1035,6 +1036,92 @@ Private Sub CaseUnwrapControl()
         TEST_Harness.AssertEqualText "object-element-value", mFact(3, 1), mFact(3, 2)
         Set Holder(1) = Nothing
         Set Item = Nothing
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseRegressionShapes()
+
+'
+'------------------------------------------------------------------------------
+'                           CHECK THE REGRESSION SHAPES
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Regression shapes that the cases above do not hold: an error scalar, the
+'   250 by 400 block at the capacity and a two-dimensional one-cell control. 10 assertions.
+'
+' WHY THIS EXISTS
+'   Part of the evidence that the array rules hold as the calculation contracts state them
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Classifies an error value, checks the capacity of two blocks and unwraps a one-cell control
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case by
+'   TEST_Harness.RecordCaseError and does not stop the run
+'
+' DEPENDENCIES
+'   CORE_Array, CORE_Err, TEST_Harness
+'
+' NOTES
+'   CaseClassifyShape, CaseCapacity and CaseUnwrapControl hold the ordinary shapes
+'
+' UPDATED
+'   2026-11-26
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Condition       As KPRCondition 'Condition that the capacity check reported
+    Dim OneCell         As Variant      'A 1x1 two-dimensional control
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "regression-shapes"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'An error value is a scalar; the element carries it
+        ProbeShape CVErr(2042), cdNone, skScalar, 1, 1
+        TEST_Harness.AssertTrue "error-scalar-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "error-scalar-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualDouble "error-scalar-kind", mFact(3, 1), mFact(3, 2)
+        TEST_Harness.AssertTrue "error-scalar-size", mFact(4, 1), mFact(4, 2)
+    'A block of exactly 100,000 cells is accepted; one more column is refused
+        TEST_Harness.AssertTrue "block-at-cap", CORE_Array.CheckCapacity(250, 400, Condition), "250 by 400 was refused"
+        TEST_Harness.AssertTrue "block-one-column-over", Not CORE_Array.CheckCapacity(250, 401, Condition), "250 by 401 passed"
+        TEST_Harness.AssertEqualText "block-one-column-over-condition", "CAPACITY_EXCEEDED", CORE_Err.ConditionName(Condition)
+    'A two-dimensional one-cell control unwraps to its value
+        ReDim OneCell(1 To 1, 1 To 1)
+        OneCell(1, 1) = True
+        ProbeControl OneCell, cdNone, CStr(True)
+        TEST_Harness.AssertTrue "one-cell-control-accepted", mFact(1, 1), mFact(1, 2)
+        TEST_Harness.AssertEqualText "one-cell-control-condition", mFact(2, 1), mFact(2, 2)
+        TEST_Harness.AssertEqualText "one-cell-control-value", mFact(3, 1), mFact(3, 2)
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
