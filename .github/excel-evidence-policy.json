@@ -34,7 +34,16 @@
      "certification_entry_point": "CertifyDateCases", "expected_cases": 65,
      "expected_assertions": 1561, "log": "date-cases.log",
      "certification_log": "date-cases-certification.log",
-     "results": "date-cases-results.json"}
+     "results": "date-cases-results.json"},
+    {"name": "worksheet-cases", "source": "tests/modules/TEST_WorksheetCases.bas",
+     "certification_entry_point": "CertifyWorksheetCases", "expected_cases": 3,
+     "expected_assertions": 77, "log": "worksheet-cases.log",
+     "certification_log": "worksheet-cases-certification.log",
+     "results": "worksheet-cases-results.json"},
+    {"name": "excel-host", "source": "tests/modules/TEST_Host.bas",
+     "certification_entry_point": "CertifyHost", "runner": "RunHostTests",
+     "expected_cases": 4, "expected_assertions": 41, "log": "excel-host.log",
+     "certification_log": "excel-host-certification.log"}
   ],
   "modes": [
     {"mode": "NORMAL", "log": "examples.log", "must_pass": true},
