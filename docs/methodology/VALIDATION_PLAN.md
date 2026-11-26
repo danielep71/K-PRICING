@@ -160,18 +160,27 @@ copy of the production source and show the check rejecting it.
 | Rule | It fails when | Enforces |
 | --- | --- | --- |
 | `day-zero` | a `DateSerial` call has a literal day of zero or below, in any VBA number notation (`0&`, `0#`, `0.0`, `0E0`, `&H0`, `(0)`, a negative number) | [Common rules](CALCULATION_CONTRACTS.md#common-rules), Dates: a month's last day comes from the month's length, `CALC-03` step 2 |
-| `window` | `CORE_Parse` does not declare `WINDOW_MIN_SERIAL` as `61#`, `WINDOW_MAX_SERIAL` as `2958465#`, `WINDOW_MIN_YEAR` as `1900` and `WINDOW_MAX_YEAR` as `9999`, or another place declares one of them again or writes an edge of the window out | [Common rules](CALCULATION_CONTRACTS.md#common-rules), Dates: the supported window is 1900-03-01 to 9999-12-31 |
-| `host-guard` | a worksheet function of the facade other than `KPR_Dates_HostDateSystem` does not call `EvaluateCall` exactly once, or applies the host rule itself; `EvaluateCall` does not call `M_Host.TryCheckHost` exactly once, or calls a public procedure of `M_Ranges`, `CORE_Array`, `CORE_Parse` or `CORE_Dates`, qualified or not, before it; the diagnostic does not call `M_Host.TryReadHostDateSystem` exactly once; another component applies the host rule | [Host and date system](CALCULATION_CONTRACTS.md#host-and-date-system): each public call reads the host once, at its start, before any argument |
+| `window` | `CORE_Parse` does not declare `WINDOW_MIN_SERIAL` as `61#`, `WINDOW_MAX_SERIAL` as `2958465#`, `WINDOW_MIN_YEAR` as `1900` and `WINDOW_MAX_YEAR` as `9999`, or another place declares one of them again or copies a serial edge (`61#`, `2958465`) or a date literal of 1900-03-01 or 9999-12-31 | [Common rules](CALCULATION_CONTRACTS.md#common-rules), Dates: the supported window is 1900-03-01 to 9999-12-31 |
+| `host-guard` | a worksheet function of the facade other than `KPR_Dates_HostDateSystem` does not call `EvaluateCall` exactly once, or applies the host rule itself; `EvaluateCall` does not call `M_Host.TryCheckHost` exactly once, or reads the host itself, or calls a public procedure of `M_Ranges`, `CORE_Array`, `CORE_Parse` or `CORE_Dates`, qualified or not, before it; `M_Host.TryCheckHost` does not read the host exactly once; the diagnostic does not call `M_Host.TryReadHostDateSystem` exactly once; another component applies the host rule | [Host and date system](CALCULATION_CONTRACTS.md#host-and-date-system): each public call reads the host once, at its start, before any argument |
 | `volatility` | `Application.Volatile` is called anywhere but as the first statement of `KPR_Dates_HostDateSystem`, with an argument other than the literal `True`, or not exactly once in production | [Host and date system](CALCULATION_CONTRACTS.md#host-and-date-system), and `CALC-10` step 1: only `KPR_Dates_HostDateSystem` is volatile |
-| `host-authority` | `Application.Caller` is read outside `M_Host` or not exactly once there, or `M_Host` or the facade names `ActiveWorkbook`, `ThisWorkbook`, `ActiveSheet`, `ActiveCell`, `Selection` or `Workbooks` | [Host and date system](CALCULATION_CONTRACTS.md#host-and-date-system), steps 1 and 5: only the caller's own workbook decides, and no other is consulted |
+| `host-authority` | `Application.Caller` is read outside `M_Host`, in `M_Host` outside `TryReadHostDateSystem`, or not exactly once (every occurrence counts, also on one line), or `M_Host` or the facade names `ActiveWorkbook`, `ThisWorkbook`, `ActiveSheet`, `ActiveCell`, `Selection` or `Workbooks` | [Host and date system](CALCULATION_CONTRACTS.md#host-and-date-system), steps 1 and 5: only the caller's own workbook decides, and no other is consulted |
 | `locale` | production calls `IsDate`, `DateValue`, `CVDate`, `IsNumeric`, `Format`, `Format$` or `FormatDateTime`, or `CDate` on anything but a variable named `...Serial` | [Date values](DATA_CONTRACT.md#date-values): no parse uses a conversion that depends on regional settings |
 
 The check joins a statement continued over lines, reads comments out and blanks
-string literals; it does not compile
-or run VBA, follows no call through a variable, and judges a computed day or a
-`CDate` argument only by its name, so a defect written another way, such as a
-day held in a variable that happens to be zero, stays with the cases and the
-code review.
+string literals, counts every occurrence of what it counts, and compares names
+without regard to letter case; it does not compile or run VBA. What it does not
+see stays with the cases and the code review:
+
+- a call made through a `With` block, a variable or an object, or by
+  `Application.Run`;
+- a day held in a variable that happens to be zero, or computed: a
+  `DateSerial` day is judged only when it is a literal, and a `CDate` argument
+  only by its name (`...Serial`);
+- a copy of the window's years `1900` and `9999` written as plain numbers: they
+  are pinned in `CORE_Parse`, but a bare `1900` is also the 1900 date system and
+  a bare `61` an unrelated enum value, so only the typed serial `61#`, `2958465`
+  and the date literals are read as copies;
+- a regional conversion that is not in the list, such as `CDbl` of text.
 
 [Relation tests](TEST_HARNESS.md#relation-tests) check properties, each with
 its corruption check, over the dates whose inputs and intermediate results

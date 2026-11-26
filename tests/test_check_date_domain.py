@@ -113,6 +113,7 @@ class DayZeroTest(unittest.TestCase):
 
 class WindowTest(unittest.TestCase):
     MIN_SERIAL = "    Public Const WINDOW_MIN_SERIAL  As Double = 61#"
+    ANCHOR = "        BeginOfMonth = VBA.DateSerial(VBA.Year(DateIn), VBA.Month(DateIn), 1)"
 
     def test_a_changed_edge_is_rejected(self) -> None:
         sources = replaced(CORE_PARSE, self.MIN_SERIAL, self.MIN_SERIAL.replace("61#", "60#"))
@@ -164,6 +165,26 @@ class WindowTest(unittest.TestCase):
                     replaced(path, anchor, f"{statement}\n{anchor}")[path]
                 self.assertTrue(any("is declared again" in message
                                     for message in messages(sources)), messages(sources))
+
+    def test_the_typed_lower_serial_is_a_copy_of_an_edge(self) -> None:
+        for expression in ("(VBA.CDbl(DateIn) >= 61#)", "(VBA.CDbl(DateIn) >= 61.0#)",
+                           "(VBA.CDbl(DateIn) >= 61.#)"):
+            with self.subTest(expression=expression):
+                sources = replaced(CORE_DATES, "(VBA.CDbl(DateIn) >= CORE_Parse.WINDOW_MIN_SERIAL)",
+                                   expression)
+                self.assertTrue(any("edge of the supported window" in message
+                                    for message in messages(sources)), expression)
+
+    def test_a_bare_sixty_one_is_not_a_copy(self) -> None:
+        for statement in ("        Kind = 61", "        Kind = 161#", "        Kind = Item61#"):
+            with self.subTest(statement=statement):
+                sources = inserted(CORE_DATES, WindowTest.ANCHOR, statement)
+                self.assertEqual(messages(sources), [], statement)
+
+    def test_another_declaration_in_core_parse_is_not_exempt(self) -> None:
+        sources = inserted(CORE_PARSE, WindowTest.MIN_SERIAL, "    Private Const SPARE_LIMIT As Double = 61#")
+        self.assertTrue(any("edge of the supported window" in message
+                            for message in messages(sources)))
 
     def test_a_copy_of_an_edge_is_rejected(self) -> None:
         for literal in ("Limit = 2958465#", "Limit = #12/31/9999#", "Limit = #3/1/1900#"):
@@ -229,6 +250,31 @@ class HostGuardTest(unittest.TestCase):
         sources = inserted(FACADE, GUARD, "        Ok = CheckCapacity(1, 1, Condition)")
         self.assertFalse(any("reads an argument before" in message
                              for message in messages(sources)))
+
+    def test_the_evaluator_reading_the_host_itself_is_rejected(self) -> None:
+        for call in ("If Not M_Host.TryReadHostDateSystem(I, Condition) Then Exit Function",
+                     "Ok = m_host.tryreadhostdatesystem(I, Condition)",
+                     "Call TryReadHostDateSystem(I, Condition)"):
+            with self.subTest(call=call):
+                sources = inserted(FACADE, GUARD, f"        {call}", before=True)
+                self.assertTrue(any("EvaluateCall reads the host itself" in message
+                                    for message in messages(sources)), call)
+
+    def test_another_facade_procedure_reading_the_host_is_rejected(self) -> None:
+        sources = replaced(FACADE, "Private Function EvaluateCall(",
+                           "Private Sub Stray()\n        Ok = M_Host.TryReadHostDateSystem(I, C)\n"
+                           "End Sub\n\nPrivate Function EvaluateCall(")
+        self.assertTrue(any("Stray reads the host" in message for message in messages(sources)),
+                        messages(sources))
+
+    def test_check_host_must_read_the_host_exactly_once(self) -> None:
+        read = "        If Not TryReadHostDateSystem(DateSystem, Condition) Then Exit Function"
+        sources = replaced(HOST, read, "        If DateSystem = 0 Then Exit Function")
+        self.assertTrue(any("TryCheckHost must read the host exactly once" in message
+                            for message in messages(sources)))
+        sources = inserted(HOST, read, read)
+        self.assertTrue(any("TryCheckHost must read the host exactly once" in message
+                            for message in messages(sources)))
 
     def test_a_second_host_rule_in_the_evaluator_is_rejected(self) -> None:
         sources = inserted(FACADE, GUARD, "        Ok = M_Host.TryCheckHost(Condition)")
@@ -336,6 +382,13 @@ class VolatilityTest(unittest.TestCase):
                 self.assertTrue(any("KPR_Dates_DaysInMonth must not be volatile" in message
                                     for message in messages(sources)), statement)
 
+    def test_two_volatile_calls_on_one_line_are_rejected(self) -> None:
+        sources = replaced(FACADE, VOLATILE, f"{VOLATILE}: Application.Volatile True")
+        self.assertTrue(any("exactly once" in message for message in messages(sources)))
+        sources = replaced(FACADE, VOLATILE, "        If True Then Application.Volatile True "
+                           "Else Application.Volatile True")
+        self.assertTrue(any("exactly once" in message for message in messages(sources)))
+
     def test_a_second_volatile_call_is_rejected(self) -> None:
         sources = inserted(FACADE, VOLATILE, VOLATILE)
         self.assertTrue(any("exactly once" in message for message in messages(sources)))
@@ -356,6 +409,17 @@ class HostAuthorityTest(unittest.TestCase):
             "Option Explicit", "Option Explicit\nPrivate Sub Stray()\n"
             "        Set Spare = Application.Caller\nEnd Sub", 1)
         self.assertTrue(any("Application.Caller is read outside" in message
+                            for message in messages(sources)))
+
+    def test_two_reads_on_one_line_count_as_two(self) -> None:
+        sources = replaced(HOST, self.CALLER, "        If VBA.IsObject(Application.Caller) Then "
+                           "Set CallerObject = Application.Caller")
+        self.assertTrue(any("Application.Caller must be read exactly once; it is read 2 times"
+                            in message for message in messages(sources)))
+
+    def test_the_caller_read_in_another_host_procedure_is_rejected(self) -> None:
+        sources = inserted(HOST, "        TryCheckHost = False", "        Set Spare = Application.Caller")
+        self.assertTrue(any("TryCheckHost reads Application.Caller" in message
                             for message in messages(sources)))
 
     def test_reading_the_caller_twice_in_the_host_is_rejected(self) -> None:

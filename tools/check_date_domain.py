@@ -56,8 +56,10 @@ WINDOW = {
     "WINDOW_MAX_YEAR": r"9999",
 }
 # The edges of the window written another way, in any component.
-WINDOW_COPIES = re.compile(r"\b2958465\b|#\s*12/31/9999\s*#|#\s*3/1/1900\s*#|#\s*9999-12-31\s*#"
-                           r"|#\s*1900-03-01\s*#")
+# A bare 61, 1900 or 9999 cannot be forbidden: they are also an enum value and the 1900 date
+# system, so only the typed serial 61# is read as a copy of the lower edge.
+WINDOW_COPIES = re.compile(r"\b2958465\b|(?<![\w.])61(?:\.0*)?#|#\s*12/31/9999\s*#|#\s*3/1/1900\s*#"
+                           r"|#\s*9999-12-31\s*#|#\s*1900-03-01\s*#")
 # The components whose public procedures read or classify an argument: no call of theirs may
 # come before the host rule, qualified by the module or, as VBA allows, by its name alone.
 READER_MODULES = ("src/workbook/M_Ranges.bas", "src/core/CORE_Array.bas", "src/core/CORE_Parse.bas",
@@ -160,6 +162,7 @@ def window(sources: Mapping[str, str]) -> list[Finding]:
         elif not re.search(rf"=\s*{value}\s*$", found[1]):
             findings.append(Finding(CORE_PARSE, found[0], f"{name} is no longer {value.rstrip('#')}, "
                                     "the edge of the supported window"))
+    pinned = {found for name in WINDOW if (found := constant_statement(parse, name)) is not None}
     for path, text in sources.items():
         for number, code in code_lines(text):
             for name in WINDOW:
@@ -167,7 +170,7 @@ def window(sources: Mapping[str, str]) -> list[Finding]:
                         path != CORE_PARSE or constant_statement(parse, name) != (number, code)):
                     findings.append(Finding(path, number, f"{name} is declared again: the window "
                                             f"is declared once, in {CORE_PARSE}"))
-            if WINDOW_COPIES.search(code) and not (path == CORE_PARSE and DECLARATION.match(code)):
+            if WINDOW_COPIES.search(code) and not (path == CORE_PARSE and (number, code) in pinned):
                 findings.append(Finding(path, number, "an edge of the supported window is written "
                                         "out: use CORE_Parse.WINDOW_MIN_SERIAL, WINDOW_MAX_SERIAL, "
                                         "WINDOW_MIN_YEAR or WINDOW_MAX_YEAR"))
@@ -226,13 +229,29 @@ def evaluator_findings(procedure: Procedure | None, readers: re.Pattern[str]) ->
         return [Finding(FACADE, None, f"{EVALUATOR} is not declared")]
     body = executable(procedure)
     guards = calls_of(body, CHECK)
+    reads = [Finding(FACADE, line, f"{EVALUATOR} reads the host itself: {CHECK} reads it once")
+             for line in calls_of(body, READ)]
     if len(guards) != 1:
-        return [Finding(FACADE, procedure.line, f"{EVALUATOR} must call {CHECK} exactly once; it "
-                        f"calls it {len(guards)} times")]
-    return [Finding(FACADE, line, f"{EVALUATOR} reads an argument before {CHECK}: the host rule "
+        return [*reads, Finding(FACADE, procedure.line, f"{EVALUATOR} must call {CHECK} exactly "
+                                f"once; it calls it {len(guards)} times")]
+    return reads + [Finding(FACADE, line, f"{EVALUATOR} reads an argument before {CHECK}: the host rule "
                     "comes first")
             for line, statement in body
             if line < guards[0] and readers.search(statement)]
+
+
+def host_module_findings(text: str) -> list[Finding]:
+    """In M_Host, TryCheckHost reads the host exactly once, through TryReadHostDateSystem."""
+    module = scan(HOST, text)
+    check = next((procedure for procedure in module.procedures
+                  if procedure.name.casefold() == CHECK.casefold()), None)
+    if check is None:
+        return [Finding(HOST, None, f"{CHECK} is not declared")] if text else []
+    reads = calls_of(executable(check), READ)
+    if len(reads) == 1:
+        return []
+    return [Finding(HOST, check.line, f"{CHECK} must read the host exactly once, through {READ}; "
+                    f"it calls it {len(reads)} times")]
 
 
 def host_guard(sources: Mapping[str, str]) -> tuple[list[Finding], int]:
@@ -246,10 +265,15 @@ def host_guard(sources: Mapping[str, str]) -> tuple[list[Finding], int]:
                                          if procedure.name.casefold() == EVALUATOR.casefold()), None),
                                    argument_readers(sources))
     for procedure in module.procedures:
-        if procedure not in functions and procedure.name.casefold() != EVALUATOR.casefold():
-            findings.extend(Finding(FACADE, line, f"{procedure.name} applies the host rule: only "
-                                    f"{EVALUATOR} may")
-                            for line in calls_of(executable(procedure), CHECK))
+        if procedure in functions or procedure.name.casefold() == EVALUATOR.casefold():
+            continue
+        body = executable(procedure)
+        findings.extend(Finding(FACADE, line, f"{procedure.name} applies the host rule: only "
+                                f"{EVALUATOR} may") for line in calls_of(body, CHECK))
+        findings.extend(Finding(FACADE, line, f"{procedure.name} reads the host: only {DIAGNOSTIC} "
+                                f"does, and {CHECK} reads it for the others")
+                        for line in calls_of(body, READ))
+    findings += host_module_findings(sources.get(HOST, ""))
     for path, text in sources.items():
         if path not in (FACADE, HOST):
             findings.extend(Finding(path, number, "the host rule is applied outside the facade")
@@ -267,7 +291,7 @@ def volatility(sources: Mapping[str, str]) -> list[Finding]:
         module = scan(path, text)
         for procedure in module.procedures:
             hits = [(line, statement) for line, statement in executable(procedure)
-                    if pattern.search(statement)]
+                    for _ in pattern.finditer(statement)]
             total += len(hits)
             if procedure.name.casefold() == DIAGNOSTIC.casefold():
                 first = executable(procedure)[:1]
@@ -291,26 +315,38 @@ def volatility(sources: Mapping[str, str]) -> list[Finding]:
     return findings
 
 
+CALLER = re.compile(r"\bApplication\s*\.\s*Caller\b", re.I)
+
+
+def caller_findings(text: str) -> list[Finding]:
+    """In M_Host, Application.Caller is read once, and only by TryReadHostDateSystem."""
+    findings: list[Finding] = []
+    total = 0
+    for procedure in scan(HOST, text).procedures:
+        count = sum(len(CALLER.findall(statement)) for _, statement in procedure.body)
+        total += count
+        if count and procedure.name.casefold() != READ.casefold():
+            findings.append(Finding(HOST, procedure.line, f"{procedure.name} reads "
+                                    f"Application.Caller: only {READ} does"))
+    if text and total != 1:
+        findings.append(Finding(HOST, None, f"Application.Caller must be read exactly once; it "
+                                f"is read {total} times"))
+    return findings
+
+
 def host_authority(sources: Mapping[str, str]) -> list[Finding]:
     """Only M_Host reads Application.Caller, and no host-path component consults a workbook."""
-    findings: list[Finding] = []
-    caller = re.compile(r"\bApplication\s*\.\s*Caller\b", re.I)
-    readers = 0
+    findings = caller_findings(sources.get(HOST, ""))
     for path, text in sources.items():
         for number, code in code_lines(text):
-            if caller.search(code):
-                if path == HOST:
-                    readers += 1
-                else:
+            for _ in CALLER.finditer(code):
+                if path != HOST:
                     findings.append(Finding(path, number, "Application.Caller is read outside "
                                             f"{HOST}: only {READ} classifies the caller"))
             if path in (HOST, FACADE) and WORKBOOK_FALLBACKS.search(code):
                 findings.append(Finding(path, number, "the host path consults the active or the "
                                         "containing workbook: only the caller's own workbook "
                                         "decides the date system"))
-    if sources.get(HOST) is not None and readers != 1:
-        findings.append(Finding(HOST, None, "Application.Caller must be read exactly once; it is "
-                                f"read {readers} times"))
     return findings
 
 
