@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "arithmetic-adddays-9999-12-31-1",
+  "synthetic": true,
+  "description": "Exact day/week shifts and clip-mode month shifts; every result is window-gated and overflow returns #NUM!.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "date:9999-12-31",
+    "num:1"
+  ]
+}

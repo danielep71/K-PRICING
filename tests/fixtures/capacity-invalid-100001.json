@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "capacity-invalid-100001",
+  "synthetic": true,
+  "description": "The cap is decided before any element is read.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "fill2:1x100001[str:\"bad\"]"
+  ]
+}

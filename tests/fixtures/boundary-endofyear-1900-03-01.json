@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "boundary-endofyear-1900-03-01",
+  "synthetic": true,
+  "description": "Gregorian boundaries; a boundary is a result and is window-gated.",
+  "category": "boundary",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfYear",
+  "context": "direct",
+  "arguments": [
+    "date:1900-03-01"
+  ]
+}

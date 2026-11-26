@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-reject-vba-date-1900-02-28",
+  "synthetic": true,
+  "description": "VBA Date below the window.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "date:1900-02-28"
+  ]
+}

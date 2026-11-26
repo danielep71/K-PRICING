@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "capacity-rectangle-100001",
+  "synthetic": true,
+  "description": "11x9091 is 100,001 elements.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "fill2:11x9091[date:2024-02-10]"
+  ]
+}

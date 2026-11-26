@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-daysinyear-yearin-array-row",
+  "synthetic": true,
+  "description": "YearIn: a row keeps valid, invalid and error elements at their positions.",
+  "category": "invalid",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_DaysInYear",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x3[num:2024;num:1899;err:#DIV/0!]"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-datefrompillar-pillar-edge-high",
+  "synthetic": true,
+  "description": "Pillar: the highest supported value.",
+  "category": "boundary",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "str:\"ON\""
+  ]
+}

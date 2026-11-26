@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-nthweekdayofmonth-yearin-array-1x1",
+  "synthetic": true,
+  "description": "YearIn: a 1x1 array is the scalar call.",
+  "category": "nominal",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x1[num:2024]",
+    "num:2",
+    "num:5",
+    "num:1"
+  ]
+}

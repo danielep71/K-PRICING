@@ -68,12 +68,27 @@ FORM = {"src/forms/frmFixture.frm": b'VERSION 5.00\nBegin {C62A69F0-16DC-11CE-9E
         "src/forms/frmFixture.frx": b"\x00\x01\r\n\x02\n\xff binary"}
 
 
+def call_case_files() -> frozenset[str]:
+    """The fixtures and expected files of the worksheet-function cases. No accuracy
+    contract reads them, and copying and committing over two thousand files would
+    slow every test of this module, so the fixture repositories leave them out."""
+    names: set[str] = set()
+    for path in sorted((SOURCE / "tests/fixtures").glob("*.json")):
+        if json.loads(path.read_text(encoding="utf-8")).get("kind") == "test-call-fixture":
+            names.update((f"tests/fixtures/{path.name}", f"tests/expected/{path.name}"))
+    return frozenset(names)
+
+
+CALL_CASE_FILES = call_case_files()
+
+
 def make_repository(policy: bytes | None = None, *, with_policy: bool = True,
                     with_cases: bool = True, with_form: bool = True,
                     extra: dict[str, bytes] | None = None) -> tuple[Path, str]:
     """A temporary repository whose one commit holds the working tree's modules and
     evidence policy, or ``policy`` in its place, or no policy at all, and with
-    ``with_cases`` the working tree's test cases and accuracy contracts. The files
+    ``with_cases`` the working tree's test cases, except the worksheet-function cases,
+    and accuracy contracts. The files
     of ``extra`` are written last, so they may replace any of these."""
     root = Path(tempfile.mkdtemp(prefix="excel-run-repository-"))
     if with_policy:
@@ -90,6 +105,8 @@ def make_repository(policy: bytes | None = None, *, with_policy: bool = True,
     config.write_bytes((SOURCE / check_excel_run.BUILD_CONFIG).read_bytes())
     if with_cases:
         for name in gitio.tracked(SOURCE, *check_excel_run.CASE_PATHS):
+            if name in CALL_CASE_FILES:
+                continue
             target = root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes((SOURCE / name).read_bytes())

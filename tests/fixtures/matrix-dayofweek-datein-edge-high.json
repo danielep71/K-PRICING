@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-dayofweek-datein-edge-high",
+  "synthetic": true,
+  "description": "DateIn: the highest supported value.",
+  "category": "boundary",
+  "calculation": "CALC-02",
+  "function": "KPR_Dates_DayOfWeek",
+  "context": "direct",
+  "arguments": [
+    "date:9999-12-31"
+  ]
+}

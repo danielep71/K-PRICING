@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "propagation-pillar-name",
+  "synthetic": true,
+  "description": "Incoming errors propagate verbatim at a Pillar position.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-10",
+    "err:#NAME?"
+  ]
+}

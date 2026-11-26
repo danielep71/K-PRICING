@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-endofquarter-datein-edge-high",
+  "synthetic": true,
+  "description": "DateIn: the highest supported value.",
+  "category": "boundary",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfQuarter",
+  "context": "direct",
+  "arguments": [
+    "date:9999-12-31"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "locator-nth-domain-occurrence-6",
+  "synthetic": true,
+  "description": "Locator argument domains return #VALUE!.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "num:3",
+    "num:1",
+    "num:6"
+  ]
+}

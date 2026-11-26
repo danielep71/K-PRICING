@@ -372,6 +372,108 @@ class ExpectedTest(FindingTest):
         self.assertFinding(run(all_illustrative), "illustrative- prefix must be used exactly")
 
 
+# The table of worksheet functions that a worksheet-function case names.
+FUNCTIONS = ("\n## Functions\n\n| Function | Arguments | Result | Contract |\n| --- | --- | --- | --- |\n"
+             "| `KPR_Add` | `DateIn`, `nDays`, `[Opt_Keep=FALSE]` | Date | `CALC-02` |\n"
+             "| `KPR_Host` | None | 1900 or 1904 | `CALC-02` |\n")
+CALL: dict[str, Any] = {
+    "schema_version": 1, "kind": "test-call-fixture", "id": "case-one", "synthetic": True,
+    "description": "A synthetic call", "category": "nominal", "calculation": "CALC-02",
+    "function": "KPR_Add", "context": "direct",
+    "arguments": ["date:2024-02-10", "arr2:1x2[num:1;err:#N/A]", "bool:TRUE"],
+}
+CALL_REFERENCE: dict[str, Any] = {
+    "class": "illustrative", "source": None, "locator": None, "derivation": "A model",
+    "script": None, "derived_by": None, "reviewed_by": None, "date": "2026-11-26"}
+
+
+def call_case(edit: Edit | None = None) -> list[str]:
+    """Check a repository with one worksheet-function case, after edit(fixture, expected)."""
+    def replace(fixture: dict[str, Any], expected: dict[str, Any]) -> None:
+        fixture.clear()
+        fixture.update(copy.deepcopy(CALL))
+        expected["outputs"] = [
+            {"quantity": "shifted_date", "scope": None, "rule": None,
+             "text": "arr2:1x2[date:2024-02-11;err:#N/A]", "reference": dict(CALL_REFERENCE)},
+            {"quantity": "date_shift_status", "scope": None, "rule": None,
+             "text": "r1c2=INPUT_ERROR_PROPAGATED", "reference": dict(CALL_REFERENCE)}]
+        if edit is not None:
+            edit(fixture, expected)
+    return run(replace, extra={"docs/methodology/CALCULATION_CONTRACTS.md": CONTRACTS + FUNCTIONS})
+
+
+class WorksheetFunctionCaseTest(FindingTest):
+    def test_valid_call_passes_without_the_illustrative_prefix(self) -> None:
+        self.assertEqual(call_case(), [])
+
+    def test_every_encoding_is_accepted(self) -> None:
+        def edit(f: dict[str, Any], e: dict[str, Any]) -> None:
+            f["arguments"] = ["datetime:2024-02-10T13:30:00",
+                              'arr1:[lng:5;str:" a;b] ";empty;null;bool:FALSE]',
+                              "fill2:1x100001[num:-1.5E+3]"]
+        self.assertEqual(call_case(edit), [])
+
+    def test_optional_arguments_may_be_left_out_and_none_taken(self) -> None:
+        def two(f: dict[str, Any], e: dict[str, Any]) -> None:
+            f["arguments"] = f["arguments"][:2]
+        def host(f: dict[str, Any], e: dict[str, Any]) -> None:
+            f.update(function="KPR_Host", arguments=[], context="ws1904")
+        self.assertEqual(call_case(two), [])
+        self.assertEqual(call_case(host), [])
+
+    def test_keys_are_checked_in_every_category(self) -> None:
+        def extra(f: dict[str, Any], e: dict[str, Any]) -> None:
+            f.update(category="invalid", reporting_date="2026-01-02")
+        self.assertFinding(call_case(extra), "unknown reporting_date")
+        def missing(f: dict[str, Any], e: dict[str, Any]) -> None:
+            f.update(category="invalid")
+            del f["context"]
+        self.assertFinding(call_case(missing), "missing context")
+
+    def test_function_contract_and_argument_count(self) -> None:
+        def unknown(f: dict[str, Any], e: dict[str, Any]) -> None:
+            f["function"] = "KPR_Other"
+        def contract(f: dict[str, Any], e: dict[str, Any]) -> None:
+            f["calculation"] = "CALC-03"
+        def few(f: dict[str, Any], e: dict[str, Any]) -> None:
+            f["arguments"] = ["date:2024-02-10"]
+        def many(f: dict[str, Any], e: dict[str, Any]) -> None:
+            f["arguments"].append("empty")
+        self.assertFinding(call_case(unknown), "is not a worksheet function")
+        self.assertFinding(call_case(contract), "has the contract CALC-02, not CALC-03")
+        self.assertFinding(call_case(few), "takes 2 to 3 arguments, not 1")
+        self.assertFinding(call_case(many), "takes 2 to 3 arguments, not 4")
+
+    def test_context(self) -> None:
+        def edit(f: dict[str, Any], e: dict[str, Any]) -> None:
+            f["context"] = "ws1901"
+        self.assertFinding(call_case(edit), "context 'ws1901' is not one of")
+
+    def test_arguments_are_encoded_values(self) -> None:
+        bad = ["date:2024-02-30", "num:1,5", "lng:2147483648", "bool:true", "err:#BAD!",
+               "text:x", "arr2:2x2[num:1]", "fill2:1x2[num:1;num:2]", "arr1:[num:1",
+               'str:"\u00e9"', "empty:x", "num:1 ", "datetime:2024-02-10", 5]
+        for value in bad:
+            def edit(f: dict[str, Any], e: dict[str, Any], value: object = value) -> None:
+                f["arguments"][0] = value
+            with self.subTest(value=value):
+                self.assertFinding(call_case(edit), "arguments[0]")
+
+    def test_outputs_are_texts_and_results_encoded(self) -> None:
+        def number(f: dict[str, Any], e: dict[str, Any]) -> None:
+            e["outputs"][0] = {**OUTPUT, "quantity": "shifted_date"}
+        def raw(f: dict[str, Any], e: dict[str, Any]) -> None:
+            e["outputs"][0]["text"] = "2024-02-11"
+        self.assertFinding(call_case(number), "is a text")
+        self.assertFinding(call_case(raw), "text is not an encoded value")
+
+    def test_an_invalid_call_needs_a_status(self) -> None:
+        def edit(f: dict[str, Any], e: dict[str, Any]) -> None:
+            f["category"] = "invalid"
+            e["outputs"].pop()
+        self.assertFinding(call_case(edit), "needs a _status text output")
+
+
 PLAN_HEADER = ("# Plan\n\n## Traceability\n\n"
                "| Source | Paragraph | Calculation step | VBA procedure | Test cases | Status |\n"
                "| --- | --- | --- | --- | --- | --- |\n")

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "boundary-endofmonth-2024-12-31",
+  "synthetic": true,
+  "description": "Gregorian boundaries; a boundary is a result and is window-gated.",
+  "category": "boundary",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "date:2024-12-31"
+  ]
+}

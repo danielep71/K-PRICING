@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-nthweekdayofmonth-n-propagated",
+  "synthetic": true,
+  "description": "N: an incoming error propagates.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "num:2",
+    "num:5",
+    "err:#N/A"
+  ]
+}

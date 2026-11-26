@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "boundary-isquarterend-2024-11-30",
+  "synthetic": true,
+  "description": "Gregorian boundaries; a boundary is a result and is window-gated.",
+  "category": "boundary",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsQuarterEnd",
+  "context": "direct",
+  "arguments": [
+    "date:2024-11-30"
+  ]
+}

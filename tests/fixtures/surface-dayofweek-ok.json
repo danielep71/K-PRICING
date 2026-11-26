@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "surface-dayofweek-ok",
+  "synthetic": true,
+  "description": "Supported surface, ISO text inputs.",
+  "category": "nominal",
+  "calculation": "CALC-02",
+  "function": "KPR_Dates_DayOfWeek",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024-02-10\""
+  ]
+}

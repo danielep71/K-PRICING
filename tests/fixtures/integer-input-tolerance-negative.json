@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "integer-input-tolerance-negative",
+  "synthetic": true,
+  "description": "Negative residue, read as -3.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-31",
+    "num:-2.99999999999999"
+  ]
+}

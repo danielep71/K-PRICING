@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-text-format-a-b-c",
+  "synthetic": true,
+  "description": "'abc' is not exactly YYYY-MM-DD.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "str:\"abc\""
+  ]
+}

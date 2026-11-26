@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "weekday-monday-base-1999-12-31",
+  "synthetic": true,
+  "description": "Monday base, Monday is 1 and Sunday is 7.",
+  "category": "nominal",
+  "calculation": "CALC-02",
+  "function": "KPR_Dates_DayOfWeek",
+  "context": "direct",
+  "arguments": [
+    "date:1999-12-31"
+  ]
+}

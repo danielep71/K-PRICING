@@ -318,6 +318,10 @@ compared without letter case (Decision (#4)):
   may appear once: `1M2M` is rejected, never summed into `3M`.
 - A quantity is whole and written; a decimal or missing quantity, an unknown
   unit or a partial parse is rejected.
+- The components are read from left to right, and the first fault decides the
+  condition: `1M2M3X` repeats `M` before its unknown unit, so it is
+  `PILLAR_DUPLICATE_UNIT`, and `1Y2M3W4D5Y` repeats `Y` in its fifth
+  component.
 
 How a token moves a date is `CALC-08`, and the subset that
 `KPR_Dates_PillarFromDates` writes is `CALC-09`.
@@ -460,3 +464,4 @@ made.
 | 2026-11-25 | Every error has a semantic condition identifier, separate from its Excel error and level | Excel shows only the error value; tests and evidence need the cause, such as a library `#N/A` against one passed in | [#4](https://github.com/danielep71/K-PRICING/issues/4) |
 | 2026-11-25 | The core returns a condition code for each contract condition and raises only `ERR_UNMAPPED_CONDITION`, a defect; the facade maps codes to Excel errors | A condition is an expected outcome of one element among up to 100,000, not a failure: raising and trapping it per element costs time and hides the cause; the house style's documented errors remain for defects | [#4](https://github.com/danielep71/K-PRICING/issues/4) |
 | 2026-11-25 | Pillar tokens accept the aliases `ON`, `O/N`, `TN`, `T/N` as 1 and 2 calendar days, one occurrence of each unit, and no sign on an alias | Callers write these forms; business-day meanings belong to the calendar milestones, so a result never changes silently when they arrive; a repeated unit is more likely a typing error than a sum | [#4](https://github.com/danielep71/K-PRICING/issues/4) |
+| 2026-11-26 | The date layer's test cases are [worksheet-function cases](TEST_CASES.md#worksheet-function-cases), which hold the arguments of one call and use no dataset; `DS-01` stays with the illustrative cases until those are retired | The arguments of a call are worksheet values, which the datasets' typed fields cannot hold; one dataset per function would restate the signatures | [#11](https://github.com/danielep71/K-PRICING/issues/11) |

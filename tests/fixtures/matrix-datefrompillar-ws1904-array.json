@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-datefrompillar-ws1904-array",
+  "synthetic": true,
+  "description": "A 1904 worksheet refuses a vector call before any element.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "ws1904",
+  "arguments": [
+    "arr2:1x3[date:2024-01-15;date:2024-01-15;date:2024-01-15]",
+    "str:\"6M\""
+  ]
+}

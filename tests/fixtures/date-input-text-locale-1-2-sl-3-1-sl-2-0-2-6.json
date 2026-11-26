@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-text-locale-1-2-sl-3-1-sl-2-0-2-6",
+  "synthetic": true,
+  "description": "'12/31/2026' is locale-formatted.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "str:\"12/31/2026\""
+  ]
+}

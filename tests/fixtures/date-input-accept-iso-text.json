@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-accept-iso-text",
+  "synthetic": true,
+  "description": "Exact YYYY-MM-DD text.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024-02-10\""
+  ]
+}

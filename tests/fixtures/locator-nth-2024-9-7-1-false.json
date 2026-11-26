@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "locator-nth-2024-9-7-1-false",
+  "synthetic": true,
+  "description": "Occurrence n of WdIndex; absent occurrence is OCCURRENCE_ABSENT and a result before 1900-03-01 is RESULT_WINDOW.",
+  "category": "nominal",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "num:9",
+    "num:7",
+    "num:1",
+    "bool:FALSE"
+  ]
+}

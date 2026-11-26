@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-isleapyear-yearin-invalid-b",
+  "synthetic": true,
+  "description": "YearIn: a second invalid-domain value.",
+  "category": "invalid",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_IsLeapYear",
+  "context": "direct",
+  "arguments": [
+    "num:10000"
+  ]
+}

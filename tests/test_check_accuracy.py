@@ -81,8 +81,11 @@ def repository(content: dict[str, Any] | None) -> Iterator[Path]:
     declared last, so they replace any of the same ID."""
     with tempfile.TemporaryDirectory(prefix="accuracy-") as temporary:
         root = Path(temporary)
-        for name in ("docs/methodology", "tests/fixtures", "tests/expected"):
-            shutil.copytree(ROOT / name, root / name)
+        shutil.copytree(ROOT / "docs/methodology", root / "docs/methodology")
+        # The project's own cases are not copied: they would only slow every test,
+        # and test_the_repository_registry_passes checks them where they are.
+        for name in ("tests/fixtures", "tests/expected"):
+            (root / name).mkdir(parents=True)
         contracts = root / "docs/methodology/CALCULATION_CONTRACTS.md"
         contracts.write_text(contracts.read_text("utf-8") + "\n### `CALC-02` Demo\n"
                              "\n### *Illustrative:* `CALC-03` Illustrative demo\n", "utf-8")

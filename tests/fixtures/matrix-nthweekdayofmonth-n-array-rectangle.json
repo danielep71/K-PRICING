@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-nthweekdayofmonth-n-array-rectangle",
+  "synthetic": true,
+  "description": "N: a rectangle keeps its shape and per-element outcomes.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "num:2",
+    "num:5",
+    "arr2:2x2[num:1;num:5;num:6;num:2]"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-pillarfromdates-enddate-array-1x1",
+  "synthetic": true,
+  "description": "EndDate: a 1x1 array is the scalar call.",
+  "category": "nominal",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "arr2:1x1[date:2024-07-15]"
+  ]
+}

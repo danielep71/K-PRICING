@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-accept-min-date",
+  "synthetic": true,
+  "description": "Window lower bound as a VBA Date.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "date:1900-03-01"
+  ]
+}

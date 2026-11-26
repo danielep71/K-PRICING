@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-nthweekdayofmonth-n-array-row",
+  "synthetic": true,
+  "description": "N: a row keeps valid, invalid and error elements at their positions.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "num:2",
+    "num:5",
+    "arr2:1x3[num:1;num:0;err:#DIV/0!]"
+  ]
+}

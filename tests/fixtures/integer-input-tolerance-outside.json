@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "integer-input-tolerance-outside",
+  "synthetic": true,
+  "description": "1E-8 from 3 is outside the tolerance.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-31",
+    "num:3.00000001"
+  ]
+}

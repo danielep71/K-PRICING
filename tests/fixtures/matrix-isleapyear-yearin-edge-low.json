@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-isleapyear-yearin-edge-low",
+  "synthetic": true,
+  "description": "YearIn: the lowest supported value.",
+  "category": "boundary",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_IsLeapYear",
+  "context": "direct",
+  "arguments": [
+    "num:1900"
+  ]
+}

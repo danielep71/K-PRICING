@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-isleapyear-yearin-propagated",
+  "synthetic": true,
+  "description": "YearIn: an incoming error propagates.",
+  "category": "invalid",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_IsLeapYear",
+  "context": "direct",
+  "arguments": [
+    "err:#N/A"
+  ]
+}

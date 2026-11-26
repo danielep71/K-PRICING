@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-accept-max-date",
+  "synthetic": true,
+  "description": "Window upper bound as a VBA Date.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "date:9999-12-31"
+  ]
+}

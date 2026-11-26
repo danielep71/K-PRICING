@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-lastweekdayofmonth-yearin-invalid-b",
+  "synthetic": true,
+  "description": "YearIn: a second invalid-domain value.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_LastWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:10000",
+    "num:2",
+    "num:5"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "host-invalid-ws1904",
+  "synthetic": true,
+  "description": "The host guard precedes parsing.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "ws1904",
+  "arguments": [
+    "str:\"bad\""
+  ]
+}

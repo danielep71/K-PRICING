@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-adddays-ndays-propagated",
+  "synthetic": true,
+  "description": "NDays: an incoming error propagates.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-10",
+    "err:#N/A"
+  ]
+}

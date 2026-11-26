@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-ismonthend-ws1904",
+  "synthetic": true,
+  "description": "A 1904 worksheet call is one call-level #N/A.",
+  "category": "invalid",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsMonthEnd",
+  "context": "ws1904",
+  "arguments": [
+    "date:2024-02-29"
+  ]
+}

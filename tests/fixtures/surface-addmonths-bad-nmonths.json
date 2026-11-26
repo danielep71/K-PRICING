@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "surface-addmonths-bad-nmonths",
+  "synthetic": true,
+  "description": "An invalid nMonths is an element-level #VALUE!.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024-01-31\"",
+    "str:\"1\""
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "control-keepeom-error",
+  "synthetic": true,
+  "description": "Opt_KeepEOM accepts omitted, Empty or native Boolean only.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "date:2023-02-28",
+    "num:1",
+    "err:#NAME?"
+  ]
+}

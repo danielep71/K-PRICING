@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "control-precedence-control-before-element",
+  "synthetic": true,
+  "description": "Control validation is call-level and precedes element evaluation.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "str:\"bad\"",
+    "num:1",
+    "num:1"
+  ]
+}

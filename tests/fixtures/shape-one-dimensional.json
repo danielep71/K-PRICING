@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-one-dimensional",
+  "synthetic": true,
+  "description": "A 1-D array is a 1xN row.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "arr1:[date:2024-01-10;date:2024-02-10;date:2024-03-10]"
+  ]
+}

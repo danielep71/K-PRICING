@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-roundtrip-2024-01-15-2034-01-29-10y",
+  "synthetic": true,
+  "description": "Re-parsing the emitted NEAREST token '10Y' does not equal EndDate 2034-01-29; rounded intervals are deliberately not invariant.",
+  "category": "nominal",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "str:\"10Y\""
+  ]
+}

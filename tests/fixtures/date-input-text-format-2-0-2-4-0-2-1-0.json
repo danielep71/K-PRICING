@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-text-format-2-0-2-4-0-2-1-0",
+  "synthetic": true,
+  "description": "'20240210' is not exactly YYYY-MM-DD.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "str:\"20240210\""
+  ]
+}

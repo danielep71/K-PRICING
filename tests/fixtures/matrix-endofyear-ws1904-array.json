@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-endofyear-ws1904-array",
+  "synthetic": true,
+  "description": "A 1904 worksheet refuses a vector call before any element.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfYear",
+  "context": "ws1904",
+  "arguments": [
+    "arr2:1x3[date:2024-02-10;date:2024-02-10;date:2024-02-10]"
+  ]
+}

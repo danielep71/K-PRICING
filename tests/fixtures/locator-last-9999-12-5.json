@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "locator-last-9999-12-5",
+  "synthetic": true,
+  "description": "Final occurrence of WdIndex.",
+  "category": "nominal",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_LastWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:9999",
+    "num:12",
+    "num:5"
+  ]
+}

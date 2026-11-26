@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-daysinyear-yearin-edge-high",
+  "synthetic": true,
+  "description": "YearIn: the highest supported value.",
+  "category": "boundary",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_DaysInYear",
+  "context": "direct",
+  "arguments": [
+    "num:9999"
+  ]
+}

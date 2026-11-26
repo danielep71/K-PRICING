@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-parse-edge-9999-12-31-o-n",
+  "synthetic": true,
+  "description": "A valid token whose result leaves the window is PILLAR_AGGREGATE_RANGE.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:9999-12-31",
+    "str:\"ON\""
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "propagation-locator-first-error",
+  "synthetic": true,
+  "description": "An incoming error at YearIn precedes later domain failures.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "err:#NUM!",
+    "num:13",
+    "num:0",
+    "num:9"
+  ]
+}

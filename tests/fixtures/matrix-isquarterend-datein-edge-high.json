@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-isquarterend-datein-edge-high",
+  "synthetic": true,
+  "description": "DateIn: the highest supported value.",
+  "category": "boundary",
+  "calculation": "CALC-05",
+  "function": "KPR_Dates_IsQuarterEnd",
+  "context": "direct",
+  "arguments": [
+    "date:9999-12-31"
+  ]
+}

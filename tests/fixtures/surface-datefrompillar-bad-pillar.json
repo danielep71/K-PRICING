@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "surface-datefrompillar-bad-pillar",
+  "synthetic": true,
+  "description": "An invalid Pillar is an element-level #VALUE!.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024-01-15\"",
+    "str:\"1X\""
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-format-interval-9999-12-20-9999-12-31-ceiling",
+  "synthetic": true,
+  "description": "Month-family labels, year formatting, exact clip anchors, ties to the larger month count and window-excluded anchors.",
+  "category": "invalid",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "date:9999-12-20",
+    "date:9999-12-31",
+    "str:\"CEILING\""
+  ]
+}

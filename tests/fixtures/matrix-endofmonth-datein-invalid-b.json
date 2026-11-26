@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-endofmonth-datein-invalid-b",
+  "synthetic": true,
+  "description": "DateIn: a second invalid-domain value.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024-02-30\""
+  ]
+}

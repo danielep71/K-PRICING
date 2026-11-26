@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "propagation-control-error-call",
+  "synthetic": true,
+  "description": "An error control propagates at call level before elements.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "err:#N/A",
+    "num:1",
+    "err:#NAME?"
+  ]
+}

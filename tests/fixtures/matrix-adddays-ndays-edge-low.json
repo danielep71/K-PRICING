@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-adddays-ndays-edge-low",
+  "synthetic": true,
+  "description": "NDays: the lowest supported value.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-10",
+    "num:-2147483648"
+  ]
+}

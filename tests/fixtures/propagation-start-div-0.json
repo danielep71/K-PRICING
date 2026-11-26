@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "propagation-start-div-0",
+  "synthetic": true,
+  "description": "Incoming errors propagate verbatim at StartDate.",
+  "category": "invalid",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "err:#DIV/0!",
+    "date:2024-02-10"
+  ]
+}

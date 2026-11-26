@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-accept-max-text",
+  "synthetic": true,
+  "description": "Window upper bound as ISO text.",
+  "category": "nominal",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "str:\"9999-12-31\""
+  ]
+}

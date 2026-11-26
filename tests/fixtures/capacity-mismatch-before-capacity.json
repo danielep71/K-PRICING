@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "capacity-mismatch-before-capacity",
+  "synthetic": true,
+  "description": "Shape resolution precedes the capacity check.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "fill2:1x100000[date:2024-02-10]",
+    "fill2:1x100001[num:1]"
+  ]
+}

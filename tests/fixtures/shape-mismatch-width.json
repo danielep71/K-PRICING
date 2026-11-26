@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-mismatch-width",
+  "synthetic": true,
+  "description": "Non-scalar shapes must be identical.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x3[date:2024-01-31;date:2024-01-31;date:2024-01-31]",
+    "arr2:1x2[num:1;num:1]"
+  ]
+}

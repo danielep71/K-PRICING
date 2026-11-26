@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-daysinyear-yearin-array-column",
+  "synthetic": true,
+  "description": "YearIn: a column keeps its orientation.",
+  "category": "nominal",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_DaysInYear",
+  "context": "direct",
+  "arguments": [
+    "arr2:3x1[num:2024;num:1900;num:2023]"
+  ]
+}

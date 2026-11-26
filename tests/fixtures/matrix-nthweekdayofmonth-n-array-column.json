@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-nthweekdayofmonth-n-array-column",
+  "synthetic": true,
+  "description": "N: a column keeps its orientation.",
+  "category": "nominal",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "num:2",
+    "num:5",
+    "arr2:3x1[num:1;num:1;num:2]"
+  ]
+}

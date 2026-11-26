@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-beginofquarter-datein-array-column",
+  "synthetic": true,
+  "description": "DateIn: a column keeps its orientation.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_BeginOfQuarter",
+  "context": "direct",
+  "arguments": [
+    "arr2:3x1[date:2024-02-10;date:1900-03-01;date:2023-11-30]"
+  ]
+}

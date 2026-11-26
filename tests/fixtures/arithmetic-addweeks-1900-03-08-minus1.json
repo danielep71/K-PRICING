@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "arithmetic-addweeks-1900-03-08-minus1",
+  "synthetic": true,
+  "description": "Exact day/week shifts and clip-mode month shifts; every result is window-gated and overflow returns #NUM!.",
+  "category": "nominal",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddWeeks",
+  "context": "direct",
+  "arguments": [
+    "date:1900-03-08",
+    "num:-1"
+  ]
+}

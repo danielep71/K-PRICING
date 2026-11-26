@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-addmonths-nmonths-edge-low",
+  "synthetic": true,
+  "description": "NMonths: the lowest supported value.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddMonths",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-31",
+    "num:-2147483648"
+  ]
+}

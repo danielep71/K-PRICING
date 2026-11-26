@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-parse-duplicate-1-w-2-w",
+  "synthetic": true,
+  "description": "Duplicate token is rejected with its registry condition.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "str:\"1W2W\""
+  ]
+}

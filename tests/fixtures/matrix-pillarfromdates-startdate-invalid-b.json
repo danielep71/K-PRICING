@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-pillarfromdates-startdate-invalid-b",
+  "synthetic": true,
+  "description": "StartDate: a second invalid-domain value.",
+  "category": "invalid",
+  "calculation": "CALC-09",
+  "function": "KPR_Dates_PillarFromDates",
+  "context": "direct",
+  "arguments": [
+    "str:\"2024-02-30\"",
+    "date:2024-07-15"
+  ]
+}

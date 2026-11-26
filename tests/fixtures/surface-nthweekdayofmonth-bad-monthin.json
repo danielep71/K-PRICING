@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "surface-nthweekdayofmonth-bad-monthin",
+  "synthetic": true,
+  "description": "An invalid MonthIn is an element-level #VALUE!.",
+  "category": "invalid",
+  "calculation": "CALC-07",
+  "function": "KPR_Dates_NthWeekdayOfMonth",
+  "context": "direct",
+  "arguments": [
+    "num:2024",
+    "str:\"2\"",
+    "num:5",
+    "num:1"
+  ]
+}

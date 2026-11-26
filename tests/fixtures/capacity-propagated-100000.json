@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "capacity-propagated-100000",
+  "synthetic": true,
+  "description": "Incoming errors propagate at every position.",
+  "category": "invalid",
+  "calculation": "CALC-03",
+  "function": "KPR_Dates_DaysInMonth",
+  "context": "direct",
+  "arguments": [
+    "fill2:1x100000[err:#N/A]"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-parse-s15-0-y-0-m-0-w-0-d",
+  "synthetic": true,
+  "description": "Accepted grammar; months apply first with clip semantics, then days.",
+  "category": "nominal",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "str:\"0Y0M0W0D\""
+  ]
+}

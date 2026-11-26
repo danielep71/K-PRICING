@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "capacity-column-100000",
+  "synthetic": true,
+  "description": "Exactly 100,000 elements as a column.",
+  "category": "boundary",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "fill2:100000x1[date:2024-02-10]"
+  ]
+}

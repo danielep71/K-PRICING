@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-parse-malformed-minus-minus-1-m",
+  "synthetic": true,
+  "description": "Malformed token is rejected with its registry condition.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "str:\"--1M\""
+  ]
+}

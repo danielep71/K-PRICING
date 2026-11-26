@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-rectangle-mixed",
+  "synthetic": true,
+  "description": "Element-level errors stay at their positions.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "arr2:2x3[date:2024-01-10;str:\"bad\";err:#N/A;empty;str:\"2024-02-30\";num:60]"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "host-value-ws1904",
+  "synthetic": true,
+  "description": "1904 worksheet is refused at call level.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "ws1904",
+  "arguments": [
+    "date:2024-02-10"
+  ]
+}

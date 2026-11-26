@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-empty-array",
+  "synthetic": true,
+  "description": "An empty array is SHAPE_UNSUPPORTED.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "arr1:[]"
+  ]
+}

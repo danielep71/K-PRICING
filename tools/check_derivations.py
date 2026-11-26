@@ -4,8 +4,8 @@
 An expected value may name, in reference.script, a script under
 tests/derivations/ that computes it from the documented method
 (docs/methodology/TEST_CASES.md, Derivation scripts). This check runs each
-named script once per case, with the case's fixture as its only argument, and
-compares every value the expected file attributes to it:
+named script once per case, several cases at a time, with the case's fixture as
+its only argument, and compares every value the expected file attributes to it:
 
 - a number matches when |actual - expected| <= max(absolute, relative * |expected|);
 - a text matches exactly.
@@ -23,9 +23,11 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import subprocess
 import sys
 from collections.abc import Mapping, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -158,12 +160,15 @@ def check_case(root: Path, path: Path) -> tuple[list[str], int]:
 
 
 def check(root: Path) -> tuple[list[str], int]:
+    """Check every expected file, several at a time, and report in file order."""
     findings: list[str] = []
     compared = 0
-    for path in sorted((root / EXPECTED).glob("*.json")):
-        case_findings, case_compared = check_case(root, path)
-        findings += case_findings
-        compared += case_compared
+    paths = sorted((root / EXPECTED).glob("*.json"))
+    with ThreadPoolExecutor(max_workers=os.cpu_count() or 1) as pool:
+        for case_findings, case_compared in pool.map(lambda path: check_case(root, path),
+                                                     paths):
+            findings += case_findings
+            compared += case_compared
     return findings, compared
 
 

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "date-input-text-impossible-2-0-2-3-0-4-3-1",
+  "synthetic": true,
+  "description": "'2023-04-31' names a date that does not exist.",
+  "category": "invalid",
+  "calculation": "CALC-04",
+  "function": "KPR_Dates_EndOfMonth",
+  "context": "direct",
+  "arguments": [
+    "str:\"2023-04-31\""
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "pillar-parse-aggregate-3-0-0-0-0-0-0-0-0-0-d",
+  "synthetic": true,
+  "description": "Aggregate token is rejected with its registry condition.",
+  "category": "invalid",
+  "calculation": "CALC-08",
+  "function": "KPR_Dates_DateFromPillar",
+  "context": "direct",
+  "arguments": [
+    "date:2024-01-15",
+    "str:\"3000000000D\""
+  ]
+}

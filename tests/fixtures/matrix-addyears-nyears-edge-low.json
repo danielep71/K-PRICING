@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "matrix-addyears-nyears-edge-low",
+  "synthetic": true,
+  "description": "NYears: the lowest supported value.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddYears",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-29",
+    "num:-2147483648"
+  ]
+}

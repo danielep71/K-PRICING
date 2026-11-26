@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "host-diagnostic-ws1904",
+  "synthetic": true,
+  "description": "Identifiable 1904 worksheet caller.",
+  "category": "nominal",
+  "calculation": "CALC-10",
+  "function": "KPR_Dates_HostDateSystem",
+  "context": "ws1904",
+  "arguments": []
+}

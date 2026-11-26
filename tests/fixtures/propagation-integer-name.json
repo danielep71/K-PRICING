@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "propagation-integer-name",
+  "synthetic": true,
+  "description": "Incoming errors propagate verbatim at an integer position.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "date:2024-02-10",
+    "err:#NAME?"
+  ]
+}

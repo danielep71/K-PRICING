@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "kind": "test-call-fixture",
+  "id": "shape-failure-order",
+  "synthetic": true,
+  "description": "The first failing argument determines each element.",
+  "category": "invalid",
+  "calculation": "CALC-06",
+  "function": "KPR_Dates_AddDays",
+  "context": "direct",
+  "arguments": [
+    "arr2:1x2[str:\"bad\";date:2024-01-31]",
+    "arr2:1x2[err:#N/A;str:\"x\"]"
+  ]
+}
