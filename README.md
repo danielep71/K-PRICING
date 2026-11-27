@@ -97,7 +97,8 @@ K-PRICING keeps five kinds of evidence apart:
 
 | I want to… | Read |
 | --- | --- |
-| Move VBA source between the repository and Excel, or record an Excel run | [Installation](INSTALLATION.md) |
+| Use the 22 date functions in a workbook I received | [User manual](docs/user-manual/0.2.0/MANUAL.md) |
+| Open and enable the workbook, build it from source, move VBA source between the repository and Excel, or record an Excel run | [Installation](INSTALLATION.md) |
 | Write VBA that passes the static checks | [VBA house style](docs/VBA_HOUSE_STYLE.md) |
 | Know where a component belongs and what it may call | [Repository structure](docs/REPOSITORY_STRUCTURE.md) |
 | Record the sources, the data and the calculation, and how they are tested | [Methodology](docs/methodology/README.md) |
@@ -194,7 +195,8 @@ The full layout and its rules are in
 | Document | Covers |
 | --- | --- |
 | [`docs/methodology/`](docs/methodology/README.md) | Sources, data contract, calculation and workbook contracts, test cases, test harness, validation plan |
-| [`INSTALLATION.md`](INSTALLATION.md) | Moving source between the repository and Excel, recording an Excel run, upgrades, troubleshooting and removal |
+| [`docs/user-manual/`](docs/user-manual/0.2.0/MANUAL.md) | The manual for the people who receive the workbook, one folder per version: installation under a macro policy, the 22 functions with their arguments, results and error values, the Ribbon and the demo sheet |
+| [`INSTALLATION.md`](INSTALLATION.md) | Opening and enabling the workbook, building it from source, moving source between the repository and Excel, recording an Excel run, upgrades, troubleshooting and removal |
 | [`docs/REPOSITORY_STRUCTURE.md`](docs/REPOSITORY_STRUCTURE.md) | Source layout, reserved paths, dependency direction |
 | [`docs/VBA_HOUSE_STYLE.md`](docs/VBA_HOUSE_STYLE.md) | VBA naming, contracts, errors, cleanup and static checks |
 | [`docs/repo_governance/`](docs/repo_governance/README.md) | Settings, issue labels, pull requests, traffic, distribution |
@@ -230,9 +232,9 @@ scope, the exit criteria and the due dates.
 
 - The target is Microsoft 365 Excel desktop on Windows. 32-bit and 64-bit
   Office are evaluated separately.
-- No Excel run has been recorded for K-PRICING yet, so no environment is
-  claimed as supported. Mac, Excel for the web and older builds are not
-  targets.
+- The [host policy](INSTALLATION.md#%EF%B8%8F-host-policy) records each
+  environment on which a commit was compiled and run. Mac, Excel for the web
+  and older builds are not targets.
 - Do not infer compatibility from source inspection or from one successful
   host: a claim names the exact commit and Excel environment it was run on.
 - The first version is certified only by a run of the whole suite in Excel on

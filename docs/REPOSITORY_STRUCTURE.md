@@ -22,7 +22,7 @@ them are already set in `.gitattributes`, `.editorconfig` and `.gitignore`.
 | `docs/methodology/` | The [index](methodology/README.md) of the guides: sources, data contract and its machine-readable form `data-contract.json`, calculation contracts, validation plan, test-case format, [workbook contract](methodology/WORKBOOK_CONTRACT.md) and [VBA test harness](methodology/TEST_HARNESS.md) | Present, with the date layer's sources, function arguments, calculation contracts `CALC-02` to `CALC-10` and validation plan; the illustrative entries `SRC-01`, `DS-01` and `CALC-01` stay until the illustrative cases are replaced |
 | `docs/methodology/sources/` | Byte-preserved copies of regulatory sources | Reserved |
 | `docs/methodology/workbook-protection.json` | The [protection matrix](methodology/WORKBOOK_CONTRACT.md#protection) of `src/workbook/Template.xlsx` | Present, with the Home sheet |
-| `docs/user-manual/` | Optional manual for workbook recipients, one folder per released version (`docs/user-manual/X.Y.Z/MANUAL.md`), built to the PDF attached to the release ([user manual](../RELEASING.md#user-manual)) | Reserved |
+| `docs/user-manual/` | Optional manual for workbook recipients, one folder per released version (`docs/user-manual/X.Y.Z/MANUAL.md`), built to the PDF attached to the release ([user manual](../RELEASING.md#user-manual)) | Present, with `0.2.0` |
 | `src/core/` | Calculations and pure validation, host-independent standard modules | Present, with `CORE_Err`, `CORE_Parse`, `CORE_Dates` and `CORE_Array` |
 | `src/classes/` | Host-independent classes, if the design needs them | Reserved |
 | `src/modules/` | The public facade: the supported entry points | Present, with `KPR_Dates`, the 22 worksheet functions |
