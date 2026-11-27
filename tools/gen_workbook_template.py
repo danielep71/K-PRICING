@@ -14,8 +14,8 @@ defines their names on the same cells. Its one sheet is Home:
   They give the build stamp, whose cells the build fills, what the workbook
   provides, how to use it, and its sheets, each other sheet with a link to
   its cell A1;
-- every cell is locked and the sheet is protected without a password, as
-  docs/methodology/workbook-protection.json records.
+- the sheet is not protected, and its cells keep Excel's default lock flag,
+  as docs/methodology/workbook-protection.json records.
 
 It carries no VBA project, no document properties and no external link, so
 tools/check_binaries.py and tools/check_workbook_privacy.py pass it. The file
@@ -59,9 +59,9 @@ SECTION_HEIGHT, TABLE_HEIGHT, GAP_HEIGHT = 30.0, 20.1, 9.95
 # Column widths, in characters: A and B margins, C labels, D text, E a margin;
 # the columns after E are hidden.
 WIDTHS = (4.625, 4.625, 26.0, 185.375, 4.625)
-# The protection of every sheet: on, without a password. It guards against an
-# accidental edit, not against a user who means to change the sheet.
-PROTECTION = {"sheet": True, "objects": True, "scenarios": True}
+# The protection of every sheet, as options of the sheetProtection element: none.
+# No sheet is protected unless a decision of the workbook contract says so.
+PROTECTION: dict[str, bool] = {}
 
 BLACK, WHITE, GOLD, BLUE, NAVY, GREY, LINK_BLUE = ("000000", "FFFFFF", "FFC000", "265A99",
                                                    "1F3864", "595959", "0563C1")
@@ -107,9 +107,9 @@ ABOUT: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
     ("How to use", (
         ("1. Enable macros", "Open this .xlsm with macros enabled, as your organization's "
                              "policy allows: the functions work only while it is open."),
-        ("2. Use a function", "Add a worksheet, because Home is protected, then type "
-                              "=KPR_Dates_ in one of its cells and pick a function. Each returns "
-                              "a value or an Excel error value, and never changes a sheet."),
+        ("2. Use a function", "Type =KPR_Dates_ in a cell of this workbook and pick a function. "
+                              "Each returns a value or an Excel error value, and never changes "
+                              "a sheet."),
         ("3. Date system", "Use the 1900 date system: in a workbook on the 1904 date system, "
                            "every function with a value argument returns #N/A, never a value "
                            "shifted by 1,462 days."),
@@ -325,7 +325,8 @@ def sheet_xml(rows: Sequence[Row]) -> bytes:
                          for index, width in enumerate(WIDTHS[2:], 3))
                + f'<col min="{len(WIDTHS) + 1}" max="16384" width="9" style="{CENTERED}" '
                'hidden="1"/>')
-    protection = "".join(f' {name}="1"' for name, value in PROTECTION.items() if value)
+    options = "".join(f' {name}="1"' for name, value in PROTECTION.items() if value)
+    protection = f"<sheetProtection{options}/>" if PROTECTION.get("sheet") else ""
     hyperlinks = f"<hyperlinks>{''.join(links)}</hyperlinks>" if links else ""
     return xml(
         f'<worksheet xmlns="{MAIN}" xmlns:r="{RELATIONSHIPS}">'
@@ -335,7 +336,7 @@ def sheet_xml(rows: Sequence[Row]) -> bytes:
         'state="frozen"/><selection pane="bottomLeft" activeCell="C4" sqref="C4"/>'
         '</sheetView></sheetViews><sheetFormatPr defaultColWidth="0" defaultRowHeight="15"/>'
         f'<cols>{columns}</cols><sheetData>{"".join(body)}</sheetData>'
-        f"<sheetProtection{protection}/>{hyperlinks}"
+        f"{protection}{hyperlinks}"
         '<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" '
         'footer="0.3"/><pageSetup orientation="landscape" fitToHeight="0"/></worksheet>')
 

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "sheets": {
     "shHome": {
-      "protection": {"sheet": true, "objects": true, "scenarios": true},
+      "protection": {},
       "output": ["A1:E20"]
     }
   }

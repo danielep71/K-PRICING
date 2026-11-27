@@ -284,18 +284,17 @@ records them. For Home it reads:
   "schema_version": 1,
   "sheets": {
     "shHome": {
-      "protection": {"sheet": true, "objects": true, "scenarios": true},
+      "protection": {},
       "output": ["A1:E20"]
     }
   }
 }
 ```
 
-Home is protected without a password, and every cell it writes is locked:
-users read it, follow its links and copy the stamp, but do not type in it.
-Protection without a password guards against an accidental edit, not
-against a user who means to change the sheet. Locked cells stay selectable,
-so a link can be clicked.
+No sheet is protected unless a decision below says so, so Home is not
+protected. Its cells keep Excel's default lock flag, which takes effect only
+if a later decision protects the sheet; the matrix still lists them as
+output, so that such a decision cannot leave a label or the stamp unlocked.
 
 - **Sheets:** one entry for each sheet of the template, by code name. `Test`
   sheets are not in the template and have no entry.
@@ -330,4 +329,4 @@ compares neither the password nor protection that VBA sets at run time with
 | 2026-11-27 | The workbook has one sheet, Home, of role Reference; no sheet is hidden | The 22 worksheet functions write no sheet, so there is nothing to input, store or show beyond what the workbook is and how it was built | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
 | 2026-11-27 | `tools/gen_workbook_template.py` generates `src/workbook/Template.xlsx`; it is never saved from Excel | The same source always gives the same bytes, a change is reviewed as a diff of the script, and no personal document metadata can enter it | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
 | 2026-11-27 | Navigation is by cell hyperlinks: Home lists every sheet, and every other sheet links back to Home from `D1` | Cell links work on a protected sheet and need no shape, macro or drawing part, and the template's source states every link | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
-| 2026-11-27 | Sheets are protected without a password | Protection keeps a user from overwriting a label or the stamp by accident; a password would only lock out the user, and the matrix never holds one | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
+| 2026-11-27 | No sheet is protected unless a decision here says so | Protection is a choice I make per sheet, with its reason; by default users may type anywhere, including the functions on Home | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
