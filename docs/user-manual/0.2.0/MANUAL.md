@@ -135,7 +135,8 @@ number.
   `Opt_WeekBaseMonday` and `Opt_KeepEOM` take `TRUE` or `FALSE` and nothing
   else: `1`, `0` and `"TRUE"` are refused. `Opt_Rounding` takes the text
   `NEAREST`, `FLOOR` or `CEILING`, in any letter case. An option is a single
-  value, never a range.
+  value: a cell that holds it is fine, and a blank cell gives the default; a
+  range of more than one cell is refused.
 - **Ranges and arrays.** Every function except `KPR_Dates_HostDateSystem`
   accepts a range or an array at each value argument, and returns a result of
   the same shape, which spills in Excel with dynamic arrays. A single value
