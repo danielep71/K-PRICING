@@ -56,10 +56,9 @@ Option Private Module
 
 Public Function Encode( _
     ByVal Value As Variant) As String
-
 '
 '------------------------------------------------------------------------------
-'                             ENCODE ONE RESULT
+'                              ENCODE ONE RESULT
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the encoded text of a value, as the expected files of the cases write it.
@@ -107,10 +106,9 @@ End Function
 
 Public Function EncodeFilled( _
     ByVal Value As Variant) As String
-
 '
 '------------------------------------------------------------------------------
-'                         ENCODE A RESULT THAT MAY BE FILLED
+'                      ENCODE A RESULT THAT MAY BE FILLED
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the encoded text of a value, writing an array whose items all encode alike as fill2.
@@ -158,10 +156,9 @@ End Function
 Private Function EncodeArray( _
     ByVal Value As Variant, _
     ByVal Filled As Boolean) As String
-
 '
 '------------------------------------------------------------------------------
-'                              ENCODE AN ARRAY
+'                               ENCODE AN ARRAY
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the arr2 text of a two-dimensional array, or its fill2 text when asked and possible.
@@ -199,6 +196,8 @@ Private Function EncodeArray( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_DateCaseSupport.EncodeArray"
+
     Dim RowCount        As Long         'Rows of the array
     Dim ColCount        As Long         'Columns of the array
     Dim Items()         As String       'The encoded items, by rows
@@ -257,10 +256,9 @@ End Function
 
 Private Function EncodeScalar( _
     ByVal Value As Variant) As String
-
 '
 '------------------------------------------------------------------------------
-'                              ENCODE A SCALAR
+'                               ENCODE A SCALAR
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the encoded text of one scalar value.
@@ -327,10 +325,9 @@ End Function
 
 Private Function TwoDigits( _
     ByVal Number As Long) As String
-
 '
 '------------------------------------------------------------------------------
-'                            WRITE TWO DIGITS
+'                               WRITE TWO DIGITS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns a number from 0 to 99 as two digits, with a leading zero below 10.
@@ -372,10 +369,9 @@ End Function
 
 Private Function ErrorName( _
     ByVal Value As Variant) As String
-
 '
 '------------------------------------------------------------------------------
-'                           NAME AN EXCEL ERROR VALUE
+'                          NAME AN EXCEL ERROR VALUE
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the worksheet name of an Excel error value, such as #N/A.
@@ -434,10 +430,9 @@ End Function
 
 Private Function QuotedText( _
     ByVal Text As String) As String
-
 '
 '------------------------------------------------------------------------------
-'                         QUOTE A TEXT AS JSON
+'                             QUOTE A TEXT AS JSON
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns a text in double quotes, with its quotes and backslashes escaped, as JSON writes it.
@@ -487,10 +482,9 @@ End Function
 
 Public Function A1( _
     ParamArray Items() As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
-'                         BUILD A ONE-DIMENSIONAL ARRAY
+'                        BUILD A ONE-DIMENSIONAL ARRAY
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns a one-dimensional Variant array of the items, from index 0.
@@ -525,6 +519,8 @@ Public Function A1( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_DateCaseSupport.A1"
+
     Dim Result()        As Variant      'The array built
     Dim Index           As Long         'Position of an item
 
@@ -553,10 +549,9 @@ Public Function A2( _
     ByVal RowCount As Long, _
     ByVal ColCount As Long, _
     ParamArray Items() As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
-'                         BUILD A TWO-DIMENSIONAL ARRAY
+'                        BUILD A TWO-DIMENSIONAL ARRAY
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns a two-dimensional Variant array of the items, by rows, from index 1.
@@ -594,6 +589,8 @@ Public Function A2( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_DateCaseSupport.A2"
+
     Dim Result()        As Variant      'The array built
     Dim Index           As Long         'Position of an item in the list
 
@@ -613,10 +610,9 @@ Public Function F2( _
     ByVal RowCount As Long, _
     ByVal ColCount As Long, _
     ByVal Item As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
-'                           BUILD A FILLED ARRAY
+'                             BUILD A FILLED ARRAY
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns a two-dimensional Variant array with the same item in every position.
@@ -655,6 +651,8 @@ Public Function F2( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_DateCaseSupport.F2"
+
     Dim Result()        As Variant      'The array built
     Dim R               As Long         'Row
     Dim C               As Long         'Column

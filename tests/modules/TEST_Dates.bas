@@ -51,8 +51,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "dates"             'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 4                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 85                'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 4                     'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 85                    'Assertions a complete run evaluates
 
     'The native error numbers that the Conditions table lists, and one an error passed in may hold
     Private Const ERROR_VALUE           As Long = 2015                  '#VALUE!
@@ -110,17 +110,23 @@ Public Sub RunDateTests()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Dates.RunDateTests"
+
     Dim ErrNumber       As Long     'Runner error number; 0 for none
     Dim ErrSource       As String   'Runner error source
     Dim ErrDescription  As String   'Runner error description
 
 '------------------------------------------------------------------------------
-' RUN CASES
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Start the run; a refused start propagates directly
         TEST_Harness.BeginRun SUITE_NAME, "NORMAL", EXPECTED_CASES, EXPECTED_ASSERTIONS
     'Send an error that escapes a case to the runner handler
         On Error GoTo RunFailed
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Run every case in a fixed order
         CaseScalarResults
         CaseConditions
@@ -154,7 +160,6 @@ End Sub
 Public Sub CertifyDates( _
     ByVal Folder As String, _
     ByVal Fixtures As String)
-
 '
 '------------------------------------------------------------------------------
 '                              CERTIFY THE SUITE
@@ -194,6 +199,8 @@ Public Sub CertifyDates( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Dates.CertifyDates"
+
     Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
     Dim RunErrorDescription     As String   'Its description
 
@@ -259,6 +266,11 @@ Private Sub CaseScalarResults()
 ' UPDATED
 '   2026-11-25
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Dates.CaseScalarResults"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -355,6 +367,8 @@ Private Sub CaseConditions()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Dates.CaseConditions"
+
     Dim Item              As Collection   'An object that is not a Range
     Dim Large()           As Variant      'A row of 100,001 elements
 
@@ -438,7 +452,8 @@ Private Sub CaseArrays()
 '                            CHECK THE ARRAY RULES
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Shapes are kept, scalars repeat, failures stay at their position, and the first failing argument decides. 15 assertions.
+'   Shapes are kept, scalars repeat, failures stay at their position, and the first failing argument
+'   decides. 15 assertions.
 '
 ' WHY THIS EXISTS
 '   Part of the evidence that the array rules hold as the calculation contracts state them
@@ -469,6 +484,8 @@ Private Sub CaseArrays()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Dates.CaseArrays"
+
     Dim Result            As Variant      'Result of a call
     Dim Column()          As Variant      'A 2 by 1 array
 
@@ -566,6 +583,11 @@ Private Sub CaseControls()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Dates.CaseControls"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -619,7 +641,6 @@ End Sub
 Private Function ForwardDayOfWeek( _
     ByVal DateIn As Variant, _
     Optional ByVal WeekBase As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                          FORWARD AN OMITTED CONTROL
@@ -670,7 +691,6 @@ Private Function ForwardAddMonths( _
     ByVal DateIn As Variant, _
     ByVal nMonths As Variant, _
     Optional ByVal Opt_KeepEOM As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                          FORWARD AN OMITTED CONTROL
@@ -724,7 +744,6 @@ Private Function ForwardPillarFromDates( _
     ByVal StartDate As Variant, _
     ByVal EndDate As Variant, _
     Optional ByVal Opt_Rounding As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                          FORWARD AN OMITTED CONTROL

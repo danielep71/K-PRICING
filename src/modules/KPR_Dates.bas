@@ -108,7 +108,6 @@ Option Explicit
 Public Function KPR_Dates_DayOfWeek( _
     ByVal DateIn As Variant, _
     Optional ByVal Opt_WeekBaseMonday As Variant = True) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                         WORKSHEET FUNCTION DAYOFWEEK
@@ -124,7 +123,8 @@ Public Function KPR_Dates_DayOfWeek( _
 '     A date: a VBA Date, a 1900-system serial or exact YYYY-MM-DD text; a scalar, an array or a Range.
 '
 '   Opt_WeekBaseMonday
-'     True: Monday is 1. False: Sunday is 1, as WEEKDAY. A Boolean, or Empty for the default; one cell or element at most, default True.
+'     True: Monday is 1. False: Sunday is 1, as WEEKDAY. A Boolean, or Empty for the default; one
+'     cell or element at most, default True.
 '
 ' RETURNS
 '   Variant
@@ -153,6 +153,8 @@ Public Function KPR_Dates_DayOfWeek( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_DayOfWeek"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -166,7 +168,6 @@ End Function
 
 Public Function KPR_Dates_DaysInMonth( _
     ByVal DateIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                        WORKSHEET FUNCTION DAYSINMONTH
@@ -208,6 +209,8 @@ Public Function KPR_Dates_DaysInMonth( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_DaysInMonth"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -221,7 +224,6 @@ End Function
 
 Public Function KPR_Dates_DaysInYear( _
     ByVal YearIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                        WORKSHEET FUNCTION DAYSINYEAR
@@ -263,6 +265,8 @@ Public Function KPR_Dates_DaysInYear( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_DaysInYear"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -276,7 +280,6 @@ End Function
 
 Public Function KPR_Dates_BeginOfMonth( _
     ByVal DateIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                       WORKSHEET FUNCTION BEGINOFMONTH
@@ -318,6 +321,8 @@ Public Function KPR_Dates_BeginOfMonth( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_BeginOfMonth"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -331,7 +336,6 @@ End Function
 
 Public Function KPR_Dates_EndOfMonth( _
     ByVal DateIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                        WORKSHEET FUNCTION ENDOFMONTH
@@ -373,6 +377,8 @@ Public Function KPR_Dates_EndOfMonth( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_EndOfMonth"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -386,7 +392,6 @@ End Function
 
 Public Function KPR_Dates_BeginOfQuarter( _
     ByVal DateIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                      WORKSHEET FUNCTION BEGINOFQUARTER
@@ -403,7 +408,8 @@ Public Function KPR_Dates_BeginOfQuarter( _
 '
 ' RETURNS
 '   Variant
-'     For scalar arguments, a scalar: Date; #NUM! for a first quarter of 1900, whose first day is outside the window. For an array or a multi-cell Range, a
+'     For scalar arguments, a scalar: Date; #NUM! for a first quarter of 1900, whose first day is
+'     outside the window. For an array or a multi-cell Range, a
 '     two-dimensional array of the arguments' shape, with an Excel error at each position
 '     that fails. A call-level failure is one Excel error for the whole call.
 '
@@ -428,6 +434,8 @@ Public Function KPR_Dates_BeginOfQuarter( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_BeginOfQuarter"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -441,7 +449,6 @@ End Function
 
 Public Function KPR_Dates_EndOfQuarter( _
     ByVal DateIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                       WORKSHEET FUNCTION ENDOFQUARTER
@@ -483,6 +490,8 @@ Public Function KPR_Dates_EndOfQuarter( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_EndOfQuarter"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -496,7 +505,6 @@ End Function
 
 Public Function KPR_Dates_BeginOfYear( _
     ByVal DateIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                        WORKSHEET FUNCTION BEGINOFYEAR
@@ -513,7 +521,8 @@ Public Function KPR_Dates_BeginOfYear( _
 '
 ' RETURNS
 '   Variant
-'     For scalar arguments, a scalar: Date; #NUM! for a 1900 date, whose year begins outside the window. For an array or a multi-cell Range, a
+'     For scalar arguments, a scalar: Date; #NUM! for a 1900 date, whose year begins outside the
+'     window. For an array or a multi-cell Range, a
 '     two-dimensional array of the arguments' shape, with an Excel error at each position
 '     that fails. A call-level failure is one Excel error for the whole call.
 '
@@ -538,6 +547,8 @@ Public Function KPR_Dates_BeginOfYear( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_BeginOfYear"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -551,7 +562,6 @@ End Function
 
 Public Function KPR_Dates_EndOfYear( _
     ByVal DateIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                         WORKSHEET FUNCTION ENDOFYEAR
@@ -593,6 +603,8 @@ Public Function KPR_Dates_EndOfYear( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_EndOfYear"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -606,7 +618,6 @@ End Function
 
 Public Function KPR_Dates_IsMonthEnd( _
     ByVal DateIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                        WORKSHEET FUNCTION ISMONTHEND
@@ -648,6 +659,8 @@ Public Function KPR_Dates_IsMonthEnd( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_IsMonthEnd"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -661,7 +674,6 @@ End Function
 
 Public Function KPR_Dates_IsQuarterEnd( _
     ByVal DateIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                       WORKSHEET FUNCTION ISQUARTEREND
@@ -703,6 +715,8 @@ Public Function KPR_Dates_IsQuarterEnd( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_IsQuarterEnd"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -716,7 +730,6 @@ End Function
 
 Public Function KPR_Dates_IsYearEnd( _
     ByVal DateIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                         WORKSHEET FUNCTION ISYEAREND
@@ -758,6 +771,8 @@ Public Function KPR_Dates_IsYearEnd( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_IsYearEnd"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -771,7 +786,6 @@ End Function
 
 Public Function KPR_Dates_IsLeapYear( _
     ByVal YearIn As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                        WORKSHEET FUNCTION ISLEAPYEAR
@@ -813,6 +827,8 @@ Public Function KPR_Dates_IsLeapYear( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_IsLeapYear"
+
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -827,7 +843,6 @@ End Function
 Public Function KPR_Dates_AddDays( _
     ByVal DateIn As Variant, _
     ByVal nDays As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                          WORKSHEET FUNCTION ADDDAYS
@@ -847,7 +862,8 @@ Public Function KPR_Dates_AddDays( _
 '
 ' RETURNS
 '   Variant
-'     For scalar arguments, a scalar: Date; #NUM! when the result leaves the window. For an array or a multi-cell Range, a
+'     For scalar arguments, a scalar: Date; #NUM! when the result leaves the window. For an array or
+'     a multi-cell Range, a
 '     two-dimensional array of the arguments' shape, with an Excel error at each position
 '     that fails. A call-level failure is one Excel error for the whole call.
 '
@@ -872,6 +888,8 @@ Public Function KPR_Dates_AddDays( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_AddDays"
+
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -887,7 +905,6 @@ End Function
 Public Function KPR_Dates_AddWeeks( _
     ByVal DateIn As Variant, _
     ByVal nWeeks As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                         WORKSHEET FUNCTION ADDWEEKS
@@ -907,7 +924,8 @@ Public Function KPR_Dates_AddWeeks( _
 '
 ' RETURNS
 '   Variant
-'     For scalar arguments, a scalar: Date; #NUM! when the result leaves the window. For an array or a multi-cell Range, a
+'     For scalar arguments, a scalar: Date; #NUM! when the result leaves the window. For an array or
+'     a multi-cell Range, a
 '     two-dimensional array of the arguments' shape, with an Excel error at each position
 '     that fails. A call-level failure is one Excel error for the whole call.
 '
@@ -932,6 +950,8 @@ Public Function KPR_Dates_AddWeeks( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_AddWeeks"
+
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -948,7 +968,6 @@ Public Function KPR_Dates_AddMonths( _
     ByVal DateIn As Variant, _
     ByVal nMonths As Variant, _
     Optional ByVal Opt_KeepEOM As Variant = False) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                         WORKSHEET FUNCTION ADDMONTHS
@@ -967,11 +986,13 @@ Public Function KPR_Dates_AddMonths( _
 '     A signed whole number of months; a scalar, an array or a Range.
 '
 '   Opt_KeepEOM
-'     True: a month end moves to the target month's end. A Boolean, or Empty for the default; one cell or element at most, default False.
+'     True: a month end moves to the target month's end. A Boolean, or Empty for the default; one
+'     cell or element at most, default False.
 '
 ' RETURNS
 '   Variant
-'     For scalar arguments, a scalar: Date; #NUM! when the result leaves the window. For an array or a multi-cell Range, a
+'     For scalar arguments, a scalar: Date; #NUM! when the result leaves the window. For an array or
+'     a multi-cell Range, a
 '     two-dimensional array of the arguments' shape, with an Excel error at each position
 '     that fails. A call-level failure is one Excel error for the whole call.
 '
@@ -996,6 +1017,8 @@ Public Function KPR_Dates_AddMonths( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_AddMonths"
+
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -1012,7 +1035,6 @@ Public Function KPR_Dates_AddYears( _
     ByVal DateIn As Variant, _
     ByVal nYears As Variant, _
     Optional ByVal Opt_KeepEOM As Variant = False) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                         WORKSHEET FUNCTION ADDYEARS
@@ -1031,11 +1053,13 @@ Public Function KPR_Dates_AddYears( _
 '     A signed whole number of years; a scalar, an array or a Range.
 '
 '   Opt_KeepEOM
-'     True: a month end moves to the target month's end. A Boolean, or Empty for the default; one cell or element at most, default False.
+'     True: a month end moves to the target month's end. A Boolean, or Empty for the default; one
+'     cell or element at most, default False.
 '
 ' RETURNS
 '   Variant
-'     For scalar arguments, a scalar: Date; #NUM! when the result leaves the window. For an array or a multi-cell Range, a
+'     For scalar arguments, a scalar: Date; #NUM! when the result leaves the window. For an array or
+'     a multi-cell Range, a
 '     two-dimensional array of the arguments' shape, with an Excel error at each position
 '     that fails. A call-level failure is one Excel error for the whole call.
 '
@@ -1060,6 +1084,8 @@ Public Function KPR_Dates_AddYears( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_AddYears"
+
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -1078,7 +1104,6 @@ Public Function KPR_Dates_NthWeekdayOfMonth( _
     ByVal WdIndex As Variant, _
     ByVal n As Variant, _
     Optional ByVal Opt_WeekBaseMonday As Variant = True) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                     WORKSHEET FUNCTION NTHWEEKDAYOFMONTH
@@ -1103,11 +1128,13 @@ Public Function KPR_Dates_NthWeekdayOfMonth( _
 '     The occurrence, 1 to 5; a scalar, an array or a Range.
 '
 '   Opt_WeekBaseMonday
-'     True: Monday is 1. False: Sunday is 1, as WEEKDAY. A Boolean, or Empty for the default; one cell or element at most, default True.
+'     True: Monday is 1. False: Sunday is 1, as WEEKDAY. A Boolean, or Empty for the default; one
+'     cell or element at most, default True.
 '
 ' RETURNS
 '   Variant
-'     For scalar arguments, a scalar: Date; #NUM! when the month has no such occurrence or the date is before the window. For an array or a multi-cell Range, a
+'     For scalar arguments, a scalar: Date; #NUM! when the month has no such occurrence or the date
+'     is before the window. For an array or a multi-cell Range, a
 '     two-dimensional array of the arguments' shape, with an Excel error at each position
 '     that fails. A call-level failure is one Excel error for the whole call.
 '
@@ -1132,6 +1159,8 @@ Public Function KPR_Dates_NthWeekdayOfMonth( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_NthWeekdayOfMonth"
+
     Dim Values(1 To 4)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -1151,7 +1180,6 @@ Public Function KPR_Dates_LastWeekdayOfMonth( _
     ByVal MonthIn As Variant, _
     ByVal WdIndex As Variant, _
     Optional ByVal Opt_WeekBaseMonday As Variant = True) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                    WORKSHEET FUNCTION LASTWEEKDAYOFMONTH
@@ -1173,11 +1201,13 @@ Public Function KPR_Dates_LastWeekdayOfMonth( _
 '     A weekday number, 1 to 7, in the weekday base; a scalar, an array or a Range.
 '
 '   Opt_WeekBaseMonday
-'     True: Monday is 1. False: Sunday is 1, as WEEKDAY. A Boolean, or Empty for the default; one cell or element at most, default True.
+'     True: Monday is 1. False: Sunday is 1, as WEEKDAY. A Boolean, or Empty for the default; one
+'     cell or element at most, default True.
 '
 ' RETURNS
 '   Variant
-'     For scalar arguments, a scalar: Date; #NUM! when the date is before the window. For an array or a multi-cell Range, a
+'     For scalar arguments, a scalar: Date; #NUM! when the date is before the window. For an array
+'     or a multi-cell Range, a
 '     two-dimensional array of the arguments' shape, with an Excel error at each position
 '     that fails. A call-level failure is one Excel error for the whole call.
 '
@@ -1202,6 +1232,8 @@ Public Function KPR_Dates_LastWeekdayOfMonth( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_LastWeekdayOfMonth"
+
     Dim Values(1 To 3)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -1219,7 +1251,6 @@ Public Function KPR_Dates_PillarFromDates( _
     ByVal StartDate As Variant, _
     ByVal EndDate As Variant, _
     Optional ByVal Opt_Rounding As Variant = "NEAREST") As Variant
-
 '
 '------------------------------------------------------------------------------
 '                      WORKSHEET FUNCTION PILLARFROMDATES
@@ -1238,11 +1269,13 @@ Public Function KPR_Dates_PillarFromDates( _
 '     A date: a VBA Date, a 1900-system serial or exact YYYY-MM-DD text; a scalar, an array or a Range.
 '
 '   Opt_Rounding
-'     NEAREST, FLOOR or CEILING, in any case. Text, or Empty for the default; one cell or element at most, default NEAREST.
+'     NEAREST, FLOOR or CEILING, in any case. Text, or Empty for the default; one cell or element at
+'     most, default NEAREST.
 '
 ' RETURNS
 '   Variant
-'     For scalar arguments, a scalar: String, such as 3M, 1Y6M or -2W; #NUM! when CEILING has no candidate in the window. For an array or a multi-cell Range, a
+'     For scalar arguments, a scalar: String, such as 3M, 1Y6M or -2W; #NUM! when CEILING has no
+'     candidate in the window. For an array or a multi-cell Range, a
 '     two-dimensional array of the arguments' shape, with an Excel error at each position
 '     that fails. A call-level failure is one Excel error for the whole call.
 '
@@ -1267,6 +1300,8 @@ Public Function KPR_Dates_PillarFromDates( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_PillarFromDates"
+
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -1282,7 +1317,6 @@ End Function
 Public Function KPR_Dates_DateFromPillar( _
     ByVal StartDate As Variant, _
     ByVal Pillar As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                      WORKSHEET FUNCTION DATEFROMPILLAR
@@ -1302,7 +1336,8 @@ Public Function KPR_Dates_DateFromPillar( _
 '
 ' RETURNS
 '   Variant
-'     For scalar arguments, a scalar: Date; #NUM! when the pillar or its result leaves the domain. For an array or a multi-cell Range, a
+'     For scalar arguments, a scalar: Date; #NUM! when the pillar or its result leaves the domain.
+'     For an array or a multi-cell Range, a
 '     two-dimensional array of the arguments' shape, with an Excel error at each position
 '     that fails. A call-level failure is one Excel error for the whole call.
 '
@@ -1327,6 +1362,8 @@ Public Function KPR_Dates_DateFromPillar( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_DateFromPillar"
+
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
 '------------------------------------------------------------------------------
@@ -1379,6 +1416,8 @@ Public Function KPR_Dates_HostDateSystem() As Variant
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_HostDateSystem"
+
     Dim DateSystem      As Long         '1900 or 1904
     Dim Condition       As KPRCondition 'Host condition, when it cannot be read
 
@@ -1426,7 +1465,6 @@ End Function
 Private Sub StoreArgument( _
     ByRef Slot As Variant, _
     ByVal ValueIn As Variant)
-
 '
 '------------------------------------------------------------------------------
 '                           STORE AN ARGUMENT UNREAD
@@ -1480,7 +1518,6 @@ Private Function EvaluateCall( _
     ByVal Fn As KPRDateFunction, _
     ByRef Values() As Variant, _
     Optional ByVal Control As Variant) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                               EVALUATE A CALL
@@ -1530,23 +1567,25 @@ Private Function EvaluateCall( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Dim Count           As Long         'Number of value arguments
-    Dim Kinds()         As KPRArgShape  'Shape kind of each value argument
-    Dim RowCounts()     As Long         'Rows of each value argument
-    Dim ColCounts()     As Long         'Columns of each value argument
-    Dim Payloads()      As Variant      'Read payload of each value argument
-    Dim Elements()      As Variant      'The value of each argument at one position
-    Dim OutKind         As KPRArgShape  'Resolved shape kind
-    Dim OutRows         As Long         'Resolved rows
-    Dim OutCols         As Long         'Resolved columns
-    Dim Result          As Variant      'Two-dimensional result of a non-scalar call
-    Dim Flag            As Boolean      'Resolved Boolean control
+    Const PROC_NAME     As String = "KPR_Dates.EvaluateCall"
+
+    Dim Count           As Long              'Number of value arguments
+    Dim Kinds()         As KPRArgShape       'Shape kind of each value argument
+    Dim RowCounts()     As Long              'Rows of each value argument
+    Dim ColCounts()     As Long              'Columns of each value argument
+    Dim Payloads()      As Variant           'Read payload of each value argument
+    Dim Elements()      As Variant           'The value of each argument at one position
+    Dim OutKind         As KPRArgShape       'Resolved shape kind
+    Dim OutRows         As Long              'Resolved rows
+    Dim OutCols         As Long              'Resolved columns
+    Dim Result          As Variant           'Two-dimensional result of a non-scalar call
+    Dim Flag            As Boolean           'Resolved Boolean control
     Dim Mode            As KPRPillarRounding 'Resolved rounding control
-    Dim Failure         As Variant      'The error a failing stage returns
-    Dim Condition       As KPRCondition 'Condition of a failing stage
-    Dim I               As Long         'Argument cursor
-    Dim R               As Long         'Row cursor
-    Dim C               As Long         'Column cursor
+    Dim Failure         As Variant           'The error a failing stage returns
+    Dim Condition       As KPRCondition      'Condition of a failing stage
+    Dim I               As Long              'Argument cursor
+    Dim R               As Long              'Row cursor
+    Dim C               As Long              'Column cursor
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -1670,7 +1709,6 @@ Private Function TryResolveControl( _
     ByRef Flag As Boolean, _
     ByRef Mode As KPRPillarRounding, _
     ByRef Failure As Variant) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                         RESOLVE THE OPTIONAL CONTROL
@@ -1721,6 +1759,8 @@ Private Function TryResolveControl( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.TryResolveControl"
+
     Dim ScalarOut       As Variant      'The control's single element
     Dim Condition       As KPRCondition 'Condition of a rejected control
     Dim Token           As String       'Normalized rounding token
@@ -1896,7 +1936,6 @@ Private Function EvaluateElement( _
     ByRef Elements() As Variant, _
     ByVal Flag As Boolean, _
     ByVal Mode As KPRPillarRounding) As Variant
-
 '
 '------------------------------------------------------------------------------
 '                            EVALUATE ONE POSITION
@@ -1944,6 +1983,8 @@ Private Function EvaluateElement( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.EvaluateElement"
+
     Dim D1              As Date         'First date argument
     Dim D2              As Date         'Second date argument
     Dim L1              As Long         'First whole-number argument
@@ -2050,12 +2091,18 @@ Private Function EvaluateElement( _
                 If Not TryElementPillar(Elements(2), Months, Days, Failure) Then GoTo Failed
                 If Not CORE_Dates.TryAddPillar(D1, Months, Days, Shifted, Condition) Then GoTo Rejected
                 EvaluateElement = Shifted
+            Case Else
+                'Every function the facade evaluates has its own case above
         End Select
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
     'Done
         Exit Function
 
 '------------------------------------------------------------------------------
-' REJECTIONS
+' ERROR HANDLER
 '------------------------------------------------------------------------------
 Failed:
     'An argument was rejected, or passed an error in
@@ -2069,10 +2116,6 @@ Rejected:
     'A rule of the calculation rejected the element
         EvaluateElement = CORE_Err.ErrForCondition(Condition)
         Exit Function
-
-'------------------------------------------------------------------------------
-' ERROR HANDLER
-'------------------------------------------------------------------------------
 Contained:
     'A defect, contained as #VALUE! (data contract, Internal failures)
         EvaluateElement = CORE_Err.ErrValue()
@@ -2083,7 +2126,6 @@ Private Function TryElementDate( _
     ByVal ValueIn As Variant, _
     ByRef DateOut As Date, _
     ByRef Failure As Variant) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                             READ A DATE ARGUMENT
@@ -2127,6 +2169,8 @@ Private Function TryElementDate( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.TryElementDate"
+
     Dim ScalarOut       As Variant      'The element's single value
     Dim Condition       As KPRCondition 'Condition of a rejected value
 
@@ -2162,7 +2206,6 @@ Private Function TryElementLong( _
     ByVal ValueIn As Variant, _
     ByRef LongOut As Long, _
     ByRef Failure As Variant) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                         READ A WHOLE-NUMBER ARGUMENT
@@ -2206,6 +2249,8 @@ Private Function TryElementLong( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.TryElementLong"
+
     Dim ScalarOut       As Variant      'The element's single value
     Dim Condition       As KPRCondition 'Condition of a rejected value
 
@@ -2242,7 +2287,6 @@ Private Function TryElementDomain( _
     ByVal Domain As KPRDomain, _
     ByRef LongOut As Long, _
     ByRef Failure As Variant) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                      READ A WHOLE NUMBER IN ITS DOMAIN
@@ -2290,6 +2334,8 @@ Private Function TryElementDomain( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.TryElementDomain"
+
     Dim Condition       As KPRCondition 'Domain condition
 
 '------------------------------------------------------------------------------
@@ -2320,7 +2366,6 @@ Private Function TryElementYear( _
     ByVal ValueIn As Variant, _
     ByRef YearOut As Long, _
     ByRef Failure As Variant) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                             READ A YEAR ARGUMENT
@@ -2374,7 +2419,6 @@ Private Function TryElementPillar( _
     ByRef Months As Double, _
     ByRef Days As Double, _
     ByRef Failure As Variant) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                            READ A PILLAR ARGUMENT
@@ -2418,6 +2462,8 @@ Private Function TryElementPillar( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "KPR_Dates.TryElementPillar"
+
     Dim ScalarOut       As Variant      'The element's single value
     Dim Condition       As KPRCondition 'Condition of a rejected value
 

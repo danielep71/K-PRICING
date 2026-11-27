@@ -304,6 +304,17 @@ Use only the categories an entry needs.
   private. The repository structure no longer says that nothing is supported
   yet. No procedure changed
   ([#9](https://github.com/danielep71/K-PRICING/issues/9)).
+- The [VBA house style](docs/VBA_HOUSE_STYLE.md#layout) states the full
+  layout of a procedure body: centred titles, the blank lines around
+  signatures, sections, group banners and `End`, `PROC_NAME` first in
+  `DECLARE`, the section order, the first error handler in `INITIALIZE`,
+  declarations aligned to the first of their run, `Case Else` and explicit
+  compare modes, and a table of which tool checks each rule.
+  `tools/check_vba_layout.py` now reports each of those rules, and every VBA
+  module, hand-written or generated, is reformatted to pass. Only layout
+  changed: no procedure, parameter or public name was renamed, and
+  `PUBLIC_API.txt` is unchanged. The modules were not run in Excel after the
+  reformat ([#54](https://github.com/danielep71/K-PRICING/issues/54)).
 
 ### Validation
 

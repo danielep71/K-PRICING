@@ -371,6 +371,8 @@ Private Sub RunSuite( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.RunSuite"
+
     Dim ErrNumber       As Long     'Runner error number; 0 for none
     Dim ErrSource       As String   'Runner error source
     Dim ErrDescription  As String   'Runner error description
@@ -489,6 +491,8 @@ Private Sub CertifyMode( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CertifyMode"
+
     Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
     Dim RunErrorDescription     As String   'Its description
 
@@ -563,6 +567,8 @@ Private Sub CaseExactDouble()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseExactDouble"
+
     Dim Expected    As Double   'Expected sum; wrong on purpose when injected
 
 '------------------------------------------------------------------------------
@@ -638,6 +644,11 @@ Private Sub CaseAbsoluteTolerance()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseAbsoluteTolerance"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -704,6 +715,11 @@ Private Sub CaseRelativeTolerance()
 ' UPDATED
 '   2026-10-24
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseRelativeTolerance"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -778,6 +794,11 @@ Private Sub CaseExactText()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseExactText"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -845,6 +866,11 @@ Private Sub CaseErrorValue()
 ' UPDATED
 '   2026-10-24
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseErrorValue"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -916,6 +942,8 @@ Private Sub CaseRaisedError()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseRaisedError"
+
     Dim Result          As Double   'Value of the checked square root
     Dim RaisedError     As Long     'Err.Number right after the call
 
@@ -1006,6 +1034,8 @@ Private Sub CaseIllustrativeResults()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseIllustrativeResults"
+
     Dim Total       As Double   'Sum of the notional amounts of one file
     Dim Records     As Long     'Amounts read from that file
 
@@ -1097,6 +1127,8 @@ Private Sub CaseCleanupRestoresState()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseCleanupRestoresState"
+
     Dim Details         As String   'Cleanup failures reported by the operation
     Dim SavedScreen     As Boolean  'ScreenUpdating before the operation
 
@@ -1176,6 +1208,8 @@ Private Sub CaseCleanupKeepsPrimaryError()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseCleanupKeepsPrimaryError"
+
     Dim Details         As String   'Cleanup failures reported by the operation
     Dim RaisedError     As Long     'Err.Number right after the call
 
@@ -1198,9 +1232,9 @@ Private Sub CaseCleanupKeepsPrimaryError()
     'Check the primary error and both reported restoration failures
         TEST_Harness.AssertRaised "primary-error", ERR_EXAMPLE_OPERATION, RaisedError
         TEST_Harness.AssertTrue "calculation-failure-reported", _
-            InStr(Details, "Calculation not restored") > 0, "details='" & Details & "'"
+            InStr(1, Details, "Calculation not restored", vbBinaryCompare) > 0, "details='" & Details & "'"
         TEST_Harness.AssertTrue "screen-failure-reported", _
-            InStr(Details, "ScreenUpdating not restored") > 0, "details='" & Details & "'"
+            InStr(1, Details, "ScreenUpdating not restored", vbBinaryCompare) > 0, "details='" & Details & "'"
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -1258,6 +1292,8 @@ Private Sub CaseCleanupPartialCapture()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseCleanupPartialCapture"
+
     Dim Details         As String   'Cleanup failures reported by the operation
     Dim RaisedError     As Long     'Err.Number right after the call
 
@@ -1338,6 +1374,8 @@ Private Sub CaseCleanupChangeFailure()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseCleanupChangeFailure"
+
     Dim Details         As String   'Cleanup failures reported by the operation
     Dim RaisedError     As Long     'Err.Number right after the call
     Dim SavedScreen     As Boolean  'ScreenUpdating before the operation
@@ -1363,7 +1401,7 @@ Private Sub CaseCleanupChangeFailure()
     'Check the change error, the restoration attempt and the restored setting
         TEST_Harness.AssertRaised "change-error", ERR_EXAMPLE_HOST, RaisedError
         TEST_Harness.AssertTrue "calculation-restore-attempted", _
-            InStr(Details, "Calculation not restored") > 0, "details='" & Details & "'"
+            InStr(1, Details, "Calculation not restored", vbBinaryCompare) > 0, "details='" & Details & "'"
         TEST_Harness.AssertTrue "screen-updating-restored", _
             Application.ScreenUpdating = SavedScreen, "ScreenUpdating differs after the operation"
 
@@ -1425,6 +1463,8 @@ Private Sub CaseCleanupPrimaryOnly()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseCleanupPrimaryOnly"
+
     Dim Details             As String           'Cleanup failures reported by the operation
     Dim RaisedError         As Long             'Err.Number right after the call
     Dim SavedCalculation    As XlCalculation    'Calculation before the operation
@@ -1513,6 +1553,8 @@ Private Sub CaseCleanupEachRestorationFailure()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseCleanupEachRestorationFailure"
+
     Dim Details         As String   'Cleanup failures reported by the operation
     Dim RaisedError     As Long     'Err.Number right after the call
 
@@ -1535,8 +1577,8 @@ Private Sub CaseCleanupEachRestorationFailure()
     'Check the cleanup error and that only Calculation was reported
         TEST_Harness.AssertRaised "calculation-cleanup-error", ERR_CLEANUP_FAILED, RaisedError
         TEST_Harness.AssertTrue "only-calculation-reported", _
-            InStr(Details, "Calculation not restored") > 0 _
-            And InStr(Details, "ScreenUpdating") = 0, "details='" & Details & "'"
+            InStr(1, Details, "Calculation not restored", vbBinaryCompare) > 0 _
+            And InStr(1, Details, "ScreenUpdating", vbBinaryCompare) = 0, "details='" & Details & "'"
     'Fail only the ScreenUpdating restoration and capture the error
         On Error Resume Next
         RunExampleOperation vbNullString, False, True, Details
@@ -1545,8 +1587,8 @@ Private Sub CaseCleanupEachRestorationFailure()
     'Check the cleanup error and that only ScreenUpdating was reported
         TEST_Harness.AssertRaised "screen-cleanup-error", ERR_CLEANUP_FAILED, RaisedError
         TEST_Harness.AssertTrue "only-screen-reported", _
-            InStr(Details, "ScreenUpdating not restored") > 0 _
-            And InStr(Details, "Calculation") = 0, "details='" & Details & "'"
+            InStr(1, Details, "ScreenUpdating not restored", vbBinaryCompare) > 0 _
+            And InStr(1, Details, "Calculation", vbBinaryCompare) = 0, "details='" & Details & "'"
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -1603,6 +1645,8 @@ Private Sub CaseCleanupOnlyFailure()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.CaseCleanupOnlyFailure"
+
     Dim Details         As String   'Cleanup failures reported by the operation
     Dim RaisedError     As Long     'Err.Number right after the call
 
@@ -1798,6 +1842,8 @@ Private Function FixturePath( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.FixturePath"
+
     Dim Separator   As String   'Path separator of the fixtures folder
 
 '------------------------------------------------------------------------------
@@ -1814,7 +1860,7 @@ Private Function FixturePath( _
 '------------------------------------------------------------------------------
     'Use the separator of the fixtures folder
         Separator = "\"
-        If InStr(mFixtures, "/") > 0 And InStr(mFixtures, "\") = 0 Then
+        If InStr(1, mFixtures, "/", vbBinaryCompare) > 0 And InStr(1, mFixtures, "\", vbBinaryCompare) = 0 Then
             Separator = "/"
         End If
     'Join the folder and the relative path
@@ -1864,6 +1910,8 @@ Private Function ReadFixture( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.ReadFixture"
+
     Dim FileNumber          As Integer  'Handle of the open file
     Dim Text                As String   'Content of the file
     Dim Index               As Long     'Position in Text
@@ -1872,7 +1920,7 @@ Private Function ReadFixture( _
     Dim ErrorDescription    As String   'File error description
 
 '------------------------------------------------------------------------------
-' READ
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Open the file; Access Read raises on a missing file instead of
     'creating it
@@ -1880,6 +1928,10 @@ Private Function ReadFixture( _
         Open Path For Binary Access Read As #FileNumber
     'Close the file on a read error
         On Error GoTo ReadFailed
+
+'------------------------------------------------------------------------------
+' READ
+'------------------------------------------------------------------------------
     'Read the whole file
         Text = Space$(LOF(FileNumber))
         Get #FileNumber, , Text
@@ -1975,6 +2027,8 @@ Private Function SumJsonNumbers( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.SumJsonNumbers"
+
     Dim Text        As String   'Content of the fixture
     Dim Marker      As String   'The key and its colon
     Dim Position    As Long     'Position of the next marker
@@ -2052,6 +2106,8 @@ Private Function SumCsvColumn( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.SumCsvColumn"
+
     Dim Lines   As Variant  'The file's lines
     Dim Header  As Variant  'The header's fields
     Dim Fields  As Variant  'One row's fields
@@ -2160,6 +2216,8 @@ Private Sub RunExampleOperation( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.RunExampleOperation"
+
     Dim SavedCalculation        As XlCalculation    'Calculation mode before the operation
     Dim SavedScreen             As Boolean          'ScreenUpdating before the operation
     Dim RestoreCalculationDue   As Boolean          'Calculation captured and about to change
@@ -2289,6 +2347,11 @@ Private Function RestoreCalculation( _
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.RestoreCalculation"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Contain any error
@@ -2358,6 +2421,11 @@ Private Function RestoreScreenUpdating( _
 ' UPDATED
 '   2026-10-24
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Examples.RestoreScreenUpdating"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE

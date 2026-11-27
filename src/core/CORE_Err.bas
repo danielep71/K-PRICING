@@ -153,7 +153,7 @@ Public Function ErrValue() As Variant
 
 '
 '------------------------------------------------------------------------------
-'                            BUILD THE #VALUE! ERROR
+'                           BUILD THE #VALUE! ERROR
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the native Excel #VALUE! error value.
@@ -198,7 +198,7 @@ Public Function ErrNum() As Variant
 
 '
 '------------------------------------------------------------------------------
-'                             BUILD THE #NUM! ERROR
+'                            BUILD THE #NUM! ERROR
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the native Excel #NUM! error value.
@@ -242,7 +242,7 @@ Public Function ErrNA() As Variant
 
 '
 '------------------------------------------------------------------------------
-'                              BUILD THE #N/A ERROR
+'                             BUILD THE #N/A ERROR
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the native Excel #N/A error value.
@@ -295,7 +295,7 @@ Public Function ErrForCondition(ByVal Condition As KPRCondition) As Variant
 
 '
 '------------------------------------------------------------------------------
-'                    MAP A CONDITION TO ITS NATIVE ERROR
+'                     MAP A CONDITION TO ITS NATIVE ERROR
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Maps a condition to the native Excel error the data contract gives it.

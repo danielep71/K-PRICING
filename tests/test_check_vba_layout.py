@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 
 import check_vba_layout  # noqa: E402
 import vba_baseline  # noqa: E402
+import vba_body_layout  # noqa: E402
 import vba_header_layout  # noqa: E402
 from test_check_vba import repository  # noqa: E402
 
@@ -32,10 +33,12 @@ FIELDS = ("PURPOSE", "WHY THIS EXISTS", "INPUTS", "RETURNS", "BEHAVIOR", "ERROR 
 
 def header(kind: str, fields: tuple[str, ...] = FIELDS, banner: str = BANNER) -> str:
     """A component or procedure header: a title line, then each field with text."""
-    title = f"' {kind}" if ":" in kind else "'" + kind.center(78).rstrip()
+    title = f"' {kind}" if ":" in kind else "'" + " " * ((78 - len(kind)) // 2) + kind
     lines = ["'", banner, title, banner]
     for field in fields:
-        text = "2026-11-21" if field == "UPDATED" else "None"
+        text = ("2026-11-21" if field == "UPDATED"
+                else "Nothing" if field == "RETURNS" and ":" not in kind
+                else "None at module level" if field == "INPUTS" and ":" in kind else "None")
         lines += [f"' {field}", f"'   {text}", "'"]
     lines[-1] = banner
     return "\n".join(lines)
@@ -48,7 +51,14 @@ def module(component: str | None = None, procedure: str | None = None) -> str:
     return (f'Attribute VB_Name = "TEST_Fixture"\n\nOption Explicit\nOption Private Module\n\n'
             f"{component}\n\n{BANNER}\n' PRIVATE CONSTANTS\n{BANNER}\n"
             "    Private Const LIMIT As Long = 1 'Largest value\n\n"
-            f"Public Sub Run()\n{procedure}\n\n    Dim Count As Long\nEnd Sub\n")
+            f"Public Sub Run()\n\n{procedure}\n\n{section('DECLARE')}\n"
+            '    Const PROC_NAME     As String = "TEST_Fixture.Run"\n'
+            "    Dim Count           As Long\n\nEnd Sub\n")
+
+
+def section(title: str) -> str:
+    """A section banner inside a procedure."""
+    return f"{BANNER}\n' {title}\n{BANNER}"
 
 
 def findings(text: str) -> list[str]:
@@ -136,6 +146,144 @@ class LayoutTest(unittest.TestCase):
                 verdict = output.getvalue().splitlines()[-1]
                 self.assertIn("PASS" if expected == 0 else "FAIL", verdict)
                 self.assertIn("static check, nothing compiled or run", verdict)
+
+
+def procedure_header(title: str, inputs: tuple[str, ...] = (), returns: str = "Nothing") -> str:
+    """A procedure header whose INPUTS name ``inputs`` and whose RETURNS is ``returns``."""
+    text = header(title)
+    named = "\n".join(f"'   {name}\n'     The {name}." for name in inputs) or "'   None"
+    text = text.replace("' INPUTS\n'   None", f"' INPUTS\n{named}")
+    return text.replace("' RETURNS\n'   Nothing", f"' RETURNS\n'   {returns}")
+
+
+FULL = "\n".join([
+    'Attribute VB_Name = "TEST_Fixture"', "", "Option Explicit", "", header("MODULE: TEST_Fixture"),
+    "", "Private Const LIMIT As Long = 1", "", "", "'", BANNER, "'", "'" + " " * 34 + "PROCEDURES",
+    "'", BANNER, "'", "", "Public Function Count(ByVal Text As String) As Long",
+    "", procedure_header("COUNT", ("Text",), "The count."), "", section("DECLARE"),
+    '    Const PROC_NAME     As String = "TEST_Fixture.Count"   \'Name in errors',
+    "    Dim Found           As Long                            'Matches so far", "",
+    section("INITIALIZE"), "    'Trap errors", "        On Error GoTo Failed", "",
+    section("COUNT"), "    'Count the matches",
+    '        Found = InStr(1, Text, "a", vbBinaryCompare)', "        Select Case Found",
+    "            Case 0", "                Count = 0", "            Case Else",
+    "                Count = 1", "        End Select", "", section("EXIT PROCEDURE"),
+    "    'Leave", "        Exit Function", "", section("ERROR HANDLER"), "Failed:",
+    "    'Report the failure", "        Count = -1", "", "End Function", ""])
+
+
+def body(text: str) -> list[str]:
+    return [str(finding) for finding in vba_body_layout.check_text(PATH, text)]
+
+
+class BodyTest(unittest.TestCase):
+    """The body and statement rules (tools/vba_body_layout.py), one change at a time."""
+
+    def test_the_valid_procedure_passes(self) -> None:
+        self.assertEqual(body(FULL), [])
+        self.assertEqual(body(module()), [])
+
+    def test_a_compact_private_procedure_skips_the_section_rules(self) -> None:
+        compact = FULL.replace("Public Function", "Private Function").replace(
+            section("INITIALIZE"), section("SET UP"))
+        self.assertEqual(body(compact), [])
+        self.assertTrue(body(FULL.replace(section("INITIALIZE"), section("SET UP"))))
+
+    def test_string_contents_do_not_count_towards_the_line_length(self) -> None:
+        text = FULL.replace('"a"', '"' + "a" * 150 + '"')
+        self.assertEqual(body(text), [])
+
+    def test_invalid_fixtures_fail(self) -> None:
+        def drop(old: str, count: int = 1) -> str:
+            return FULL.replace(old, "", count)
+
+        title = "'" + " " * 36 + "COUNT"
+        multi = FULL.replace("Public Function Count(ByVal Text As String) As Long\n",
+                             "Public Function Count( _\n    ByVal Text As String) As Long\n")
+        cases = {
+            "a title not centred": (FULL.replace(title, "' COUNT"),
+                                    "title 'COUNT' is not centred"),
+            "no blank after a one-line signature": (
+                FULL.replace("As Long\n\n'\n", "As Long\n'\n", 1),
+                "0 blank line(s) between the signature and its header, expected 1"),
+            "a blank after a multi-line signature": (
+                multi, "1 blank line(s) between the signature and its header, expected 0"),
+            "no blank before a section": (
+                FULL.replace("'Matches so far\n\n", "'Matches so far\n"),
+                "0 blank line(s) before the section INITIALIZE, expected 1"),
+            "a blank after a section banner": (
+                FULL.replace(section("COUNT") + "\n", section("COUNT") + "\n\n"),
+                "a blank line after the banner of the section COUNT"),
+            "DECLARE without PROC_NAME": (
+                drop('    Const PROC_NAME     As String = "TEST_Fixture.Count"   \'Name in errors\n'),
+                "DECLARE does not start with Const PROC_NAME"),
+            "a wrong PROC_NAME": (FULL.replace('"TEST_Fixture.Count"', '"TEST_Fixture.Run"'),
+                                  'PROC_NAME is "TEST_Fixture.Run"'),
+            "no DECLARE section": (
+                module().replace(section("DECLARE") + "\n" + '    Const PROC_NAME     As String = '
+                                 '"TEST_Fixture.Run"\n', ""),
+                "no DECLARE section for its local variables"),
+            "sections out of order": (
+                FULL.replace(section("EXIT PROCEDURE"), section("SWAP")).replace(
+                    section("COUNT"), section("EXIT PROCEDURE")).replace(
+                    section("SWAP"), section("COUNT")),
+                "section COUNT is out of order"),
+            "the handler outside INITIALIZE": (
+                FULL.replace("    'Trap errors\n        On Error GoTo Failed\n", "    'Start\n"
+                             "        Found = 0\n").replace(
+                    "    'Count the matches\n", "    'Count the matches\n"
+                    "        On Error GoTo Failed\n"),
+                "On Error GoTo Failed is not in INITIALIZE"),
+            "no Exit before the label": (FULL.replace("        Exit Function\n",
+                                                      "        Count = Count\n"),
+                                         "no Exit Function in EXIT PROCEDURE before Failed:"),
+            "a misaligned As": (FULL.replace("Dim Found           As", "Dim Found  As"),
+                                "As in column 16, not in column 25"),
+            "a misaligned trailing comment": (
+                FULL.replace("As Long                            'Matches",
+                             "As Long  'Matches"),
+                "trailing comment in column 34, not in column 60"),
+            "a Hungarian local name": (FULL.replace("Found", "lngFound"),
+                                       "local variable lngFound is not a descriptive"),
+            "INPUTS that do not match": (FULL.replace("'   Text\n", "'   Value\n"),
+                                         "INPUTS lists Value; the signature has Text"),
+            "component INPUTS": (FULL.replace("None at module level", "None"),
+                                 "component INPUTS is not 'None at module level'"),
+            "RETURNS of a Sub": (module().replace("'   Nothing", "'   A count."),
+                                 "RETURNS of a Sub is not Nothing"),
+            "a line over 120": (FULL.replace("        Count = -1",
+                                             "        Count = -1 + " + " + ".join(["1"] * 40)),
+                                "over 120"),
+            "InStr without a compare mode": (FULL.replace(', vbBinaryCompare)', ')'),
+                                             "InStr without an explicit compare mode"),
+            "Select Case without Case Else": (
+                FULL.replace("            Case Else\n", "            Case 1\n"),
+                "Select Case without Case Else"),
+            "no blank before End": (FULL.replace("Count = -1\n\nEnd", "Count = -1\nEnd"),
+                                    "0 blank line(s) before End Function, expected 1"),
+            "one blank after the declarations": (
+                FULL.replace("= 1\n\n\n'", "= 1\n\n'"),
+                "group banner: 1 blank line(s) after the declarations, expected 2"),
+            "no blank after a group banner": (
+                FULL.replace("PROCEDURES\n'\n" + BANNER + "\n'\n\n", "PROCEDURES\n'\n" + BANNER
+                             + "\n'\n"),
+                "0 blank line(s) between a group banner and the signature"),
+        }
+        for label, (text, expected) in cases.items():
+            with self.subTest(label):
+                self.assertNotEqual(text, FULL if label not in ("no DECLARE section",
+                                                                "RETURNS of a Sub") else module())
+                self.assertTrue(any(expected in line for line in body(text)), body(text))
+
+    def test_a_group_banner_after_an_end_wants_one_blank_line(self) -> None:
+        second = FULL.replace('Attribute VB_Name = "TEST_Fixture"\n\nOption Explicit\n\n'
+                              + header("MODULE: TEST_Fixture") + "\n\nPrivate Const LIMIT As Long = 1"
+                              "\n\n\n", "")
+        text = FULL + "\n" + second.replace("Count", "Other").replace("COUNT", "OTHER")
+        self.assertEqual(body(text), [])
+        self.assertIn("group banner: 2 blank line(s) after the End above it, expected 1",
+                      " ".join(body(FULL + "\n\n" + second.replace("Count", "Other").replace(
+                          "COUNT", "OTHER"))))
 
 
 OTHER = "tests/modules/TEST_Other.bas"

@@ -80,7 +80,10 @@ def facade() -> dict[str, tuple[str, list[tuple[str, str]]]]:
         purpose = need(re.search(r"' PURPOSE\n(.*?)\n'\n' WHY", part, re.S), "PURPOSE").group(1)
         purpose = " ".join(line[1:].strip() for line in purpose.split("\n"))
         inputs = need(re.search(r"' INPUTS\n(.*?)\n' RETURNS", part, re.S), "INPUTS").group(1)
-        found[name] = (purpose, re.findall(r"^'   (\w+)\n'     (.*)$", inputs, re.M))
+        # An argument's text may wrap onto further lines at the same indentation.
+        found[name] = (purpose, [(argument, " ".join(line[6:].strip() for line in text.strip("\n").split("\n")))
+                                 for argument, text in re.findall(
+                                     r"^'   (\w+)\n((?:'     .*(?:\n|$))+)", inputs, re.M)])
     return found
 
 

@@ -399,13 +399,13 @@ Private Function TryClassifyDateText( _
         For I = 1 To 10
 
             'Skip the two separator positions already verified
-                If (I <> 5) And (I <> 8) Then
+            If (I <> 5) And (I <> 8) Then
 
-                    'Compare by code point so no locale digit is accepted
-                        Ch = VBA.Mid$(TextIn, I, 1)
-                        If (Ch < "0") Or (Ch > "9") Then Exit Function
+                'Compare by code point so no locale digit is accepted
+                Ch = VBA.Mid$(TextIn, I, 1)
+                If (Ch < "0") Or (Ch > "9") Then Exit Function
 
-                End If
+            End If
 
         Next I
 
@@ -1141,21 +1141,21 @@ Private Function LooksNumeric(ByVal TextIn As String) As Boolean
         For I = StartAt To VBA.Len(TextIn)
 
             'Read one character
-                Ch = VBA.Mid$(TextIn, I, 1)
+            Ch = VBA.Mid$(TextIn, I, 1)
 
             'Digits accumulate
-                If (Ch >= "0") And (Ch <= "9") Then
-                    Digits = Digits + 1
+            If (Ch >= "0") And (Ch <= "9") Then
+                Digits = Digits + 1
 
             'At most one decimal point is allowed
-                ElseIf Ch = "." Then
-                    Points = Points + 1
-                    If Points > 1 Then Exit Function
+            ElseIf Ch = "." Then
+                Points = Points + 1
+                If Points > 1 Then Exit Function
 
             'Anything else disqualifies the token
-                Else
-                    Exit Function
-                End If
+            Else
+                Exit Function
+            End If
 
         Next I
 
@@ -1235,21 +1235,21 @@ Private Function LooksLocaleDate(ByVal TextIn As String) As Boolean
         For I = 1 To VBA.Len(TextIn)
 
             'Read one character
-                Ch = VBA.Mid$(TextIn, I, 1)
+            Ch = VBA.Mid$(TextIn, I, 1)
 
             'Digits lengthen the current run
-                If (Ch >= "0") And (Ch <= "9") Then
-                    RunLen(Part) = RunLen(Part) + 1
+            If (Ch >= "0") And (Ch <= "9") Then
+                RunLen(Part) = RunLen(Part) + 1
 
             'A separator closes the current run; a third one is too many
-                ElseIf (Ch = "/") Or (Ch = ".") Then
-                    If Part = 3 Then Exit Function
-                    Part = Part + 1
+            ElseIf (Ch = "/") Or (Ch = ".") Then
+                If Part = 3 Then Exit Function
+                Part = Part + 1
 
             'Anything else disqualifies the text
-                Else
-                    Exit Function
-                End If
+            Else
+                Exit Function
+            End If
 
         Next I
 

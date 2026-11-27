@@ -213,6 +213,143 @@ def case_procedure(name: str, case_id: str, part: list[dict[str, Any]],
     return lines
 
 
+# ---------------------------------------------------------------------------
+# The house style of the generated modules (docs/VBA_HOUSE_STYLE.md, Layout).
+
+SIGNATURE = re.compile(r"^(?:Public|Private) Sub (\w+)\(")
+DECLARATION = re.compile(r"(\s*(?:(?:Public|Private|Dim)\s+(?:Const\s+)?|Const\s+)\w+)(\s+)(As\s+.*)$")
+STATEMENT_WIDTH = 100
+
+
+def code_and_comment(line: str) -> tuple[str, str]:
+    """A line's code and its trailing comment, which starts at an apostrophe outside strings."""
+    quoted = False
+    for index, char in enumerate(line):
+        if char == '"':
+            quoted = not quoted
+        elif char == "'" and not quoted:
+            return line[:index], line[index:]
+    return line, ""
+
+
+def commas_at(code: str, level: int) -> list[int]:
+    """The positions of the commas outside strings, ``level`` parentheses deep."""
+    found, depth, quoted = [], 0, False
+    for index, char in enumerate(code):
+        if char == '"':
+            quoted = not quoted
+        elif not quoted and char in "()":
+            depth += 1 if char == "(" else -1
+        elif not quoted and char == "," and depth == level:
+            found.append(index)
+    return found
+
+
+def wrapped(line: str) -> list[str]:
+    """A line longer than STATEMENT_WIDTH, broken into lines of at most that width where it
+    can be. A comment line wraps at spaces under its own prefix; a statement wraps after commas
+    or opening parentheses outside strings, each continuation indented four more spaces."""
+    code, comment = code_and_comment(line)
+    if len(line) <= STATEMENT_WIDTH:
+        return [line]
+    if not code.strip():
+        prefix = comment[:len(comment) - len(comment[1:].lstrip(" "))]
+        out, current = [], prefix
+        for word in comment[len(prefix):].split(" "):
+            if current != prefix and len(current) + len(word) + 1 > STATEMENT_WIDTH:
+                out.append(current)
+                current = prefix + word
+            else:
+                current += ("" if current == prefix else " ") + word
+        return [*out, current]
+    if comment:
+        return [line]
+    indent = " " * (len(line) - len(line.lstrip(" ")) + 4)
+    # A break may follow any comma or opening parenthesis outside strings.
+    quoted, openings = False, []
+    for index, char in enumerate(code):
+        if char == '"':
+            quoted = not quoted
+        elif char == "(" and not quoted:
+            openings.append(index)
+    commas = sorted({*openings, *(comma for level in range(8) for comma in commas_at(code, level))})
+    out, start, current = [], 0, ""
+    for comma in [*commas, len(code)]:
+        piece = code[start:comma + 1] if comma < len(code) else code[start:]
+        if current and len(current) + len(piece) + 2 > STATEMENT_WIDTH:
+            out.append(current.rstrip() + " _")
+            current = indent + piece.lstrip()
+        else:
+            current += piece
+        start = comma + 1
+    return [*out, current.rstrip()]
+
+
+def aligned(lines: list[str]) -> list[str]:
+    """Each run of one-line declarations with its As and trailing comments in the columns of
+    its first declaration, or further right where a longer one needs it."""
+    out = list(lines)
+    index = 0
+    while index < len(out):
+        run = []
+        while index < len(out) and DECLARATION.match(code_and_comment(out[index])[0].rstrip()):
+            run.append(index)
+            index += 1
+        if not run:
+            index += 1
+            continue
+        parts = []
+        for at in run:
+            code, comment = code_and_comment(out[at])
+            match = DECLARATION.match(code.rstrip())
+            assert match is not None
+            parts.append((match.group(1), match.group(3).rstrip(), comment))
+        first = DECLARATION.match(code_and_comment(out[run[0]])[0].rstrip())
+        assert first is not None
+        as_column = max(first.start(3), *(len(head) + 1 for head, _, _ in parts))
+        codes = [head.ljust(as_column) + tail for head, tail, _ in parts]
+        first_code, first_comment = code_and_comment(out[run[0]])
+        comment_column = max(len(first_code) if first_comment else 0,
+                             *(len(code) + 1 for code in codes))
+        for at, code, (_, _, comment) in zip(run, codes, parts, strict=True):
+            out[at] = code.ljust(comment_column) + comment if comment else code
+    return out
+
+
+def house_style(lines: list[str], module: str) -> list[str]:
+    """The generated lines in the house style: each DECLARE starts with the procedure's
+    PROC_NAME, a signature on several lines is followed by its header directly, the runner
+    starts the run and sets its handler in INITIALIZE, long statements wrap, and each run of
+    declarations is aligned."""
+    out: list[str] = []
+    procedure = ""
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        found = SIGNATURE.match(line)
+        if found:
+            procedure = found.group(1)
+        if line == "" and out and out[-1].endswith(")") and out[-1].startswith("    ByVal ") \
+                and index + 1 < len(lines) and lines[index + 1] == "'":
+            index += 1
+            continue
+        out.append(line)
+        if line == "' DECLARE" and out[-2] == RULE:
+            out += [lines[index + 1],
+                    f'    Const PROC_NAME     As String = "{module}.{procedure}"', ""]
+            index += 2
+            continue
+        if line == "' RUN" and procedure == "RunSuite" and lines[index + 2].startswith(
+                "    'Start the run"):
+            out[-1] = "' INITIALIZE"
+            out += lines[index + 1:index + 6]
+            out += ["", RULE, "' RUN CASES", RULE]
+            index += 6
+            continue
+        index += 1
+    return aligned([piece for line in out for piece in wrapped(line)])
+
+
 def module(root: Path) -> str:
     """The text of the generated module, with CRLF line endings."""
     model = load_model(root)
@@ -342,7 +479,7 @@ def module(root: Path) -> str:
         lines += case_procedure(name, case_id, part, model)
     while lines and lines[-1] == "":
         lines.pop()
-    return "\r\n".join(lines) + "\r\n"
+    return "\r\n".join(house_style(lines, MODULE.stem)) + "\r\n"
 
 
 def main(argv: Sequence[str] | None = None) -> int:

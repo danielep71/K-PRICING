@@ -224,7 +224,7 @@ needs a new run.
 A project that imports existing modules can adopt the layout one module at a
 time with a baseline, `tools/vba_layout_baseline.json`, which lists the modules
 not yet fully in layout. `tools/format_vba.py` (statement layout) and
-`tools/check_vba_layout.py` (banners and headers) read the same file. Without
+`tools/check_vba_layout.py` (banners, headers and bodies) read the same file. Without
 that file, every module must be in layout. To create it, run
 `python tools/format_vba.py --check --no-baseline` and
 `python tools/check_vba_layout.py --no-baseline`, and list each module that
@@ -260,9 +260,10 @@ breaks the order is an error with exit status 2, distinct from the exit status
 
 Write every component, new or imported, in this layout. `python
 tools/format_vba.py` applies its whitespace rules, and
-[`tools/check_vba_layout.py`](#static-checks) checks its banners and headers.
-The `.frm` designer block that the VBE writes, and every `.frx`, stay as the
-VBE wrote them.
+[`tools/check_vba_layout.py`](#static-checks) checks the rest that a reading of
+the source can see; the table at the end of this section says which rules are
+left to review. The `.frm` designer block that the VBE writes, and every
+`.frx`, stay as the VBE wrote them.
 
 **Top of the file.** The `Attribute` lines, one blank line, `Option Explicit`
 (with `Option Private Module` and `Option Compare` where used), one blank
@@ -270,25 +271,32 @@ line, then the component header.
 
 **Banners.** A banner is an apostrophe and 78 dashes, 79 characters in all; a
 test module may use equals signs instead of dashes in its component header.
-A *section banner* has an upper-case title, left-aligned after one space. A
-*procedure title banner* has an upper-case verb phrase centred in the 78
-columns, not the procedure's identifier. A *group banner* separates families
-of procedures: a lone `'`, a banner, an empty comment line, a centred
-upper-case title, an empty comment line, a banner and a lone `'`.
+There are three kinds:
+
+- a *section banner*: a banner, an upper-case title after one space, a
+  banner;
+- a *procedure title*: a banner, an upper-case verb phrase (not the
+  procedure's identifier) centred in the 78 columns after the apostrophe, a
+  banner. Centred means `(78 - length) // 2` spaces before the title, so
+  `RUN` has 37;
+- a *group banner*, which separates families of procedures: a lone `'`, a
+  banner, a lone `'`, a centred upper-case title, a lone `'`, a banner and a
+  lone `'`.
 
 **Headers.** A component starts with a lone `'`, a banner, `' MODULE: <name>`
 or `' CLASS: <name>` (a UserForm or a document module also uses `MODULE:`),
-the nine fields and a closing banner. A procedure's header sits below its
-signature, after one blank line, or directly below a signature that spans
-several lines: a lone `'`, its title banner and the nine fields. Each field is
-its upper-case label after one space, with its text indented three spaces and a
-lone `'` between fields. Omit none; write `None` instead.
+the nine fields and a closing banner. Its `INPUTS` is `None at module level`,
+or `None at class level` in a class. A procedure's header sits below its
+signature: a lone `'`, its title and the nine fields. Each field is its
+upper-case label after one space, with its text indented three spaces and a
+lone `'` between fields. Omit none; write `None` instead. Every procedure,
+however short, carries all nine.
 
 | Field | Content |
 | --- | --- |
 | `PURPOSE` | What it does, in one or two sentences. |
 | `WHY THIS EXISTS` | The problem it solves, or why it has this shape. |
-| `INPUTS` | `None`, or each parameter on its own line and its description beneath it. |
+| `INPUTS` | `None`, or each parameter of the signature, in its order, on its own line with its description beneath it at five spaces. |
 | `RETURNS` | `Nothing` for a `Sub`; else the value and its edge cases. |
 | `BEHAVIOR` | What happens, in order; bullets are `-` items. |
 | `ERROR POLICY` | What it raises, what it suppresses and what is best effort. |
@@ -303,44 +311,87 @@ leaving out those that are empty: `PRIVATE TYPES`, `WINDOWS API DECLARATIONS`,
 `PRIVATE CONSTANTS`, `PUBLIC CONSTANTS`, `PUBLIC ENUMS`, `PUBLIC TYPES`,
 `PUBLIC STATE`, `PRIVATE STATE`; a class has `PRIVATE CONSTANTS` and `PRIVATE
 VARIABLES`. A component may add sections of its own with a clear name. Indent
-what stands under a banner by four spaces, align the `As` keywords in one
-column and the trailing comments in another within a block, and give each
-declaration a trailing comment. Separate a section from the first group
-banner by two blank lines.
+what stands under a banner by four spaces and give each declaration a trailing
+comment.
+
+**Alignment.** Consecutive one-line declarations (`Dim`, `Static`, `Const`, or
+a `Public`, `Private`, `Global` or `Friend` declaration) form a run; a blank
+line, a comment line or any other statement ends it. In each run, every `As`
+stands in the column of the first declaration's `As`, and every trailing
+comment in the column of the first declaration's comment. Pad the first
+declaration so the others fit. The rule applies at the top of a component and
+in each `DECLARE` section.
+
+**Blank lines.**
+
+- One blank line between a one-line signature and its header; none below a
+  signature that spans several lines.
+- Exactly one blank line before each section banner of a procedure, and none
+  between a section banner and what it heads.
+- One blank line before a procedure's `End` statement, and one after it.
+- Two blank lines between the last declaration and the first group banner;
+  one between an `End` statement and the group banner below it; one between a
+  group banner and the signature below it.
 
 **Procedures.** Every parameter has an explicit `ByVal` or `ByRef` and an
 explicit type, as does every function, and every procedure an explicit
-visibility. Separate procedures with one blank line. A procedure body is a
-sequence of section banners:
+visibility. A procedure body is a sequence of sections, in this order:
 
-- `DECLARE`: `Const PROC_NAME As String = "<Component>.<Procedure>"`, then
-  every `Dim`;
-- `INITIALIZE`: `On Error GoTo ErrorHandler` and the initial state;
-- one section per logical step, titled with a short upper-case verb phrase,
-  such as `VALIDATE INPUTS`;
-- `EXIT PROCEDURE`: the clean exit, after any cleanup;
-- `ERROR HANDLER`: the label at the outer level, then capture, cleanup and
-  re-raise as [Operation and cleanup outcomes](#operation-and-cleanup-outcomes)
-  describes.
+1. `DECLARE`: first `Const PROC_NAME As String = "<Component>.<Procedure>"`,
+   the name that error sources and diagnostics carry, then every `Dim` and
+   `Static`. A procedure with local variables or an `On Error GoTo <label>`
+   has this section.
+2. `INITIALIZE`: the procedure's first `On Error GoTo <label>`, and the
+   initial state.
+3. One section per logical step, titled with a short upper-case verb phrase,
+   such as `VALIDATE INPUTS`.
+4. `EXIT PROCEDURE`: any cleanup, then the clean `Exit Sub`, `Exit Function`
+   or `Exit Property`, which comes before the handler's label.
+5. `ERROR HANDLER`: the label at the outer level, then capture, cleanup and
+   re-raise as [Operation and cleanup outcomes](#operation-and-cleanup-outcomes)
+   describes.
 
-A trivial procedure keeps only the sections it needs. Under a section, put a
-one-line intent comment at four spaces, with no space after the apostrophe,
-and its statements at eight; nested blocks add four spaces each. The comment
-says why or what, in sentence case and without a final period.
+A procedure keeps only the sections it needs. A `Private` procedure of at most
+15 code lines may keep a compact body without these sections; its header still
+has the nine fields. Name local variables in PascalCase, descriptively and
+without a type prefix such as `str` or `lng`.
 
-**Statements.** Qualify library calls, `VBA.Len`, `VBA.Trim$` and the like,
-preferring the `$` string variants, and test for empty with `VBA.Len(x) = 0`
-or `VBA.LenB(x) = 0`. Give `InStr` and `StrComp` an explicit compare mode. Name
-the counter in `Next`. Write one statement per line, with no `:` separator; a
-single-line `If ... Then` is allowed for a guard or an `Exit`. Break a long
-line after an operator or comma and indent its continuation four more spaces;
-keep an `Err.Raise` number and source on its first line. Keep lines to about
-100 characters and never past 120 outside a string literal. Release an object
-variable with `Set x = Nothing` on the exit path.
+**Statements.** Under a section, put a one-line intent comment at four spaces,
+with no space after the apostrophe, and its statements at eight; each open
+block adds four. `Select Case` opens two levels: each `Case` stands one level
+in and its statements two. The comment says why or what, in sentence case and
+without a final period.
+
+Qualify library calls, `VBA.Len`, `VBA.Trim$` and the like, preferring the `$`
+string variants, and test for empty with `VBA.Len(x) = 0` or
+`VBA.LenB(x) = 0`. Give `InStr` and `StrComp` an explicit compare mode, and
+every `Select Case` a `Case Else`, with a comment when it has nothing to do.
+Name the counter in `Next`. Write one statement per line, with no `:`
+separator; a single-line `If ... Then` is allowed for a guard or an `Exit`.
+Break a long line after a comma or an opening parenthesis, outside a string,
+and indent its continuation four more spaces; keep an `Err.Raise` number and
+source on its first line. Keep lines to about 100 characters and never past
+120, not counting the contents of string literals. Release an object variable
+with `Set x = Nothing` on the exit path.
+
+**Names stay.** Bringing a component into this layout changes its layout only:
+it renames no procedure, parameter or public constant, so
+[PUBLIC_API.txt](PUBLIC_API.txt) stays the same. A rename is its own change,
+with its own entry in that inventory.
+
+**What is checked where.**
+
+| Rule | Checked by |
+| --- | --- |
+| Line endings, trailing white space, tabs, outer-level declarations, `End` statements and labels, one blank line after `End` | `tools/format_vba.py` |
+| Banner width; the component and procedure headers, their nine fields and `UPDATED` | `tools/check_vba_layout.py` (`tools/vba_header_layout.py`) |
+| Centred procedure titles; blank lines; `PROC_NAME`; section order; the first handler in `INITIALIZE` and the clean exit before its label; alignment; PascalCase locals; `INPUTS` against the signature and at component level; `RETURNS` of a `Sub`; line length; compare modes; `Case Else` | `tools/check_vba_layout.py` (`tools/vba_body_layout.py`) |
+| Statement indentation under intent comments; the wording of titles, comments and fields; qualified library calls; one statement per line | Review |
 
 The layout is not retrofitted by [`format_vba.py`](#source-representation): a
-module that predates it needs its headers written by hand, and its code must
-stay the same, which `tools/vba_code_identity.py` compares without comments.
+module that predates it needs its headers and sections written by hand, and its
+code must stay the same, which `tools/vba_code_identity.py` compares without
+comments.
 
 ## Static checks
 
@@ -353,7 +404,7 @@ integrity** reports its findings as a warning, not a failure.
 | Check | Enforces |
 | --- | --- |
 | `tools/check_vba_source.py` | Each component in its home with its role's prefix and a `VB_Name` equal to its file name, names unique ignoring case and at most 31 characters; ASCII only; `Option Explicit`, and `Option Private Module` in core and test modules; no `Option Base`; no tab or trailing white space, except in a form's VBE header; closed string literals; each form beside its `.frx`; LF storage with CRLF checkout; no workbook committed except `src/workbook/Template.xlsx` and the regulatory source copies under `docs/methodology/sources/` |
-| `tools/check_vba_layout.py` | The [layout](#layout) of each component under the source directories, with the [baseline](#source-representation) that `tools/format_vba.py` reads: every banner is 79 characters; the component and each procedure carry a header whose nine fields are all present, once each and in order, each with text, and whose `UPDATED` is one `YYYY-MM-DD` date. It reads comments only and does not judge their content |
+| `tools/check_vba_layout.py` | The [layout](#layout) of each component under the source directories, with the [baseline](#source-representation) that `tools/format_vba.py` reads: every banner is 79 characters; the component and each procedure carry a header whose nine fields are all present, once each and in order, each with text, and whose `UPDATED` is one `YYYY-MM-DD` date; and the body and statement rules that the [layout table](#layout) assigns to it. It reads the source only, compiles and runs nothing, and does not judge the wording of comments |
 | `tools/check_vba_conditionals.py` | Well-formed `#If`, `#ElseIf`, `#Else` and `#End If` blocks, evaluated in each compilation environment (VBA6 Win32, VBA7 Win32 and VBA7 Win64); every `Declare` reachable under VBA7 is `PtrSafe`. A module-level `#Const Name = <value>` defines `Name` from its line on, in each environment that reaches the line, so a `#Const` inside an `#If` branch exists only where that branch is active; its value is `True`, `False`, `-1`, `0` or an expression over the compiler constants `VBA6`, `VBA7`, `Win32` and `Win64` and the module's earlier `#Const` names, with `Not`, `And`, `Or`, `=`, `<>` and parentheses. A condition is not evaluated in an environment that cannot enter its branch. A finding, so that the check fails closed: any other symbol, such as a project's conditional-compilation argument or a `#Const` used before or outside its definition; a `#Const` without a name or `=`, with a value that is not Boolean, such as `2`, that redefines a compiler constant, or defined twice in one environment |
 | `tools/check_vba_jumps.py` | Every `GoTo`, `GoSub`, `Resume` and `On Error GoTo` target, and the line number in `If x Then 100`, is a label of the same procedure, in each environment; no label is defined twice in a procedure; no `Err.Raise` or `Error` statement follows a `Resume <label>` while one of the procedure's own `On Error GoTo <label>` handlers is enabled |
 | `tools/check_vba_public_api.py` | Explicit visibility on every declaration; the public declarations of `src/modules/` match the `[supported]` tier of [PUBLIC_API.txt](PUBLIC_API.txt), and every other public declaration under `src/` its `[project-public]` tier, one to one, with normalized signatures; no declaration listed in the wrong tier; no public variable or public `Declare` in a standard module; no public name in two standard modules, which Excel reports as an ambiguous name |
