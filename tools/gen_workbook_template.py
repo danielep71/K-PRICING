@@ -107,9 +107,9 @@ ABOUT: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
     ("How to use", (
         ("1. Enable macros", "Open this .xlsm with macros enabled, as your organization's "
                              "policy allows: the functions work only while it is open."),
-        ("2. Use a function", "Type =KPR_Dates_ in a cell of this workbook and pick a function. "
-                              "Each returns a value or an Excel error value, and never changes "
-                              "a sheet."),
+        ("2. Use a function", "Add a worksheet, because Home is protected, then type "
+                              "=KPR_Dates_ in one of its cells and pick a function. Each returns "
+                              "a value or an Excel error value, and never changes a sheet."),
         ("3. Date system", "Use the 1900 date system: in a workbook on the 1904 date system, "
                            "every function with a value argument returns #N/A, never a value "
                            "shifted by 1,462 days."),

@@ -149,6 +149,13 @@ class HomeLayoutTest(unittest.TestCase):
         home = rows[-2].cells[0]
         self.assertEqual((home.text, home.link), ("Home", ""))
 
+    def test_the_steps_say_where_a_function_can_be_typed(self) -> None:
+        # Home is protected with every cell locked, and it is the only sheet: the
+        # step that uses a function must send the reader to another sheet.
+        steps = dict(dict(gen_workbook_template.ABOUT)["How to use"])
+        self.assertTrue(gen_workbook_template.PROTECTION["sheet"])
+        self.assertIn("Add a worksheet, because Home is protected", steps["2. Use a function"])
+
     def test_the_sheet_is_protected_without_a_password(self) -> None:
         sheet = parts()["xl/worksheets/sheet1.xml"].decode()
         self.assertIn('<sheetProtection sheet="1" objects="1" scenarios="1"/>', sheet)
