@@ -408,9 +408,8 @@ def group_banner_findings(path: str, lines: Sequence[str], start: int,
 def length(line: str) -> int:
     """A line's length without the contents of its string literals, and without the trailing
     comment of a declaration, which keeps its column."""
-    code = strip_code(line, blank_strings=True)
-    if DECLARATION.match(line) and len(code) < len(line.rstrip()):
-        line = code
+    if DECLARATION.match(line):
+        line = strip_code(line)
     return len(re.sub(r'"[^"]*"', '""', line.rstrip()))
 
 

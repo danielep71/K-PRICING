@@ -198,6 +198,10 @@ class BodyTest(unittest.TestCase):
     def test_string_contents_do_not_count_towards_the_line_length(self) -> None:
         text = FULL.replace('"a"', '"' + "a" * 150 + '"')
         self.assertEqual(body(text), [])
+        constant = FULL.replace("Private Const LIMIT As Long = 1",
+                                'Private Const LIMIT As String = "' + "a" * 150
+                                + "\" & vbCrLf 'Message suffix")
+        self.assertEqual(body(constant), [])
 
     def test_invalid_fixtures_fail(self) -> None:
         def drop(old: str, count: int = 1) -> str:
