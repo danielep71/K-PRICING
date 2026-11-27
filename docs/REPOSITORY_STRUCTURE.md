@@ -21,12 +21,12 @@ them are already set in `.gitattributes`, `.editorconfig` and `.gitignore`.
 | `docs/native-declarations.json` | The [register of native declarations](#native-declarations): each export a `Declare` imports, with its library, whether its zero result is ambiguous and, optionally, its ABI | Present, with no declaration |
 | `docs/methodology/` | The [index](methodology/README.md) of the guides: sources, data contract and its machine-readable form `data-contract.json`, calculation contracts, validation plan, test-case format, [workbook contract](methodology/WORKBOOK_CONTRACT.md) and [VBA test harness](methodology/TEST_HARNESS.md) | Present, with the date layer's sources, function arguments, calculation contracts `CALC-02` to `CALC-10` and validation plan; the illustrative entries `SRC-01`, `DS-01` and `CALC-01` stay until the illustrative cases are replaced |
 | `docs/methodology/sources/` | Byte-preserved copies of regulatory sources | Reserved |
-| `docs/methodology/workbook-protection.json` | The [protection matrix](methodology/WORKBOOK_CONTRACT.md#protection) of `src/workbook/Template.xlsx`, added with the template | Reserved |
+| `docs/methodology/workbook-protection.json` | The [protection matrix](methodology/WORKBOOK_CONTRACT.md#protection) of `src/workbook/Template.xlsx` | Present, with the Home sheet |
 | `docs/user-manual/` | Optional manual for workbook recipients, one folder per released version (`docs/user-manual/X.Y.Z/MANUAL.md`), built to the PDF attached to the release ([user manual](../RELEASING.md#user-manual)) | Reserved |
 | `src/core/` | Calculations and pure validation, host-independent standard modules | Present, with `CORE_Err`, `CORE_Parse`, `CORE_Dates` and `CORE_Array` |
 | `src/classes/` | Host-independent classes, if the design needs them | Reserved |
 | `src/modules/` | The public facade: the supported entry points | Present, with `KPR_Dates`, the 22 worksheet functions |
-| `src/workbook/` | Excel adapters, `ThisWorkbook` and sheet document modules, and the optional macro-free `Template.xlsx`, laid out as the [workbook contract](methodology/WORKBOOK_CONTRACT.md) defines | Present, with the adapters `M_Ranges`, `M_Host` and `M_Register` |
+| `src/workbook/` | Excel adapters, `ThisWorkbook` and sheet document modules, and the optional macro-free `Template.xlsx`, laid out as the [workbook contract](methodology/WORKBOOK_CONTRACT.md) defines | Present, with the adapters `M_Ranges`, `M_Host` and `M_Register` and `Template.xlsx`, which `tools/gen_workbook_template.py` generates |
 | `src/forms/` | UserForms, each `.frm` with its `.frx` | Reserved |
 | `tests/` | Python tests of the repository tooling (`test_*.py`) | Present |
 | `tests/modules/` | VBA test modules: the [test harness](methodology/TEST_HARNESS.md), its example suite, relation tests, case runners and volume benchmarks | Present, with the harness, the example suite and the illustrative relation tests |
@@ -41,7 +41,7 @@ them are already set in `.gitattributes`, `.editorconfig` and `.gitignore`.
 - **Source first.** The exported source is authoritative. A change made in a
   workbook is exported and reviewed like any other change.
 - **No built workbooks.** Workbooks are ignored, except
-  `src/workbook/Template.xlsx`, a macro-free template, and the copies under
+  `src/workbook/Template.xlsx`, a macro-free template generated from source, and the copies under
   `docs/methodology/sources/`. A built workbook is saved outside the checkout
   or under `test-results/`.
 - **No unreviewed binaries.** **Repository integrity** runs

@@ -419,8 +419,8 @@ class Workbook(unittest.TestCase):
             self.assertIn(f'codeName="{self.layout.workbook_code_name}"', book)
             for index, sheet in enumerate(self.layout.sheets, 1):
                 self.assertIn(f'<sheet name="{sheet.tab}" sheetId="{index}"', book)
-                self.assertIn(f'<sheetPr codeName="{sheet.code_name}"/>',
-                              package.read(f"xl/worksheets/sheet{index}.xml").decode())
+                self.assertRegex(package.read(f"xl/worksheets/sheet{index}.xml").decode(),
+                                 f'<sheetPr codeName="{sheet.code_name}"[/>]')
             for item in self.layout.names:
                 self.assertRegex(book, rf'<definedName name="{item.name}">[^<]*'
                                        rf'!\$[A-Z]+\$[0-9]+</definedName>')

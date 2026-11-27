@@ -196,6 +196,7 @@ It runs these checks, in this order. `OWNER/REPOSITORY` is the repository that
 | `derivations` | `python tools/check_derivations.py` |
 | `independent-implementations` | `python tools/check_independent.py` |
 | `accuracy` | `python tools/check_accuracy.py` |
+| `workbook-template` | `python tools/gen_workbook_template.py --check` |
 | `workbook-protection` | `python tools/check_workbook_protection.py` |
 | `changelog` | `python tools/check_changelog.py --repository OWNER/REPOSITORY` |
 | `generated-docs` | `python tools/render_docs.py --check` |

@@ -318,6 +318,17 @@
       "state": "green"
     },
     {
+      "check": "workbook-template",
+      "checker": "python tools/gen_workbook_template.py --check",
+      "proofs": [
+        "tests.test_gen_workbook_template.RefusalTest.test_a_changed_template_fails",
+        "tests.test_gen_workbook_template.RefusalTest.test_a_missing_template_fails",
+        "tests.test_gen_workbook_template.RefusalTest.test_a_configuration_the_script_cannot_lay_out_fails_the_check"
+      ],
+      "negative_claim": "a template that differs from what the script generates, a missing template, and a build configuration with a sheet the script cannot lay out fail the check",
+      "state": "green"
+    },
+    {
       "check": "workbook-protection",
       "checker": "python tools/check_workbook_protection.py",
       "proofs": [

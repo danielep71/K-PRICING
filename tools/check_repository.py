@@ -478,6 +478,7 @@ def checks(context: Context) -> list[Check]:
         Check("derivations", [python, "tools/check_derivations.py"]),
         Check("independent-implementations", [python, "tools/check_independent.py"]),
         Check("accuracy", [python, "tools/check_accuracy.py"]),
+        Check("workbook-template", [python, "tools/gen_workbook_template.py", "--check"]),
         Check("workbook-protection", [python, "tools/check_workbook_protection.py"]),
         Check("changelog", changelog),
         Check("generated-docs", [python, "tools/render_docs.py", "--check"]),

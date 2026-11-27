@@ -3,6 +3,7 @@
 This contract defines what the workbook looks like:
 
 - its sheets and their code names;
+- how a user moves between the sheets;
 - the defined names the code addresses;
 - which areas are inputs and which the code writes;
 - how each operation reads and writes them;
@@ -23,8 +24,9 @@ These defaults hold unless a decision below replaces one:
 - **Built from source, never committed.** The build creates the workbook from
   the exported source of one commit, as the
   [installation guide](../../INSTALLATION.md) describes, and saves it outside
-  the checkout or under `test-results/`. Only a macro-free
-  `src/workbook/Template.xlsx` may be tracked.
+  the checkout or under `test-results/`. Only the macro-free
+  `src/workbook/Template.xlsx` is tracked, and it is generated from source
+  too ([build](#build)).
 - **Datasets where the data contract says.** The *File or sheet* column of the
   data contract's *Datasets* table says whether a dataset is read from a file
   into memory or typed on a sheet. A dataset read from a file is never copied
@@ -56,8 +58,12 @@ below says why it is hidden.
 
 | # | Tab name | Code name | Role | Code writes | Content |
 | ---: | --- | --- | --- | --- | --- |
-| *Illustrative:* 1 | `Readme` | `shReadme` | Reference | Build only | What the workbook is, its limits, and the build stamp |
-| *Illustrative:* 2 | `Inputs` | `shInputs` | Input | No | Reporting date and run settings ([areas](#areas)) |
+| 1 | `Home` | `shHome` | Reference | Build only | The build stamp, what the workbook provides and does not cover, how to use it, and a link to every sheet |
+
+The workbook's 22 `KPR_Dates_*` worksheet functions return their results to
+the cells that call them and write no sheet, so it has no input, parameter,
+output or diagnostics sheet yet. A sheet added later takes the next row of
+the table, and the [navigation](#navigation) and the template follow it.
 
 - **Code name:** `sh` plus the tab name in PascalCase, as the house style
   requires. The workbook's own document module is `ThisWorkbook`.
@@ -76,10 +82,26 @@ below says why it is hidden.
 
 ## Layout
 
-State the layout every sheet shares. A common default:
+Every sheet shares this layout, except a `Test` sheet, which the build
+appends blank to a development workbook:
 
-- The first rows carry the workbook's title band and the sheet title. Every
-  sheet that code writes has a status line, named `<Sheet>_Status`.
+- **Columns:** A and B are margins 4.625 wide, C holds labels and section
+  titles (26), D text and values (185.375), E is a margin (4.625), and the
+  columns after E are hidden. Every column is centred vertically, and
+  gridlines are off.
+- **Title band:** rows 1 to 3, frozen, and nothing else frozen. Row 1, 24
+  points high, is the black band of `B1:D1`, with the workbook name,
+  `K-PRICING`, in gold in `B1`. Row 2, 26.1 points, is the blue band
+  (`#265A99`) of `B2:D2`, with the sheet's tab name in bold white in `B2`.
+  Row 3, 30 points, holds a grey italic subtitle in `C3` that says what the
+  sheet is for.
+- **Sections:** from row 4, each section is a title row, 30 points high, in
+  bold navy (`#1F3864`) in column C, then a table of one row per entry, 20.1
+  points high: the label in bold in C, the text in D, wrapped. A thin line
+  boxes the table, and dashed lines separate its rows and its two columns.
+  A row 9.95 points high separates a table from the next section.
+- **Print:** landscape, one page wide.
+- Every sheet that code writes has a status line, named `<Sheet>_Status`.
 - A table's first header cell carries the name `<Sheet>_<Table>`, and its data
   starts on the row below. Tables that grow downward sit side by side, so
   that none can overwrite another.
@@ -88,15 +110,28 @@ State the layout every sheet shares. A common default:
 - A table that would exceed a worksheet's 1,048,576 rows fails the operation
   before anything is written; it is never truncated.
 
+## Navigation
+
+- **Home lists every sheet.** Its *Sheets* section has one entry per sheet of
+  the [table](#sheets), in tab order: the tab name in column C and what the
+  sheet holds in column D. The tab name of each sheet other than Home is a
+  link to that sheet's cell `A1`.
+- **Every other sheet links back.** Cell `D1`, in the black band, holds the
+  link `Home` to Home's cell `A1`. A `Test` sheet is exempt, as in
+  [Layout](#layout).
+- Links are cell hyperlinks to a location in this workbook: they work while
+  the sheet is protected, and need no shape, macro or external address.
+
 ## Defined names
 
 | Name | Sheet | Refers to | Written by |
 | --- | --- | --- | --- |
-| *Illustrative:* `build_commit` | `shReadme` | The commit the workbook was built from | The build |
-| *Illustrative:* `build_time` | `shReadme` | The commit's committer time | The build |
-| *Illustrative:* `build_configuration` | `shReadme` | `production` or `development` | The build |
-| *Illustrative:* `cfg_reporting_date` | `shInputs` | The value cell of the reporting date | Users |
-| *Illustrative:* `Inputs_Settings` | `shInputs` | The first header cell of the settings area ([areas](#areas)) | Users, in the value column below it |
+| `build_commit` | `shHome` | `D5`: the commit the workbook was built from | The build |
+| `build_time` | `shHome` | `D6`: the commit's committer time | The build |
+| `build_configuration` | `shHome` | `D7`: `production` or `development` | The build |
+
+The three names sit in Home's *This workbook* section, each with its label
+in column C: `Commit`, `Commit time` and `Configuration`.
 
 - Every name is workbook-scoped and visible, and refers to one cell of this
   workbook by an absolute reference. External and relative references are
@@ -105,9 +140,9 @@ State the layout every sheet shares. A common default:
 - **Table anchors:** `<Sheet>_<Table>`, on a table's first header cell. No
   table is named `Status`, so an anchor never collides with a status line.
 - **State:** the status line `<Sheet>_Status` of each sheet that code writes,
-  and `Run_Status`, the state of the last run, on one of those sheets. The
-  illustrative sheets are written by users or the build only, so they have
-  neither; declare them here with the first sheet that code writes.
+  and `Run_Status`, the state of the last run, on one of those sheets. Home
+  is written by the build only, so the workbook has neither; declare them
+  here with the first sheet that code writes.
 - **Build stamp:** `build_commit`, `build_time` and `build_configuration`, on
   the reference sheet.
 - The build creates every name of the table. Before an operation, the
@@ -116,20 +151,20 @@ State the layout every sheet shares. A common default:
 
 ## Areas
 
-| Area | Sheet | Kind | Written by | Holds |
-| --- | --- | --- | --- | --- |
-| *Illustrative:* `Inputs_Settings` | `shInputs` | Input | Users, in the value column | Below a header row at `B4:E4`, one row per setting in columns B to E: code, value, unit and the contract that uses it. It has one row, the reporting date, so its value cell is `C5`, the cell of `cfg_reporting_date` |
+The workbook has no area yet. The first sheet that holds one lists it here,
+in a table with the columns *Area*, *Sheet*, *Kind*, *Written by* and
+*Holds*.
 
 An area is named by its table anchor, which refers to its first header cell
 only ([defined names](#defined-names)). Code that reads, writes or restores
 an area derives it from the anchor: the rows below it, with the columns of
-its header. The contract fixes each area's size, as in the table above, or
-says that its number of rows varies.
+its header. The contract fixes each area's size in its table, or says that
+its number of rows varies.
 
-- In a settings area, users type only the value column. The code, unit and
-  contract columns are labels that the template fills and keeps locked,
-  with the header row ([protection](#protection)); the label of the
-  reporting date is its code cell, `B5`.
+- In a settings area, users type only the value column. Its other columns,
+  such as the code, the unit and the contract that uses the setting, are
+  labels that the template fills and keeps locked, with the header row
+  ([protection](#protection)).
 
 - **Input** areas hold what users type: settings, parameters chosen by hand,
   and datasets the data contract places on a sheet. Each cell's type, unit
@@ -147,9 +182,9 @@ says that its number of rows varies.
 
 ## Operations
 
-| Entry point | Reads | Writes | Requires |
-| --- | --- | --- | --- |
-| *Illustrative:* `M_Run.RunCalculation` | `Inputs_Settings` and the datasets of `CALC-01` | Its result areas, findings and log | A valid reporting date |
+The workbook has no operation yet: its worksheet functions are evaluated by
+Excel and write no sheet. The first entry point is listed here, in a table
+with the columns *Entry point*, *Reads*, *Writes* and *Requires*.
 
 - Each entry point is an Excel adapter procedure that calls the facade; it
   holds no regulatory formula.
@@ -160,8 +195,10 @@ says that its number of rows varies.
 
 ## Status and staleness
 
-`Run_Status` and each `<Sheet>_Status` hold `CURRENT`, `STALE` or `FAILED`,
-with the run ID and the time of the operation that set it.
+These rules apply from the first sheet that code writes; Home is written by
+the build only. `Run_Status` and each `<Sheet>_Status` hold `CURRENT`,
+`STALE` or `FAILED`, with the run ID and the time of the operation that set
+it.
 
 | Area kind | After success | After failure |
 | --- | --- | --- |
@@ -207,7 +244,8 @@ configuration but `development`. It builds the sheets in one of two ways:
   sheet holds only the stamp, a title on the reference sheet and, to the
   left of each stamp and setting cell, its label; a table anchor has none. Formats, data validation and print areas are not
   built on this path.
-- **From the template**, once `src/workbook/Template.xlsx` exists. The build
+- **From the template**, the path this workbook takes, since
+  `src/workbook/Template.xlsx` exists. The build
   starts from a copy of it, so the formats, data validation, print areas and
   protection are the template's. The template holds the sheets of the table
   other than `Test`, in order, and defines their names on the same cells; the
@@ -218,32 +256,45 @@ configuration but `development`. It builds the sheets in one of two ways:
   table. Every other part of the template is copied unchanged, and two builds
   of the same commit and working tree stay byte-identical.
 
-Save the template in Excel as a macro-free `.xlsx` workbook without personal
-document metadata: **Repository integrity** fails on macros, or on an
-author, last editor, company or manager in it. The
+`tools/gen_workbook_template.py` generates the template from its source: the
+sheets and names of `tools/devbuild/workbook.json`, laid out as
+[Layout](#layout) and [Navigation](#navigation) say, with the text of Home
+held in the script. It writes no VBA project, no document properties and
+no external link, and the same source always gives the same bytes. Never
+edit the template in Excel: change the script or `workbook.json`, then run
+
+```sh
+python tools/gen_workbook_template.py --write
+```
+
+**Repository integrity** runs it with `--check`, which fails when the
+template differs from what the script generates. It also fails on macros
+in the template, or on an author, last editor, company or manager in it. The
 [installation guide](../../INSTALLATION.md#building-a-workbook-from-source)
 says how to run the build.
 
 ## Protection
 
 The template carries the protection of each sheet and the lock flag of each
-cell. Record them in the protection matrix,
-`docs/methodology/workbook-protection.json`, added with the template. For
-the illustrative sheets above, it could read:
+cell. The protection matrix, `docs/methodology/workbook-protection.json`,
+records them. For Home it reads:
 
 ```json
 {
   "schema_version": 1,
   "sheets": {
-    "shReadme": {"protection": {}, "output": ["A1:B5"]},
-    "shInputs": {
-      "protection": {"sheet": true, "objects": true, "scenarios": true},
-      "input": ["C5"],
-      "output": ["A1:B5", "C4:E4", "D5:E5"]
+    "shHome": {
+      "protection": {},
+      "output": ["A1:E20"]
     }
   }
 }
 ```
+
+No sheet is protected unless a decision below says so, so Home is not
+protected. Its cells keep Excel's default lock flag, which takes effect only
+if a later decision protects the sheet; the matrix still lists them as
+output, so that such a decision cannot leave a label or the stamp unlocked.
 
 - **Sheets:** one entry for each sheet of the template, by code name. `Test`
   sheets are not in the template and have no entry.
@@ -275,4 +326,7 @@ compares neither the password nor protection that VBA sets at run time with
 
 | Date | Decision | Reason | Issue |
 | --- | --- | --- | --- |
-| *Illustrative* | Whether a sheet is hidden | Why | Link |
+| 2026-11-27 | The workbook has one sheet, Home, of role Reference; no sheet is hidden | The 22 worksheet functions write no sheet, so there is nothing to input, store or show beyond what the workbook is and how it was built | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
+| 2026-11-27 | `tools/gen_workbook_template.py` generates `src/workbook/Template.xlsx`; it is never saved from Excel | The same source always gives the same bytes, a change is reviewed as a diff of the script, and no personal document metadata can enter it | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
+| 2026-11-27 | Navigation is by cell hyperlinks: Home lists every sheet, and every other sheet links back to Home from `D1` | Cell links work on a protected sheet and need no shape, macro or drawing part, and the template's source states every link | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
+| 2026-11-27 | No sheet is protected unless a decision here says so | Protection is a choice I make per sheet, with its reason; by default users may type anywhere, including the functions on Home | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
