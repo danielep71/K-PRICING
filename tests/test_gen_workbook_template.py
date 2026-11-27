@@ -89,7 +89,7 @@ class CommittedTemplateTest(unittest.TestCase):
         matrix = json.loads((ROOT / check_workbook_protection.MATRIX).read_text(
             encoding="utf-8"))
         last = gen_workbook_template.last_row(LAYOUT)
-        self.assertEqual(matrix["sheets"]["shHome"]["output"], [f"A1:C{last}"])
+        self.assertEqual(matrix["sheets"]["shHome"]["output"], [f"A1:E{last}"])
         self.assertNotIn("input", matrix["sheets"]["shHome"])
         self.assertEqual(matrix["sheets"]["shHome"]["protection"],
                          gen_workbook_template.PROTECTION)
@@ -113,7 +113,9 @@ class HomeLayoutTest(unittest.TestCase):
     def test_the_title_band_names_the_workbook_and_the_sheet(self) -> None:
         self.assertEqual(self.text("B1"), "K-PRICING")
         self.assertEqual(self.text("B2"), "Home")
-        self.assertTrue(self.text("B3"))
+        self.assertTrue(self.text("C3"))
+        self.assertEqual([self.rows[number].height for number in (1, 2, 3)],
+                         list(gen_workbook_template.BAND_HEIGHTS))
         sheet = parts()["xl/worksheets/sheet1.xml"].decode()
         self.assertIn('<pane ySplit="3" topLeftCell="A4"', sheet)
 
@@ -121,16 +123,16 @@ class HomeLayoutTest(unittest.TestCase):
         for item in LAYOUT.names:
             row, column = build_workbook.cell_position(item.cell)
             with self.subTest(name=item.name):
-                self.assertEqual(self.text(f"B{row}"), item.label)
+                self.assertEqual(self.text(f"C{row}"), item.label)
                 self.assertEqual(self.text(item.cell), "")
-                self.assertEqual(column, 3)
+                self.assertEqual(column, 4)
 
     def test_the_sheets_section_lists_every_sheet(self) -> None:
         sheets = [sheet.tab for sheet in gen_workbook_template.template_sheets(LAYOUT)]
         start = next(number for number, row in self.rows.items()
-                     if row.cells[0].text == "Sheets")
+                     if row.cells and row.cells[0].text == "Sheets")
         listed = [self.rows[number].cells[0].text for number in sorted(self.rows)
-                  if number > start]
+                  if number > start and self.rows[number].cells]
         self.assertEqual(listed, sheets)
 
     def test_another_sheet_gets_a_link_from_home(self) -> None:
@@ -142,7 +144,7 @@ class HomeLayoutTest(unittest.TestCase):
             xml = gen_workbook_template.sheet_xml(rows).decode()
         last = rows[-1].cells[0]
         self.assertEqual((last.text, last.link), ("Dates Demo", "'Dates Demo'!A1"))
-        self.assertIn(f'<hyperlink ref="B{rows[-1].number}" location="\'Dates Demo\'!A1" '
+        self.assertIn(f'<hyperlink ref="C{rows[-1].number}" location="\'Dates Demo\'!A1" '
                       'display="Dates Demo"/>', xml)
         home = rows[-2].cells[0]
         self.assertEqual((home.text, home.link), ("Home", ""))
@@ -190,10 +192,10 @@ class RefusalTest(unittest.TestCase):
                             for problem in gen_workbook_template.layout_problems(layout)))
 
     def test_a_stamp_name_off_its_row_is_refused(self) -> None:
-        names = tuple(dataclasses.replace(item, cell="C9") if item.name == "build_time"
+        names = tuple(dataclasses.replace(item, cell="D9") if item.name == "build_time"
                       else item for item in LAYOUT.names)
         layout = dataclasses.replace(LAYOUT, names=names)
-        with self.assertRaisesRegex(build_workbook.BuildError, "consecutive cells of column C"):
+        with self.assertRaisesRegex(build_workbook.BuildError, "consecutive cells of column D"):
             gen_workbook_template.home_rows(layout)
 
     def test_a_configuration_the_script_cannot_lay_out_fails_the_check(self) -> None:

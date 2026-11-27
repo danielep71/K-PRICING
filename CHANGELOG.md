@@ -206,8 +206,9 @@ Use only the categories an entry needs.
 - The workbook's layout. The [workbook contract](docs/methodology/WORKBOOK_CONTRACT.md)
   now states its one sheet, **Home**: the build stamp, what the workbook
   provides and does not cover, how to use it, and a link to every sheet. It
-  also states the title band, the navigation by cell links, the three stamp
-  names and the protection, without a password. `src/workbook/Template.xlsx`
+  also states the columns, the title band and the bordered sections, the
+  navigation by cell links, the three stamp names and the protection,
+  without a password. `src/workbook/Template.xlsx`
   is generated from source by `tools/gen_workbook_template.py`, with no VBA
   project and no document properties; the build starts from it, and
   **Repository integrity** fails when it differs from its source

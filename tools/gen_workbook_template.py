@@ -5,11 +5,15 @@ The template holds the sheets of tools/devbuild/workbook.json other than the
 Test sheets, laid out as docs/methodology/WORKBOOK_CONTRACT.md describes, and
 defines their names on the same cells. Its one sheet is Home:
 
-- rows 1 to 3 are the title band: the workbook name, the sheet title and a
-  subtitle; they and nothing else are frozen;
-- below them, sections of labels in column B and text in column C: the build
-  stamp, whose cells the build fills, what the workbook provides, how to use
-  it, and its sheets, each other sheet with a link to its cell A1;
+- columns A and B are narrow margins, C holds labels, D text, E is a margin
+  and the columns after it are hidden;
+- rows 1 to 3 are the title band: the workbook name on a black band, the
+  sheet title on a blue band, and a subtitle; they are frozen;
+- below them, sections: a title, then a bordered table of labels and text,
+  with a short empty row before the next section.
+  They give the build stamp, whose cells the build fills, what the workbook
+  provides, how to use it, and its sheets, each other sheet with a link to
+  its cell A1;
 - every cell is locked and the sheet is protected without a password, as
   docs/methodology/workbook-protection.json records.
 
@@ -28,7 +32,6 @@ Standard library only.
 from __future__ import annotations
 
 import argparse
-import math
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -48,21 +51,26 @@ HEADER = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'
 WORKBOOK_NAME = "K-PRICING"
 SOURCE = "https://github.com/danielep71/K-PRICING"
 FONT = "Aptos"
-# Characters of 10-point text that one line of column C holds, to size the
-# height of a wrapped row: Excel does not fit a row to its text on opening.
-LINE_CHARACTERS = 92
-LINE_HEIGHT = 13.5
 FROZEN_ROWS = 3
-# Column widths, in characters: A a gutter, B the labels, C the text.
-WIDTHS = (("A", 2.7), ("B", 26.0), ("C", 85.0))
+# Heights in points: the title band, rows 1 to 3; a section title; a table
+# row; the empty row after a table. Rows that hold nothing take the default.
+BAND_HEIGHTS = (24.0, 26.1, 30.0)
+SECTION_HEIGHT, TABLE_HEIGHT, GAP_HEIGHT = 30.0, 20.1, 9.95
+# Column widths, in characters: A and B margins, C labels, D text, E a margin;
+# the columns after E are hidden.
+WIDTHS = (4.625, 4.625, 26.0, 185.375, 4.625)
 # The protection of every sheet: on, without a password. It guards against an
 # accidental edit, not against a user who means to change the sheet.
 PROTECTION = {"sheet": True, "objects": True, "scenarios": True}
 
-# Cell formats, as indexes into cellXfs: every one is locked.
-(NORMAL, BAND, WORDMARK, TITLE_BAND, SHEET_TITLE, SUBTITLE, SECTION, LABEL, TEXT,
- LINK) = range(10)
-TITLE_FILL, BAND_FILL = "1F3864", "265A99"
+BLACK, WHITE, GOLD, BLUE, NAVY, GREY, LINK_BLUE = ("000000", "FFFFFF", "FFC000", "265A99",
+                                                   "1F3864", "595959", "0563C1")
+# Cell formats, as indexes into cellXfs; every one is locked. A table cell's
+# format is TABLE + 4 * kind + position (TABLE_KINDS, POSITIONS).
+(NORMAL, BLUE_BAND, SUBTITLE, CENTERED, SECTION, WORDMARK, SHEET_TITLE,
+ TABLE) = range(8)
+TABLE_KINDS = ("label", "text", "link")
+POSITIONS = ("first", "middle", "last", "only")
 
 
 @dataclass(frozen=True)
@@ -109,56 +117,57 @@ ABOUT: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
 )
 
 
-def text_height(text: str) -> float | None:
-    """The height of a row whose wrapped text takes more than one line."""
-    lines = math.ceil(len(text) / LINE_CHARACTERS)
-    return None if lines <= 1 else round(lines * LINE_HEIGHT + 3, 2)
+def table_style(kind: str, index: int, count: int) -> int:
+    """The format of a table cell: its kind, and its row's place in the table."""
+    position = "only" if count == 1 else "first" if index == 0 else \
+        "last" if index == count - 1 else "middle"
+    return TABLE + 4 * TABLE_KINDS.index(kind) + POSITIONS.index(position)
 
 
-def section(number: int, title: str) -> Row:
-    return Row(number, (Cell("B", title, SECTION),), 21.0)
-
-
-def entry(number: int, label: str, text: str, style: int = TEXT, link: str = "") -> Row:
-    return Row(number, (Cell("B", label, LINK if link else LABEL, link),
-                        Cell("C", text, style)), text_height(text))
+def section(number: int, title: str, entries: Sequence[tuple[str, str, str]]) -> list[Row]:
+    """A section from row ``number``: its title, then a table of (label, text, link)
+    entries, one row each."""
+    rows = [Row(number, (Cell("C", title, SECTION),), SECTION_HEIGHT)]
+    for index, (label, text, link) in enumerate(entries):
+        rows.append(Row(number + 1 + index, (
+            Cell("C", label, table_style("link" if link else "label", index, len(entries)),
+                 link),
+            Cell("D", text, table_style("text", index, len(entries)))), TABLE_HEIGHT))
+    return rows
 
 
 def home_rows(layout: build_workbook.Layout) -> list[Row]:
     """The rows of the Home sheet, from the layout's stamp names and sheets."""
-    rows = [Row(1, (Cell("A", "", TITLE_BAND), Cell("B", WORKBOOK_NAME, WORDMARK),
-                    Cell("C", "", TITLE_BAND)), 30.0),
-            Row(2, (Cell("A", "", BAND), Cell("B", "Home", SHEET_TITLE),
-                    Cell("C", "", BAND)), 22.0),
-            Row(3, (Cell("B", "Start here: what this workbook provides, how to use it and a "
-                              "link to every sheet.", SUBTITLE),), 18.0),
-            section(5, "This workbook")]
     stamp = sorted((build_workbook.cell_position(item.cell)[0], item) for item in layout.names
                    if item.sheet == "shHome" and item.name in layout.stamp.values())
-    number = 6
-    for row, item in stamp:
-        if row != number or item.cell != f"C{row}":
+    for offset, (row, item) in enumerate(stamp):
+        if row != 5 + offset or item.cell != f"D{row}":
             raise build_workbook.BuildError(
                 f"{build_workbook.CONFIG}: the stamp names must be on consecutive cells of "
-                f"column C of shHome from C6, below the section This workbook; "
+                f"column D of shHome from D5, below the section This workbook; "
                 f"{item.name} is on {item.cell}")
-        # The build writes the value; the template keeps the cell and its style.
-        rows.append(Row(row, (Cell("B", item.label, LABEL), Cell("C", "", TEXT))))
-        number += 1
-    # From here, number is the last row written; one empty row precedes a section.
-    number -= 1
-    for title, entries in ABOUT:
-        number += 2
-        rows.append(section(number, title))
-        for label, text in entries:
+    sections = [
+        # The build writes each stamp value; the template keeps the cell and its style.
+        ("This workbook", [(item.label, "", "") for _, item in stamp]),
+        *[(title, [(label, text, "") for label, text in entries]) for title, entries in ABOUT],
+        ("Sheets", [(sheet.tab, SHEET_TEXT[sheet.code_name],
+                     "" if sheet.code_name == "shHome" else f"{quoted(sheet.tab)}!A1")
+                    for sheet in template_sheets(layout)]),
+    ]
+    rows = [Row(1, (Cell("B", WORKBOOK_NAME, WORDMARK), Cell("C", "", WORDMARK),
+                    Cell("D", "", WORDMARK)), BAND_HEIGHTS[0]),
+            Row(2, (Cell("B", "Home", SHEET_TITLE), Cell("C", "", BLUE_BAND),
+                    Cell("D", "", SHEET_TITLE)), BAND_HEIGHTS[1]),
+            Row(3, (Cell("C", "Start here: what this workbook provides, how to use it and a "
+                              "link to every sheet.", SUBTITLE),), BAND_HEIGHTS[2])]
+    number = 4
+    for index, (title, entries) in enumerate(sections):
+        if index:
+            # A short empty row separates a table from the next section.
+            rows.append(Row(number, (), GAP_HEIGHT))
             number += 1
-            rows.append(entry(number, label, text))
-    number += 2
-    rows.append(section(number, "Sheets"))
-    for sheet in template_sheets(layout):
-        number += 1
-        link = "" if sheet.code_name == "shHome" else f"{quoted(sheet.tab)}!A1"
-        rows.append(entry(number, sheet.tab, SHEET_TEXT[sheet.code_name], link=link))
+        rows += section(number, title, entries)
+        number = rows[-1].number + 1
     return rows
 
 
@@ -242,36 +251,52 @@ def styles() -> bytes:
         return (f'<font>{attributes}<sz val="{size}"/><color rgb="FF{rgb}"/>'
                 f'<name val="{FONT}"/><family val="2"/></font>')
 
-    fonts = (font("", 11, "000000"),        # 0 body
-             font("<b/>", 16, "FFFFFF"),    # 1 wordmark
-             font("<b/>", 12, "FFFFFF"),    # 2 sheet title
-             font("<i/>", 10, "595959"),    # 3 subtitle
-             font("<b/>", 12, TITLE_FILL),  # 4 section
-             font("<b/>", 10, "000000"),    # 5 label
-             font("", 10, "000000"),        # 6 text
-             font("<u/>", 10, "0563C1"))    # 7 link
+    def line(side: str, style: str) -> str:
+        return f'<{side} style="{style}"><color auto="1"/></{side}>'
+
+    fonts = (font("", 11, BLACK),         # 0 body
+             font("<i/>", 10, GREY),      # 1 subtitle
+             font("<b/>", 12, NAVY),      # 2 section
+             font("", 14, GOLD),          # 3 wordmark
+             font("<b/>", 18, WHITE),     # 4 sheet title
+             font("<b/>", 10, BLACK),     # 5 label
+             font("", 9, BLACK),          # 6 text
+             font("<u/>", 10, LINK_BLUE))  # 7 link
     fills = ('<fill><patternFill patternType="none"/></fill>'
              '<fill><patternFill patternType="gray125"/></fill>'
              + "".join(f'<fill><patternFill patternType="solid"><fgColor rgb="FF{rgb}"/>'
-                       '<bgColor indexed="64"/></patternFill></fill>'
-                       for rgb in (TITLE_FILL, BAND_FILL)))
-    middle = '<alignment vertical="center"/>'
-    top = '<alignment vertical="top" wrapText="1"/>'
-    # (font, fill, alignment) of each cell format, in the order of the constants.
-    formats = ((0, 0, ""), (0, 3, middle), (1, 2, middle), (0, 2, middle), (2, 3, middle),
-               (3, 0, middle), (4, 0, '<alignment vertical="bottom"/>'), (5, 0, top),
-               (6, 0, top), (7, 0, top))
+                       '<bgColor indexed="64"/></patternFill></fill>' for rgb in (BLUE, BLACK)))
+    # A table is a box of thin lines, with dashed lines between its rows and
+    # between its two columns.
+    borders = ['<border><left/><right/><top/><bottom/><diagonal/></border>']
+    for position in POSITIONS:
+        top = "thin" if position in ("first", "only") else "dashed"
+        bottom = "thin" if position in ("last", "only") else "dashed"
+        for left, right in (("thin", "dashed"), ("dashed", "thin")):
+            borders.append(f"<border>{line('left', left)}{line('right', right)}"
+                           f"{line('top', top)}{line('bottom', bottom)}<diagonal/></border>")
+    center = '<alignment vertical="center"/>'
+    banded = '<alignment horizontal="left" vertical="center"/>'
+    wrapped = '<alignment vertical="center" wrapText="1"/>'
+    # (font, fill, border, alignment) of each cell format, in the order of the constants.
+    formats = [(0, 0, 0, ""), (0, 2, 0, center), (1, 0, 0, center), (0, 0, 0, center),
+               (2, 0, 0, center), (3, 3, 0, banded), (4, 2, 0, banded)]
+    for kind in TABLE_KINDS:
+        font_id, column = {"label": (5, 0), "text": (6, 1), "link": (7, 0)}[kind]
+        formats += [(font_id, 0, 1 + 2 * index + column, wrapped)
+                    for index in range(len(POSITIONS))]
     cells = ""
-    for font_id, fill, alignment in formats:
-        flags = (' applyFont="1"' if font_id else "") + (' applyFill="1"' if fill else "")
+    for font_id, fill, border, alignment in formats:
+        flags = (' applyFont="1"' if font_id else "") + (' applyFill="1"' if fill else "") + \
+            (' applyBorder="1"' if border else "")
         tail = f' applyAlignment="1">{alignment}</xf>' if alignment else "/>"
-        cells += (f'<xf numFmtId="0" fontId="{font_id}" fillId="{fill}" borderId="0" xfId="0"'
-                  f"{flags}{tail}")
+        cells += (f'<xf numFmtId="0" fontId="{font_id}" fillId="{fill}" borderId="{border}" '
+                  f'xfId="0"{flags}{tail}')
     return xml(f'<styleSheet xmlns="{MAIN}">'
                f'<fonts count="{len(fonts)}">{"".join(fonts)}</fonts>'
                f'<fills count="4">{fills}</fills>'
-               '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border>'
-               '</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" '
+               f'<borders count="{len(borders)}">{"".join(borders)}</borders>'
+               '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" '
                f'borderId="0"/></cellStyleXfs><cellXfs count="{len(formats)}">{cells}</cellXfs>'
                '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/>'
                "</cellStyles></styleSheet>")
@@ -293,17 +318,23 @@ def sheet_xml(rows: Sequence[Row]) -> bytes:
                              f"display={quoteattr(cell.text)}/>")
         height = f' ht="{row.height:g}" customHeight="1"' if row.height else ""
         body.append(f'<row r="{row.number}"{height}>{cells}</row>')
-    columns = "".join(f'<col min="{index}" max="{index}" width="{width:g}" customWidth="1"/>'
-                      for index, (_, width) in enumerate(WIDTHS, 1))
+    # Every column takes the centred format; A and B share one element, as Excel writes it.
+    columns = (f'<col min="1" max="2" width="{WIDTHS[0]:g}" style="{CENTERED}" customWidth="1"/>'
+               + "".join(f'<col min="{index}" max="{index}" width="{width:g}" '
+                         f'style="{CENTERED}" customWidth="1"/>'
+                         for index, width in enumerate(WIDTHS[2:], 3))
+               + f'<col min="{len(WIDTHS) + 1}" max="16384" width="9" style="{CENTERED}" '
+               'hidden="1"/>')
     protection = "".join(f' {name}="1"' for name, value in PROTECTION.items() if value)
     hyperlinks = f"<hyperlinks>{''.join(links)}</hyperlinks>" if links else ""
     return xml(
         f'<worksheet xmlns="{MAIN}" xmlns:r="{RELATIONSHIPS}">'
-        '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView showGridLines="0" tabSelected="1" workbookViewId="0">'
+        '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>'
+        '<sheetViews><sheetView showGridLines="0" tabSelected="1" workbookViewId="0">'
         f'<pane ySplit="{FROZEN_ROWS}" topLeftCell="A{FROZEN_ROWS + 1}" activePane="bottomLeft" '
-        'state="frozen"/><selection pane="bottomLeft" activeCell="B5" sqref="B5"/>'
-        '</sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>'
-        f"<cols>{columns}</cols><sheetData>{''.join(body)}</sheetData>"
+        'state="frozen"/><selection pane="bottomLeft" activeCell="C4" sqref="C4"/>'
+        '</sheetView></sheetViews><sheetFormatPr defaultColWidth="0" defaultRowHeight="15"/>'
+        f'<cols>{columns}</cols><sheetData>{"".join(body)}</sheetData>'
         f"<sheetProtection{protection}/>{hyperlinks}"
         '<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" '
         'footer="0.3"/><pageSetup orientation="landscape" fitToHeight="0"/></worksheet>')

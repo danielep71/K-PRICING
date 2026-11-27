@@ -6,9 +6,9 @@
     {"tab": "Home", "code_name": "shHome", "role": "Reference"}
   ],
   "names": [
-    {"name": "build_commit", "sheet": "shHome", "cell": "C6", "label": "Commit"},
-    {"name": "build_time", "sheet": "shHome", "cell": "C7", "label": "Commit time"},
-    {"name": "build_configuration", "sheet": "shHome", "cell": "C8", "label": "Configuration"}
+    {"name": "build_commit", "sheet": "shHome", "cell": "D5", "label": "Commit"},
+    {"name": "build_time", "sheet": "shHome", "cell": "D6", "label": "Commit time"},
+    {"name": "build_configuration", "sheet": "shHome", "cell": "D7", "label": "Configuration"}
   ],
   "stamp": {
     "commit": "build_commit",

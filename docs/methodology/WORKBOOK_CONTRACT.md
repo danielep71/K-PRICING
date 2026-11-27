@@ -85,15 +85,21 @@ the table, and the [navigation](#navigation) and the template follow it.
 Every sheet shares this layout, except a `Test` sheet, which the build
 appends blank to a development workbook:
 
-- **Title band:** rows 1 to 3, frozen, and nothing else frozen. Row 1 is the
-  navy band (`#1F3864`) with the workbook name, `K-PRICING`, in `B1`; row 2
-  the blue band (`#265A99`) with the sheet's tab name in `B2`; row 3 a grey
-  italic subtitle in `B3` that says what the sheet is for. The bands span
-  columns A to C.
-- **Columns:** A is a narrow gutter, B holds labels and section titles, C
-  holds text and values. Gridlines are off.
-- **Sections:** a section title in bold navy in column B, its entries on the
-  rows below, and one empty row before the next section.
+- **Columns:** A and B are margins 4.625 wide, C holds labels and section
+  titles (26), D text and values (185.375), E is a margin (4.625), and the
+  columns after E are hidden. Every column is centred vertically, and
+  gridlines are off.
+- **Title band:** rows 1 to 3, frozen, and nothing else frozen. Row 1, 24
+  points high, is the black band of `B1:D1`, with the workbook name,
+  `K-PRICING`, in gold in `B1`. Row 2, 26.1 points, is the blue band
+  (`#265A99`) of `B2:D2`, with the sheet's tab name in bold white in `B2`.
+  Row 3, 30 points, holds a grey italic subtitle in `C3` that says what the
+  sheet is for.
+- **Sections:** from row 4, each section is a title row, 30 points high, in
+  bold navy (`#1F3864`) in column C, then a table of one row per entry, 20.1
+  points high: the label in bold in C, the text in D, wrapped. A thin line
+  boxes the table, and dashed lines separate its rows and its two columns.
+  A row 9.95 points high separates a table from the next section.
 - **Print:** landscape, one page wide.
 - Every sheet that code writes has a status line, named `<Sheet>_Status`.
 - A table's first header cell carries the name `<Sheet>_<Table>`, and its data
@@ -107,10 +113,10 @@ appends blank to a development workbook:
 ## Navigation
 
 - **Home lists every sheet.** Its *Sheets* section has one entry per sheet of
-  the [table](#sheets), in tab order: the tab name in column B and what the
-  sheet holds in column C. The tab name of each sheet other than Home is a
+  the [table](#sheets), in tab order: the tab name in column C and what the
+  sheet holds in column D. The tab name of each sheet other than Home is a
   link to that sheet's cell `A1`.
-- **Every other sheet links back.** Cell `C1`, in the navy band, holds the
+- **Every other sheet links back.** Cell `D1`, in the black band, holds the
   link `Home` to Home's cell `A1`. A `Test` sheet is exempt, as in
   [Layout](#layout).
 - Links are cell hyperlinks to a location in this workbook: they work while
@@ -120,12 +126,12 @@ appends blank to a development workbook:
 
 | Name | Sheet | Refers to | Written by |
 | --- | --- | --- | --- |
-| `build_commit` | `shHome` | `C6`: the commit the workbook was built from | The build |
-| `build_time` | `shHome` | `C7`: the commit's committer time | The build |
-| `build_configuration` | `shHome` | `C8`: `production` or `development` | The build |
+| `build_commit` | `shHome` | `D5`: the commit the workbook was built from | The build |
+| `build_time` | `shHome` | `D6`: the commit's committer time | The build |
+| `build_configuration` | `shHome` | `D7`: `production` or `development` | The build |
 
 The three names sit in Home's *This workbook* section, each with its label
-in column B: `Commit`, `Commit time` and `Configuration`.
+in column C: `Commit`, `Commit time` and `Configuration`.
 
 - Every name is workbook-scoped and visible, and refers to one cell of this
   workbook by an absolute reference. External and relative references are
@@ -279,7 +285,7 @@ records them. For Home it reads:
   "sheets": {
     "shHome": {
       "protection": {"sheet": true, "objects": true, "scenarios": true},
-      "output": ["A1:C21"]
+      "output": ["A1:E20"]
     }
   }
 }
@@ -323,5 +329,5 @@ compares neither the password nor protection that VBA sets at run time with
 | --- | --- | --- | --- |
 | 2026-11-27 | The workbook has one sheet, Home, of role Reference; no sheet is hidden | The 22 worksheet functions write no sheet, so there is nothing to input, store or show beyond what the workbook is and how it was built | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
 | 2026-11-27 | `tools/gen_workbook_template.py` generates `src/workbook/Template.xlsx`; it is never saved from Excel | The same source always gives the same bytes, a change is reviewed as a diff of the script, and no personal document metadata can enter it | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
-| 2026-11-27 | Navigation is by cell hyperlinks: Home lists every sheet, and every other sheet links back to Home from `C1` | Cell links work on a protected sheet and need no shape, macro or drawing part, and the template's source states every link | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
+| 2026-11-27 | Navigation is by cell hyperlinks: Home lists every sheet, and every other sheet links back to Home from `D1` | Cell links work on a protected sheet and need no shape, macro or drawing part, and the template's source states every link | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
 | 2026-11-27 | Sheets are protected without a password | Protection keeps a user from overwriting a label or the stamp by accident; a password would only lock out the user, and the matrix never holds one | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
