@@ -718,7 +718,8 @@ class WorkflowControlTests(unittest.TestCase):
         self.assertNotEqual(job['name'], REQUIRED_CHECK)
         self.assertNotIn('if', job)
         self.assertNotIn('permissions', job)
-        self.assertEqual(job['timeout-minutes'], 5)
+        # The whole test suite runs here, as in Repository integrity, which also allows 10.
+        self.assertEqual(job['timeout-minutes'], 10)
         self.assertEqual(job['steps'][-1]['run'], 'python -m unittest discover -s tests')
         concurrency = document['concurrency']
         self.assertIn('github.event.pull_request.number', concurrency['group'])
