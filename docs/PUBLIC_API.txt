@@ -178,6 +178,8 @@ M_Actions	Function	FunctionNames
 # SIG	M_Actions	Function	FunctionNames	Public Function FunctionNames() As Variant
 M_Actions	Sub	InsertFunction
 # SIG	M_Actions	Sub	InsertFunction	Public Sub InsertFunction(ByVal Chosen As String)
+M_Actions	Function	InsertRefusal
+# SIG	M_Actions	Function	InsertRefusal	Public Function InsertRefusal(ByVal Chosen As String, ByVal Target As Range) As String
 M_Actions	Sub	RegisterHelp
 # SIG	M_Actions	Sub	RegisterHelp	Public Sub RegisterHelp()
 M_Actions	Sub	RunAction

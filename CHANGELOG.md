@@ -214,7 +214,8 @@ Use only the categories an entry needs.
   **Repository integrity** fails when the Ribbon names a callback that
   `M_Ribbon` does not declare with Office's signature, or a tag that is no
   action of `M_Actions` (`ribbon`). A new project suite, `ui`, checks the
-  menus' list of functions, their actions, the Ribbon's menu and the
+  menus' list of functions, their actions, the cells where a function is not
+  inserted (a cell of a table among them), the Ribbon's menu and the
   toolbar's lifecycle; it is in the evidence policy and has not run in Excel.
   No button has been clicked in Excel yet; the certification run does that
   ([#17](https://github.com/danielep71/K-PRICING/issues/17)).

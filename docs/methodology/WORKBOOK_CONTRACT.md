@@ -191,7 +191,7 @@ action text that each control stores.
 
 | Entry point | Reads | Writes | Requires |
 | --- | --- | --- | --- |
-| `M_Actions.InsertFunction` | The active cell | One formula in the active cell, `=<function>()`, through the Function Arguments dialog; a cancelled dialog gives the cell back its content | A cell selected, not locked on a protected sheet |
+| `M_Actions.InsertFunction` | The active cell | One formula in the active cell, `=<function>()`, through the Function Arguments dialog; a cancelled dialog gives the cell back its content | A cell selected, outside a table, where Excel would copy the formula to the whole column, and not locked on a protected sheet |
 | `M_Actions.RegisterHelp` | Nothing | The category, description and argument descriptions that Excel keeps for the 22 functions until it closes | Nothing |
 | `M_Actions.ClearHelp` | Nothing | The same options, returned to the User Defined category with no description | Nothing |
 | `M_Actions.RunTests` | The project suites | Scratch workbooks that each suite closes, and each suite's log in the Immediate window | A development build |

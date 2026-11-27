@@ -34,6 +34,7 @@ Option Private Module
 '     - RunAction        run the action an action text names
 '   Menu content, with no message and no change to Excel:
 '     - FunctionNames    the 22 function names, in registration order
+'     - InsertRefusal    why InsertFunction would refuse a function and a cell
 '     - ActionKnown      whether an action text names an action this build can run
 '     - TestsAvailable   whether the test modules are part of this build
 '
@@ -123,8 +124,9 @@ Public Sub InsertFunction(ByVal Chosen As String)
 '   Nothing
 '
 ' BEHAVIOR
-'   Refuses a name outside the registration list, a selection that is not a cell and a locked
-'   cell of a protected sheet before it writes anything. Records the cell's content, writes
+'   Refuses, before it writes anything, what InsertRefusal refuses: a name outside the
+'   registration list, a selection that is not a cell, a cell of a table and a locked cell of a
+'   protected sheet. Records the cell's content, writes
 '   "=<name>()" and, for a function with arguments, opens the dialog; a cancelled dialog
 '   leaves the formula as written, and the cell gets its content back. The formula is
 '   written through Formula2 where Excel has it, so that a result spills. A cell of another
@@ -136,8 +138,8 @@ Public Sub InsertFunction(ByVal Chosen As String)
 '   whether that restoration succeeded.
 '
 ' DEPENDENCIES
-'   FunctionIndex, M_Register, SaveCell, WriteFormula, TryRestoreCell, FormulaQualifier,
-'   Notify; Range.FunctionWizard
+'   InsertRefusal, FunctionIndex, M_Register, SaveCell, WriteFormula, TryRestoreCell,
+'   FormulaQualifier, Notify; Range.FunctionWizard
 '
 ' NOTES
 '   None
@@ -151,6 +153,7 @@ Public Sub InsertFunction(ByVal Chosen As String)
 '------------------------------------------------------------------------------
     Const PROC_NAME     As String = "M_Actions.InsertFunction"
 
+    Dim Refusal         As String       'Why the action cannot run, or an empty text
     Dim Index           As Long         'Position of the function in the registration list
     Dim Target          As Range        'The cell that receives the formula
     Dim Saved           As CellContent  'What the cell held on entry
@@ -170,20 +173,13 @@ Public Sub InsertFunction(ByVal Chosen As String)
 ' VALIDATE INPUTS
 '------------------------------------------------------------------------------
     'Refuse before touching a cell: a wrong target must not lose content
+        If TypeName(Selection) = "Range" Then Set Target = ActiveCell
+        Refusal = InsertRefusal(Chosen, Target)
+        If VBA.Len(Refusal) > 0 Then
+            Notify Refusal, vbExclamation
+            Exit Sub
+        End If
         Index = FunctionIndex(Chosen)
-        If Index = 0 Then
-            Notify "Not a K-PRICING function: " & Chosen, vbExclamation
-            Exit Sub
-        End If
-        If TypeName(Selection) <> "Range" Then
-            Notify "Select a worksheet cell, then choose the function again.", vbExclamation
-            Exit Sub
-        End If
-        Set Target = ActiveCell
-        If Target.Worksheet.ProtectContents And Target.Locked Then
-            Notify "The active cell is locked on a protected sheet.", vbExclamation
-            Exit Sub
-        End If
 
 '------------------------------------------------------------------------------
 ' INSERT
@@ -523,6 +519,74 @@ Public Function FunctionNames() As Variant
             Names(Index - 1) = M_Register.RegisteredName(Index)
         Next Index
         FunctionNames = Names
+
+End Function
+
+Public Function InsertRefusal(ByVal Chosen As String, ByVal Target As Range) As String
+
+'
+'------------------------------------------------------------------------------
+'                    SAY WHY A FUNCTION CANNOT GO IN A CELL
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns why InsertFunction would refuse to put a function in a cell, or an empty text when
+'   it would not.
+'
+' WHY THIS EXISTS
+'   InsertFunction saves and restores one cell only, so it must refuse every target where its
+'   write could reach another cell or lose content. This shows no message, so that a test can
+'   check each refusal.
+'
+' INPUTS
+'   Chosen
+'     A function name; the case does not matter.
+'
+'   Target
+'     The cell that would receive the formula, or Nothing when the selection is not a cell.
+'
+' RETURNS
+'   String
+'     An empty text when the function may go in the cell; otherwise the message for the user.
+'
+' BEHAVIOR
+'   Refuses, in this order: a name outside the registration list; no cell; a cell of a table,
+'   where Excel would copy a formula written in an empty column to the whole column; a locked
+'   cell of a protected sheet.
+'
+' ERROR POLICY
+'   Raises what Excel raises when the cell cannot be read; InsertFunction reports it.
+'
+' DEPENDENCIES
+'   FunctionIndex; Range.ListObject, Worksheet.ProtectContents, Range.Locked
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Actions.InsertRefusal"
+
+'------------------------------------------------------------------------------
+' VALIDATE INPUTS
+'------------------------------------------------------------------------------
+    'Refuse a name, then a target, in the order the user can fix them
+        If FunctionIndex(Chosen) = 0 Then
+            InsertRefusal = "Not a K-PRICING function: " & Chosen
+        ElseIf Target Is Nothing Then
+            InsertRefusal = "Select a worksheet cell, then choose the function again."
+        ElseIf Not Target.ListObject Is Nothing Then
+            InsertRefusal = "The active cell is in a table, where Excel would copy the formula " & _
+                "to the whole column. Choose a cell outside the table."
+        ElseIf Target.Worksheet.ProtectContents And Target.Locked Then
+            InsertRefusal = "The active cell is locked on a protected sheet."
+        Else
+            InsertRefusal = vbNullString
+        End If
 
 End Function
 

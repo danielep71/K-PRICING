@@ -9,7 +9,8 @@ Option Private Module
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Tests of the menus of the workbook: the list of functions both menus show, the action
-'   texts M_Actions runs, the Functions menu of the Ribbon and the toolbar's lifecycle
+'   texts M_Actions runs, the cells InsertFunction refuses, the Functions menu of the Ribbon and
+'   the toolbar's lifecycle
 '
 ' WHY THIS EXISTS
 '   The menus run only in Excel. A menu item whose action is unknown, a Ribbon menu that does
@@ -35,8 +36,8 @@ Option Private Module
 '   TEST_Harness.ERR_TEST_DIRTY_START
 '
 ' DEPENDENCIES
-'   M_Actions, M_Ribbon, M_CommandBars, M_Register, TEST_Harness; the Excel object model and
-'   the Office CommandBars objects
+'   M_Actions, M_Ribbon, M_CommandBars, M_Register, TEST_WorksheetSupport, TEST_Harness; the
+'   Excel object model and the Office CommandBars objects
 '
 ' NOTES
 '   In a development workbook holding the modules of src/ and tests/modules/, type
@@ -52,8 +53,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "ui"            'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 4                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 25                'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 5                 'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 31                'Assertions a complete run evaluates
 
     'The Office constant of a popup, written out because the objects are late bound
     Private Const MSO_CONTROL_POPUP     As Long = 10                'msoControlPopup
@@ -79,7 +80,7 @@ Public Sub RunUiTests()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
-'   RESULT=PASS; suite=ui; operation=PASS; completeness=COMPLETE; cases=4; assertions=25;
+'   RESULT=PASS; suite=ui; operation=PASS; completeness=COMPLETE; cases=5; assertions=31;
 '   failures=0; cleanup=PASS; recovery=NONE
 '
 ' WHY THIS EXISTS
@@ -132,6 +133,7 @@ Public Sub RunUiTests()
     'Run every case in a fixed order
         CaseFunctionList
         CaseActions
+        CaseInsertRefusal
         CaseRibbonMenu
         CaseToolbar
 
@@ -402,6 +404,128 @@ Private Sub CaseActions()
 '------------------------------------------------------------------------------
 ' ERROR HANDLER
 '------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
+Private Sub CaseInsertRefusal()
+
+'
+'------------------------------------------------------------------------------
+'                   CHECK THE CELLS A FUNCTION CANNOT GO IN
+'------------------------------------------------------------------------------
+' PURPOSE
+'   InsertFunction refuses an unknown name, no cell and a cell of a table, accepts a plain
+'   cell, and writes nothing while it decides. 6 assertions.
+'
+' WHY THIS EXISTS
+'   InsertFunction restores one cell only: in an empty column of a table, Excel would copy the
+'   temporary formula to every row, and a cancelled dialog would leave them filled
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Builds a table of two rows with an empty column on a scratch workbook, asks
+'   M_Actions.InsertRefusal about its cells and a cell outside it, then closes the workbook
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case, once the scratch workbook is closed
+'
+' DEPENDENCIES
+'   M_Actions.InsertRefusal, TEST_WorksheetSupport, TEST_Harness
+'
+' NOTES
+'   InsertRefusal shows no message, so the case needs no dialog
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.CaseInsertRefusal"
+
+    Dim Sheet           As Worksheet    'The scratch sheet
+    Dim Nowhere         As Range        'No cell
+    Dim Detail          As String       'What closing the workbook could not restore
+    Dim ErrNumber       As Long         'Error of the case; 0 for none
+    Dim ErrSource       As String       'Its source
+    Dim ErrDescription  As String       'Its description
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "insert-refusal"
+    'Close the scratch workbook on every path
+        On Error GoTo Failed
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'A table of two rows whose second column is empty
+        Set Sheet = TEST_WorksheetSupport.OpenScratch(False)
+        Sheet.Range("A1").Value2 = "Date"
+        Sheet.Range("B1").Value2 = "Result"
+        Sheet.Range("A2").Value2 = 46022
+        Sheet.Range("A3").Value2 = 46053
+        Sheet.ListObjects.Add SourceType:=xlSrcRange, Source:=Sheet.Range("A1:B3"), _
+            XlListObjectHasHeaders:=xlYes
+    'A cell of the table is refused, a cell outside it is not
+        TEST_Harness.AssertTrue "table-cell", _
+            VBA.Len(M_Actions.InsertRefusal("KPR_Dates_EndOfMonth", Sheet.Range("B2"))) > 0, _
+            "a cell of an empty table column was accepted"
+        TEST_Harness.AssertEqualText "plain-cell", vbNullString, _
+            M_Actions.InsertRefusal("KPR_Dates_EndOfMonth", Sheet.Range("D5"))
+    'An unknown name and no cell are refused
+        TEST_Harness.AssertTrue "unknown-name", _
+            VBA.Len(M_Actions.InsertRefusal("KPR_Dates_NoSuch", Sheet.Range("D5"))) > 0, _
+            "an unknown function was accepted"
+        TEST_Harness.AssertTrue "no-cell", _
+            VBA.Len(M_Actions.InsertRefusal("KPR_Dates_EndOfMonth", Nowhere)) > 0, _
+            "no cell was accepted"
+    'Deciding wrote nothing
+        TEST_Harness.AssertEqualDouble "nothing-written", 4, _
+            Application.WorksheetFunction.CountA(Sheet.UsedRange)
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+CleanUp:
+    'Restore normal error handling
+        On Error GoTo 0
+    'Close the scratch workbook and restore the calculation mode
+        Detail = TEST_WorksheetSupport.CloseScratch()
+        TEST_Harness.AssertTrue "scratch-closed", VBA.Len(Detail) = 0, Detail
+    'Record the case's error, once Excel is restored
+        If ErrNumber <> 0 Then
+            Err.Number = ErrNumber
+            Err.Source = ErrSource
+            Err.Description = ErrDescription
+            TEST_Harness.RecordCaseError
+        End If
+    'Exit before the error handlers
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+Failed:
+    'Keep the case's error and close the workbook
+        ErrNumber = Err.Number
+        ErrSource = Err.Source
+        ErrDescription = Err.Description
+        Resume CleanUp
+
 CaseFailed:
     'Record the unexpected error against the case
         TEST_Harness.RecordCaseError
