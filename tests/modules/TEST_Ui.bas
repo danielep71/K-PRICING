@@ -782,7 +782,7 @@ Private Sub CaseDemoSheet()
 '   Nothing
 '
 ' BEHAVIOR
-'   Keeps the values of the inputs DEMO_INPUTS, writes the generated ones, calculates the sheet
+'   Keeps the content of the inputs DEMO_INPUTS, formulas included, writes the generated ones, calculates the sheet
 '   of the anchor DEMO_ANCHOR and reads the four counts below it: OK, Differs by design, Fail
 '   and Checks. Then writes the kept values back, on every path
 '
@@ -790,7 +790,8 @@ Private Sub CaseDemoSheet()
 '   An unexpected error is recorded against the case, once the inputs are written back
 '
 ' DEPENDENCIES
-'   The defined names DEMO_ANCHOR and DEMO_INPUTS of this workbook, RestoreInputs, TEST_Harness
+'   The defined names DEMO_ANCHOR and DEMO_INPUTS of this workbook, ReadContent,
+'   RestoreInputs, TEST_Harness
 '
 ' NOTES
 '   tests/test_gen_workbook_template.py keeps DEMO_CHECKS, DEMO_INPUTS and the generated values
@@ -809,7 +810,8 @@ Private Sub CaseDemoSheet()
     Dim Anchor          As Range        'The first header cell of the demo's checks
     Dim Names           As Variant      'The input names
     Dim Generated       As Variant      'The values the sheet is generated with
-    Dim Saved()         As Variant      'The values on entry
+    Dim Saved()         As Variant      'The content on entry: a formula or a value
+    Dim Formulas()      As Boolean      'Which of them are formulas
     Dim Kept            As Long         'How many of them were kept
     Dim Index           As Long         'Inputs cursor
     Dim Restored        As Boolean      'Every kept value was written back
@@ -834,8 +836,10 @@ Private Sub CaseDemoSheet()
         Names = VBA.Split(DEMO_INPUTS, ";")
         Generated = VBA.Array(45412, 2, 3, 1, 2, True, 4, 2, True)
         ReDim Saved(LBound(Names) To UBound(Names))
+        ReDim Formulas(LBound(Names) To UBound(Names))
         For Index = LBound(Names) To UBound(Names)
-            Saved(Index) = ThisWorkbook.Names(Names(Index)).RefersToRange.Value2
+            Formulas(Index) = ReadContent(ThisWorkbook.Names(Names(Index)).RefersToRange, _
+                Saved(Index))
             Kept = Kept + 1
         Next Index
         For Index = LBound(Names) To UBound(Names)
@@ -858,7 +862,7 @@ CleanUp:
     'Restore normal error handling
         On Error GoTo 0
     'Write the kept inputs back
-        Restored = RestoreInputs(Names, Saved, Kept)
+        Restored = RestoreInputs(Names, Saved, Formulas, Kept)
         TEST_Harness.AssertTrue "inputs-restored", Restored, "an input of the demo was not written back"
     'Record the case's error, once the inputs are back
         If ErrNumber <> 0 Then
@@ -898,41 +902,47 @@ End Sub
 Private Function RestoreInputs( _
     ByVal Names As Variant, _
     ByRef Saved() As Variant, _
+    ByRef Formulas() As Boolean, _
     ByVal Kept As Long) As Boolean
 '
 '------------------------------------------------------------------------------
 '                         WRITE THE DEMO'S INPUTS BACK
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Writes back the first Kept inputs that CaseDemoSheet kept, and says whether every one now
-'   holds its kept value.
+'   Writes back the first Kept inputs that CaseDemoSheet kept, formulas as formulas, and says
+'   whether every one now holds its kept content.
 '
 ' WHY THIS EXISTS
 '   The case changes the cells a user may have edited; it must give them back on every path,
-'   and report a failure to do so without hiding the case's own error
+'   a formula such as =TODAY() included, and report a failure to do so without hiding the
+'   case's own error
 '
 ' INPUTS
 '   Names
 '     The input names, or Empty when none was read.
 '
 '   Saved
-'     The kept values, in the order of Names; not changed.
+'     The kept content, in the order of Names: a formula's text or a value; not changed.
+'
+'   Formulas
+'     Which kept contents are formulas; not changed.
 '
 '   Kept
-'     How many values were kept, from the first.
+'     How many inputs were kept, from the first.
 '
 ' RETURNS
 '   Boolean
-'     True when every kept value is back; True when none was kept.
+'     True when every kept content is back; True when none was kept.
 '
 ' BEHAVIOR
-'   Writes each kept value, then reads it again
+'   Writes each kept content with WriteContent, then reads it again with ReadContent and
+'   compares: the formula's text, or the value and its type
 '
 ' ERROR POLICY
 '   Does not raise. A write that fails is False, and Err is cleared.
 '
 ' DEPENDENCIES
-'   The defined names of this workbook
+'   ReadContent, WriteContent; the defined names of this workbook
 '
 ' NOTES
 '   None
@@ -948,6 +958,8 @@ Private Function RestoreInputs( _
 
     Dim Index           As Long         'Inputs cursor
     Dim Cell            As Range        'An input cell
+    Dim Content         As Variant      'What the cell holds after the write
+    Dim IsFormula       As Boolean      'The cell holds a formula after the write
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -960,14 +972,17 @@ Private Function RestoreInputs( _
 '------------------------------------------------------------------------------
 ' RESTORE
 '------------------------------------------------------------------------------
-    'Write each kept value and read it again
+    'Write each kept content, then read it again and compare
         For Index = LBound(Names) To LBound(Names) + Kept - 1
             Set Cell = ThisWorkbook.Names(Names(Index)).RefersToRange
-            Cell.Value2 = Saved(Index)
-            If VBA.VarType(Cell.Value2) <> VBA.VarType(Saved(Index)) Then
+            WriteContent Cell, Saved(Index), Formulas(Index)
+            IsFormula = ReadContent(Cell, Content)
+            If IsFormula <> Formulas(Index) Then
+                RestoreInputs = False
+            ElseIf VBA.VarType(Content) <> VBA.VarType(Saved(Index)) Then
                 RestoreInputs = False
             ElseIf Not IsEmpty(Saved(Index)) And Not IsError(Saved(Index)) Then
-                If Cell.Value2 <> Saved(Index) Then RestoreInputs = False
+                If Content <> Saved(Index) Then RestoreInputs = False
             End If
         Next Index
         Set Cell = Nothing
@@ -988,6 +1003,141 @@ Refused:
         RestoreInputs = False
 
 End Function
+
+Private Function ReadContent(ByVal Cell As Range, ByRef Content As Variant) As Boolean
+
+'
+'------------------------------------------------------------------------------
+'                            READ WHAT A CELL HOLDS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Reads a cell's formula, or its value when it holds no formula, and says which it read.
+'
+' WHY THIS EXISTS
+'   An input may hold a formula, which its value alone would lose
+'
+' INPUTS
+'   Cell
+'     The cell.
+'
+'   Content (ByRef, output)
+'     Receives the formula's text, through Formula2 where Excel has it, else the Value2.
+'
+' RETURNS
+'   Boolean
+'     True when the cell holds a formula.
+'
+' BEHAVIOR
+'   Reads Formula2 late bound, so that the module compiles in an Excel without it
+'
+' ERROR POLICY
+'   Raises what Excel raises when the cell cannot be read; the caller handles it.
+'
+' DEPENDENCIES
+'   Range.HasFormula, Range.Formula and Formula2, Range.Value2
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.ReadContent"
+
+    Dim Probe           As Object       'The cell, late bound, for Formula2
+    Dim ErrNumber       As Long         'Error of the Formula2 read; 0 for none
+
+'------------------------------------------------------------------------------
+' READ
+'------------------------------------------------------------------------------
+    'A constant is read as its value
+        If Not Cell.HasFormula Then
+            Content = Cell.Value2
+            Exit Function
+        End If
+    'A formula is read through Formula2 where Excel has it, else through Formula
+        ReadContent = True
+        Set Probe = Cell
+        On Error Resume Next
+        Content = VBA.CStr(Probe.Formula2)
+        ErrNumber = Err.Number
+        On Error GoTo 0
+        Set Probe = Nothing
+        If ErrNumber <> 0 Then Content = VBA.CStr(Cell.Formula)
+
+End Function
+
+Private Sub WriteContent(ByVal Cell As Range, ByVal Content As Variant, ByVal IsFormula As Boolean)
+
+'
+'------------------------------------------------------------------------------
+'                            WRITE WHAT A CELL HELD
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Writes back what ReadContent read: a formula as a formula, a value as a value.
+'
+' WHY THIS EXISTS
+'   RestoreInputs gives an input back as the user left it
+'
+' INPUTS
+'   Cell
+'     The cell.
+'
+'   Content
+'     A formula's text or a value.
+'
+'   IsFormula
+'     True when Content is a formula.
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Writes a formula through Formula2 late bound where Excel has it, else through Formula
+'
+' ERROR POLICY
+'   Raises what Excel raises when it refuses the write; RestoreInputs handles it.
+'
+' DEPENDENCIES
+'   Range.Formula and Formula2, Range.Value2
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.WriteContent"
+
+    Dim Probe           As Object       'The cell, late bound, for Formula2
+    Dim ErrNumber       As Long         'Error of the Formula2 write; 0 for none
+
+'------------------------------------------------------------------------------
+' WRITE
+'------------------------------------------------------------------------------
+    'A value is written as a value
+        If Not IsFormula Then
+            Cell.Value2 = Content
+            Exit Sub
+        End If
+    'A formula is written through Formula2 where Excel has it, else through Formula
+        Set Probe = Cell
+        On Error Resume Next
+        Probe.Formula2 = Content
+        ErrNumber = Err.Number
+        On Error GoTo 0
+        Set Probe = Nothing
+        If ErrNumber <> 0 Then Cell.Formula = Content
+
+End Sub
 
 Private Function Occurrences(ByVal Text As String, ByVal Part As String) As Long
 
