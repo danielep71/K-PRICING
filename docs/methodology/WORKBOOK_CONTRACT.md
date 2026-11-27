@@ -33,7 +33,9 @@ These defaults hold unless a decision below replaces one:
   onto a sheet.
 - **No calculation formulas on sheets.** VBA writes every calculated value,
   through the public facade, as a value. Input areas may use data validation;
-  conditional formats and charts may read written values.
+  conditional formats and charts may read written values. The one exception
+  is **Dates Demo**, whose purpose is to show the worksheet functions as a
+  user calls them ([decisions](#decisions)).
 - **Adapters own the sheets.** Only the Excel adapters (`M_` modules) and the
   document modules in `src/workbook/` read or write a worksheet. They address
   a sheet by its code name and a range by its defined name, never by tab name
@@ -61,10 +63,12 @@ below says why it is hidden.
 | # | Tab name | Code name | Role | Code writes | Content |
 | ---: | --- | --- | --- | --- | --- |
 | 1 | `Home` | `shHome` | Reference | Build only | The build stamp, what the workbook provides and does not cover, how to use it, and a link to every sheet |
+| 2 | `Dates Demo` | `shDatesDemo` | Reference | Build only | A worked example of each of the 22 functions on inputs users may edit, beside Excel's own formulas, with a status per row and a count of the statuses |
 
 The workbook's 22 `KPR_Dates_*` worksheet functions return their results to
 the cells that call them and write no sheet, so it has no input, parameter,
-output or diagnostics sheet yet. A sheet added later takes the next row of
+output or diagnostics sheet yet; the inputs of **Dates Demo** only feed its
+own formulas. A sheet added later takes the next row of
 the table, and the [navigation](#navigation) and the template follow it.
 
 - **Code name:** `sh` plus the tab name in PascalCase, as the house style
@@ -85,7 +89,8 @@ the table, and the [navigation](#navigation) and the template follow it.
 ## Layout
 
 Every sheet shares this layout, except a `Test` sheet, which the build
-appends blank to a development workbook:
+appends blank to a development workbook, and **Dates Demo**, which has
+[its own columns](#dates-demo):
 
 - **Columns:** A and B are margins 4.625 wide, C holds labels and section
   titles (26), D text and values (185.375), E is a margin (4.625), and the
@@ -112,6 +117,35 @@ appends blank to a development workbook:
 - A table that would exceed a worksheet's 1,048,576 rows fails the operation
   before anything is written; it is never truncated.
 
+### Dates Demo
+
+**Dates Demo** keeps the title band, frozen, with its bands across `B` to
+`M`, and the link back to Home in `D1`. Below it:
+
+- **Main column, `C` to `G`:** first the inputs, one row each: the label in
+  `C`, the value in `D`, orange and the only unlocked cells, its note in `E`.
+  Each value cell carries a defined name, the argument name the formulas use.
+  Then one section per group of functions, each a band, a header and one row
+  per call: the formula as text in `C`, the same formula live in `D`, a
+  formula of Excel's own functions in `E`, the status in `F` and a note in
+  `G`. The 22 functions each appear at least once.
+- **Side panel, `I` to `M`:** the checks, which count the statuses under the
+  anchor `DatesDemo_Checks`; inputs that must give an Excel error value, each
+  with its result, the expected error value and a status; one formula
+  spilled over 30 dates with three functions spilled beside it, each with a
+  status; and the array limits.
+- **Status:** `OK` when the function's result equals the reference, or both
+  are the same error value; `DIFFERS` when they differ while the row's
+  condition holds, a documented difference by design; `NO VBA` while the
+  functions are not loaded; `FAIL` otherwise. *Fail* in the checks counts
+  every status that is neither `OK` nor `DIFFERS`, and must be 0.
+- Every formula is a dynamic-array formula, and Excel calculates the sheet
+  when it opens the workbook. The spill and the array limits need an Excel
+  with dynamic arrays; elsewhere their statuses are `FAIL`.
+- Columns: `A` and `B` 4.625, `C` 44, `D` and `E` 15.6, `F` 10, `G` 56, `H`
+  2.6, `I` to `K` 15.6, `L` 10, `M` 48, `N` 4.625; the columns after `N` are
+  hidden.
+
 ## Navigation
 
 - **Home lists every sheet.** Its *Sheets* section has one entry per sheet of
@@ -131,6 +165,16 @@ appends blank to a development workbook:
 | `build_commit` | `shHome` | `D5`: the commit the workbook was built from | The build |
 | `build_time` | `shHome` | `D6`: the commit's committer time | The build |
 | `build_configuration` | `shHome` | `D7`: `production` or `development` | The build |
+| `DateIn` | `shDatesDemo` | `D5`: the demo input DateIn | Users |
+| `nDays` | `shDatesDemo` | `D6`: the demo input nDays | Users |
+| `nWeeks` | `shDatesDemo` | `D7`: the demo input nWeeks | Users |
+| `nMonths` | `shDatesDemo` | `D8`: the demo input nMonths | Users |
+| `nYears` | `shDatesDemo` | `D9`: the demo input nYears | Users |
+| `KeepEOM` | `shDatesDemo` | `D10`: the demo input Keep EOM | Users |
+| `WdIndex` | `shDatesDemo` | `D11`: the demo input Weekday index | Users |
+| `nOccur` | `shDatesDemo` | `D12`: the demo input Occurrence n | Users |
+| `WeekBaseMonday` | `shDatesDemo` | `D13`: the demo input WeekBase Monday | Users |
+| `DatesDemo_Checks` | `shDatesDemo` | `I5`: the first header cell of the demo's checks | The build |
 
 The three names sit in Home's *This workbook* section, each with its label
 in column C: `Commit`, `Commit time` and `Configuration`.
@@ -147,6 +191,8 @@ in column C: `Commit`, `Commit time` and `Configuration`.
   here with the first sheet that code writes.
 - **Build stamp:** `build_commit`, `build_time` and `build_configuration`, on
   the reference sheet.
+- **Demo inputs:** the argument names that the formulas of **Dates Demo**
+  use, such as `DateIn`, each on its input cell.
 - The build creates every name of the table. Before an operation, the
   adapter checks that each name it uses exists and refers to the expected
   sheet; a missing or moved name stops the operation before any calculation.
@@ -274,7 +320,8 @@ configuration but `development`. It builds the sheets in one of two ways:
 `tools/gen_workbook_template.py` generates the template from its source: the
 sheets and names of `tools/devbuild/workbook.json`, laid out as
 [Layout](#layout) and [Navigation](#navigation) say, with the text of Home
-held in the script. It writes no VBA project, no document properties and
+held in the script and the content of **Dates Demo** in
+`tools/demo_dates.py`. It writes no VBA project, no document properties and
 no external link, and the same source always gives the same bytes. Never
 edit the template in Excel: change the script or `workbook.json`, then run
 
@@ -292,7 +339,7 @@ says how to run the build.
 
 The template carries the protection of each sheet and the lock flag of each
 cell. The protection matrix, `docs/methodology/workbook-protection.json`,
-records them. For Home it reads:
+records them. It reads:
 
 ```json
 {
@@ -300,14 +347,20 @@ records them. For Home it reads:
   "sheets": {
     "shHome": {
       "protection": {},
-      "output": ["A1:E20"]
+      "output": ["A1:E21"]
+    },
+    "shDatesDemo": {
+      "protection": {},
+      "input": ["D5:D13"],
+      "output": ["A1:N4", "A5:C13", "E5:N13", "A14:N72"]
     }
   }
 }
 ```
 
-No sheet is protected unless a decision below says so, so Home is not
-protected. Its cells keep Excel's default lock flag, which takes effect only
+No sheet is protected unless a decision below says so, so neither sheet is
+protected. The demo's input cells are unlocked; every other cell keeps
+Excel's default lock flag, which takes effect only
 if a later decision protects the sheet; the matrix still lists them as
 output, so that such a decision cannot leave a label or the stamp unlocked.
 
@@ -344,5 +397,6 @@ compares neither the password nor protection that VBA sets at run time with
 | 2026-11-27 | The workbook has one sheet, Home, of role Reference; no sheet is hidden | The 22 worksheet functions write no sheet, so there is nothing to input, store or show beyond what the workbook is and how it was built | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
 | 2026-11-27 | `tools/gen_workbook_template.py` generates `src/workbook/Template.xlsx`; it is never saved from Excel | The same source always gives the same bytes, a change is reviewed as a diff of the script, and no personal document metadata can enter it | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
 | 2026-11-27 | Navigation is by cell hyperlinks: Home lists every sheet, and every other sheet links back to Home from `D1` | Cell links work on a protected sheet and need no shape, macro or drawing part, and the template's source states every link | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
+| 2026-11-27 | The date demo is a sheet of the template, **Dates Demo**, that `tools/gen_workbook_template.py` generates from `tools/demo_dates.py`; it is not a VBA builder, and it holds live formulas | Every build carries it, users of the production workbook see it without a macro, its source is reviewed as a diff, and the certification run reads its checks in Excel. A demo shows the functions as a user calls them, so it is the one sheet with formulas | [#18](https://github.com/danielep71/K-PRICING/issues/18) |
 | 2026-11-27 | The menus are a Ribbon tab and a toolbar that run the same actions of `M_Actions`; the toolbar is installed from the macro list, never on open | The tab needs Office 2010 or later and a policy that allows custom tabs; the toolbar covers the rest, and installing it on open would show the same buttons twice where the tab works | [#17](https://github.com/danielep71/K-PRICING/issues/17) |
 | 2026-11-27 | No sheet is protected unless a decision here says so | Protection is a choice I make per sheet, with its reason; by default users may type anywhere, including the functions on Home | [#16](https://github.com/danielep71/K-PRICING/issues/16) |

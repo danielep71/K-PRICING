@@ -9,8 +9,8 @@ Option Private Module
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Tests of the menus of the workbook: the list of functions both menus show, the action
-'   texts M_Actions runs, the cells InsertFunction refuses, the Functions menu of the Ribbon and
-'   the toolbar's lifecycle
+'   texts M_Actions runs, the cells InsertFunction refuses, the Functions menu of the Ribbon,
+'   the toolbar's lifecycle and the checks of the Dates Demo sheet
 '
 ' WHY THIS EXISTS
 '   The menus run only in Excel. A menu item whose action is unknown, a Ribbon menu that does
@@ -53,8 +53,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "ui"            'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 5                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 31                'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 6                 'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 35                'Assertions a complete run evaluates
 
     'The Office constant of a popup, written out because the objects are late bound
     Private Const MSO_CONTROL_POPUP     As Long = 10                'msoControlPopup
@@ -62,6 +62,12 @@ Option Private Module
     'The functions both menus list, and the buttons of a development toolbar
     Private Const FUNCTIONS             As Long = 22                'Functions of the menus
     Private Const TOOLBAR_BUTTONS       As Long = 25                '22 functions, 2 setup, 1 test
+
+    'The checks of the Dates Demo sheet: its statuses, and the one that differs by design with
+    'the sheet's own inputs (AddMonths with Keep EOM against EDATE)
+    Private Const DEMO_ANCHOR           As String = "DatesDemo_Checks"  'First header cell
+    Private Const DEMO_CHECKS           As Long = 57                    'Statuses on the sheet
+    Private Const DEMO_DIFFERS          As Long = 1                     'Differences by design
 
 
 '
@@ -80,7 +86,7 @@ Public Sub RunUiTests()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
-'   RESULT=PASS; suite=ui; operation=PASS; completeness=COMPLETE; cases=5; assertions=31;
+'   RESULT=PASS; suite=ui; operation=PASS; completeness=COMPLETE; cases=6; assertions=35;
 '   failures=0; cleanup=PASS; recovery=NONE
 '
 ' WHY THIS EXISTS
@@ -136,6 +142,7 @@ Public Sub RunUiTests()
         CaseInsertRefusal
         CaseRibbonMenu
         CaseToolbar
+        CaseDemoSheet
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -747,6 +754,89 @@ CaseFailed:
         End If
         Err.Clear
         On Error GoTo 0
+
+End Sub
+
+Private Sub CaseDemoSheet()
+
+'
+'------------------------------------------------------------------------------
+'                     CHECK THE DATES DEMO SHEET IN EXCEL
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The Dates Demo sheet, calculated with its own inputs, counts every status and none fails:
+'   each function gives what Excel's own formula gives, but the one difference by design. 4
+'   assertions.
+'
+' WHY THIS EXISTS
+'   The template holds the demo's formulas and no result: only Excel calculates them, so only
+'   this case shows that the demo works as a user sees it
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Calculates the sheet of the anchor DEMO_ANCHOR, then reads the four counts below it: OK,
+'   Differs by design, Fail and Checks
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case
+'
+' DEPENDENCIES
+'   The defined name DEMO_ANCHOR of this workbook, TEST_Harness
+'
+' NOTES
+'   tests/test_gen_workbook_template.py keeps DEMO_CHECKS equal to the statuses that
+'   tools/gen_workbook_template.py writes. The spill and the array limits need an Excel with
+'   dynamic arrays
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.CaseDemoSheet"
+
+    Dim Anchor          As Range        'The first header cell of the demo's checks
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "demo-sheet"
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'Calculate the demo with its own inputs
+        Set Anchor = ThisWorkbook.Names(DEMO_ANCHOR).RefersToRange
+        Anchor.Worksheet.Calculate
+    'Every status is counted, none fails, and only the documented one differs
+        TEST_Harness.AssertEqualDouble "checks", DEMO_CHECKS, Anchor.Offset(4, 1).Value2
+        TEST_Harness.AssertEqualDouble "fails", 0, Anchor.Offset(3, 1).Value2
+        TEST_Harness.AssertEqualDouble "differs", DEMO_DIFFERS, Anchor.Offset(2, 1).Value2
+        TEST_Harness.AssertEqualDouble "ok", DEMO_CHECKS - DEMO_DIFFERS, Anchor.Offset(1, 1).Value2
+        Set Anchor = Nothing
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
 
 End Sub
 

@@ -50,7 +50,7 @@
      "certification_log": "excel-oracle-certification.log"},
     {"name": "ui", "source": "tests/modules/TEST_Ui.bas",
      "certification_entry_point": "CertifyUi", "runner": "RunUiTests",
-     "expected_cases": 5, "expected_assertions": 31, "log": "ui.log",
+     "expected_cases": 6, "expected_assertions": 35, "log": "ui.log",
      "certification_log": "ui-certification.log"}
   ],
   "modes": [

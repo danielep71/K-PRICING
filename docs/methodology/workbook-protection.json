@@ -3,7 +3,12 @@
   "sheets": {
     "shHome": {
       "protection": {},
-      "output": ["A1:E20"]
+      "output": ["A1:E21"]
+    },
+    "shDatesDemo": {
+      "protection": {},
+      "input": ["D5:D13"],
+      "output": ["A1:N4", "A5:C13", "E5:N13", "A14:N72"]
     }
   }
 }
