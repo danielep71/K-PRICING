@@ -9,8 +9,8 @@ Option Private Module
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Tests of the menus of the workbook: the list of functions both menus show, the action
-'   texts M_Actions runs, the cells InsertFunction refuses, the Functions menu of the Ribbon and
-'   the toolbar's lifecycle
+'   texts M_Actions runs, the cells InsertFunction refuses, the Functions menu of the Ribbon,
+'   the toolbar's lifecycle and the checks of the Dates Demo sheet
 '
 ' WHY THIS EXISTS
 '   The menus run only in Excel. A menu item whose action is unknown, a Ribbon menu that does
@@ -53,8 +53,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "ui"            'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 5                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 31                'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 6                 'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 36                'Assertions a complete run evaluates
 
     'The Office constant of a popup, written out because the objects are late bound
     Private Const MSO_CONTROL_POPUP     As Long = 10                'msoControlPopup
@@ -62,6 +62,15 @@ Option Private Module
     'The functions both menus list, and the buttons of a development toolbar
     Private Const FUNCTIONS             As Long = 22                'Functions of the menus
     Private Const TOOLBAR_BUTTONS       As Long = 25                '22 functions, 2 setup, 1 test
+
+    'The checks of the Dates Demo sheet: its statuses, and the one that differs by design with
+    'the sheet's own inputs (AddMonths with Keep EOM against EDATE)
+    Private Const DEMO_ANCHOR           As String = "DatesDemo_Checks"  'First header cell
+    Private Const DEMO_CHECKS           As Long = 57                    'Statuses on the sheet
+    Private Const DEMO_DIFFERS          As Long = 1                     'Differences by design
+
+    'The demo's input names, separated by ";", in the order of their cells
+    Private Const DEMO_INPUTS           As String = "DateIn;nDays;nWeeks;nMonths;nYears;KeepEOM;WdIndex;nOccur;WeekBaseMonday"
 
 
 '
@@ -80,7 +89,7 @@ Public Sub RunUiTests()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
-'   RESULT=PASS; suite=ui; operation=PASS; completeness=COMPLETE; cases=5; assertions=31;
+'   RESULT=PASS; suite=ui; operation=PASS; completeness=COMPLETE; cases=6; assertions=36;
 '   failures=0; cleanup=PASS; recovery=NONE
 '
 ' WHY THIS EXISTS
@@ -136,6 +145,7 @@ Public Sub RunUiTests()
         CaseInsertRefusal
         CaseRibbonMenu
         CaseToolbar
+        CaseDemoSheet
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -750,6 +760,137 @@ CaseFailed:
 
 End Sub
 
+Private Sub CaseDemoSheet()
+
+'
+'------------------------------------------------------------------------------
+'                     CHECK THE DATES DEMO SHEET IN EXCEL
+'------------------------------------------------------------------------------
+' PURPOSE
+'   The Dates Demo sheet, calculated with the inputs it is generated with, counts every status
+'   and none fails: each function gives what Excel's own formula gives, but the one difference
+'   by design. The inputs a user typed are given back. 5 assertions.
+'
+' WHY THIS EXISTS
+'   The template holds the demo's formulas and no result: only Excel calculates them, so only
+'   this case shows that the demo works as a user sees it
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Keeps the content of the inputs DEMO_INPUTS, formulas included, writes the generated ones, calculates the sheet
+'   of the anchor DEMO_ANCHOR and reads the four counts below it: OK, Differs by design, Fail
+'   and Checks. Then writes the kept values back, on every path
+'
+' ERROR POLICY
+'   An unexpected error is recorded against the case, once the inputs are written back
+'
+' DEPENDENCIES
+'   The defined names DEMO_ANCHOR and DEMO_INPUTS of this workbook, ReadContent,
+'   RestoreInputs, TEST_Harness
+'
+' NOTES
+'   tests/test_gen_workbook_template.py keeps DEMO_CHECKS, DEMO_INPUTS and the generated values
+'   equal to tools/gen_workbook_template.py and tools/demo_dates.py. The spill and the array
+'   limits need an Excel with dynamic arrays
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.CaseDemoSheet"
+
+    Dim Anchor          As Range        'The first header cell of the demo's checks
+    Dim Names           As Variant      'The input names
+    Dim Generated       As Variant      'The values the sheet is generated with
+    Dim Saved()         As Variant      'The content on entry: a formula or a value
+    Dim Formulas()      As Boolean      'Which of them are formulas
+    Dim Kept            As Long         'How many of them were kept
+    Dim Index           As Long         'Inputs cursor
+    Dim Restored        As Boolean      'Every kept value was written back
+    Dim ErrNumber       As Long         'Error of the case; 0 for none
+    Dim ErrSource       As String       'Its source
+    Dim ErrDescription  As String       'Its description
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Record an unexpected error against the case
+        On Error GoTo CaseFailed
+    'Start the case
+        TEST_Harness.BeginCase "demo-sheet"
+    'Write the inputs back on every path
+        On Error GoTo Failed
+
+'------------------------------------------------------------------------------
+' RUN CASE
+'------------------------------------------------------------------------------
+    'Keep the inputs, then write the values the counts belong to; DateIn is 2024-04-30
+        Names = VBA.Split(DEMO_INPUTS, ";")
+        Generated = VBA.Array(45412, 2, 3, 1, 2, True, 4, 2, True)
+        ReDim Saved(LBound(Names) To UBound(Names))
+        ReDim Formulas(LBound(Names) To UBound(Names))
+        For Index = LBound(Names) To UBound(Names)
+            Formulas(Index) = ReadContent(ThisWorkbook.Names(Names(Index)).RefersToRange, _
+                Saved(Index))
+            Kept = Kept + 1
+        Next Index
+        For Index = LBound(Names) To UBound(Names)
+            ThisWorkbook.Names(Names(Index)).RefersToRange.Value2 = Generated(Index)
+        Next Index
+    'Calculate the demo
+        Set Anchor = ThisWorkbook.Names(DEMO_ANCHOR).RefersToRange
+        Anchor.Worksheet.Calculate
+    'Every status is counted, none fails, and only the documented one differs
+        TEST_Harness.AssertEqualDouble "checks", DEMO_CHECKS, Anchor.Offset(4, 1).Value2
+        TEST_Harness.AssertEqualDouble "fails", 0, Anchor.Offset(3, 1).Value2
+        TEST_Harness.AssertEqualDouble "differs", DEMO_DIFFERS, Anchor.Offset(2, 1).Value2
+        TEST_Harness.AssertEqualDouble "ok", DEMO_CHECKS - DEMO_DIFFERS, Anchor.Offset(1, 1).Value2
+        Set Anchor = Nothing
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+CleanUp:
+    'Restore normal error handling
+        On Error GoTo 0
+    'Write the kept inputs back
+        Restored = RestoreInputs(Names, Saved, Formulas, Kept)
+        TEST_Harness.AssertTrue "inputs-restored", Restored, "an input of the demo was not written back"
+    'Record the case's error, once the inputs are back
+        If ErrNumber <> 0 Then
+            Err.Number = ErrNumber
+            Err.Source = ErrSource
+            Err.Description = ErrDescription
+            TEST_Harness.RecordCaseError
+        End If
+    'Exit before the error handlers
+        Exit Sub
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+Failed:
+    'Keep the case's error and write the inputs back
+        ErrNumber = Err.Number
+        ErrSource = Err.Source
+        ErrDescription = Err.Description
+        Set Anchor = Nothing
+        Resume CleanUp
+
+CaseFailed:
+    'Record the unexpected error against the case
+        TEST_Harness.RecordCaseError
+
+End Sub
+
 '
 '------------------------------------------------------------------------------
 '
@@ -757,6 +898,246 @@ End Sub
 '
 '------------------------------------------------------------------------------
 '
+
+Private Function RestoreInputs( _
+    ByVal Names As Variant, _
+    ByRef Saved() As Variant, _
+    ByRef Formulas() As Boolean, _
+    ByVal Kept As Long) As Boolean
+'
+'------------------------------------------------------------------------------
+'                         WRITE THE DEMO'S INPUTS BACK
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Writes back the first Kept inputs that CaseDemoSheet kept, formulas as formulas, and says
+'   whether every one now holds its kept content.
+'
+' WHY THIS EXISTS
+'   The case changes the cells a user may have edited; it must give them back on every path,
+'   a formula such as =TODAY() included, and report a failure to do so without hiding the
+'   case's own error
+'
+' INPUTS
+'   Names
+'     The input names, or Empty when none was read.
+'
+'   Saved
+'     The kept content, in the order of Names: a formula's text or a value; not changed.
+'
+'   Formulas
+'     Which kept contents are formulas; not changed.
+'
+'   Kept
+'     How many inputs were kept, from the first.
+'
+' RETURNS
+'   Boolean
+'     True when every kept content is back; True when none was kept.
+'
+' BEHAVIOR
+'   Writes each kept content with WriteContent, then reads it again with ReadContent and
+'   compares: the formula's text, or the value and its type
+'
+' ERROR POLICY
+'   Does not raise. A write that fails is False, and Err is cleared.
+'
+' DEPENDENCIES
+'   ReadContent, WriteContent; the defined names of this workbook
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.RestoreInputs"
+
+    Dim Index           As Long         'Inputs cursor
+    Dim Cell            As Range        'An input cell
+    Dim Content         As Variant      'What the cell holds after the write
+    Dim IsFormula       As Boolean      'The cell holds a formula after the write
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'A write that fails is a failed restoration
+        RestoreInputs = True
+        If Kept = 0 Then Exit Function
+        On Error GoTo Refused
+
+'------------------------------------------------------------------------------
+' RESTORE
+'------------------------------------------------------------------------------
+    'Write each kept content, then read it again and compare
+        For Index = LBound(Names) To LBound(Names) + Kept - 1
+            Set Cell = ThisWorkbook.Names(Names(Index)).RefersToRange
+            WriteContent Cell, Saved(Index), Formulas(Index)
+            IsFormula = ReadContent(Cell, Content)
+            If IsFormula <> Formulas(Index) Then
+                RestoreInputs = False
+            ElseIf VBA.VarType(Content) <> VBA.VarType(Saved(Index)) Then
+                RestoreInputs = False
+            ElseIf Not IsEmpty(Saved(Index)) And Not IsError(Saved(Index)) Then
+                If Content <> Saved(Index) Then RestoreInputs = False
+            End If
+        Next Index
+        Set Cell = Nothing
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Function
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+Refused:
+    'Excel refused a write
+        Err.Clear
+        Set Cell = Nothing
+        RestoreInputs = False
+
+End Function
+
+Private Function ReadContent(ByVal Cell As Range, ByRef Content As Variant) As Boolean
+
+'
+'------------------------------------------------------------------------------
+'                            READ WHAT A CELL HOLDS
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Reads a cell's formula, or its value when it holds no formula, and says which it read.
+'
+' WHY THIS EXISTS
+'   An input may hold a formula, which its value alone would lose
+'
+' INPUTS
+'   Cell
+'     The cell.
+'
+'   Content (ByRef, output)
+'     Receives the formula's text, through Formula2 where Excel has it, else the Value2.
+'
+' RETURNS
+'   Boolean
+'     True when the cell holds a formula.
+'
+' BEHAVIOR
+'   Reads Formula2 late bound, so that the module compiles in an Excel without it
+'
+' ERROR POLICY
+'   Raises what Excel raises when the cell cannot be read; the caller handles it.
+'
+' DEPENDENCIES
+'   Range.HasFormula, Range.Formula and Formula2, Range.Value2
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.ReadContent"
+
+    Dim Probe           As Object       'The cell, late bound, for Formula2
+    Dim ErrNumber       As Long         'Error of the Formula2 read; 0 for none
+
+'------------------------------------------------------------------------------
+' READ
+'------------------------------------------------------------------------------
+    'A constant is read as its value
+        If Not Cell.HasFormula Then
+            Content = Cell.Value2
+            Exit Function
+        End If
+    'A formula is read through Formula2 where Excel has it, else through Formula
+        ReadContent = True
+        Set Probe = Cell
+        On Error Resume Next
+        Content = VBA.CStr(Probe.Formula2)
+        ErrNumber = Err.Number
+        On Error GoTo 0
+        Set Probe = Nothing
+        If ErrNumber <> 0 Then Content = VBA.CStr(Cell.Formula)
+
+End Function
+
+Private Sub WriteContent(ByVal Cell As Range, ByVal Content As Variant, ByVal IsFormula As Boolean)
+
+'
+'------------------------------------------------------------------------------
+'                            WRITE WHAT A CELL HELD
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Writes back what ReadContent read: a formula as a formula, a value as a value.
+'
+' WHY THIS EXISTS
+'   RestoreInputs gives an input back as the user left it
+'
+' INPUTS
+'   Cell
+'     The cell.
+'
+'   Content
+'     A formula's text or a value.
+'
+'   IsFormula
+'     True when Content is a formula.
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Writes a formula through Formula2 late bound where Excel has it, else through Formula
+'
+' ERROR POLICY
+'   Raises what Excel raises when it refuses the write; RestoreInputs handles it.
+'
+' DEPENDENCIES
+'   Range.Formula and Formula2, Range.Value2
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.WriteContent"
+
+    Dim Probe           As Object       'The cell, late bound, for Formula2
+    Dim ErrNumber       As Long         'Error of the Formula2 write; 0 for none
+
+'------------------------------------------------------------------------------
+' WRITE
+'------------------------------------------------------------------------------
+    'A value is written as a value
+        If Not IsFormula Then
+            Cell.Value2 = Content
+            Exit Sub
+        End If
+    'A formula is written through Formula2 where Excel has it, else through Formula
+        Set Probe = Cell
+        On Error Resume Next
+        Probe.Formula2 = Content
+        ErrNumber = Err.Number
+        On Error GoTo 0
+        Set Probe = Nothing
+        If ErrNumber <> 0 Then Cell.Formula = Content
+
+End Sub
 
 Private Function Occurrences(ByVal Text As String, ByVal Part As String) As Long
 

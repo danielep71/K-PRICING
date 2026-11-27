@@ -333,7 +333,8 @@ class Layout(unittest.TestCase):
             production, build_workbook.Build("0" * 40, "t", True, "production", ()), b"")
         with zipfile.ZipFile(io.BytesIO(package)) as archive:
             book = archive.read("xl/workbook.xml").decode()
-        self.assertNotIn("Checks", book)
+        self.assertNotIn('<sheet name="Checks"', book)
+        self.assertNotIn("Checks_Results", book)
 
 
 @contextlib.contextmanager

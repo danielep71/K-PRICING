@@ -203,6 +203,21 @@ Use only the categories an entry needs.
   conversion that depends on regional settings. The production source already
   satisfies all of them; no VBA changed
   ([#15](https://github.com/danielep71/K-PRICING/issues/15)).
+- The date demo: a **Dates Demo** sheet in every build, linked from Home. It
+  shows each of the 22 functions on inputs you can edit, beside a formula of
+  Excel's own functions, with a status per row (`OK`, `DIFFERS` for a
+  documented difference, `FAIL`, or `NO VBA` while the functions are not
+  loaded). A side panel counts the statuses and lists inputs that must give
+  an Excel error value. It also spills one formula over 30 dates and shows
+  the array limits. `tools/gen_workbook_template.py` generates it into
+  `src/workbook/Template.xlsx` from `tools/demo_dates.py`, with live
+  dynamic-array formulas that Excel calculates when it opens the workbook. It
+  is the one sheet with formulas, as the
+  [workbook contract](docs/methodology/WORKBOOK_CONTRACT.md#dates-demo)
+  records. The project suite `ui` reads its checks in Excel (case
+  `demo-sheet`). The demo was opened in LibreOffice only, where Excel's own
+  formulas calculate; it has not run in Excel
+  ([#18](https://github.com/danielep71/K-PRICING/issues/18)).
 - The workbook's menus: a **K-PRICING** Ribbon tab,
   `src/workbook/customUI14.xml`, which every build now writes into the
   workbook, and a **KPR Dates** toolbar for an Excel that does not show the tab,
