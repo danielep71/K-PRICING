@@ -1,18 +1,21 @@
 # 📥 Installation: VBA import and export
 
-This guide moves VBA source between the repository and Excel, in both
-directions, without losing line endings, metadata or form resources. It also
-covers building a workbook from source, running the VBA test harness,
+This guide opens and enables a built workbook, and moves VBA source between
+the repository and Excel, in both directions, without losing line endings,
+metadata or form resources. It also covers building a workbook from source, running the VBA test harness,
 recording an Excel run with one command, upgrading to a new revision,
 troubleshooting and removal. The
 [repository structure](docs/REPOSITORY_STRUCTURE.md) says where each component
 lives, and the [house style](docs/VBA_HOUSE_STYLE.md) says how it is written.
 The repository's own checks are in the
-[contributing guide](CONTRIBUTING.md#-local-checks).
+[contributing guide](CONTRIBUTING.md#-local-checks). To use the functions of a
+workbook you already have, read the
+[user manual](docs/user-manual/0.2.0/MANUAL.md); it covers the same opening
+steps for readers who do not use Git.
 
 ## 🖥️ Host policy
 
-Adapt this section to the project and record the decision in an issue.
+Record a change to this policy, with its evidence, in an issue.
 
 - **Target host:** Microsoft 365 Excel desktop on Windows, 64-bit. Windows
   32-bit, older perpetual versions, Mac and Excel for the web are not
@@ -34,6 +37,40 @@ Record each host on which a commit has been compiled and run:
 | --- | --- | --- |
 | Microsoft 365 Excel 16.0 build 20527, 64-bit, VBA7, on Windows 11 Enterprise 25H2 (OS build 26200.9974) | `10706ac88fd7fe04f1905f0aabe59c17e50a4695` | Excel run of 2026-11-26 with `tools/devbuild/excel_run.py`: every suite of the evidence policy, `excel-run: PASS`, `Binding: VERIFIED`, compile `ON_DEMAND` ([report](https://github.com/danielep71/K-PRICING/issues/13#issuecomment-7194469480)) |
 | Microsoft 365 Excel 16.0 build 20527, 64-bit, VBA7, on Windows 11 Enterprise 25H2 (OS build 26200.9974) | `573884baeb4258a53e8bc7bbe43cbb7c8c44ce5f` | Excel run of 2026-11-26 with `tools/devbuild/excel_run.py`: every suite of the evidence policy, `excel-oracle` included, `excel-run: PASS`, `Binding: VERIFIED`, compile `ON_DEMAND` ([report](https://github.com/danielep71/K-PRICING/issues/14#issuecomment-7199627903)) |
+
+<a id="opening-the-workbook"></a>
+
+## 🔓 Opening and enabling the workbook
+
+These steps open a built `.xlsm` for use. They need no administrator rights,
+no lower macro security level and no *Trust access to the VBA project object
+model*, and they bypass no policy: where your organization's policy blocks a
+step, ask its administrator.
+
+1. **Get the workbook.** No version has been released yet, so build it from a
+   checkout of an exact revision, as
+   [building a workbook from source](#%EF%B8%8F-building-a-workbook-from-source)
+   describes; use `--configuration production` for a workbook without tests.
+   A released version attaches its workbook to the release.
+2. **Verify it.** Compare its SHA-256 with the one the release records. In
+   Windows PowerShell:
+
+   ```powershell
+   Get-FileHash .\FILE.xlsm -Algorithm SHA256
+   ```
+
+3. **Save it** to a folder you can write to, outside the checkout.
+4. **Unblock it, where policy allows.** A file copied from another machine or
+   downloaded can carry a mark that blocks its macros. If Excel says so, open
+   the file's **Properties** and tick **Unblock**, or ask your administrator.
+5. **Open it and enable content.** Excel needs no change to the macro
+   setting *Disable all macros with notification*: enable this workbook only.
+6. **Check it.** `Home` shows the build stamp, `=KPR_Dates_HostDateSystem()`
+   returns `1900`, and the `FAIL` count under `DatesDemo_Checks` on
+   `Dates Demo` is `0`.
+
+The [user manual](docs/user-manual/0.2.0/MANUAL.md) describes the functions,
+the Ribbon tab and the demo sheet.
 
 ## 🔖 Start from an exact revision
 

@@ -295,6 +295,17 @@ Use only the categories an entry needs.
   yet run in Excel
   ([#13](https://github.com/danielep71/K-PRICING/issues/13)).
 
+- A [user manual](docs/user-manual/0.2.0/MANUAL.md) for the people who
+  receive the workbook, which needs neither the repository nor VBA: how to
+  open and enable it without administrator rights and without bypassing a
+  macro policy, how to check it, how each argument is read, the 22
+  `KPR_Dates_*` functions with their arguments, results and error values,
+  the Ribbon tab and the toolbar, and the Dates Demo sheet. The
+  [installation guide](INSTALLATION.md#opening-the-workbook) gains the same
+  opening steps, and the README links both. The steps were not followed in
+  Excel in this change; the certification run does that
+  ([#19](https://github.com/danielep71/K-PRICING/issues/19)).
+
 ### Changed
 
 - The public API inventory is reconciled with the code: the 22 `KPR_Dates_*`
