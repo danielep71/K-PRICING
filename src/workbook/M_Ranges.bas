@@ -63,7 +63,6 @@ Public Function TryDescribeArgument( _
     ByRef RowCount As Long, _
     ByRef ColCount As Long, _
     ByRef Condition As KPRCondition) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                      DESCRIBE THE SHAPE OF AN ARGUMENT
@@ -112,6 +111,8 @@ Public Function TryDescribeArgument( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Ranges.TryDescribeArgument"
+
     Dim Rng             As Range    'The argument, bound as a Range
 
 '------------------------------------------------------------------------------
@@ -173,7 +174,6 @@ Public Function TryReadArgument( _
     ByRef RowCount As Long, _
     ByRef ColCount As Long, _
     ByRef Condition As KPRCondition) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                      READ AN ARGUMENT INTO ITS PAYLOAD
@@ -224,6 +224,8 @@ Public Function TryReadArgument( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Ranges.TryReadArgument"
+
     Dim Rng             As Range    'The argument, bound as a Range
 
 '------------------------------------------------------------------------------
@@ -283,7 +285,6 @@ End Function
 Public Function TryReadScalar( _
     ByVal ValueIn As Variant, _
     ByRef ScalarOut As Variant) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                            READ A SCALAR ARGUMENT
@@ -328,6 +329,8 @@ Public Function TryReadScalar( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Ranges.TryReadScalar"
+
     Dim Rng             As Range    'The argument, bound as a Range
 
 '------------------------------------------------------------------------------
@@ -378,7 +381,6 @@ Public Function TryReadControl( _
     ByVal ValueIn As Variant, _
     ByRef ScalarOut As Variant, _
     ByRef Condition As KPRCondition) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                           READ AN OPTIONAL CONTROL
@@ -427,6 +429,8 @@ Public Function TryReadControl( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Ranges.TryReadControl"
+
     Dim Rng             As Range    'The argument, bound as a Range
     Dim Cells           As Double   'Cell count, in Double for a large Range
 

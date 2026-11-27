@@ -427,7 +427,7 @@ def module(root: Path) -> str:
         lines += case_procedure(name, case_id, part)
     while lines and lines[-1] == "":
         lines.pop()
-    return "\r\n".join(lines) + "\r\n"
+    return "\r\n".join(base.house_style(lines, MODULE.stem)) + "\r\n"
 
 
 def coverage(root: Path) -> dict[str, Any]:

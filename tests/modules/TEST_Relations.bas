@@ -121,17 +121,23 @@ Public Sub RunRelationTests()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Relations.RunRelationTests"
+
     Dim ErrNumber       As Long     'Runner error number; 0 for none
     Dim ErrSource       As String   'Runner error source
     Dim ErrDescription  As String   'Runner error description
 
 '------------------------------------------------------------------------------
-' RUN CASES
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Start the run; a refused start propagates directly
         TEST_Harness.BeginRun SUITE_NAME, "NORMAL", EXPECTED_CASES, EXPECTED_ASSERTIONS
     'Send an error that escapes a case to the runner handler
         On Error GoTo RunFailed
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Run every case in a fixed order
         CaseZeroInput
         CaseAdditivity
@@ -211,6 +217,8 @@ Private Sub CaseZeroInput()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Relations.CaseZeroInput"
+
     Dim Amounts(1 To 3)     As Double   'Three zero amounts, as VBA initializes them
     Dim Total               As Double   'Total of Amounts
 
@@ -290,6 +298,8 @@ Private Sub CaseAdditivity()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Relations.CaseAdditivity"
+
     Dim FirstList(1 To 2)   As Double   'The first list
     Dim SecondList(1 To 3)  As Double   'The second list
     Dim BothLists(1 To 5)   As Double   'Both lists together
@@ -353,7 +363,7 @@ Private Sub CaseSymmetry()
 
 '
 '------------------------------------------------------------------------------
-'                         CHECK ORDER-INDEPENDENT TOTAL
+'                        CHECK ORDER-INDEPENDENT TOTAL
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   The order of the inputs does not change the total; a total of the
@@ -389,6 +399,8 @@ Private Sub CaseSymmetry()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Relations.CaseSymmetry"
+
     Dim Forward(1 To 4)     As Double   'The list
     Dim Reversed(1 To 4)    As Double   'The same list in reverse order
     Dim Index               As Long     'Position in the list
@@ -485,6 +497,8 @@ Private Sub CaseMonotonicity()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Relations.CaseMonotonicity"
+
     Dim Original(1 To 3)    As Double   'The list
     Dim Raised(1 To 3)      As Double   'The same list with its second amount raised
     Dim Index               As Long     'Position in the list
@@ -588,6 +602,8 @@ Private Function IllustrativeTotal( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Relations.IllustrativeTotal"
+
     Dim Index   As Long     'Position in Amounts
     Dim Total   As Double   'Sum so far
 

@@ -49,9 +49,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "ranges"            'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 5                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 62                'Assertions a complete run evaluates
-
+    Private Const EXPECTED_CASES        As Long = 5                     'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 62                    'Assertions a complete run evaluates
 
 '------------------------------------------------------------------------------
 ' PRIVATE STATE
@@ -109,17 +108,23 @@ Public Sub RunRangeTests()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ranges.RunRangeTests"
+
     Dim ErrNumber       As Long     'Runner error number; 0 for none
     Dim ErrSource       As String   'Runner error source
     Dim ErrDescription  As String   'Runner error description
 
 '------------------------------------------------------------------------------
-' RUN CASES
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Start the run; a refused start propagates directly
         TEST_Harness.BeginRun SUITE_NAME, "NORMAL", EXPECTED_CASES, EXPECTED_ASSERTIONS
     'Send an error that escapes a case to the runner handler
         On Error GoTo RunFailed
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Run every case in a fixed order
         CaseDescribeRanges
         CaseReadRanges
@@ -154,7 +159,6 @@ End Sub
 Public Sub CertifyRanges( _
     ByVal Folder As String, _
     ByVal Fixtures As String)
-
 '
 '------------------------------------------------------------------------------
 '                              CERTIFY THE SUITE
@@ -194,6 +198,8 @@ Public Sub CertifyRanges( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ranges.CertifyRanges"
+
     Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
     Dim RunErrorDescription     As String   'Its description
 
@@ -263,6 +269,8 @@ Private Sub CaseDescribeRanges()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ranges.CaseDescribeRanges"
+
     Dim Sheet             As Worksheet    'The first worksheet
     Dim Item              As Collection   'An object that is not a Range
     Dim Table()           As Variant      'A 2 by 3 array
@@ -375,6 +383,8 @@ Private Sub CaseReadRanges()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ranges.CaseReadRanges"
+
     Dim Sheet             As Worksheet    'The first worksheet
     Dim Payload           As Variant      'Payload read
     Dim Kind              As KPRArgShape  'Kind reported
@@ -477,6 +487,8 @@ Private Sub CaseReadScalars()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ranges.CaseReadScalars"
+
     Dim Sheet             As Worksheet    'The first worksheet
     Dim ScalarOut         As Variant      'Scalar read
 
@@ -556,6 +568,8 @@ Private Sub CaseReadControls()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ranges.CaseReadControls"
+
     Dim Sheet             As Worksheet    'The first worksheet
 
 '------------------------------------------------------------------------------
@@ -629,7 +643,8 @@ Private Sub CaseRangeElements()
 '   Nothing
 '
 ' BEHAVIOR
-'   Puts a one-cell Range inside one-element and two-element arrays and reads them as an argument, a scalar and a control
+'   Puts a one-cell Range inside one-element and two-element arrays and reads them as an argument, a
+'   scalar and a control
 '
 ' ERROR POLICY
 '   An unexpected error is recorded against the case by
@@ -648,6 +663,8 @@ Private Sub CaseRangeElements()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ranges.CaseRangeElements"
+
     Dim Sheet             As Worksheet    'The first worksheet
     Dim One(1 To 1)       As Variant      'A one-element array holding a Range
     Dim Two(1 To 2)       As Variant      'A row whose second element is a Range
@@ -719,7 +736,6 @@ Private Sub ProbeShape( _
     ByVal ExpectedKind As KPRArgShape, _
     ByVal ExpectedRows As Long, _
     ByVal ExpectedCols As Long)
-
 '
 '------------------------------------------------------------------------------
 '                        PROBE THE SHAPE OF AN ARGUMENT
@@ -732,9 +748,6 @@ Private Sub ProbeShape( _
 '   The same four facts are checked for every argument shape
 '
 ' INPUTS
-'   Label
-'     Prefix of the assertion names
-'
 '   ValueIn
 '     The argument
 '
@@ -766,6 +779,8 @@ Private Sub ProbeShape( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ranges.ProbeShape"
+
     Dim Kind            As KPRArgShape  'Kind reported
     Dim RowCount        As Long         'Rows reported
     Dim ColCount        As Long         'Columns reported
@@ -805,7 +820,6 @@ Private Sub ProbeControl( _
     ByVal ValueIn As Variant, _
     ByVal ExpectedCondition As KPRCondition, _
     ByVal ExpectedText As String)
-
 '
 '------------------------------------------------------------------------------
 '                          PROBE AN OPTIONAL CONTROL
@@ -818,9 +832,6 @@ Private Sub ProbeControl( _
 '   The same three facts are checked for every control shape
 '
 ' INPUTS
-'   Label
-'     Prefix of the assertion names
-'
 '   ValueIn
 '     The control
 '
@@ -852,6 +863,8 @@ Private Sub ProbeControl( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ranges.ProbeControl"
+
     Dim ScalarOut       As Variant      'Unwrapped control, a sentinel on entry
     Dim Condition       As KPRCondition 'Condition reported
     Dim Accepted        As Boolean      'Whether the control unwrapped

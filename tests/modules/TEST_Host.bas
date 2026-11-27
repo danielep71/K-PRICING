@@ -53,8 +53,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "excel-host"        'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 4                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 41                'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 4                     'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 41                    'Assertions a complete run evaluates
 
 
 '
@@ -69,7 +69,7 @@ Public Sub RunHostTests()
 
 '
 '------------------------------------------------------------------------------
-'                               RUN HOST TESTS
+'                                RUN HOST TESTS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
@@ -106,17 +106,23 @@ Public Sub RunHostTests()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Host.RunHostTests"
+
     Dim ErrNumber       As Long     'Runner error number; 0 for none
     Dim ErrSource       As String   'Runner error source
     Dim ErrDescription  As String   'Runner error description
 
 '------------------------------------------------------------------------------
-' RUN CASES
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Start the run; a refused start propagates directly
         TEST_Harness.BeginRun SUITE_NAME, "NORMAL", EXPECTED_CASES, EXPECTED_ASSERTIONS
     'Send an error that escapes a case to the runner handler
         On Error GoTo RunFailed
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Run every case in a fixed order
         CaseDateSystemToggle
         CaseSpill
@@ -150,7 +156,6 @@ End Sub
 Public Sub CertifyHost( _
     ByVal Folder As String, _
     ByVal Fixtures As String)
-
 '
 '------------------------------------------------------------------------------
 '                              CERTIFY THE SUITE
@@ -190,6 +195,8 @@ Public Sub CertifyHost( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Host.CertifyHost"
+
     Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
     Dim RunErrorDescription     As String   'Its description
 
@@ -263,6 +270,8 @@ Private Sub CaseDateSystemToggle()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Host.CaseDateSystemToggle"
+
     Dim Sheet           As Worksheet    'The scratch sheet
     Dim Detail          As String       'What closing the workbook could not restore
     Dim ErrNumber       As Long         'Error of the case; 0 for none
@@ -350,7 +359,7 @@ Private Sub CaseSpill()
 
 '
 '------------------------------------------------------------------------------
-'                         CHECK A SPILLED RESULT
+'                            CHECK A SPILLED RESULT
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   A dynamic-array formula over a 3x1 Range spills three cells under 1900, with a blank row's
@@ -389,6 +398,8 @@ Private Sub CaseSpill()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Host.CaseSpill"
+
     Dim Sheet           As Worksheet    'The scratch sheet
     Dim Entered         As Boolean      'Whether Formula2 accepted the formula
     Dim Detail          As String       'What closing the workbook could not restore
@@ -472,7 +483,7 @@ Private Sub CaseRangeBlock()
 
 '
 '------------------------------------------------------------------------------
-'                        CHECK A BLOCK OF CELLS READ
+'                         CHECK A BLOCK OF CELLS READ
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   A 3x3 block of a workbook's cells is read with its blank, its error and its values in
@@ -511,6 +522,8 @@ Private Sub CaseRangeBlock()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Host.CaseRangeBlock"
+
     Dim Sheet           As Worksheet    'The scratch sheet
     Dim Selected        As String       'The selection before the reads
     Dim Payload         As Variant      'The block read
@@ -602,7 +615,7 @@ Private Sub CaseRegistration()
 
 '
 '------------------------------------------------------------------------------
-'                        CHECK THE FUNCTION REGISTRATION
+'                       CHECK THE FUNCTION REGISTRATION
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Registering twice, unregistering twice and registering again each reach the 22 functions,
@@ -639,14 +652,16 @@ Private Sub CaseRegistration()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Dim WasSaved        As Boolean          'ThisWorkbook.Saved before the calls
+    Const PROC_NAME     As String = "TEST_Host.CaseRegistration"
+
+    Dim WasSaved         As Boolean         'ThisWorkbook.Saved before the calls
     Dim SavedCalculation As XlCalculation   'Calculation mode before the calls
-    Dim Events          As Boolean          'EnableEvents before the calls
-    Dim Screen          As Boolean          'ScreenUpdating before the calls
-    Dim Alerts          As Boolean          'DisplayAlerts before the calls
-    Dim BookName        As String           'Active workbook before the calls
-    Dim SheetName       As String           'Active sheet before the calls
-    Dim Selected        As String           'Selection before the calls
+    Dim Events           As Boolean         'EnableEvents before the calls
+    Dim Screen           As Boolean         'ScreenUpdating before the calls
+    Dim Alerts           As Boolean         'DisplayAlerts before the calls
+    Dim BookName         As String          'Active workbook before the calls
+    Dim SheetName        As String          'Active sheet before the calls
+    Dim Selected         As String          'Selection before the calls
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -709,10 +724,9 @@ End Sub
 
 Private Sub EnterValueFormulas( _
     ByVal Sheet As Worksheet)
-
 '
 '------------------------------------------------------------------------------
-'                      ENTER THE VALUE FORMULAS AND CALCULATE
+'                    ENTER THE VALUE FORMULAS AND CALCULATE
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Enters a value function in A2 and a propagated #N/A in A3, then recalculates.
@@ -756,10 +770,9 @@ End Sub
 
 Private Function EnterSpillFormula( _
     ByVal Anchor As Range) As Boolean
-
 '
 '------------------------------------------------------------------------------
-'                         ENTER A DYNAMIC-ARRAY FORMULA
+'                        ENTER A DYNAMIC-ARRAY FORMULA
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Enters EndOfMonth over A1:A3 as a dynamic-array formula and recalculates.
@@ -794,6 +807,8 @@ Private Function EnterSpillFormula( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Host.EnterSpillFormula"
+
     Dim Cell            As Object       'The formula's cell, late-bound
 
 '------------------------------------------------------------------------------
@@ -813,10 +828,9 @@ End Function
 
 Private Function SpillRows( _
     ByVal Anchor As Range) As Long
-
 '
 '------------------------------------------------------------------------------
-'                         COUNT THE ROWS OF A SPILL
+'                          COUNT THE ROWS OF A SPILL
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the number of rows the formula in the cell spills to.
@@ -851,6 +865,8 @@ Private Function SpillRows( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Host.SpillRows"
+
     Dim Cell            As Object       'The formula's cell, late-bound
     Dim Spill           As Range        'The spilled range, or Nothing
 
@@ -870,10 +886,9 @@ End Function
 
 Private Function ReadSize( _
     ByVal Block As Range) As String
-
 '
 '------------------------------------------------------------------------------
-'                           READ A RANGE'S SHAPE
+'                             READ A RANGE'S SHAPE
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the rows and columns M_Ranges reads from a Range, or the condition it refused it
@@ -909,6 +924,8 @@ Private Function ReadSize( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Host.ReadSize"
+
     Dim Payload         As Variant      'The values read
     Dim Kind            As KPRArgShape  'Their kind
     Dim RowCount        As Long         'Their rows
@@ -931,7 +948,7 @@ Private Function SelectionText() As String
 
 '
 '------------------------------------------------------------------------------
-'                          DESCRIBE THE SELECTION
+'                            DESCRIBE THE SELECTION
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the selection's external address, or its type name when it is not a Range.

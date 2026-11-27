@@ -76,6 +76,7 @@ Option Private Module
     Private Const ARG_MONTH      As String = "A month, 1 to 12; a scalar, an array or a Range."
     Private Const ARG_WEEKDAY    As String = "A weekday number, 1 to 7, in the weekday base; a scalar, an array or a Range."
 
+
 '
 '------------------------------------------------------------------------------
 '
@@ -123,6 +124,8 @@ Public Function RegisterFunctions() As Long
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Register.RegisterFunctions"
+
     Dim Index           As Long         'Position of the function, 1 to FUNCTION_COUNT
     Dim FunctionName    As String       'Name of the function
     Dim Summary         As String       'Description of the function
@@ -182,6 +185,8 @@ Public Function UnregisterFunctions() As Long
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Register.UnregisterFunctions"
+
     Dim Index           As Long         'Position of the function, 1 to FUNCTION_COUNT
     Dim Position        As Long         'Position of an argument
     Dim FunctionName    As String       'Name of the function
@@ -321,7 +326,6 @@ Private Sub Describe( _
     ByRef FunctionName As String, _
     ByRef Summary As String, _
     ByRef ArgTexts As Variant)
-
 '
 '------------------------------------------------------------------------------
 '                             DESCRIBE A FUNCTION
@@ -374,132 +378,134 @@ Private Sub Describe( _
 '------------------------------------------------------------------------------
     'Select the function
         Select Case Index
-        Case 1
-            FunctionName = "KPR_Dates_DayOfWeek"
-            Summary = "Returns the number of the weekday of a date, 1 to 7, Monday-based by default."
-            ArgTexts = VBA.Array( _
-                ARG_DATE, _
-                ARG_WEEK_BASE)
-        Case 2
-            FunctionName = "KPR_Dates_DaysInMonth"
-            Summary = "Returns the number of days of the month that holds a date."
-            ArgTexts = VBA.Array( _
-                ARG_DATE)
-        Case 3
-            FunctionName = "KPR_Dates_DaysInYear"
-            Summary = "Returns the number of days of a calendar year."
-            ArgTexts = VBA.Array( _
-                ARG_YEAR_ONLY)
-        Case 4
-            FunctionName = "KPR_Dates_BeginOfMonth"
-            Summary = "Returns the first day of the month that holds a date."
-            ArgTexts = VBA.Array( _
-                ARG_DATE)
-        Case 5
-            FunctionName = "KPR_Dates_EndOfMonth"
-            Summary = "Returns the last day of the month that holds a date."
-            ArgTexts = VBA.Array( _
-                ARG_DATE)
-        Case 6
-            FunctionName = "KPR_Dates_BeginOfQuarter"
-            Summary = "Returns the first day of the calendar quarter that holds a date."
-            ArgTexts = VBA.Array( _
-                ARG_DATE)
-        Case 7
-            FunctionName = "KPR_Dates_EndOfQuarter"
-            Summary = "Returns the last day of the calendar quarter that holds a date."
-            ArgTexts = VBA.Array( _
-                ARG_DATE)
-        Case 8
-            FunctionName = "KPR_Dates_BeginOfYear"
-            Summary = "Returns 1 January of the year that holds a date."
-            ArgTexts = VBA.Array( _
-                ARG_DATE)
-        Case 9
-            FunctionName = "KPR_Dates_EndOfYear"
-            Summary = "Returns 31 December of the year that holds a date."
-            ArgTexts = VBA.Array( _
-                ARG_DATE)
-        Case 10
-            FunctionName = "KPR_Dates_IsMonthEnd"
-            Summary = "Reports whether a date is the last day of its month."
-            ArgTexts = VBA.Array( _
-                ARG_DATE)
-        Case 11
-            FunctionName = "KPR_Dates_IsQuarterEnd"
-            Summary = "Reports whether a date is the last day of its calendar quarter."
-            ArgTexts = VBA.Array( _
-                ARG_DATE)
-        Case 12
-            FunctionName = "KPR_Dates_IsYearEnd"
-            Summary = "Reports whether a date is 31 December."
-            ArgTexts = VBA.Array( _
-                ARG_DATE)
-        Case 13
-            FunctionName = "KPR_Dates_IsLeapYear"
-            Summary = "Reports whether a calendar year is a Gregorian leap year."
-            ArgTexts = VBA.Array( _
-                ARG_YEAR_ONLY)
-        Case 14
-            FunctionName = "KPR_Dates_AddDays"
-            Summary = "Moves a date by a signed number of calendar days."
-            ArgTexts = VBA.Array( _
-                ARG_DATE, _
-                "A signed whole number of days; a scalar, an array or a Range.")
-        Case 15
-            FunctionName = "KPR_Dates_AddWeeks"
-            Summary = "Moves a date by a signed number of weeks of seven calendar days."
-            ArgTexts = VBA.Array( _
-                ARG_DATE, _
-                "A signed whole number of weeks; a scalar, an array or a Range.")
-        Case 16
-            FunctionName = "KPR_Dates_AddMonths"
-            Summary = "Moves a date by a signed number of months, clipping a day that the target month lacks."
-            ArgTexts = VBA.Array( _
-                ARG_DATE, _
-                "A signed whole number of months; a scalar, an array or a Range.", _
-                ARG_KEEP_EOM)
-        Case 17
-            FunctionName = "KPR_Dates_AddYears"
-            Summary = "Moves a date by a signed number of years, as twelve months each."
-            ArgTexts = VBA.Array( _
-                ARG_DATE, _
-                "A signed whole number of years; a scalar, an array or a Range.", _
-                ARG_KEEP_EOM)
-        Case 18
-            FunctionName = "KPR_Dates_NthWeekdayOfMonth"
-            Summary = "Returns the date of the nth given weekday of a month."
-            ArgTexts = VBA.Array( _
-                ARG_YEAR, _
-                ARG_MONTH, _
-                ARG_WEEKDAY, _
-                "The occurrence, 1 to 5; a scalar, an array or a Range.", _
-                ARG_WEEK_BASE)
-        Case 19
-            FunctionName = "KPR_Dates_LastWeekdayOfMonth"
-            Summary = "Returns the date of the last given weekday of a month."
-            ArgTexts = VBA.Array( _
-                ARG_YEAR, _
-                ARG_MONTH, _
-                ARG_WEEKDAY, _
-                ARG_WEEK_BASE)
-        Case 20
-            FunctionName = "KPR_Dates_PillarFromDates"
-            Summary = "Returns the pillar token that labels the interval between two dates, rounded to a curve bucket."
-            ArgTexts = VBA.Array( _
-                ARG_DATE, _
-                ARG_DATE, _
-                "NEAREST, FLOOR or CEILING, in any case. Text, or Empty for the default; one cell or element at most, default NEAREST.")
-        Case 21
-            FunctionName = "KPR_Dates_DateFromPillar"
-            Summary = "Returns the date that a pillar token names from a start date."
-            ArgTexts = VBA.Array( _
-                ARG_DATE, _
-                "A pillar token, such as 3M, 1Y6M, 2W3D, ON or TN; a scalar, an array or a Range.")
-        Case 22
-            FunctionName = "KPR_Dates_HostDateSystem"
-            Summary = "Returns the date system of the calling workbook: 1900 or 1904."
-            ArgTexts = Empty
+            Case 1
+                FunctionName = "KPR_Dates_DayOfWeek"
+                Summary = "Returns the number of the weekday of a date, 1 to 7, Monday-based by default."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE, _
+                    ARG_WEEK_BASE)
+            Case 2
+                FunctionName = "KPR_Dates_DaysInMonth"
+                Summary = "Returns the number of days of the month that holds a date."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE)
+            Case 3
+                FunctionName = "KPR_Dates_DaysInYear"
+                Summary = "Returns the number of days of a calendar year."
+                ArgTexts = VBA.Array( _
+                    ARG_YEAR_ONLY)
+            Case 4
+                FunctionName = "KPR_Dates_BeginOfMonth"
+                Summary = "Returns the first day of the month that holds a date."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE)
+            Case 5
+                FunctionName = "KPR_Dates_EndOfMonth"
+                Summary = "Returns the last day of the month that holds a date."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE)
+            Case 6
+                FunctionName = "KPR_Dates_BeginOfQuarter"
+                Summary = "Returns the first day of the calendar quarter that holds a date."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE)
+            Case 7
+                FunctionName = "KPR_Dates_EndOfQuarter"
+                Summary = "Returns the last day of the calendar quarter that holds a date."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE)
+            Case 8
+                FunctionName = "KPR_Dates_BeginOfYear"
+                Summary = "Returns 1 January of the year that holds a date."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE)
+            Case 9
+                FunctionName = "KPR_Dates_EndOfYear"
+                Summary = "Returns 31 December of the year that holds a date."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE)
+            Case 10
+                FunctionName = "KPR_Dates_IsMonthEnd"
+                Summary = "Reports whether a date is the last day of its month."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE)
+            Case 11
+                FunctionName = "KPR_Dates_IsQuarterEnd"
+                Summary = "Reports whether a date is the last day of its calendar quarter."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE)
+            Case 12
+                FunctionName = "KPR_Dates_IsYearEnd"
+                Summary = "Reports whether a date is 31 December."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE)
+            Case 13
+                FunctionName = "KPR_Dates_IsLeapYear"
+                Summary = "Reports whether a calendar year is a Gregorian leap year."
+                ArgTexts = VBA.Array( _
+                    ARG_YEAR_ONLY)
+            Case 14
+                FunctionName = "KPR_Dates_AddDays"
+                Summary = "Moves a date by a signed number of calendar days."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE, _
+                    "A signed whole number of days; a scalar, an array or a Range.")
+            Case 15
+                FunctionName = "KPR_Dates_AddWeeks"
+                Summary = "Moves a date by a signed number of weeks of seven calendar days."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE, _
+                    "A signed whole number of weeks; a scalar, an array or a Range.")
+            Case 16
+                FunctionName = "KPR_Dates_AddMonths"
+                Summary = "Moves a date by a signed number of months, clipping a day that the target month lacks."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE, _
+                    "A signed whole number of months; a scalar, an array or a Range.", _
+                    ARG_KEEP_EOM)
+            Case 17
+                FunctionName = "KPR_Dates_AddYears"
+                Summary = "Moves a date by a signed number of years, as twelve months each."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE, _
+                    "A signed whole number of years; a scalar, an array or a Range.", _
+                    ARG_KEEP_EOM)
+            Case 18
+                FunctionName = "KPR_Dates_NthWeekdayOfMonth"
+                Summary = "Returns the date of the nth given weekday of a month."
+                ArgTexts = VBA.Array( _
+                    ARG_YEAR, _
+                    ARG_MONTH, _
+                    ARG_WEEKDAY, _
+                    "The occurrence, 1 to 5; a scalar, an array or a Range.", _
+                    ARG_WEEK_BASE)
+            Case 19
+                FunctionName = "KPR_Dates_LastWeekdayOfMonth"
+                Summary = "Returns the date of the last given weekday of a month."
+                ArgTexts = VBA.Array( _
+                    ARG_YEAR, _
+                    ARG_MONTH, _
+                    ARG_WEEKDAY, _
+                    ARG_WEEK_BASE)
+            Case 20
+                FunctionName = "KPR_Dates_PillarFromDates"
+                Summary = "Returns the pillar token that labels the interval between two dates, rounded to a curve bucket."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE, _
+                    ARG_DATE, _
+                    "NEAREST, FLOOR or CEILING, in any case. Text, or Empty for the default; one cell or element at most, default NEAREST.")
+            Case 21
+                FunctionName = "KPR_Dates_DateFromPillar"
+                Summary = "Returns the date that a pillar token names from a start date."
+                ArgTexts = VBA.Array( _
+                    ARG_DATE, _
+                    "A pillar token, such as 3M, 1Y6M, 2W3D, ON or TN; a scalar, an array or a Range.")
+            Case 22
+                FunctionName = "KPR_Dates_HostDateSystem"
+                Summary = "Returns the date system of the calling workbook: 1900 or 1904."
+                ArgTexts = Empty
+            Case Else
+                'An unknown position describes nothing: the empty texts above stand
         End Select
 
 End Sub
@@ -509,7 +515,6 @@ Private Function ApplyOptions( _
     ByVal Summary As String, _
     ByVal Category As Variant, _
     ByRef ArgTexts As Variant) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                        SET THE OPTIONS OF A FUNCTION
@@ -559,6 +564,8 @@ Private Function ApplyOptions( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Register.ApplyOptions"
+
     Dim Macro           As String       'Workbook-qualified name of the function
 
 '------------------------------------------------------------------------------

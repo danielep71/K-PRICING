@@ -53,14 +53,13 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "core-dates"        'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 13                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 2111               'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 13                    'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 2111                  'Assertions a complete run evaluates
 
     'The values an output holds before a call, which a rejection must leave in place
     Private Const SENTINEL_SERIAL       As Double = 36526#              '2000-01-01
     Private Const SENTINEL_DELTA        As Double = -424242#            'A delta no token gives
     Private Const SENTINEL_TOKEN        As String = "UNTOUCHED"         'A token no format returns
-
 
 '------------------------------------------------------------------------------
 ' PRIVATE STATE
@@ -118,17 +117,23 @@ Public Sub RunCoreDatesTests()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.RunCoreDatesTests"
+
     Dim ErrNumber       As Long     'Runner error number; 0 for none
     Dim ErrSource       As String   'Runner error source
     Dim ErrDescription  As String   'Runner error description
 
 '------------------------------------------------------------------------------
-' RUN CASES
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Start the run; a refused start propagates directly
         TEST_Harness.BeginRun SUITE_NAME, "NORMAL", EXPECTED_CASES, EXPECTED_ASSERTIONS
     'Send an error that escapes a case to the runner handler
         On Error GoTo RunFailed
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Run every case in a fixed order
         CaseWindowAndDomains
         CaseLeapYearsAndLengths
@@ -171,7 +176,6 @@ End Sub
 Public Sub CertifyCoreDates( _
     ByVal Folder As String, _
     ByVal Fixtures As String)
-
 '
 '------------------------------------------------------------------------------
 '                              CERTIFY THE SUITE
@@ -211,6 +215,8 @@ Public Sub CertifyCoreDates( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CertifyCoreDates"
+
     Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
     Dim RunErrorDescription     As String   'Its description
 
@@ -276,6 +282,11 @@ Private Sub CaseWindowAndDomains()
 ' UPDATED
 '   2026-11-25
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CaseWindowAndDomains"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -393,6 +404,11 @@ Private Sub CaseLeapYearsAndLengths()
 ' UPDATED
 '   2026-11-25
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CaseLeapYearsAndLengths"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -552,6 +568,11 @@ Private Sub CaseDayOfWeek()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CaseDayOfWeek"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -701,6 +722,11 @@ Private Sub CasePeriodBoundaries()
 ' UPDATED
 '   2026-11-25
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CasePeriodBoundaries"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -1030,6 +1056,11 @@ Private Sub CasePeriodEndTests()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CasePeriodEndTests"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -1225,6 +1256,11 @@ Private Sub CaseAddDays()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CaseAddDays"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -1341,6 +1377,11 @@ Private Sub CaseAddMonths()
 ' UPDATED
 '   2026-11-25
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CaseAddMonths"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -1819,7 +1860,8 @@ Private Sub CaseNthWeekday()
 '   Nothing
 '
 ' BEHAVIOR
-'   Locates the first and fifth Monday-based and Sunday-based weekday of months in 1900, 2026 and 9999, and fails each domain
+'   Locates the first and fifth Monday-based and Sunday-based weekday of months in 1900, 2026 and
+'   9999, and fails each domain
 '
 ' ERROR POLICY
 '   An unexpected error is recorded against the case by
@@ -1834,6 +1876,11 @@ Private Sub CaseNthWeekday()
 ' UPDATED
 '   2026-11-25
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CaseNthWeekday"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -2220,6 +2267,11 @@ Private Sub CaseLastWeekday()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CaseLastWeekday"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -2446,6 +2498,11 @@ Private Sub CaseParsePillar()
 ' UPDATED
 '   2026-11-25
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CaseParsePillar"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -2732,6 +2789,11 @@ Private Sub CaseAddPillar()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CaseAddPillar"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -2838,7 +2900,8 @@ Private Sub CaseFormatPillar()
 '   Nothing
 '
 ' BEHAVIOR
-'   Formats intervals of 0 to 40 days from one start, negative intervals, clipped month ends, leap days and the edges of the window
+'   Formats intervals of 0 to 40 days from one start, negative intervals, clipped month ends, leap
+'   days and the edges of the window
 '
 ' ERROR POLICY
 '   An unexpected error is recorded against the case by
@@ -2853,6 +2916,11 @@ Private Sub CaseFormatPillar()
 ' UPDATED
 '   2026-11-25
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CaseFormatPillar"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -4038,7 +4106,7 @@ Private Sub CasePillarRegression()
 
 '
 '------------------------------------------------------------------------------
-'                        CHECK THE REGRESSION PILLAR TOKENS
+'                      CHECK THE REGRESSION PILLAR TOKENS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Oversized pillar tokens: the grammar decides before the numerical range. 28 assertions.
@@ -4072,6 +4140,8 @@ Private Sub CasePillarRegression()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.CasePillarRegression"
+
     Dim HugeDigits      As String   'Four hundred digits, beyond the Double range
 
 '------------------------------------------------------------------------------
@@ -4152,7 +4222,6 @@ End Sub
 Private Sub ProbeLong( _
     ByVal Expected As Long, _
     ByVal Actual As Long)
-
 '
 '------------------------------------------------------------------------------
 '                             PROBE A WHOLE NUMBER
@@ -4164,9 +4233,6 @@ Private Sub ProbeLong( _
 '   The same checks repeat for many rows, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Name of the assertion
-'
 '   Expected
 '     The value from the reference
 '
@@ -4204,7 +4270,6 @@ End Sub
 Private Sub ProbeFlag( _
     ByVal Expected As Boolean, _
     ByVal Actual As Boolean)
-
 '
 '------------------------------------------------------------------------------
 '                               PROBE A BOOLEAN
@@ -4216,9 +4281,6 @@ Private Sub ProbeFlag( _
 '   The same checks repeat for many rows, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Name of the assertion
-'
 '   Expected
 '     The value from the reference
 '
@@ -4256,7 +4318,6 @@ End Sub
 Private Sub ProbeDate( _
     ByVal Expected As Double, _
     ByVal Actual As Date)
-
 '
 '------------------------------------------------------------------------------
 '                                 PROBE A DATE
@@ -4268,9 +4329,6 @@ Private Sub ProbeDate( _
 '   The same checks repeat for many rows, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Name of the assertion
-'
 '   Expected
 '     The serial from the reference
 '
@@ -4308,7 +4366,6 @@ End Sub
 Private Sub ProbeCondition( _
     ByVal Expected As KPRCondition, _
     ByVal Actual As KPRCondition)
-
 '
 '------------------------------------------------------------------------------
 '                              PROBE A CONDITION
@@ -4320,9 +4377,6 @@ Private Sub ProbeCondition( _
 '   The same checks repeat for many rows, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Name of the assertion
-'
 '   Expected
 '     The condition from the contract
 '
@@ -4362,7 +4416,6 @@ Private Sub ProbeAddDays( _
     ByVal Days As Double, _
     ByVal ExpectedAccepted As Boolean, _
     ByVal ExpectedSerial As Double)
-
 '
 '------------------------------------------------------------------------------
 '                            PROBE A SHIFT BY DAYS
@@ -4374,9 +4427,6 @@ Private Sub ProbeAddDays( _
 '   The same checks repeat for many rows, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Prefix of the assertion names
-'
 '   StartSerial, Days
 '     The inputs
 '
@@ -4408,6 +4458,8 @@ Private Sub ProbeAddDays( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.ProbeAddDays"
+
     Dim DateOut         As Date     'Output of the shift, a sentinel on entry
     Dim Accepted        As Boolean  'Whether the shift was accepted
     Dim Expected        As Double   'Serial the output must hold
@@ -4441,7 +4493,6 @@ Private Sub ProbeAddMonths( _
     ByVal KeepEOM As Boolean, _
     ByVal ExpectedAccepted As Boolean, _
     ByVal ExpectedSerial As Double)
-
 '
 '------------------------------------------------------------------------------
 '                           PROBE A SHIFT BY MONTHS
@@ -4453,9 +4504,6 @@ Private Sub ProbeAddMonths( _
 '   The same checks repeat for many rows, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Prefix of the assertion names
-'
 '   StartSerial, Months, KeepEOM
 '     The inputs
 '
@@ -4487,6 +4535,8 @@ Private Sub ProbeAddMonths( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.ProbeAddMonths"
+
     Dim DateOut         As Date     'Output of the shift, a sentinel on entry
     Dim Accepted        As Boolean  'Whether the shift was accepted
     Dim Expected        As Double   'Serial the output must hold
@@ -4522,7 +4572,6 @@ Private Sub ProbeNthWeekday( _
     ByVal MondayBase As Boolean, _
     ByVal ExpectedCondition As KPRCondition, _
     ByVal ExpectedSerial As Double)
-
 '
 '------------------------------------------------------------------------------
 '                            PROBE THE NTH WEEKDAY
@@ -4534,9 +4583,6 @@ Private Sub ProbeNthWeekday( _
 '   The same checks repeat for many rows, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Prefix of the assertion names
-'
 '   YearIn, MonthIn, WeekdayIn, Occurrence, MondayBase
 '     The inputs
 '
@@ -4568,6 +4614,8 @@ Private Sub ProbeNthWeekday( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.ProbeNthWeekday"
+
     Dim DateOut         As Date         'Output of the locator, a sentinel on entry
     Dim Condition       As KPRCondition 'Condition that the locator reported
     Dim Accepted        As Boolean      'Whether a date was found
@@ -4605,7 +4653,6 @@ Private Sub ProbeLastWeekday( _
     ByVal MondayBase As Boolean, _
     ByVal ExpectedCondition As KPRCondition, _
     ByVal ExpectedSerial As Double)
-
 '
 '------------------------------------------------------------------------------
 '                            PROBE THE LAST WEEKDAY
@@ -4617,9 +4664,6 @@ Private Sub ProbeLastWeekday( _
 '   The same checks repeat for many rows, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Prefix of the assertion names
-'
 '   YearIn, MonthIn, WeekdayIn, MondayBase
 '     The inputs
 '
@@ -4651,6 +4695,8 @@ Private Sub ProbeLastWeekday( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.ProbeLastWeekday"
+
     Dim DateOut         As Date         'Output of the locator, a sentinel on entry
     Dim Condition       As KPRCondition 'Condition that the locator reported
     Dim Accepted        As Boolean      'Whether a date was found
@@ -4686,7 +4732,6 @@ Private Sub ProbeParsePillar( _
     ByVal ExpectedMonths As Double, _
     ByVal ExpectedDays As Double, _
     ByVal ExpectedCondition As KPRCondition)
-
 '
 '------------------------------------------------------------------------------
 '                             PROBE A PILLAR PARSE
@@ -4698,9 +4743,6 @@ Private Sub ProbeParsePillar( _
 '   The same checks repeat for many rows, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Prefix of the assertion names
-'
 '   PillarIn
 '     The token
 '
@@ -4732,6 +4774,8 @@ Private Sub ProbeParsePillar( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.ProbeParsePillar"
+
     Dim Months          As Double       'Month delta, a sentinel on entry
     Dim Days            As Double       'Day delta, a sentinel on entry
     Dim Condition       As KPRCondition 'Condition that the parser reported
@@ -4775,7 +4819,6 @@ Private Sub ProbeAddPillar( _
     ByVal Days As Double, _
     ByVal ExpectedCondition As KPRCondition, _
     ByVal ExpectedSerial As Double)
-
 '
 '------------------------------------------------------------------------------
 '                             PROBE A PILLAR SHIFT
@@ -4787,9 +4830,6 @@ Private Sub ProbeAddPillar( _
 '   The same checks repeat for many rows, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Prefix of the assertion names
-'
 '   StartSerial, Months, Days
 '     The inputs
 '
@@ -4821,6 +4861,8 @@ Private Sub ProbeAddPillar( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.ProbeAddPillar"
+
     Dim DateOut         As Date         'Output of the shift, a sentinel on entry
     Dim Condition       As KPRCondition 'Condition that the shift reported
     Dim Accepted        As Boolean      'Whether the shift was accepted
@@ -4857,7 +4899,6 @@ Private Sub ProbeFormatPillar( _
     ByVal Mode As KPRPillarRounding, _
     ByVal ExpectedToken As String, _
     ByVal ExpectedCondition As KPRCondition)
-
 '
 '------------------------------------------------------------------------------
 '                            PROBE A PILLAR FORMAT
@@ -4869,9 +4910,6 @@ Private Sub ProbeFormatPillar( _
 '   The same checks repeat for many rows, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Prefix of the assertion names
-'
 '   StartSerial, EndSerial, Mode
 '     The inputs
 '
@@ -4903,6 +4941,8 @@ Private Sub ProbeFormatPillar( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreDates.ProbeFormatPillar"
+
     Dim TokenOut        As String       'Output of the format, a sentinel on entry
     Dim Condition       As KPRCondition 'Condition that the format reported
     Dim Accepted        As Boolean      'Whether a token was formatted

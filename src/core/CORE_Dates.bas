@@ -474,7 +474,7 @@ Public Function DaysInMonth(ByVal YearIn As Long, ByVal MonthIn As Long) As Long
                 End If
             Case Else
                 'Invalid month; reported rather than raised
-                    DaysInMonth = 0
+                DaysInMonth = 0
         End Select
 
 End Function
@@ -531,7 +531,6 @@ End Function
 Public Function DayOfWeek( _
     ByVal DateIn As Date, _
     ByVal MondayBase As Boolean) As Long
-
 '
 '------------------------------------------------------------------------------
 '                        RETURN THE NUMBER OF A WEEKDAY
@@ -574,6 +573,8 @@ Public Function DayOfWeek( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "CORE_Dates.DayOfWeek"
+
     Dim FirstDay        As VbDayOfWeek  'Weekday that numbers as 1
 
 '------------------------------------------------------------------------------
@@ -1060,7 +1061,6 @@ Public Function TryAddDays( _
     ByVal DateIn As Date, _
     ByVal Days As Double, _
     ByRef DateOut As Date) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                             SHIFT A DATE BY DAYS
@@ -1108,6 +1108,8 @@ Public Function TryAddDays( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "CORE_Dates.TryAddDays"
+
     Dim ResultSerial    As Double   'Shifted serial, gated before conversion
 
 '------------------------------------------------------------------------------
@@ -1303,7 +1305,6 @@ Public Function TryNthWeekday( _
     ByVal MondayBase As Boolean, _
     ByRef DateOut As Date, _
     ByRef Condition As KPRCondition) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                       FIND THE NTH WEEKDAY OF A MONTH
@@ -1357,6 +1358,8 @@ Public Function TryNthWeekday( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "CORE_Dates.TryNthWeekday"
+
     Dim FirstDay        As Date         'First day of the month
     Dim FirstSerial     As Double       'Its serial
     Dim Offset          As Long         'Days from the first day to the first matching weekday
@@ -1426,7 +1429,6 @@ Public Function TryLastWeekday( _
     ByVal MondayBase As Boolean, _
     ByRef DateOut As Date, _
     ByRef Condition As KPRCondition) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                       FIND THE LAST WEEKDAY OF A MONTH
@@ -1476,6 +1478,8 @@ Public Function TryLastWeekday( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "CORE_Dates.TryLastWeekday"
+
     Dim LastDay         As Date         'Last day of the month
     Dim Back            As Long         'Days from the last day back to the weekday
     Dim ResultSerial    As Double       'Candidate serial, gated before conversion
@@ -1709,19 +1713,19 @@ Public Function TryParsePillar( _
         Select Case SBody
             Case "ON", "O/N", "TN", "T/N"
                 'An alias names a fixed point and cannot carry a sign
-                    If HasSign Then
-                        Condition = cdPillarAliasSigned
-                        GoTo Fail
-                    End If
+                If HasSign Then
+                    Condition = cdPillarAliasSigned
+                    GoTo Fail
+                End If
                 'Resolve the alias to its day count
-                    If (SBody = "ON") Or (SBody = "O/N") Then
-                        DaysD = 1#
-                    Else
-                        DaysD = 2#
-                    End If
-                    TokenCount = 1
+                If (SBody = "ON") Or (SBody = "O/N") Then
+                    DaysD = 1#
+                Else
+                    DaysD = 2#
+                End If
+                TokenCount = 1
             Case Else
-                'Not an alias: the generic scanner below reads the token
+        'Not an alias: the generic scanner below reads the token
         End Select
 
 '------------------------------------------------------------------------------
@@ -1736,84 +1740,84 @@ Public Function TryParsePillar( _
             'Grammar has absolute precedence over numerical range. Scan the
             'entire token first so a later unknown/repeated/missing unit wins
             'even when an earlier digits-only quantity would overflow Double.
-                ScanPos = 1
+            ScanPos = 1
+            Do While ScanPos <= BodyLen
+                TokenStart = ScanPos
                 Do While ScanPos <= BodyLen
-                    TokenStart = ScanPos
-                    Do While ScanPos <= BodyLen
-                        ChCode = VBA.AscW(VBA.Mid$(SBody, ScanPos, 1))
-                        If (ChCode < 48) Or (ChCode > 57) Then Exit Do
-                        ScanPos = ScanPos + 1
-                    Loop
-                    If TokenStart = ScanPos Then GoTo Fail
-                    If ScanPos > BodyLen Then GoTo Fail
-
-                    UnitChar = VBA.Mid$(SBody, ScanPos, 1)
-                    Select Case UnitChar
-                        Case "Y"
-                            If SeenY Then
-                                Condition = cdPillarDuplicateUnit
-                                GoTo Fail
-                            End If
-                            SeenY = True
-                        Case "M"
-                            If SeenM Then
-                                Condition = cdPillarDuplicateUnit
-                                GoTo Fail
-                            End If
-                            SeenM = True
-                        Case "W"
-                            If SeenW Then
-                                Condition = cdPillarDuplicateUnit
-                                GoTo Fail
-                            End If
-                            SeenW = True
-                        Case "D"
-                            If SeenD Then
-                                Condition = cdPillarDuplicateUnit
-                                GoTo Fail
-                            End If
-                            SeenD = True
-                        Case Else
-                            GoTo Fail
-                    End Select
-
-                    TokenCount = TokenCount + 1
+                    ChCode = VBA.AscW(VBA.Mid$(SBody, ScanPos, 1))
+                    If (ChCode < 48) Or (ChCode > 57) Then Exit Do
                     ScanPos = ScanPos + 1
                 Loop
+                If TokenStart = ScanPos Then GoTo Fail
+                If ScanPos > BodyLen Then GoTo Fail
+
+                UnitChar = VBA.Mid$(SBody, ScanPos, 1)
+                Select Case UnitChar
+                    Case "Y"
+                        If SeenY Then
+                            Condition = cdPillarDuplicateUnit
+                            GoTo Fail
+                        End If
+                        SeenY = True
+                    Case "M"
+                        If SeenM Then
+                            Condition = cdPillarDuplicateUnit
+                            GoTo Fail
+                        End If
+                        SeenM = True
+                    Case "W"
+                        If SeenW Then
+                            Condition = cdPillarDuplicateUnit
+                            GoTo Fail
+                        End If
+                        SeenW = True
+                    Case "D"
+                        If SeenD Then
+                            Condition = cdPillarDuplicateUnit
+                            GoTo Fail
+                        End If
+                        SeenD = True
+                    Case Else
+                        GoTo Fail
+                End Select
+
+                TokenCount = TokenCount + 1
+                ScanPos = ScanPos + 1
+            Loop
 
 '------------------------------------------------------------------------------
 ' PASS 2 - CONVERT VALIDATED QUANTITIES
 '------------------------------------------------------------------------------
             'Only a token whose complete grammar is valid reaches conversion.
             'A conversion failure therefore unambiguously means numerical range.
-                ScanPos = 1
+            ScanPos = 1
+            Do While ScanPos <= BodyLen
+                TokenStart = ScanPos
                 Do While ScanPos <= BodyLen
-                    TokenStart = ScanPos
-                    Do While ScanPos <= BodyLen
-                        ChCode = VBA.AscW(VBA.Mid$(SBody, ScanPos, 1))
-                        If (ChCode < 48) Or (ChCode > 57) Then Exit Do
-                        ScanPos = ScanPos + 1
-                    Loop
-
-                    UnitChar = VBA.Mid$(SBody, ScanPos, 1)
-                    On Error GoTo RangeFail
-                    QtyD = VBA.CDbl(VBA.Mid$(SBody, TokenStart, ScanPos - TokenStart))
-                    On Error GoTo Fail
-
-                    Select Case UnitChar
-                        Case "Y"
-                            YearsD = QtyD
-                        Case "M"
-                            MonthsD = QtyD
-                        Case "W"
-                            WeeksD = QtyD
-                        Case "D"
-                            DaysD = QtyD
-                        Case Else
-                            'Unreachable: pass 1 admitted only Y, M, W and D
-                    End Select
+                    ChCode = VBA.AscW(VBA.Mid$(SBody, ScanPos, 1))
+                    If (ChCode < 48) Or (ChCode > 57) Then Exit Do
                     ScanPos = ScanPos + 1
                 Loop
+
+                UnitChar = VBA.Mid$(SBody, ScanPos, 1)
+                On Error GoTo RangeFail
+                QtyD = VBA.CDbl(VBA.Mid$(SBody, TokenStart, ScanPos - TokenStart))
+                On Error GoTo Fail
+
+                Select Case UnitChar
+                    Case "Y"
+                        YearsD = QtyD
+                    Case "M"
+                        MonthsD = QtyD
+                    Case "W"
+                        WeeksD = QtyD
+                    Case "D"
+                        DaysD = QtyD
+                    Case Else
+                'Unreachable: pass 1 admitted only Y, M, W and D
+                End Select
+                ScanPos = ScanPos + 1
+            Loop
 
         End If
 
@@ -1866,7 +1870,6 @@ Public Function TryAddPillar( _
     ByVal TotalDays As Double, _
     ByRef DateOut As Date, _
     ByRef Condition As KPRCondition) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                        ADD A PARSED PILLAR TO A DATE
@@ -1917,6 +1920,8 @@ Public Function TryAddPillar( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "CORE_Dates.TryAddPillar"
+
     Dim WorkDate        As Date     'Date after the month shift
     Dim ResultSerial    As Double   'Final serial, gated before conversion
 
@@ -2165,56 +2170,56 @@ Public Function TryFormatPillar( _
         For K = 1 To CandN
 
             'Signed progress from DtStart and absolute distance to DtEnd
-                Reach = VBA.CDbl(Direction) * (CandSerial(K) - SerialStart)
-                Dist = VBA.CLng(VBA.Abs(CandSerial(K) - SerialEnd))
-                Passes = AnchorPasses(CandSerial(K), SerialEnd, Direction) Or (Dist = 0)
+            Reach = VBA.CDbl(Direction) * (CandSerial(K) - SerialStart)
+            Dist = VBA.CLng(VBA.Abs(CandSerial(K) - SerialEnd))
+            Passes = AnchorPasses(CandSerial(K), SerialEnd, Direction) Or (Dist = 0)
 
             'Eligibility and ordering by mode
-                Better = False
-                Select Case Mode
+            Better = False
+            Select Case Mode
 
-                    Case prFloor
-                        'Must not pass; prefer the farthest reach
-                            If Not AnchorPasses(CandSerial(K), SerialEnd, Direction) Then
-                                If Best = 0 Then
-                                    Better = True
-                                ElseIf Reach > BestReach Then
-                                    Better = True
-                                ElseIf Reach = BestReach Then
-                                    Better = TieToMonth(K, Best, CandIsMonth, CandCount)
-                                End If
-                            End If
+                Case prFloor
+                    'Must not pass; prefer the farthest reach
+                    If Not AnchorPasses(CandSerial(K), SerialEnd, Direction) Then
+                        If Best = 0 Then
+                            Better = True
+                        ElseIf Reach > BestReach Then
+                            Better = True
+                        ElseIf Reach = BestReach Then
+                            Better = TieToMonth(K, Best, CandIsMonth, CandCount)
+                        End If
+                    End If
 
-                    Case prCeiling
-                        'Must reach or pass; prefer the smallest reach
-                            If Passes Then
-                                If Best = 0 Then
-                                    Better = True
-                                ElseIf Reach < BestReach Then
-                                    Better = True
-                                ElseIf Reach = BestReach Then
-                                    Better = TieToMonth(K, Best, CandIsMonth, CandCount)
-                                End If
-                            End If
+                Case prCeiling
+                    'Must reach or pass; prefer the smallest reach
+                    If Passes Then
+                        If Best = 0 Then
+                            Better = True
+                        ElseIf Reach < BestReach Then
+                            Better = True
+                        ElseIf Reach = BestReach Then
+                            Better = TieToMonth(K, Best, CandIsMonth, CandCount)
+                        End If
+                    End If
 
-                    Case Else
-                        'NEAREST: smallest distance, ties by the shared rule
-                            If Best = 0 Then
-                                Better = True
-                            ElseIf Dist < BestDist Then
-                                Better = True
-                            ElseIf Dist = BestDist Then
-                                Better = TieToMonth(K, Best, CandIsMonth, CandCount)
-                            End If
+                Case Else
+                    'NEAREST: smallest distance, ties by the shared rule
+                    If Best = 0 Then
+                        Better = True
+                    ElseIf Dist < BestDist Then
+                        Better = True
+                    ElseIf Dist = BestDist Then
+                        Better = TieToMonth(K, Best, CandIsMonth, CandCount)
+                    End If
 
-                End Select
+            End Select
 
             'Record the new best
-                If Better Then
-                    Best = K
-                    BestReach = Reach
-                    BestDist = Dist
-                End If
+            If Better Then
+                Best = K
+                BestReach = Reach
+                BestDist = Dist
+            End If
 
         Next K
     'No candidate satisfied the mode: only CEILING can arrive here

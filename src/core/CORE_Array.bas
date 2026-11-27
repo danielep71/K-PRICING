@@ -194,6 +194,7 @@ Public Function ArrayRank(ByVal ArrayIn As Variant) As Long
 End Function
 
 Public Function TryUnwrapScalar(ByVal ValueIn As Variant, ByRef ScalarOut As Variant) As Boolean
+
 '
 '------------------------------------------------------------------------------
 '                               UNWRAP A SCALAR
@@ -263,41 +264,41 @@ Public Function TryUnwrapScalar(ByVal ValueIn As Variant, ByRef ScalarOut As Var
     'Test the argument itself; a Let copy would dereference the default member
         If IsObject(ValueIn) Then
             'An object is never a plain value: M_Ranges reads a Range first
-                GoTo Fail
+            GoTo Fail
 
-    'If an array arrived, accept only a 1x1 wrapper (scalar contract)
+        'If an array arrived, accept only a 1x1 wrapper (scalar contract)
         ElseIf IsArray(ValueIn) Then
             'Classify the array shape once
-                ArrRank = ArrayRank(ValueIn)
+            ArrRank = ArrayRank(ValueIn)
             'Reject unsupported shapes before any bound is read
-                If ArrRank < 1 Or ArrRank > 2 Then GoTo Fail
+            If ArrRank < 1 Or ArrRank > 2 Then GoTo Fail
             'Two-dimensional wrapper
-                If ArrRank = 2 Then
-                    'Capture bounds
-                        LB1 = LBound(ValueIn, 1)
-                        UB1 = UBound(ValueIn, 1)
-                        LB2 = LBound(ValueIn, 2)
-                        UB2 = UBound(ValueIn, 2)
-                    'Reject anything larger than 1x1
-                        If (UB1 <> LB1) Or (UB2 <> LB2) Then GoTo Fail
-                    'A wrapped object or array is not a scalar payload
-                        If IsObject(ValueIn(LB1, LB2)) Or IsArray(ValueIn(LB1, LB2)) Then GoTo Fail
-                    'Unwrap the scalar payload
-                        Payload = ValueIn(LB1, LB2)
+            If ArrRank = 2 Then
+                'Capture bounds
+                LB1 = LBound(ValueIn, 1)
+                UB1 = UBound(ValueIn, 1)
+                LB2 = LBound(ValueIn, 2)
+                UB2 = UBound(ValueIn, 2)
+                'Reject anything larger than 1x1
+                If (UB1 <> LB1) Or (UB2 <> LB2) Then GoTo Fail
+                'A wrapped object or array is not a scalar payload
+                If IsObject(ValueIn(LB1, LB2)) Or IsArray(ValueIn(LB1, LB2)) Then GoTo Fail
+                'Unwrap the scalar payload
+                Payload = ValueIn(LB1, LB2)
             'One-dimensional wrapper
-                Else
-                    'Capture bounds
-                        LB1 = LBound(ValueIn)
-                        UB1 = UBound(ValueIn)
-                    'Reject vectors with more than one element
-                        If UB1 <> LB1 Then GoTo Fail
-                    'A wrapped object or array is not a scalar payload
-                        If IsObject(ValueIn(LB1)) Or IsArray(ValueIn(LB1)) Then GoTo Fail
-                    'Unwrap the scalar payload
-                        Payload = ValueIn(LB1)
-                End If
+            Else
+                'Capture bounds
+                LB1 = LBound(ValueIn)
+                UB1 = UBound(ValueIn)
+                'Reject vectors with more than one element
+                If UB1 <> LB1 Then GoTo Fail
+                'A wrapped object or array is not a scalar payload
+                If IsObject(ValueIn(LB1)) Or IsArray(ValueIn(LB1)) Then GoTo Fail
+                'Unwrap the scalar payload
+                Payload = ValueIn(LB1)
+            End If
 
-    'Neither object nor array: the argument is already a scalar
+        'Neither object nor array: the argument is already a scalar
         Else
             Payload = ValueIn
         End If
@@ -633,60 +634,60 @@ Public Function TryMaterialize( _
 
                 Case 1
                     'One-dimensional is 1 x N
-                        LB1 = LBound(ValueIn)
-                        UB1 = UBound(ValueIn)
-                        If UB1 < LB1 Then GoTo Unsupported
-                        RowCount = 1
-                        ColCount = UB1 - LB1 + 1
-                        If Not CheckCapacity(RowCount, ColCount, Condition) Then Exit Function
+                    LB1 = LBound(ValueIn)
+                    UB1 = UBound(ValueIn)
+                    If UB1 < LB1 Then GoTo Unsupported
+                    RowCount = 1
+                    ColCount = UB1 - LB1 + 1
+                    If Not CheckCapacity(RowCount, ColCount, Condition) Then Exit Function
 
                     'A single element is a scalar; an element that is an array is jagged
-                        If ColCount = 1 Then
-                            If IsArray(ValueIn(LB1)) Or IsObject(ValueIn(LB1)) Then GoTo Unsupported
-                            Kind = skScalar
-                            Payload = ValueIn(LB1)
-                        Else
-                            ReDim Snapshot(1 To 1, 1 To ColCount)
-                            For C = 1 To ColCount
-                                If IsArray(ValueIn(LB1 + C - 1)) Or IsObject(ValueIn(LB1 + C - 1)) Then GoTo Unsupported
-                                Snapshot(1, C) = ValueIn(LB1 + C - 1)
-                            Next C
-                            Kind = skArray
-                            Payload = Snapshot
-                        End If
+                    If ColCount = 1 Then
+                        If IsArray(ValueIn(LB1)) Or IsObject(ValueIn(LB1)) Then GoTo Unsupported
+                        Kind = skScalar
+                        Payload = ValueIn(LB1)
+                    Else
+                        ReDim Snapshot(1 To 1, 1 To ColCount)
+                        For C = 1 To ColCount
+                            If IsArray(ValueIn(LB1 + C - 1)) Or IsObject(ValueIn(LB1 + C - 1)) Then GoTo Unsupported
+                            Snapshot(1, C) = ValueIn(LB1 + C - 1)
+                        Next C
+                        Kind = skArray
+                        Payload = Snapshot
+                    End If
 
                 Case 2
                     'Two-dimensional: rows then columns, bounds normalized to 1
-                        LB1 = LBound(ValueIn, 1)
-                        UB1 = UBound(ValueIn, 1)
-                        LB2 = LBound(ValueIn, 2)
-                        UB2 = UBound(ValueIn, 2)
-                        If (UB1 < LB1) Or (UB2 < LB2) Then GoTo Unsupported
-                        RowCount = UB1 - LB1 + 1
-                        ColCount = UB2 - LB2 + 1
-                        If Not CheckCapacity(RowCount, ColCount, Condition) Then Exit Function
+                    LB1 = LBound(ValueIn, 1)
+                    UB1 = UBound(ValueIn, 1)
+                    LB2 = LBound(ValueIn, 2)
+                    UB2 = UBound(ValueIn, 2)
+                    If (UB1 < LB1) Or (UB2 < LB2) Then GoTo Unsupported
+                    RowCount = UB1 - LB1 + 1
+                    ColCount = UB2 - LB2 + 1
+                    If Not CheckCapacity(RowCount, ColCount, Condition) Then Exit Function
 
                     'A single element is a scalar; any element that is an array is jagged
-                        If (RowCount = 1) And (ColCount = 1) Then
-                            If IsArray(ValueIn(LB1, LB2)) Or IsObject(ValueIn(LB1, LB2)) Then GoTo Unsupported
-                            Kind = skScalar
-                            Payload = ValueIn(LB1, LB2)
-                        Else
-                            ReDim Snapshot(1 To RowCount, 1 To ColCount)
-                            For R = 1 To RowCount
-                                For C = 1 To ColCount
-                                    If IsArray(ValueIn(LB1 + R - 1, LB2 + C - 1)) Or _
-                                        IsObject(ValueIn(LB1 + R - 1, LB2 + C - 1)) Then GoTo Unsupported
-                                    Snapshot(R, C) = ValueIn(LB1 + R - 1, LB2 + C - 1)
-                                Next C
-                            Next R
-                            Kind = skArray
-                            Payload = Snapshot
-                        End If
+                    If (RowCount = 1) And (ColCount = 1) Then
+                        If IsArray(ValueIn(LB1, LB2)) Or IsObject(ValueIn(LB1, LB2)) Then GoTo Unsupported
+                        Kind = skScalar
+                        Payload = ValueIn(LB1, LB2)
+                    Else
+                        ReDim Snapshot(1 To RowCount, 1 To ColCount)
+                        For R = 1 To RowCount
+                            For C = 1 To ColCount
+                                If IsArray(ValueIn(LB1 + R - 1, LB2 + C - 1)) Or _
+                                    IsObject(ValueIn(LB1 + R - 1, LB2 + C - 1)) Then GoTo Unsupported
+                                Snapshot(R, C) = ValueIn(LB1 + R - 1, LB2 + C - 1)
+                            Next C
+                        Next R
+                        Kind = skArray
+                        Payload = Snapshot
+                    End If
 
                 Case Else
                     'Rank 0 cannot occur here; rank 3 and above is unsupported
-                        GoTo Unsupported
+                    GoTo Unsupported
 
             End Select
 

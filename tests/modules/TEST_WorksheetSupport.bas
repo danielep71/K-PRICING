@@ -56,9 +56,9 @@ Option Private Module
 ' PRIVATE CONSTANTS
 '------------------------------------------------------------------------------
     'Where the arguments and the formula stand on the scratch sheet
-    Private Const ARGUMENT_ROW      As Long = 3     'First row of every argument
-    Private Const ARGUMENT_SPACING  As Long = 26    'Columns between two arguments
-    Private Const FORMULA_CELL      As String = "A1"  'The cell of the formula
+    Private Const ARGUMENT_ROW      As Long = 3      'First row of every argument
+    Private Const ARGUMENT_SPACING  As Long = 26     'Columns between two arguments
+    Private Const FORMULA_CELL      As String = "A1" 'The cell of the formula
 
 '------------------------------------------------------------------------------
 ' PRIVATE STATE
@@ -79,10 +79,9 @@ Option Private Module
 
 Public Function OpenScratch( _
     ByVal Date1904 As Boolean) As Worksheet
-
 '
 '------------------------------------------------------------------------------
-'                          OPEN A SCRATCH WORKBOOK
+'                           OPEN A SCRATCH WORKBOOK
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Opens a new workbook in the date system asked for, with manual calculation, and returns
@@ -120,6 +119,8 @@ Public Function OpenScratch( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_WorksheetSupport.OpenScratch"
+
     Dim Detail          As String       'What an earlier close could not do
 
 '------------------------------------------------------------------------------
@@ -147,7 +148,7 @@ Public Function CloseScratch() As String
 
 '
 '------------------------------------------------------------------------------
-'                         CLOSE THE SCRATCH WORKBOOK
+'                          CLOSE THE SCRATCH WORKBOOK
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Closes the scratch workbook without saving and restores the calculation mode.
@@ -182,6 +183,8 @@ Public Function CloseScratch() As String
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_WorksheetSupport.CloseScratch"
+
     Dim Detail          As String       'Failures, joined by "; "
 
 '------------------------------------------------------------------------------
@@ -227,10 +230,9 @@ Public Function CalculateCall( _
     ByVal FunctionName As String, _
     ByVal Kind As String, _
     ParamArray Arguments() As Variant) As String
-
 '
 '------------------------------------------------------------------------------
-'                     CALCULATE ONE FORMULA ON THE SHEET
+'                      CALCULATE ONE FORMULA ON THE SHEET
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Writes the arguments to cells, calculates a formula that calls the function on them and
@@ -276,6 +278,8 @@ Public Function CalculateCall( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_WorksheetSupport.CalculateCall"
+
     Dim References      As String       'The arguments' addresses, comma-separated
     Dim Index           As Long         'Position of an argument
 
@@ -302,10 +306,9 @@ End Function
 
 Public Function Qualified( _
     ByVal FunctionName As String) As String
-
 '
 '------------------------------------------------------------------------------
-'                    QUALIFY A FUNCTION WITH ITS WORKBOOK
+'                     QUALIFY A FUNCTION WITH ITS WORKBOOK
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the function's name as a formula in another workbook calls it.
@@ -348,10 +351,9 @@ End Function
 Public Function EncodeCell( _
     ByVal Value As Variant, _
     ByVal Kind As String) As String
-
 '
 '------------------------------------------------------------------------------
-'                           ENCODE A CELL'S VALUE
+'                            ENCODE A CELL'S VALUE
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the encoded text of a cell's value, reading a number as the expected kind.
@@ -418,7 +420,6 @@ Private Function PutArgument( _
     ByVal Sheet As Worksheet, _
     ByVal Position As Long, _
     ByVal Value As Variant) As String
-
 '
 '------------------------------------------------------------------------------
 '                         WRITE ONE ARGUMENT TO CELLS
@@ -463,6 +464,8 @@ Private Function PutArgument( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_WorksheetSupport.PutArgument"
+
     Dim Anchor          As Range        'The argument's first cell
     Dim RowIndex        As Long         'Row of an element
     Dim ColIndex        As Long         'Column of an element
@@ -504,7 +507,6 @@ End Function
 Private Sub PutCell( _
     ByVal Cell As Range, _
     ByVal Value As Variant)
-
 '
 '------------------------------------------------------------------------------
 '                          WRITE ONE VALUE TO A CELL

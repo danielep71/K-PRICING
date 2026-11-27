@@ -52,8 +52,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "core-err-parse"    'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 13                  'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 632                 'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 13                    'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 632                   'Assertions a complete run evaluates
 
     'The native error numbers that the Conditions table lists
     Private Const ERROR_VALUE_CODE      As Long = 2015                  '#VALUE!
@@ -64,7 +64,6 @@ Option Private Module
     Private Const SENTINEL_SERIAL       As Double = 36526#              '2000-01-01
     Private Const SENTINEL_LONG         As Long = 424242                'A Long no case parses
     Private Const SENTINEL_TOKEN        As String = "UNTOUCHED"         'A token no parser returns
-
 
 '------------------------------------------------------------------------------
 ' PRIVATE STATE
@@ -122,17 +121,23 @@ Public Sub RunCoreErrParseTests()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.RunCoreErrParseTests"
+
     Dim ErrNumber       As Long     'Runner error number; 0 for none
     Dim ErrSource       As String   'Runner error source
     Dim ErrDescription  As String   'Runner error description
 
 '------------------------------------------------------------------------------
-' RUN CASES
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Start the run; a refused start propagates directly
         TEST_Harness.BeginRun SUITE_NAME, "NORMAL", EXPECTED_CASES, EXPECTED_ASSERTIONS
     'Send an error that escapes a case to the runner handler
         On Error GoTo RunFailed
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Run every case in a fixed order
         CaseErrorConstructors
         CaseConditionRegistry
@@ -175,7 +180,6 @@ End Sub
 Public Sub CertifyCoreErrParse( _
     ByVal Folder As String, _
     ByVal Fixtures As String)
-
 '
 '------------------------------------------------------------------------------
 '                              CERTIFY THE SUITE
@@ -215,6 +219,8 @@ Public Sub CertifyCoreErrParse( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CertifyCoreErrParse"
+
     Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
     Dim RunErrorDescription     As String   'Its description
 
@@ -282,6 +288,11 @@ Private Sub CaseErrorConstructors()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseErrorConstructors"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -347,6 +358,11 @@ Private Sub CaseConditionRegistry()
 ' UPDATED
 '   2026-11-25
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseConditionRegistry"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -510,6 +526,11 @@ Private Sub CaseUnmappedConditions()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseUnmappedConditions"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -591,8 +612,10 @@ Private Sub CaseDateAccepted()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseDateAccepted"
+
     Dim WithTime      As Variant  'A date with a time of day
-    Dim BelowNextDay   As Variant  'A Decimal serial 1E-14 below 46388
+    Dim BelowNextDay  As Variant  'A Decimal serial 1E-14 below 46388
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -726,6 +749,11 @@ Private Sub CaseDateTextRejected()
 ' UPDATED
 '   2026-11-25
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseDateTextRejected"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -916,6 +944,8 @@ Private Sub CaseDateTypeRejected()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseDateTypeRejected"
+
     Dim Item            As Collection   'An object, which is never a date
 
 '------------------------------------------------------------------------------
@@ -1009,6 +1039,8 @@ Private Sub CaseDateWindow()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseDateWindow"
+
     Dim BelowMin      As Variant  'A Decimal serial 1E-14 below 61
 
 '------------------------------------------------------------------------------
@@ -1140,6 +1172,8 @@ Private Sub CaseLongAccepted()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseLongAccepted"
+
     Dim Residue          As Double   'A Double a hair below or above 3
     Dim DecimalInside    As Variant  'A Decimal 1E-9 less one unit in 3 away from 3
 
@@ -1273,6 +1307,8 @@ Private Sub CaseLongRejected()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseLongRejected"
+
     Dim Item             As Collection   'An object, which is never an integer
     Dim DecimalOutside   As Variant      'A Decimal 1E-8 above 3
     Dim DecimalAboveMax  As Variant      'A Decimal 1E-10 above the largest Long
@@ -1429,6 +1465,11 @@ Private Sub CaseBoolControl()
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseBoolControl"
+
+'------------------------------------------------------------------------------
 ' INITIALIZE
 '------------------------------------------------------------------------------
     'Record an unexpected error against the case
@@ -1530,6 +1571,11 @@ Private Sub CaseRoundingControl()
 ' UPDATED
 '   2026-11-25
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseRoundingControl"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -1639,7 +1685,7 @@ Private Sub CaseDateRegression()
 
 '
 '------------------------------------------------------------------------------
-'                         CHECK THE REGRESSION DATE INPUTS
+'                       CHECK THE REGRESSION DATE INPUTS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Regression date inputs that the cases above do not hold. 114 assertions.
@@ -1673,6 +1719,8 @@ Private Sub CaseDateRegression()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseDateRegression"
+
     'None
 
 '------------------------------------------------------------------------------
@@ -1866,7 +1914,7 @@ Private Sub CaseLongRegression()
 
 '
 '------------------------------------------------------------------------------
-'                       CHECK THE REGRESSION INTEGER INPUTS
+'                     CHECK THE REGRESSION INTEGER INPUTS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Regression integer inputs that the cases above do not hold. 51 assertions.
@@ -1900,6 +1948,8 @@ Private Sub CaseLongRegression()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.CaseLongRegression"
+
     Dim DecimalOutside  As Variant      'A Decimal 1.000000001E-9 above a whole number
 
 '------------------------------------------------------------------------------
@@ -2016,7 +2066,6 @@ Private Sub ProbeCondition( _
     ByVal Identifier As String, _
     ByVal Condition As KPRCondition, _
     ByVal ExpectedCode As Long)
-
 '
 '------------------------------------------------------------------------------
 '                             PROBE ONE CONDITION
@@ -2072,7 +2121,6 @@ End Sub
 Private Sub ProbeName( _
     ByVal Condition As KPRCondition, _
     ByVal Expected As String)
-
 '
 '------------------------------------------------------------------------------
 '                           PROBE ONE CONDITION NAME
@@ -2086,9 +2134,6 @@ Private Sub ProbeName( _
 '   value to check, only an identifier or none
 '
 ' INPUTS
-'   Label
-'     Stable prefix of the assertion name
-'
 '   Condition
 '     The member or code
 '
@@ -2125,7 +2170,6 @@ End Sub
 
 Private Sub ProbeUnmapped( _
     ByVal Condition As KPRCondition)
-
 '
 '------------------------------------------------------------------------------
 '                         PROBE AN UNMAPPED CONDITION
@@ -2139,9 +2183,6 @@ Private Sub ProbeUnmapped( _
 '   defect that must not become a plausible error value
 '
 ' INPUTS
-'   Label
-'     Stable prefix of the assertion names
-'
 '   Condition
 '     A member or code that must not be mapped
 '
@@ -2169,6 +2210,8 @@ Private Sub ProbeUnmapped( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.ProbeUnmapped"
+
     Dim Mapped          As Variant      'Result of the mapper, never assigned when it raises
     Dim RaisedNumber    As Long         'Err.Number captured after the call
     Dim RaisedSource    As String       'Err.Source captured after the call
@@ -2202,7 +2245,6 @@ Private Sub ProbeDate( _
     ByVal ScalarIn As Variant, _
     ByVal ExpectedSerial As Double, _
     ByVal ExpectedCondition As KPRCondition)
-
 '
 '------------------------------------------------------------------------------
 '                            PROBE ONE DATE SCALAR
@@ -2215,9 +2257,6 @@ Private Sub ProbeDate( _
 '   Every date case checks the same three facts, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Stable prefix of the assertion names
-'
 '   ScalarIn
 '     The scalar to parse
 '
@@ -2251,6 +2290,8 @@ Private Sub ProbeDate( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.ProbeDate"
+
     Dim ParsedDate      As Date             'Output of the parser, a sentinel on entry
     Dim Condition       As KPRCondition     'Condition that the parser reported
     Dim Accepted        As Boolean          'Whether the parser accepted the scalar
@@ -2287,7 +2328,6 @@ Private Sub ProbeLong( _
     ByVal ScalarIn As Variant, _
     ByVal ExpectedValue As Long, _
     ByVal ExpectedCondition As KPRCondition)
-
 '
 '------------------------------------------------------------------------------
 '                           PROBE ONE INTEGER SCALAR
@@ -2300,9 +2340,6 @@ Private Sub ProbeLong( _
 '   Every integer case checks the same three facts, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Stable prefix of the assertion names
-'
 '   ScalarIn
 '     The scalar to parse
 '
@@ -2335,6 +2372,8 @@ Private Sub ProbeLong( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.ProbeLong"
+
     Dim ParsedLong      As Long             'Output of the parser, a sentinel on entry
     Dim Condition       As KPRCondition     'Condition that the parser reported
     Dim Accepted        As Boolean          'Whether the parser accepted the scalar
@@ -2372,7 +2411,6 @@ Private Sub ProbeBool( _
     ByVal DefaultValue As Boolean, _
     ByVal ExpectedValue As Boolean, _
     ByVal ExpectedCondition As KPRCondition)
-
 '
 '------------------------------------------------------------------------------
 '                          PROBE ONE BOOLEAN CONTROL
@@ -2385,9 +2423,6 @@ Private Sub ProbeBool( _
 '   Every Boolean control case checks the same three facts, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Stable prefix of the assertion names
-'
 '   ControlIn
 '     The control to parse
 '
@@ -2423,6 +2458,8 @@ Private Sub ProbeBool( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.ProbeBool"
+
     Dim ParsedBool      As Boolean          'Output of the parser, True on entry
     Dim Condition       As KPRCondition     'Condition that the parser reported
     Dim Accepted        As Boolean          'Whether the parser accepted the control
@@ -2460,7 +2497,6 @@ Private Sub ProbeRounding( _
     ByVal ControlIn As Variant, _
     ByVal ExpectedToken As String, _
     ByVal ExpectedCondition As KPRCondition)
-
 '
 '------------------------------------------------------------------------------
 '                          PROBE ONE ROUNDING CONTROL
@@ -2473,9 +2509,6 @@ Private Sub ProbeRounding( _
 '   Every rounding case checks the same three facts, so they are stated once
 '
 ' INPUTS
-'   Label
-'     Stable prefix of the assertion names
-'
 '   ControlIn
 '     The control to parse
 '
@@ -2508,6 +2541,8 @@ Private Sub ProbeRounding( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreErrParse.ProbeRounding"
+
     Dim TokenOut        As String           'Output of the parser, a sentinel on entry
     Dim Condition       As KPRCondition     'Condition that the parser reported
     Dim Accepted        As Boolean          'Whether the parser accepted the control

@@ -203,12 +203,13 @@
       "proofs": [
         "tests.test_check_vba_layout.LayoutTest.test_invalid_fixtures_fail",
         "tests.test_check_vba_layout.LayoutTest.test_main_exits_0_when_valid_and_1_when_invalid",
+        "tests.test_check_vba_layout.BodyTest.test_invalid_fixtures_fail",
         "tests.test_check_vba_layout.BaselineTest.test_an_unlisted_module_out_of_layout_fails",
         "tests.test_check_vba_layout.BaselineTest.test_a_listed_module_in_layout_fails_until_removed",
         "tests.test_check_vba_layout.BaselineTest.test_a_listed_path_that_is_not_a_tracked_module_fails",
         "tests.test_check_vba_layout.BaselineTest.test_baseline_errors_exit_2"
       ],
-      "negative_claim": "a banner that is not 79 characters, a missing component header, a procedure header with a missing, repeated, unknown or out-of-order field, a field with no text and an UPDATED field that is not a date fail the check; so do a module out of layout that the baseline does not list, a listed module that is in layout for both layout tools, a listed path that is not a tracked module, and a malformed baseline (exit status 2)",
+      "negative_claim": "a banner that is not 79 characters, a missing component header, a procedure header with a missing, repeated, unknown or out-of-order field, a field with no text and an UPDATED field that is not a date fail the check; so does each body rule broken once: a title not centred, wrong blank lines around a signature, section banner, group banner or End, a DECLARE without the right PROC_NAME or missing, sections out of order, a first handler outside INITIALIZE or without a clean exit before its label, a misaligned As or trailing comment, a Hungarian local name, INPUTS that do not match the signature or the component level, RETURNS of a Sub that is not Nothing, a line over 120 characters, InStr without a compare mode and Select Case without Case Else; so do a module out of layout that the baseline does not list, a listed module that is in layout for both layout tools, a listed path that is not a tracked module, and a malformed baseline (exit status 2)",
       "state": "green"
     },
     {

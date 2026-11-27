@@ -50,8 +50,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "worksheet-cases"   'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 3                   'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 77                  'Assertions a complete run evaluates
+    Private Const EXPECTED_CASES        As Long = 3                     'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 77                    'Assertions a complete run evaluates
 
 
 '
@@ -107,7 +107,6 @@ End Sub
 Public Sub CertifyWorksheetCases( _
     ByVal Folder As String, _
     ByVal Fixtures As String)
-
 '
 '------------------------------------------------------------------------------
 '                              CERTIFY THE SUITE
@@ -148,6 +147,8 @@ Public Sub CertifyWorksheetCases( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_WorksheetCases.CertifyWorksheetCases"
+
     Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
     Dim RunErrorDescription     As String   'Its description
 
@@ -217,17 +218,23 @@ Private Sub RunSuite()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_WorksheetCases.RunSuite"
+
     Dim ErrNumber       As Long     'Runner error number; 0 for none
     Dim ErrSource       As String   'Runner error source
     Dim ErrDescription  As String   'Runner error description
 
 '------------------------------------------------------------------------------
-' RUN
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Start the run; a refused start propagates directly
         TEST_Harness.BeginRun SUITE_NAME, "NORMAL", EXPECTED_CASES, EXPECTED_ASSERTIONS
     'Send an error that escapes a case to the runner handler
         On Error GoTo RunFailed
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Run every case in a fixed order
         CaseWs1900Part01
         CaseWs1904Part01
@@ -306,6 +313,8 @@ Private Sub CaseWs1900Part01()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_WorksheetCases.CaseWs1900Part01"
+
     Dim Sheet           As Worksheet    'The scratch sheet
     Dim Actual          As String       'The encoded result of a case
     Dim Detail          As String       'What closing the workbook could not restore
@@ -331,99 +340,144 @@ Private Sub CaseWs1900Part01()
     'Identifiable 1900 worksheet caller.
         Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_HostDateSystem", "lng")
         TEST_Harness.AssertEqualText "host-diagnostic-ws1900", "lng:1900", Actual
-        TEST_Harness.RecordTextResult "host-diagnostic-ws1900", vbNullString, "host_date_system", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "host-diagnostic-ws1900", vbNullString, "host_date_system", _
+            vbNullString, vbNullString, Actual
     'A 1900 worksheet leaves propagation as the source of #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", CVErr(2042))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", CVErr( _
+            2042))
         TEST_Harness.AssertEqualText "host-propagated-na-ws1900", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "host-propagated-na-ws1900", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "host-propagated-na-ws1900", vbNullString, _
+            "period_end_date", vbNullString, vbNullString, Actual
     '1900 worksheet evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "date", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "date", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "host-value-ws1900", "date:2024-02-29", Actual
-        TEST_Harness.RecordTextResult "host-value-ws1900", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "host-value-ws1900", vbNullString, "period_end_date", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddDays", "date", DateSerial(2024, 2, 10), 20#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddDays", "date", _
+            DateSerial(2024, 2, 10), 20#)
         TEST_Harness.AssertEqualText "matrix-adddays-ws1900", "date:2024-03-01", Actual
-        TEST_Harness.RecordTextResult "matrix-adddays-ws1900", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-adddays-ws1900", vbNullString, "shifted_date", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddMonths", "date", DateSerial(2024, 1, 31), 1#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddMonths", "date", _
+            DateSerial(2024, 1, 31), 1#)
         TEST_Harness.AssertEqualText "matrix-addmonths-ws1900", "date:2024-02-29", Actual
-        TEST_Harness.RecordTextResult "matrix-addmonths-ws1900", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-addmonths-ws1900", vbNullString, "shifted_date", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddWeeks", "date", DateSerial(2024, 2, 10), 3#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddWeeks", "date", _
+            DateSerial(2024, 2, 10), 3#)
         TEST_Harness.AssertEqualText "matrix-addweeks-ws1900", "date:2024-03-02", Actual
-        TEST_Harness.RecordTextResult "matrix-addweeks-ws1900", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-addweeks-ws1900", vbNullString, "shifted_date", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddYears", "date", DateSerial(2024, 2, 29), 1#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddYears", "date", _
+            DateSerial(2024, 2, 29), 1#)
         TEST_Harness.AssertEqualText "matrix-addyears-ws1900", "date:2025-02-28", Actual
-        TEST_Harness.RecordTextResult "matrix-addyears-ws1900", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-addyears-ws1900", vbNullString, "shifted_date", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfMonth", "date", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfMonth", "date", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-beginofmonth-ws1900", "date:2024-02-01", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofmonth-ws1900", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-beginofmonth-ws1900", vbNullString, _
+            "period_begin_date", vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfQuarter", "date", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfQuarter", "date", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-beginofquarter-ws1900", "date:2024-01-01", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofquarter-ws1900", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-beginofquarter-ws1900", vbNullString, _
+            "period_begin_date", vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfYear", "date", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfYear", "date", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-beginofyear-ws1900", "date:2024-01-01", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofyear-ws1900", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-beginofyear-ws1900", vbNullString, _
+            "period_begin_date", vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DateFromPillar", "date", DateSerial(2024, 1, 15), "6M")
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DateFromPillar", "date", _
+            DateSerial(2024, 1, 15), "6M")
         TEST_Harness.AssertEqualText "matrix-datefrompillar-ws1900", "date:2024-07-15", Actual
-        TEST_Harness.RecordTextResult "matrix-datefrompillar-ws1900", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-datefrompillar-ws1900", vbNullString, "pillar_date", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DayOfWeek", "lng", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DayOfWeek", "lng", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-dayofweek-ws1900", "lng:6", Actual
-        TEST_Harness.RecordTextResult "matrix-dayofweek-ws1900", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-dayofweek-ws1900", vbNullString, "weekday_number", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DaysInMonth", "lng", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DaysInMonth", "lng", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-daysinmonth-ws1900", "lng:29", Actual
-        TEST_Harness.RecordTextResult "matrix-daysinmonth-ws1900", vbNullString, "days_in_month", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-daysinmonth-ws1900", vbNullString, "days_in_month", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
         Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DaysInYear", "lng", 2024#)
         TEST_Harness.AssertEqualText "matrix-daysinyear-ws1900", "lng:366", Actual
-        TEST_Harness.RecordTextResult "matrix-daysinyear-ws1900", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-daysinyear-ws1900", vbNullString, "days_in_year", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "date", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "date", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-endofmonth-ws1900", "date:2024-02-29", Actual
-        TEST_Harness.RecordTextResult "matrix-endofmonth-ws1900", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-endofmonth-ws1900", vbNullString, "period_end_date", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfQuarter", "date", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfQuarter", "date", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-endofquarter-ws1900", "date:2024-03-31", Actual
-        TEST_Harness.RecordTextResult "matrix-endofquarter-ws1900", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-endofquarter-ws1900", vbNullString, _
+            "period_end_date", vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfYear", "date", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfYear", "date", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-endofyear-ws1900", "date:2024-12-31", Actual
-        TEST_Harness.RecordTextResult "matrix-endofyear-ws1900", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-endofyear-ws1900", vbNullString, "period_end_date", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
         Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsLeapYear", "bool", 2024#)
         TEST_Harness.AssertEqualText "matrix-isleapyear-ws1900", "bool:TRUE", Actual
-        TEST_Harness.RecordTextResult "matrix-isleapyear-ws1900", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-isleapyear-ws1900", vbNullString, "leap_year_flag", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsMonthEnd", "bool", DateSerial(2024, 2, 29))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsMonthEnd", "bool", _
+            DateSerial(2024, 2, 29))
         TEST_Harness.AssertEqualText "matrix-ismonthend-ws1900", "bool:TRUE", Actual
-        TEST_Harness.RecordTextResult "matrix-ismonthend-ws1900", vbNullString, "period_end_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-ismonthend-ws1900", vbNullString, "period_end_flag", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsQuarterEnd", "bool", DateSerial(2024, 3, 31))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsQuarterEnd", "bool", _
+            DateSerial(2024, 3, 31))
         TEST_Harness.AssertEqualText "matrix-isquarterend-ws1900", "bool:TRUE", Actual
-        TEST_Harness.RecordTextResult "matrix-isquarterend-ws1900", vbNullString, "period_end_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-isquarterend-ws1900", vbNullString, _
+            "period_end_flag", vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsYearEnd", "bool", DateSerial(2024, 12, 31))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsYearEnd", "bool", _
+            DateSerial(2024, 12, 31))
         TEST_Harness.AssertEqualText "matrix-isyearend-ws1900", "bool:TRUE", Actual
-        TEST_Harness.RecordTextResult "matrix-isyearend-ws1900", vbNullString, "period_end_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-isyearend-ws1900", vbNullString, "period_end_flag", _
+            vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_LastWeekdayOfMonth", "date", 2024#, 2#, 5#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_LastWeekdayOfMonth", _
+            "date", 2024#, 2#, 5#)
         TEST_Harness.AssertEqualText "matrix-lastweekdayofmonth-ws1900", "date:2024-02-23", Actual
-        TEST_Harness.RecordTextResult "matrix-lastweekdayofmonth-ws1900", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-lastweekdayofmonth-ws1900", vbNullString, _
+            "weekday_date", vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_NthWeekdayOfMonth", "date", 2024#, 2#, 5#, 1#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_NthWeekdayOfMonth", "date", _
+            2024#, 2#, 5#, 1#)
         TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-ws1900", "date:2024-02-02", Actual
-        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-ws1900", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-ws1900", vbNullString, _
+            "weekday_date", vbNullString, vbNullString, Actual
     'A valid 1900 worksheet call evaluates normally.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_PillarFromDates", "str", DateSerial(2024, 1, 15), DateSerial(2024, 7, 15))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_PillarFromDates", "str", _
+            DateSerial(2024, 1, 15), DateSerial(2024, 7, 15))
         TEST_Harness.AssertEqualText "matrix-pillarfromdates-ws1900", "str:""6M""", Actual
-        TEST_Harness.RecordTextResult "matrix-pillarfromdates-ws1900", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-pillarfromdates-ws1900", vbNullString, _
+            "pillar_token", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -501,6 +555,8 @@ Private Sub CaseWs1904Part01()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_WorksheetCases.CaseWs1904Part01"
+
     Dim Sheet           As Worksheet    'The scratch sheet
     Dim Actual          As String       'The encoded result of a case
     Dim Detail          As String       'What closing the workbook could not restore
@@ -524,125 +580,192 @@ Private Sub CaseWs1904Part01()
     'Open a scratch workbook in the 1904 date system
         Set Sheet = TEST_WorksheetSupport.OpenScratch(True)
     'One call-level #N/A, no array.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), _
+            DateSerial(2024, 2, 10)))
         TEST_Harness.AssertEqualText "host-array-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "host-array-ws1904", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "host-array-ws1904", vbNullString, "period_end_date", _
+            vbNullString, vbNullString, Actual
     'The host guard precedes controls.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddMonths", "err", DateSerial(2024, 2, 10), 1#, 1#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddMonths", "err", _
+            DateSerial(2024, 2, 10), 1#, 1#)
         TEST_Harness.AssertEqualText "host-control-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "host-control-ws1904", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "host-control-ws1904", vbNullString, "shifted_date", _
+            vbNullString, vbNullString, Actual
     'Identifiable 1904 worksheet caller.
         Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_HostDateSystem", "lng")
         TEST_Harness.AssertEqualText "host-diagnostic-ws1904", "lng:1904", Actual
-        TEST_Harness.RecordTextResult "host-diagnostic-ws1904", vbNullString, "host_date_system", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "host-diagnostic-ws1904", vbNullString, "host_date_system", _
+            vbNullString, vbNullString, Actual
     'The host guard precedes parsing.
         Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", "bad")
         TEST_Harness.AssertEqualText "host-invalid-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "host-invalid-ws1904", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "host-invalid-ws1904", vbNullString, "period_end_date", _
+            vbNullString, vbNullString, Actual
     'In a 1904 worksheet the same input is host refusal, not propagation.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", CVErr(2042))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", CVErr( _
+            2042))
         TEST_Harness.AssertEqualText "host-propagated-na-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "host-propagated-na-ws1904", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "host-propagated-na-ws1904", vbNullString, _
+            "period_end_date", vbNullString, vbNullString, Actual
     'Every value-taking function is guarded.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddDays", "err", DateSerial(2024, 2, 10), 1#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddDays", "err", _
+            DateSerial(2024, 2, 10), 1#)
         TEST_Harness.AssertEqualText "host-shift-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "host-shift-ws1904", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "host-shift-ws1904", vbNullString, "shifted_date", _
+            vbNullString, vbNullString, Actual
     '1904 worksheet is refused at call level.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "host-value-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "host-value-ws1904", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "host-value-ws1904", vbNullString, "period_end_date", _
+            vbNullString, vbNullString, Actual
     'Year functions are value-taking too.
         Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsLeapYear", "err", 2024#)
         TEST_Harness.AssertEqualText "host-year-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "host-year-ws1904", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "host-year-ws1904", vbNullString, "leap_year_flag", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddDays", "err", DateSerial(2024, 2, 10), 20#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddDays", "err", _
+            DateSerial(2024, 2, 10), 20#)
         TEST_Harness.AssertEqualText "matrix-adddays-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-adddays-ws1904", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-adddays-ws1904", vbNullString, "shifted_date", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddDays", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)), 20#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddDays", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), _
+            DateSerial(2024, 2, 10)), 20#)
         TEST_Harness.AssertEqualText "matrix-adddays-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-adddays-ws1904-array", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-adddays-ws1904-array", vbNullString, "shifted_date", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddMonths", "err", DateSerial(2024, 1, 31), 1#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddMonths", "err", _
+            DateSerial(2024, 1, 31), 1#)
         TEST_Harness.AssertEqualText "matrix-addmonths-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-addmonths-ws1904", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-addmonths-ws1904", vbNullString, "shifted_date", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddMonths", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 1, 31), DateSerial(2024, 1, 31), DateSerial(2024, 1, 31)), 1#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddMonths", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 1, 31), DateSerial(2024, 1, 31), _
+            DateSerial(2024, 1, 31)), 1#)
         TEST_Harness.AssertEqualText "matrix-addmonths-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-addmonths-ws1904-array", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-addmonths-ws1904-array", vbNullString, _
+            "shifted_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddWeeks", "err", DateSerial(2024, 2, 10), 3#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddWeeks", "err", _
+            DateSerial(2024, 2, 10), 3#)
         TEST_Harness.AssertEqualText "matrix-addweeks-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-addweeks-ws1904", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-addweeks-ws1904", vbNullString, "shifted_date", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddWeeks", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)), 3#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddWeeks", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), _
+            DateSerial(2024, 2, 10)), 3#)
         TEST_Harness.AssertEqualText "matrix-addweeks-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-addweeks-ws1904-array", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-addweeks-ws1904-array", vbNullString, _
+            "shifted_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddYears", "err", DateSerial(2024, 2, 29), 1#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddYears", "err", _
+            DateSerial(2024, 2, 29), 1#)
         TEST_Harness.AssertEqualText "matrix-addyears-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-addyears-ws1904", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-addyears-ws1904", vbNullString, "shifted_date", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddYears", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 29), DateSerial(2024, 2, 29), DateSerial(2024, 2, 29)), 1#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_AddYears", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 29), DateSerial(2024, 2, 29), _
+            DateSerial(2024, 2, 29)), 1#)
         TEST_Harness.AssertEqualText "matrix-addyears-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-addyears-ws1904-array", vbNullString, "shifted_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-addyears-ws1904-array", vbNullString, _
+            "shifted_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfMonth", "err", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfMonth", "err", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-beginofmonth-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofmonth-ws1904", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-beginofmonth-ws1904", vbNullString, _
+            "period_begin_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfMonth", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfMonth", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), _
+            DateSerial(2024, 2, 10)))
         TEST_Harness.AssertEqualText "matrix-beginofmonth-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofmonth-ws1904-array", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-beginofmonth-ws1904-array", vbNullString, _
+            "period_begin_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfQuarter", "err", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfQuarter", "err", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-beginofquarter-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofquarter-ws1904", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-beginofquarter-ws1904", vbNullString, _
+            "period_begin_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfQuarter", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfQuarter", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), _
+            DateSerial(2024, 2, 10)))
         TEST_Harness.AssertEqualText "matrix-beginofquarter-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofquarter-ws1904-array", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-beginofquarter-ws1904-array", vbNullString, _
+            "period_begin_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfYear", "err", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfYear", "err", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-beginofyear-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofyear-ws1904", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-beginofyear-ws1904", vbNullString, _
+            "period_begin_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfYear", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_BeginOfYear", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), _
+            DateSerial(2024, 2, 10)))
         TEST_Harness.AssertEqualText "matrix-beginofyear-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-beginofyear-ws1904-array", vbNullString, "period_begin_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-beginofyear-ws1904-array", vbNullString, _
+            "period_begin_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DateFromPillar", "err", DateSerial(2024, 1, 15), "6M")
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DateFromPillar", "err", _
+            DateSerial(2024, 1, 15), "6M")
         TEST_Harness.AssertEqualText "matrix-datefrompillar-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-datefrompillar-ws1904", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-datefrompillar-ws1904", vbNullString, "pillar_date", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DateFromPillar", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 1, 15), DateSerial(2024, 1, 15), DateSerial(2024, 1, 15)), "6M")
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DateFromPillar", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 1, 15), DateSerial(2024, 1, 15), _
+            DateSerial(2024, 1, 15)), "6M")
         TEST_Harness.AssertEqualText "matrix-datefrompillar-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-datefrompillar-ws1904-array", vbNullString, "pillar_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-datefrompillar-ws1904-array", vbNullString, _
+            "pillar_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DayOfWeek", "err", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DayOfWeek", "err", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-dayofweek-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-dayofweek-ws1904", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-dayofweek-ws1904", vbNullString, "weekday_number", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DayOfWeek", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DayOfWeek", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), _
+            DateSerial(2024, 2, 10)))
         TEST_Harness.AssertEqualText "matrix-dayofweek-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-dayofweek-ws1904-array", vbNullString, "weekday_number", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-dayofweek-ws1904-array", vbNullString, _
+            "weekday_number", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DaysInMonth", "err", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DaysInMonth", "err", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-daysinmonth-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-daysinmonth-ws1904", vbNullString, "days_in_month", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-daysinmonth-ws1904", vbNullString, "days_in_month", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DaysInMonth", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DaysInMonth", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), _
+            DateSerial(2024, 2, 10)))
         TEST_Harness.AssertEqualText "matrix-daysinmonth-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-daysinmonth-ws1904-array", vbNullString, "days_in_month", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-daysinmonth-ws1904-array", vbNullString, _
+            "days_in_month", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
         Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DaysInYear", "err", 2024#)
         TEST_Harness.AssertEqualText "matrix-daysinyear-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-daysinyear-ws1904", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-daysinyear-ws1904", vbNullString, "days_in_year", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DaysInYear", "err", TEST_DateCaseSupport.A2(1, 3, 2024#, 2024#, 2024#))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_DaysInYear", "err", _
+            TEST_DateCaseSupport.A2(1, 3, 2024#, 2024#, 2024#))
         TEST_Harness.AssertEqualText "matrix-daysinyear-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-daysinyear-ws1904-array", vbNullString, "days_in_year", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-daysinyear-ws1904-array", vbNullString, _
+            "days_in_year", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
@@ -720,6 +843,8 @@ Private Sub CaseWs1904Part02()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_WorksheetCases.CaseWs1904Part02"
+
     Dim Sheet           As Worksheet    'The scratch sheet
     Dim Actual          As String       'The encoded result of a case
     Dim Detail          As String       'What closing the workbook could not restore
@@ -743,85 +868,131 @@ Private Sub CaseWs1904Part02()
     'Open a scratch workbook in the 1904 date system
         Set Sheet = TEST_WorksheetSupport.OpenScratch(True)
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-endofmonth-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-endofmonth-ws1904", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-endofmonth-ws1904", vbNullString, "period_end_date", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfMonth", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), _
+            DateSerial(2024, 2, 10)))
         TEST_Harness.AssertEqualText "matrix-endofmonth-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-endofmonth-ws1904-array", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-endofmonth-ws1904-array", vbNullString, _
+            "period_end_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfQuarter", "err", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfQuarter", "err", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-endofquarter-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-endofquarter-ws1904", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-endofquarter-ws1904", vbNullString, _
+            "period_end_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfQuarter", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfQuarter", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), _
+            DateSerial(2024, 2, 10)))
         TEST_Harness.AssertEqualText "matrix-endofquarter-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-endofquarter-ws1904-array", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-endofquarter-ws1904-array", vbNullString, _
+            "period_end_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfYear", "err", DateSerial(2024, 2, 10))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfYear", "err", _
+            DateSerial(2024, 2, 10))
         TEST_Harness.AssertEqualText "matrix-endofyear-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-endofyear-ws1904", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-endofyear-ws1904", vbNullString, "period_end_date", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfYear", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), DateSerial(2024, 2, 10)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_EndOfYear", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 10), DateSerial(2024, 2, 10), _
+            DateSerial(2024, 2, 10)))
         TEST_Harness.AssertEqualText "matrix-endofyear-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-endofyear-ws1904-array", vbNullString, "period_end_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-endofyear-ws1904-array", vbNullString, _
+            "period_end_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
         Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsLeapYear", "err", 2024#)
         TEST_Harness.AssertEqualText "matrix-isleapyear-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-isleapyear-ws1904", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-isleapyear-ws1904", vbNullString, "leap_year_flag", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsLeapYear", "err", TEST_DateCaseSupport.A2(1, 3, 2024#, 2024#, 2024#))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsLeapYear", "err", _
+            TEST_DateCaseSupport.A2(1, 3, 2024#, 2024#, 2024#))
         TEST_Harness.AssertEqualText "matrix-isleapyear-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-isleapyear-ws1904-array", vbNullString, "leap_year_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-isleapyear-ws1904-array", vbNullString, _
+            "leap_year_flag", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsMonthEnd", "err", DateSerial(2024, 2, 29))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsMonthEnd", "err", _
+            DateSerial(2024, 2, 29))
         TEST_Harness.AssertEqualText "matrix-ismonthend-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-ismonthend-ws1904", vbNullString, "period_end_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-ismonthend-ws1904", vbNullString, "period_end_flag", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsMonthEnd", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 29), DateSerial(2024, 2, 29), DateSerial(2024, 2, 29)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsMonthEnd", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 2, 29), DateSerial(2024, 2, 29), _
+            DateSerial(2024, 2, 29)))
         TEST_Harness.AssertEqualText "matrix-ismonthend-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-ismonthend-ws1904-array", vbNullString, "period_end_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-ismonthend-ws1904-array", vbNullString, _
+            "period_end_flag", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsQuarterEnd", "err", DateSerial(2024, 3, 31))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsQuarterEnd", "err", _
+            DateSerial(2024, 3, 31))
         TEST_Harness.AssertEqualText "matrix-isquarterend-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-isquarterend-ws1904", vbNullString, "period_end_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-isquarterend-ws1904", vbNullString, _
+            "period_end_flag", vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsQuarterEnd", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 3, 31), DateSerial(2024, 3, 31), DateSerial(2024, 3, 31)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsQuarterEnd", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 3, 31), DateSerial(2024, 3, 31), _
+            DateSerial(2024, 3, 31)))
         TEST_Harness.AssertEqualText "matrix-isquarterend-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-isquarterend-ws1904-array", vbNullString, "period_end_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-isquarterend-ws1904-array", vbNullString, _
+            "period_end_flag", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsYearEnd", "err", DateSerial(2024, 12, 31))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsYearEnd", "err", _
+            DateSerial(2024, 12, 31))
         TEST_Harness.AssertEqualText "matrix-isyearend-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-isyearend-ws1904", vbNullString, "period_end_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-isyearend-ws1904", vbNullString, "period_end_flag", _
+            vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsYearEnd", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 12, 31), DateSerial(2024, 12, 31), DateSerial(2024, 12, 31)))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_IsYearEnd", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 12, 31), DateSerial(2024, 12, 31), _
+            DateSerial(2024, 12, 31)))
         TEST_Harness.AssertEqualText "matrix-isyearend-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-isyearend-ws1904-array", vbNullString, "period_end_flag", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-isyearend-ws1904-array", vbNullString, _
+            "period_end_flag", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_LastWeekdayOfMonth", "err", 2024#, 2#, 5#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_LastWeekdayOfMonth", "err", _
+            2024#, 2#, 5#)
         TEST_Harness.AssertEqualText "matrix-lastweekdayofmonth-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-lastweekdayofmonth-ws1904", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-lastweekdayofmonth-ws1904", vbNullString, _
+            "weekday_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_LastWeekdayOfMonth", "err", TEST_DateCaseSupport.A2(1, 3, 2024#, 2024#, 2024#), 2#, 5#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_LastWeekdayOfMonth", "err", _
+            TEST_DateCaseSupport.A2(1, 3, 2024#, 2024#, 2024#), 2#, 5#)
         TEST_Harness.AssertEqualText "matrix-lastweekdayofmonth-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-lastweekdayofmonth-ws1904-array", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-lastweekdayofmonth-ws1904-array", vbNullString, _
+            "weekday_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_NthWeekdayOfMonth", "err", 2024#, 2#, 5#, 1#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_NthWeekdayOfMonth", "err", _
+            2024#, 2#, 5#, 1#)
         TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-ws1904", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-ws1904", vbNullString, _
+            "weekday_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_NthWeekdayOfMonth", "err", TEST_DateCaseSupport.A2(1, 3, 2024#, 2024#, 2024#), 2#, 5#, 1#)
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_NthWeekdayOfMonth", "err", _
+            TEST_DateCaseSupport.A2(1, 3, 2024#, 2024#, 2024#), 2#, 5#, 1#)
         TEST_Harness.AssertEqualText "matrix-nthweekdayofmonth-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-ws1904-array", vbNullString, "weekday_date", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-nthweekdayofmonth-ws1904-array", vbNullString, _
+            "weekday_date", vbNullString, vbNullString, Actual
     'A 1904 worksheet call is one call-level #N/A.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_PillarFromDates", "err", DateSerial(2024, 1, 15), DateSerial(2024, 7, 15))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_PillarFromDates", "err", _
+            DateSerial(2024, 1, 15), DateSerial(2024, 7, 15))
         TEST_Harness.AssertEqualText "matrix-pillarfromdates-ws1904", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-pillarfromdates-ws1904", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-pillarfromdates-ws1904", vbNullString, _
+            "pillar_token", vbNullString, vbNullString, Actual
     'A 1904 worksheet refuses a vector call before any element.
-        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_PillarFromDates", "err", TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 1, 15), DateSerial(2024, 1, 15), DateSerial(2024, 1, 15)), DateSerial(2024, 7, 15))
+        Actual = TEST_WorksheetSupport.CalculateCall(Sheet, "KPR_Dates_PillarFromDates", "err", _
+            TEST_DateCaseSupport.A2(1, 3, DateSerial(2024, 1, 15), DateSerial(2024, 1, 15), _
+            DateSerial(2024, 1, 15)), DateSerial(2024, 7, 15))
         TEST_Harness.AssertEqualText "matrix-pillarfromdates-ws1904-array", "err:#N/A", Actual
-        TEST_Harness.RecordTextResult "matrix-pillarfromdates-ws1904-array", vbNullString, "pillar_token", vbNullString, vbNullString, Actual
+        TEST_Harness.RecordTextResult "matrix-pillarfromdates-ws1904-array", vbNullString, _
+            "pillar_token", vbNullString, vbNullString, Actual
 
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE

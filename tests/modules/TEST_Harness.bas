@@ -186,7 +186,7 @@ Public Sub BeginRun( _
 '   cleanup at EndRun; it does not stop the run
 '
 ' DEPENDENCIES
-'   ResetRunState, ActiveWindowCaption, EnvironmentSummary, the Excel
+'   ResetRunState, SnapshotHostState, EnvironmentSummary, the Excel
 '   Application object
 '
 ' NOTES
@@ -196,6 +196,11 @@ Public Sub BeginRun( _
 ' UPDATED
 '   2026-11-03
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.BeginRun"
 
 '------------------------------------------------------------------------------
 ' REFUSE AN UNSAFE START
@@ -241,9 +246,75 @@ Public Sub BeginRun( _
 '------------------------------------------------------------------------------
 ' SNAPSHOT HOST STATE
 '------------------------------------------------------------------------------
-    'Mark the snapshot valid only after every read, so that cleanup never
-    'compares a value that was not read
+    'Read the state EndRun compares; a read that fails leaves the snapshot invalid
+        SnapshotHostState
+
+'------------------------------------------------------------------------------
+' WRITE HEADER
+'------------------------------------------------------------------------------
+    'Write the run header and the host description
+        Say "RUN=" & SuiteName & "; mode=" & Mode & _
+            "; expected_cases=" & CStr(ExpectedCases) & _
+            "; expected_assertions=" & CStr(ExpectedAssertions) & _
+            "; started=" & Format$(Now, "yyyy-mm-dd hh:mm:ss")
+        Say "ENVIRONMENT=" & EnvironmentSummary()
+
+End Sub
+
+Private Sub SnapshotHostState()
+
+'
+'------------------------------------------------------------------------------
+'                           SNAPSHOT THE HOST STATE
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Read the Excel state that EndRun compares at the end of the run, and
+'   mark the snapshot valid only once every value was read
+'
+' WHY THIS EXISTS
+'   A read that fails must leave the snapshot invalid without stopping
+'   BeginRun, whose own refusals must still raise to its caller
+'
+' INPUTS
+'   None
+'
+' RETURNS
+'   Nothing
+'
+' BEHAVIOR
+'   Reads the four Application properties, the number of open workbooks and
+'   the caption of the active window into the snapshot, then marks it valid
+'
+' ERROR POLICY
+'   Does not raise. A failed read leaves the snapshot invalid, so that
+'   EndRun fails cleanup
+'
+' DEPENDENCIES
+'   ActiveWindowCaption, the Excel Application object
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.SnapshotHostState"
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Leave the snapshot invalid until every read succeeded
+        mSnapshotValid = False
         On Error GoTo SnapshotFailed
+
+'------------------------------------------------------------------------------
+' READ
+'------------------------------------------------------------------------------
+    'Read each value, then mark the snapshot valid
         mInitialCalculation = Application.Calculation
         mInitialAlerts = Application.DisplayAlerts
         mInitialEvents = Application.EnableEvents
@@ -255,15 +326,6 @@ Public Sub BeginRun( _
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
 '------------------------------------------------------------------------------
-WriteHeader:
-    'Restore normal error handling
-        On Error GoTo 0
-    'Write the run header and the host description
-        Say "RUN=" & SuiteName & "; mode=" & Mode & _
-            "; expected_cases=" & CStr(ExpectedCases) & _
-            "; expected_assertions=" & CStr(ExpectedAssertions) & _
-            "; started=" & Format$(Now, "yyyy-mm-dd hh:mm:ss")
-        Say "ENVIRONMENT=" & EnvironmentSummary()
     'Exit before the error handler
         Exit Sub
 
@@ -271,9 +333,9 @@ WriteHeader:
 ' ERROR HANDLER
 '------------------------------------------------------------------------------
 SnapshotFailed:
-    'Leave the snapshot invalid, so that EndRun fails cleanup, and go on
+    'Leave the snapshot invalid, so that EndRun fails cleanup
+        Err.Clear
         mSnapshotValid = False
-        Resume WriteHeader
 
 End Sub
 
@@ -376,6 +438,8 @@ Public Sub RecordCaseError()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.RecordCaseError"
+
     Dim ErrorNumber         As Long     'Number of the case error
     Dim ErrorSource         As String   'Source of the case error
     Dim ErrorDescription    As String   'Description of the case error
@@ -458,6 +522,8 @@ Public Sub EndRun( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.EndRun"
+
     Dim CleanupDetail   As String   'Reason for the cleanup outcome
     Dim CleanupPassed   As Boolean  'True when the host state is unchanged
     Dim Completed       As Boolean  'True when both expected counts were met
@@ -1014,6 +1080,8 @@ Public Function WithinTolerance( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.WithinTolerance"
+
     Dim Bound   As Double   'Larger of the two bounds
 
 '------------------------------------------------------------------------------
@@ -1175,6 +1243,8 @@ Public Sub CertifyRun( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.CertifyRun"
+
     Dim Completeness    As String   'COMPLETE, INCOMPLETE or NONE
     Dim Passed          As Boolean  'True when the run ended as required
     Dim Verdict         As String   'PASS, FAIL or NONE
@@ -1197,7 +1267,7 @@ Public Sub CertifyRun( _
             Completeness = "NONE"
         Else
             Verdict = IIf(Left$(mLastResult, 12) = "RESULT=PASS;", "PASS", "FAIL")
-            Completeness = IIf(InStr(mLastResult, "; completeness=COMPLETE;") > 0, _
+            Completeness = IIf(InStr(1, mLastResult, "; completeness=COMPLETE;", vbBinaryCompare) > 0, _
                                "COMPLETE", "INCOMPLETE")
         End If
     'Consume the RESULT record
@@ -1274,6 +1344,8 @@ Public Sub EndCertification( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.EndCertification"
+
     Dim Completed   As Boolean  'True when every required run was complete
     Dim Verdict     As String   'PASS or FAIL
 
@@ -1598,7 +1670,7 @@ Public Sub RecordTextResult( _
     ByVal Text As String)
 '
 '------------------------------------------------------------------------------
-'                         RECORD A COMPUTED TEXT RESULT
+'                        RECORD A COMPUTED TEXT RESULT
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Keep one computed text of the running suite for SaveResults: the result
@@ -1696,6 +1768,8 @@ Public Sub SaveResults( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.SaveResults"
+
     Dim Text    As String   'The whole file
     Dim Entry   As Variant  'One recorded result
     Dim Count   As Long     'Results written so far
@@ -2034,6 +2108,8 @@ Private Sub WriteRecords( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.WriteRecords"
+
     Dim FileNumber          As Integer  'Handle of the open file
     Dim Entry               As Variant  'One record
     Dim ErrorNumber         As Long     'File error number
@@ -2041,12 +2117,16 @@ Private Sub WriteRecords( _
     Dim ErrorDescription    As String   'File error description
 
 '------------------------------------------------------------------------------
-' WRITE
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Open the file, then close it on a write error
         FileNumber = FreeFile
         Open Path For Output As #FileNumber
         On Error GoTo WriteFailed
+
+'------------------------------------------------------------------------------
+' WRITE
+'------------------------------------------------------------------------------
     'Print each record on its own line
         For Each Entry In Records
             Print #FileNumber, CStr(Entry)
@@ -2118,18 +2198,24 @@ Private Sub WriteText( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.WriteText"
+
     Dim FileNumber          As Integer  'Handle of the open file
     Dim ErrorNumber         As Long     'File error number
     Dim ErrorSource         As String   'File error source
     Dim ErrorDescription    As String   'File error description
 
 '------------------------------------------------------------------------------
-' WRITE
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Open the file, then close it on a write error
         FileNumber = FreeFile
         Open Path For Output As #FileNumber
         On Error GoTo WriteFailed
+
+'------------------------------------------------------------------------------
+' WRITE
+'------------------------------------------------------------------------------
     'The trailing semicolon keeps Print from adding CR LF
         Print #FileNumber, Text;
         Close #FileNumber
@@ -2193,6 +2279,11 @@ Private Function StampedCommit() _
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.StampedCommit"
+
+'------------------------------------------------------------------------------
 ' READ
 '------------------------------------------------------------------------------
     'Read the stamp, returning an empty string when it cannot be read
@@ -2254,6 +2345,8 @@ Private Function JsonText( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.JsonText"
+
     Dim Index       As Long     'Position in Value
     Dim Character   As String   'Character at Index
     Dim Code        As Long     'Its UTF-16 code unit, 0 to 65535
@@ -2471,7 +2564,15 @@ Private Function VerifyHostState( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.VerifyHostState"
+
     Dim Changed     As String   'Names of the changed properties
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Report a read that fails instead of raising it
+        On Error GoTo ReadFailed
 
 '------------------------------------------------------------------------------
 ' COMPARE
@@ -2483,7 +2584,6 @@ Private Function VerifyHostState( _
             Exit Function
         End If
     'Name each value that changed
-        On Error GoTo ReadFailed
         If Application.Calculation <> mInitialCalculation Then Changed = Changed & " Calculation"
         If Application.DisplayAlerts <> mInitialAlerts Then Changed = Changed & " DisplayAlerts"
         If Application.EnableEvents <> mInitialEvents Then Changed = Changed & " EnableEvents"
@@ -2559,8 +2659,10 @@ Private Function IsCaseId( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.IsCaseId"
+
     Dim Character   As String   'Character under test
-    Dim i           As Long     'Position in CaseId
+    Dim Position    As Long     'Position in CaseId
 
 '------------------------------------------------------------------------------
 ' CHECK
@@ -2571,18 +2673,18 @@ Private Function IsCaseId( _
             Exit Function
         End If
     'Reject a double hyphen
-        If InStr(CaseId, "--") > 0 Then
+        If InStr(1, CaseId, "--", vbBinaryCompare) > 0 Then
             IsCaseId = False
             Exit Function
         End If
     'Reject any character outside a-z, 0-9 and the hyphen
-        For i = 1 To Len(CaseId)
-            Character = Mid$(CaseId, i, 1)
+        For Position = 1 To Len(CaseId)
+            Character = Mid$(CaseId, Position, 1)
             If Not (Character Like "[a-z0-9-]") Then
                 IsCaseId = False
                 Exit Function
             End If
-        Next i
+        Next Position
     'Accept the identifier
         IsCaseId = True
 
@@ -2627,6 +2729,8 @@ Private Function IsKnownCase( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.IsKnownCase"
+
     Dim Found   As Variant  'Item stored under CaseId, when present
 
 '------------------------------------------------------------------------------
@@ -2681,6 +2785,8 @@ Private Function NumberText( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.NumberText"
+
     Dim Text    As String   'Str$ result without its sign space
 
 '------------------------------------------------------------------------------
@@ -2737,10 +2843,20 @@ Private Function HostProperty( _
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.HostProperty"
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Return an empty string when the property cannot be read
+        On Error GoTo ReadFailed
+
+'------------------------------------------------------------------------------
 ' READ
 '------------------------------------------------------------------------------
-    'Read the named property, returning an empty string when it cannot be read
-        On Error GoTo ReadFailed
+    'Read the named property
         Select Case PropertyName
             Case "Name"
                 HostProperty = Application.Name
@@ -2750,6 +2866,8 @@ Private Function HostProperty( _
                 HostProperty = CStr(Application.Build)
             Case "OperatingSystem"
                 HostProperty = Application.OperatingSystem
+            Case Else
+                'Another name reads nothing, and the result stays empty
         End Select
 
 '------------------------------------------------------------------------------
@@ -2806,6 +2924,8 @@ Private Function EnvironmentSummary() _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Harness.EnvironmentSummary"
+
     Dim Bitness     As String   'Office bitness
     Dim Runtime     As String   'VBA generation
 

@@ -55,7 +55,6 @@ Option Private Module
 Public Function TryReadHostDateSystem( _
     ByRef DateSystem As Long, _
     ByRef Condition As KPRCondition) As Boolean
-
 '
 '------------------------------------------------------------------------------
 '                        READ THE CALLER'S DATE SYSTEM
@@ -100,6 +99,8 @@ Public Function TryReadHostDateSystem( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Host.TryReadHostDateSystem"
+
     Dim CallerObject    As Object       'Application.Caller, when it is an object
     Dim CallerRange     As Range        'The calling Range
     Dim Is1904          As Boolean      'Date system of the caller's workbook
@@ -111,6 +112,8 @@ Public Function TryReadHostDateSystem( _
         TryReadHostDateSystem = True
         Condition = cdNone
         DateSystem = 1900
+    'A date system that cannot be read is unresolved; the caller's read below guards itself
+        On Error GoTo Unresolved
 
 '------------------------------------------------------------------------------
 ' CLASSIFY CALLER
@@ -188,6 +191,8 @@ Public Function TryCheckHost(ByRef Condition As KPRCondition) As Boolean
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Host.TryCheckHost"
+
     Dim DateSystem      As Long         '1900 or 1904
 
 '------------------------------------------------------------------------------

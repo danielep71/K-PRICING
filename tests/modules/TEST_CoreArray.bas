@@ -50,9 +50,8 @@ Option Private Module
 '------------------------------------------------------------------------------
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "core-array"        'Suite name in the run log
-    Private Const EXPECTED_CASES        As Long = 9                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 132               'Assertions a complete run evaluates
-
+    Private Const EXPECTED_CASES        As Long = 9                     'Cases a complete run starts
+    Private Const EXPECTED_ASSERTIONS   As Long = 132                   'Assertions a complete run evaluates
 
 '------------------------------------------------------------------------------
 ' PRIVATE STATE
@@ -110,17 +109,23 @@ Public Sub RunCoreArrayTests()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.RunCoreArrayTests"
+
     Dim ErrNumber       As Long     'Runner error number; 0 for none
     Dim ErrSource       As String   'Runner error source
     Dim ErrDescription  As String   'Runner error description
 
 '------------------------------------------------------------------------------
-' RUN CASES
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Start the run; a refused start propagates directly
         TEST_Harness.BeginRun SUITE_NAME, "NORMAL", EXPECTED_CASES, EXPECTED_ASSERTIONS
     'Send an error that escapes a case to the runner handler
         On Error GoTo RunFailed
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Run every case in a fixed order
         CaseArrayRank
         CaseClassifyShape
@@ -159,7 +164,6 @@ End Sub
 Public Sub CertifyCoreArray( _
     ByVal Folder As String, _
     ByVal Fixtures As String)
-
 '
 '------------------------------------------------------------------------------
 '                              CERTIFY THE SUITE
@@ -199,6 +203,8 @@ Public Sub CertifyCoreArray( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.CertifyCoreArray"
+
     Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
     Dim RunErrorDescription     As String   'Its description
 
@@ -268,6 +274,8 @@ Private Sub CaseArrayRank()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.CaseArrayRank"
+
     Dim Unallocated()     As Variant  'A dynamic array never sized
     Dim Cube()            As Variant  'A rank-3 array
     Dim Table()           As Variant  'A rank-2 array
@@ -347,11 +355,13 @@ Private Sub CaseClassifyShape()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Dim Table()           As Variant  'A 2 by 3 array
-    Dim Offset()          As Variant  'A 3 by 2 array with lower bounds 5 and -1
-    Dim One()             As Variant  'A 1 by 1 array
-    Dim Cube()            As Variant  'A rank-3 array
-    Dim Item              As Collection   'An object
+    Const PROC_NAME     As String = "TEST_CoreArray.CaseClassifyShape"
+
+    Dim Table()           As Variant    'A 2 by 3 array
+    Dim Offset()          As Variant    'A 3 by 2 array with lower bounds 5 and -1
+    Dim One()             As Variant    'A 1 by 1 array
+    Dim Cube()            As Variant    'A rank-3 array
+    Dim Item              As Collection 'An object
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -477,6 +487,8 @@ Private Sub CaseCapacity()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.CaseCapacity"
+
     Dim Condition         As KPRCondition 'Condition reported
 
 '------------------------------------------------------------------------------
@@ -553,6 +565,8 @@ Private Sub CaseAccumulateShape()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.CaseAccumulateShape"
+
     Dim OutKind           As KPRArgShape  'Resolved kind
     Dim OutRows           As Long         'Resolved rows
     Dim OutCols           As Long         'Resolved columns
@@ -636,7 +650,8 @@ Private Sub CaseMaterialize()
 '   Nothing
 '
 ' BEHAVIOR
-'   Materializes a row, a block with offsets and a one-element array, then a jagged array, an oversized array and the unsupported shapes
+'   Materializes a row, a block with offsets and a one-element array, then a jagged array, an
+'   oversized array and the unsupported shapes
 '
 ' ERROR POLICY
 '   An unexpected error is recorded against the case by
@@ -655,6 +670,8 @@ Private Sub CaseMaterialize()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.CaseMaterialize"
+
     Dim Payload           As Variant      'Materialized payload
     Dim Kind              As KPRArgShape  'Kind reported
     Dim RowCount          As Long         'Rows reported
@@ -785,6 +802,8 @@ Private Sub CaseTraversal()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.CaseTraversal"
+
     Dim Block()           As Variant      'A 2 by 2 payload
     Dim Scalar            As Variant      'A scalar payload
     Dim Allocated         As Variant      'An allocated output
@@ -876,6 +895,8 @@ Private Sub CaseUnwrapScalar()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.CaseUnwrapScalar"
+
     Dim ScalarOut         As Variant      'Unwrapped value
     Dim One()             As Variant      'A 1 by 1 array
     Dim Item              As Collection   'An object
@@ -970,6 +991,8 @@ Private Sub CaseUnwrapControl()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.CaseUnwrapControl"
+
     Dim Large()           As Variant      'A row of 100,001 elements
     Dim Block()           As Variant      'A 2 by 2 array
     Dim Item              As Collection   'An object
@@ -1056,7 +1079,7 @@ Private Sub CaseRegressionShapes()
 
 '
 '------------------------------------------------------------------------------
-'                           CHECK THE REGRESSION SHAPES
+'                         CHECK THE REGRESSION SHAPES
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Regression shapes that the cases above do not hold: an error scalar, the
@@ -1091,6 +1114,8 @@ Private Sub CaseRegressionShapes()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.CaseRegressionShapes"
+
     Dim Condition       As KPRCondition 'Condition that the capacity check reported
     Dim OneCell         As Variant      'A 1x1 two-dimensional control
 
@@ -1152,7 +1177,6 @@ Private Sub ProbeShape( _
     ByVal ExpectedKind As KPRArgShape, _
     ByVal ExpectedRows As Long, _
     ByVal ExpectedCols As Long)
-
 '
 '------------------------------------------------------------------------------
 '                        PROBE THE SHAPE OF AN ARGUMENT
@@ -1165,9 +1189,6 @@ Private Sub ProbeShape( _
 '   The same four facts are checked for every argument shape
 '
 ' INPUTS
-'   Label
-'     Prefix of the assertion names
-'
 '   ValueIn
 '     The argument
 '
@@ -1199,6 +1220,8 @@ Private Sub ProbeShape( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.ProbeShape"
+
     Dim Kind            As KPRArgShape  'Kind reported
     Dim RowCount        As Long         'Rows reported
     Dim ColCount        As Long         'Columns reported
@@ -1238,7 +1261,6 @@ Private Sub ProbeControl( _
     ByVal ValueIn As Variant, _
     ByVal ExpectedCondition As KPRCondition, _
     ByVal ExpectedText As String)
-
 '
 '------------------------------------------------------------------------------
 '                          PROBE AN OPTIONAL CONTROL
@@ -1251,9 +1273,6 @@ Private Sub ProbeControl( _
 '   The same three facts are checked for every control shape
 '
 ' INPUTS
-'   Label
-'     Prefix of the assertion names
-'
 '   ValueIn
 '     The control
 '
@@ -1285,6 +1304,8 @@ Private Sub ProbeControl( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_CoreArray.ProbeControl"
+
     Dim ScalarOut       As Variant      'Unwrapped control, a sentinel on entry
     Dim Condition       As KPRCondition 'Condition reported
     Dim Accepted        As Boolean      'Whether the control unwrapped

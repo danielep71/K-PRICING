@@ -19,7 +19,21 @@ directories of tools/format_vba.py and reports:
 - a component or procedure header whose field labels are not the nine
   fields, each once and in order, or that holds another label;
 - a field with no text under it (write "None" instead), and an UPDATED field
-  whose text is not one YYYY-MM-DD date.
+  whose text is not one YYYY-MM-DD date;
+- the body and statement rules of tools/vba_body_layout.py: a procedure
+  title that is not centred; the blank lines around a signature, a section
+  banner, a group banner and End; a DECLARE section that does not start with
+  Const PROC_NAME = "<Component>.<Procedure>", or none where the procedure
+  has local variables or an error handler; sections out of the order
+  DECLARE, INITIALIZE, task sections, EXIT PROCEDURE, ERROR HANDLER; a first
+  On Error GoTo outside INITIALIZE, or no Exit in EXIT PROCEDURE before its
+  label; a declaration whose As or trailing comment is not in the column of
+  the first declaration of its run; a local variable that is not PascalCase;
+  INPUTS that do not name the signature's parameters, and RETURNS of a Sub
+  that is not "Nothing"; a line over 120 characters without its
+  string contents; InStr or StrComp without a compare mode; and Select Case
+  without Case Else. A Private procedure of at most 15 code lines keeps a
+  compact body and skips the section rules.
 
 A field label is a comment line of one space and upper-case words, such as
 "' ERROR POLICY"; its text follows on lines indented three spaces. A
@@ -47,6 +61,7 @@ from pathlib import Path
 
 import format_vba
 import vba_baseline
+import vba_body_layout
 from vba_header_layout import check_text
 from vba_lexer import Finding, report
 
@@ -66,6 +81,7 @@ def check(root: Path, baseline: Sequence[str],
             continue
         text = format_vba.read(root / name)
         found, count = check_text(name, text)
+        found += vba_body_layout.check_text(name, text)
         procedures += count
         verdict = vba_baseline.judge(name, listed, not found,
                                      not found and format_vba.format_text(text) == text)
