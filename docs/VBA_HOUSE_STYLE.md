@@ -14,12 +14,14 @@ examples below name no component other than the harness's.
 
 The project's short name is `KPR`. The [static checks](#static-checks)
 read the facade prefix, `KPR_`, from this table; the reserved prefixes
-are `CORE_`, `TEST_`, `EX_` and `M_`.
+are `CORE_`, `TEST_`, `EX_` and `M_`. An example in the facade row made of the
+prefix and two or more upper-case words, such as `KPR_DATES_DAYS`, makes that
+form the rule for every facade module.
 
 | Element | Convention | Example |
 | --- | --- | --- |
 | Core standard module | `CORE_` plus subject | `CORE_Validation` |
-| Public facade module | `KPR_` plus subject | `KPR_Functions` |
+| Public facade module | `KPR_` plus the layer and the subject, upper case, words separated by underscores | `KPR_DATES_DAYS` |
 | Host-independent class | `C` plus noun | `CCalculationResult` |
 | Excel adapter module | `M_` plus subject | `M_Run` |
 | Document module | `ThisWorkbook`, or `sh` plus the tab name in PascalCase | `shInputs` |
@@ -33,6 +35,10 @@ are `CORE_`, `TEST_`, `EX_` and `M_`.
 
 - A component's name equals its exported `Attribute VB_Name` and its file
   name stem.
+- A facade module holds one part of a layer: `KPR_DATES_DAYS` the date
+  primitives. The later parts of the date layer are planned as
+  `KPR_DATES_BUSINESS_DAYS` and `KPR_DATES_CALENDARS`. The worksheet functions
+  keep their own names, such as `KPR_Dates_AddDays`, whatever module holds them.
 - VBA names are case-insensitive, and the VBE re-cases every use of a name to
   its latest spelling ([HB-01](methodology/VALIDATION_PLAN.md#host-behaviour)).
   Review case changes in a diff before accepting them.

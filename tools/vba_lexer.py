@@ -21,7 +21,7 @@ VBA_SUFFIXES = (".bas", ".cls", ".frm")
 HOUSE_STYLE = "docs/VBA_HOUSE_STYLE.md"
 # The facade prefix of the house style's naming table, such as SACCR_; the
 # <REGIME>_ placeholder, until it is replaced, stands for any project prefix.
-FACADE_ROW = re.compile(r"^\|\s*Public facade module\s*\|\s*`([^`]*)_`", re.M)
+FACADE_ROW = re.compile(r"^\|\s*Public facade module\s*\|\s*`([^`]*)_`[^|\n]*\|\s*`([^`]*)`", re.M)
 RESERVED_PREFIXES = ("CORE", "TEST", "EX", "M")
 REM = re.compile(r"Rem(?=\s|$)", re.IGNORECASE)
 CONTINUATION = re.compile(r"\s_\s*$")
@@ -64,9 +64,21 @@ def facade_prefix(root: Path) -> str | None:
     return prefix if re.fullmatch(r"[A-Z][A-Z0-9]*", prefix) else None
 
 
+def facade_example(root: Path) -> str:
+    """The example name of the house style's facade row, or an empty text."""
+    path = root / HOUSE_STYLE
+    match = FACADE_ROW.search(path.read_text(encoding="utf-8")) if path.is_file() else None
+    return match.group(2) if match else ""
+
+
 def facade_pattern(root: Path) -> tuple[str, str]:
-    """The facade module name rule, as a label and a regular expression."""
+    """The facade module name rule, as a label and a regular expression. An example of the
+    prefix and at least two upper-case words, such as KPR_DATES_DAYS, makes that form the
+    rule: the prefix, the layer and the subject in upper case, separated by underscores."""
     prefix = facade_prefix(root)
+    upper = rf"{prefix}(?:_[A-Z][A-Z0-9]*){{2,}}"
+    if prefix and re.fullmatch(upper, facade_example(root)):
+        return f"{prefix}_<LAYER>_<SUBJECT>", upper
     if prefix:
         return f"{prefix}_<Subject>", rf"{prefix}_[A-Z][A-Za-z0-9_]*"
     reserved = "|".join(RESERVED_PREFIXES)

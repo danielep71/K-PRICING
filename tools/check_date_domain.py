@@ -42,7 +42,7 @@ from vba_lexer import Finding, logical_units, read_component, report, tracked_co
 ROOT = Path(__file__).resolve().parents[1]
 
 CORE_PARSE = "src/core/CORE_Parse.bas"
-FACADE = "src/modules/KPR_Dates.bas"
+FACADE = "src/modules/KPR_DATES_DAYS.bas"
 HOST = "src/workbook/M_Host.bas"
 DIAGNOSTIC = "KPR_Dates_HostDateSystem"
 EVALUATOR = "EvaluateCall"

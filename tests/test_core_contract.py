@@ -187,12 +187,12 @@ class FacadeTest(unittest.TestCase):
                 code = line.split("'")[0]
                 if "Application.Volatile" in code:
                     calls.append((path.name, procedure))
-        self.assertEqual(calls, [("KPR_Dates.bas", "KPR_Dates_HostDateSystem")])
+        self.assertEqual(calls, [("KPR_DATES_DAYS.bas", "KPR_Dates_HostDateSystem")])
 
     def test_the_facade_exposes_exactly_the_22_functions(self) -> None:
-        facade = read(ROOT / "src/modules/KPR_Dates.bas")
+        facade = read(ROOT / "src/modules/KPR_DATES_DAYS.bas")
         public = re.findall(r"^Public (?:Function|Sub|Property \w+) (\w+)", facade, re.M)
-        listed = re.findall(r"^KPR_Dates\tFunction\t(\w+)$", read(ROOT / "docs/PUBLIC_API.txt"), re.M)
+        listed = re.findall(r"^KPR_DATES_DAYS\tFunction\t(\w+)$", read(ROOT / "docs/PUBLIC_API.txt"), re.M)
         self.assertEqual(len(public), 22)
         self.assertEqual(public, listed)
         self.assertTrue(all(name.startswith("KPR_Dates_") for name in public))

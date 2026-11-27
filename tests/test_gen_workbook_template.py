@@ -179,7 +179,7 @@ class DemoSheetTest(unittest.TestCase):
 
     def test_every_function_is_called(self) -> None:
         source = (ROOT / "docs/PUBLIC_API.txt").read_text(encoding="utf-8")
-        functions = set(re.findall(r"^KPR_Dates\tFunction\t(\w+)$", source, re.M))
+        functions = set(re.findall(r"^KPR_DATES_DAYS\tFunction\t(\w+)$", source, re.M))
         self.assertEqual(len(functions), 22)
         called = {name for formula in self.formulas()
                   for name in re.findall(r"\b(KPR_Dates_\w+)\(", formula)}

@@ -3,7 +3,7 @@
 M_Register hands Excel a description for each of the 22 KPR_Dates_* functions and one
 description per argument. Nothing compares them with the facade, because the VBA runs only
 in Excel, so these tests read the VBA source and fail when the texts, the names, the order or
-the number of arguments differ from docs/PUBLIC_API.txt and KPR_Dates.bas.
+the number of arguments differ from docs/PUBLIC_API.txt and KPR_DATES_DAYS.bas.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTER = ROOT / "src/workbook/M_Register.bas"
-FACADE = ROOT / "src/modules/KPR_Dates.bas"
+FACADE = ROOT / "src/modules/KPR_DATES_DAYS.bas"
 API = ROOT / "docs/PUBLIC_API.txt"
 
 HOST_LIMIT = 255

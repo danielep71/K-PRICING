@@ -149,9 +149,10 @@
         "tests.test_check_vba.SourceTest.test_main_exit_codes",
         "tests.test_check_vba.SourceTest.test_vb_name_must_equal_file_name",
         "tests.test_check_vba.SourceTest.test_module_options",
+        "tests.test_check_vba.SourceTest.test_an_upper_case_facade_example_sets_the_rule",
         "tests.test_check_vba.MainTest.test_every_gate_exits_0_when_valid_and_1_when_invalid"
       ],
-      "negative_claim": "a component outside its home, a VB_Name that differs from the file name and a module without Option Explicit fail with exit code 1",
+      "negative_claim": "a component outside its home, a VB_Name that differs from the file name, a module without Option Explicit and a facade module named against the house style's upper-case example fail with exit code 1",
       "state": "green"
     },
     {
