@@ -81,6 +81,19 @@ def procedures(lines: Sequence[str], start: int) -> list[Procedure]:
     return found
 
 
+def top_level(text: str) -> list[str]:
+    """The parts of ``text`` between commas outside parentheses."""
+    depth, current, parts = 0, "", []
+    for char in text:
+        depth += (char == "(") - (char == ")")
+        if char == "," and depth == 0:
+            parts.append(current)
+            current = ""
+        else:
+            current += char
+    return [*parts, current]
+
+
 def parameters(code: str) -> list[str]:
     """The parameter names of a signature."""
     opened = code.find("(")
@@ -324,7 +337,7 @@ def name_findings(body: Body) -> list[Finding]:
     findings = []
     for index, code in body.statements:
         local = LOCAL.match(code)
-        for part in local.group(1).split(",") if local else ():
+        for part in top_level(local.group(1)) if local else ():
             name = part.strip().split("(")[0].split()[0] if part.strip() else ""
             if name and (not PASCAL.match(name) or HUNGARIAN.match(name)):
                 findings.append(body.finding(index, f"local variable {name} is not a "

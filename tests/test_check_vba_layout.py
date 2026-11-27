@@ -162,7 +162,8 @@ FULL = "\n".join([
     "'", BANNER, "'", "", "Public Function Count(ByVal Text As String) As Long",
     "", procedure_header("COUNT", ("Text",), "The count."), "", section("DECLARE"),
     '    Const PROC_NAME     As String = "TEST_Fixture.Count"   \'Name in errors',
-    "    Dim Found           As Long                            'Matches so far", "",
+    "    Dim Found           As Long                            'Matches so far",
+    "    Dim Grid(1, 2)      As Long                            'Bounds with a comma", "",
     section("INITIALIZE"), "    'Trap errors", "        On Error GoTo Failed", "",
     section("COUNT"), "    'Count the matches",
     '        Found = InStr(1, Text, "a", vbBinaryCompare)', "        Select Case Found",
@@ -209,7 +210,7 @@ class BodyTest(unittest.TestCase):
             "a blank after a multi-line signature": (
                 multi, "1 blank line(s) between the signature and its header, expected 0"),
             "no blank before a section": (
-                FULL.replace("'Matches so far\n\n", "'Matches so far\n"),
+                FULL.replace("'Bounds with a comma\n\n", "'Bounds with a comma\n"),
                 "0 blank line(s) before the section INITIALIZE, expected 1"),
             "a blank after a section banner": (
                 FULL.replace(section("COUNT") + "\n", section("COUNT") + "\n\n"),
