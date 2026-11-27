@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import contextlib
 import dataclasses
+import datetime
 import io
 import json
 import re
@@ -216,6 +217,35 @@ class DemoSheetTest(unittest.TestCase):
         self.assertEqual(self.cells["I5"].text, "Check")
         source = (ROOT / "tests/modules/TEST_Ui.bas").read_text(encoding="ascii")
         self.assertRegex(source, rf"DEMO_CHECKS\s+As Long = {len(statuses)}\b")
+
+    def test_the_excel_case_writes_the_generated_inputs(self) -> None:
+        source = (ROOT / "tests/modules/TEST_Ui.bas").read_text(encoding="ascii")
+        names = re.search(r'DEMO_INPUTS\s+As String = "([^"]*)"', source)
+        values = re.search(r"Generated = VBA\.Array\(([^)]*)\)", source)
+        assert names is not None and values is not None
+        self.assertEqual(names.group(1).split(";"), [item.name for item in demo_dates.INPUTS])
+
+        def vba(value: demo_dates.Value) -> str:
+            if isinstance(value, bool):
+                return str(value)
+            if isinstance(value, datetime.date):
+                return str(gen_workbook_template.serial(value))
+            return str(value)
+
+        self.assertEqual([item.strip() for item in values.group(1).split(",")],
+                         [vba(item.value) for item in demo_dates.INPUTS])
+
+    def test_every_row_of_a_spill_has_its_format(self) -> None:
+        spill = demo_dates.SPILL
+        anchor = next(int(ref[1:]) for ref, cell in self.cells.items()
+                      if cell.formula == spill.formula)
+        styles = [gen_workbook_template.DEMO_SPILL_DATE,
+                  *(gen_workbook_template.DEMO_SPILL_DATE if item.date
+                    else gen_workbook_template.DEMO_SPILL for item in spill.columns)]
+        for row in range(anchor, anchor + spill.rows):
+            for index, style in enumerate(styles):
+                with self.subTest(row=row, column=index):
+                    self.assertEqual(self.cells[f"{chr(ord('I') + index)}{row}"].style, style)
 
     def test_the_matrix_records_the_inputs_and_the_rest(self) -> None:
         matrix = json.loads((ROOT / check_workbook_protection.MATRIX).read_text(

@@ -54,7 +54,7 @@ Option Private Module
     'A complete run starts every case and evaluates every assertion once
     Private Const SUITE_NAME            As String = "ui"            'Suite name in the run log
     Private Const EXPECTED_CASES        As Long = 6                 'Cases a complete run starts
-    Private Const EXPECTED_ASSERTIONS   As Long = 35                'Assertions a complete run evaluates
+    Private Const EXPECTED_ASSERTIONS   As Long = 36                'Assertions a complete run evaluates
 
     'The Office constant of a popup, written out because the objects are late bound
     Private Const MSO_CONTROL_POPUP     As Long = 10                'msoControlPopup
@@ -68,6 +68,9 @@ Option Private Module
     Private Const DEMO_ANCHOR           As String = "DatesDemo_Checks"  'First header cell
     Private Const DEMO_CHECKS           As Long = 57                    'Statuses on the sheet
     Private Const DEMO_DIFFERS          As Long = 1                     'Differences by design
+
+    'The demo's input names, separated by ";", in the order of their cells
+    Private Const DEMO_INPUTS           As String = "DateIn;nDays;nWeeks;nMonths;nYears;KeepEOM;WdIndex;nOccur;WeekBaseMonday"
 
 
 '
@@ -86,7 +89,7 @@ Public Sub RunUiTests()
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
-'   RESULT=PASS; suite=ui; operation=PASS; completeness=COMPLETE; cases=6; assertions=35;
+'   RESULT=PASS; suite=ui; operation=PASS; completeness=COMPLETE; cases=6; assertions=36;
 '   failures=0; cleanup=PASS; recovery=NONE
 '
 ' WHY THIS EXISTS
@@ -764,9 +767,9 @@ Private Sub CaseDemoSheet()
 '                     CHECK THE DATES DEMO SHEET IN EXCEL
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   The Dates Demo sheet, calculated with its own inputs, counts every status and none fails:
-'   each function gives what Excel's own formula gives, but the one difference by design. 4
-'   assertions.
+'   The Dates Demo sheet, calculated with the inputs it is generated with, counts every status
+'   and none fails: each function gives what Excel's own formula gives, but the one difference
+'   by design. The inputs a user typed are given back. 5 assertions.
 '
 ' WHY THIS EXISTS
 '   The template holds the demo's formulas and no result: only Excel calculates them, so only
@@ -779,19 +782,20 @@ Private Sub CaseDemoSheet()
 '   Nothing
 '
 ' BEHAVIOR
-'   Calculates the sheet of the anchor DEMO_ANCHOR, then reads the four counts below it: OK,
-'   Differs by design, Fail and Checks
+'   Keeps the values of the inputs DEMO_INPUTS, writes the generated ones, calculates the sheet
+'   of the anchor DEMO_ANCHOR and reads the four counts below it: OK, Differs by design, Fail
+'   and Checks. Then writes the kept values back, on every path
 '
 ' ERROR POLICY
-'   An unexpected error is recorded against the case
+'   An unexpected error is recorded against the case, once the inputs are written back
 '
 ' DEPENDENCIES
-'   The defined name DEMO_ANCHOR of this workbook, TEST_Harness
+'   The defined names DEMO_ANCHOR and DEMO_INPUTS of this workbook, RestoreInputs, TEST_Harness
 '
 ' NOTES
-'   tests/test_gen_workbook_template.py keeps DEMO_CHECKS equal to the statuses that
-'   tools/gen_workbook_template.py writes. The spill and the array limits need an Excel with
-'   dynamic arrays
+'   tests/test_gen_workbook_template.py keeps DEMO_CHECKS, DEMO_INPUTS and the generated values
+'   equal to tools/gen_workbook_template.py and tools/demo_dates.py. The spill and the array
+'   limits need an Excel with dynamic arrays
 '
 ' UPDATED
 '   2026-11-27
@@ -803,6 +807,15 @@ Private Sub CaseDemoSheet()
     Const PROC_NAME     As String = "TEST_Ui.CaseDemoSheet"
 
     Dim Anchor          As Range        'The first header cell of the demo's checks
+    Dim Names           As Variant      'The input names
+    Dim Generated       As Variant      'The values the sheet is generated with
+    Dim Saved()         As Variant      'The values on entry
+    Dim Kept            As Long         'How many of them were kept
+    Dim Index           As Long         'Inputs cursor
+    Dim Restored        As Boolean      'Every kept value was written back
+    Dim ErrNumber       As Long         'Error of the case; 0 for none
+    Dim ErrSource       As String       'Its source
+    Dim ErrDescription  As String       'Its description
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -811,11 +824,24 @@ Private Sub CaseDemoSheet()
         On Error GoTo CaseFailed
     'Start the case
         TEST_Harness.BeginCase "demo-sheet"
+    'Write the inputs back on every path
+        On Error GoTo Failed
 
 '------------------------------------------------------------------------------
 ' RUN CASE
 '------------------------------------------------------------------------------
-    'Calculate the demo with its own inputs
+    'Keep the inputs, then write the values the counts belong to; DateIn is 2024-04-30
+        Names = VBA.Split(DEMO_INPUTS, ";")
+        Generated = VBA.Array(45412, 2, 3, 1, 2, True, 4, 2, True)
+        ReDim Saved(LBound(Names) To UBound(Names))
+        For Index = LBound(Names) To UBound(Names)
+            Saved(Index) = ThisWorkbook.Names(Names(Index)).RefersToRange.Value2
+            Kept = Kept + 1
+        Next Index
+        For Index = LBound(Names) To UBound(Names)
+            ThisWorkbook.Names(Names(Index)).RefersToRange.Value2 = Generated(Index)
+        Next Index
+    'Calculate the demo
         Set Anchor = ThisWorkbook.Names(DEMO_ANCHOR).RefersToRange
         Anchor.Worksheet.Calculate
     'Every status is counted, none fails, and only the documented one differs
@@ -828,12 +854,33 @@ Private Sub CaseDemoSheet()
 '------------------------------------------------------------------------------
 ' EXIT PROCEDURE
 '------------------------------------------------------------------------------
-    'Exit before the error handler
+CleanUp:
+    'Restore normal error handling
+        On Error GoTo 0
+    'Write the kept inputs back
+        Restored = RestoreInputs(Names, Saved, Kept)
+        TEST_Harness.AssertTrue "inputs-restored", Restored, "an input of the demo was not written back"
+    'Record the case's error, once the inputs are back
+        If ErrNumber <> 0 Then
+            Err.Number = ErrNumber
+            Err.Source = ErrSource
+            Err.Description = ErrDescription
+            TEST_Harness.RecordCaseError
+        End If
+    'Exit before the error handlers
         Exit Sub
 
 '------------------------------------------------------------------------------
 ' ERROR HANDLER
 '------------------------------------------------------------------------------
+Failed:
+    'Keep the case's error and write the inputs back
+        ErrNumber = Err.Number
+        ErrSource = Err.Source
+        ErrDescription = Err.Description
+        Set Anchor = Nothing
+        Resume CleanUp
+
 CaseFailed:
     'Record the unexpected error against the case
         TEST_Harness.RecordCaseError
@@ -847,6 +894,100 @@ End Sub
 '
 '------------------------------------------------------------------------------
 '
+
+Private Function RestoreInputs( _
+    ByVal Names As Variant, _
+    ByRef Saved() As Variant, _
+    ByVal Kept As Long) As Boolean
+'
+'------------------------------------------------------------------------------
+'                         WRITE THE DEMO'S INPUTS BACK
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Writes back the first Kept inputs that CaseDemoSheet kept, and says whether every one now
+'   holds its kept value.
+'
+' WHY THIS EXISTS
+'   The case changes the cells a user may have edited; it must give them back on every path,
+'   and report a failure to do so without hiding the case's own error
+'
+' INPUTS
+'   Names
+'     The input names, or Empty when none was read.
+'
+'   Saved
+'     The kept values, in the order of Names; not changed.
+'
+'   Kept
+'     How many values were kept, from the first.
+'
+' RETURNS
+'   Boolean
+'     True when every kept value is back; True when none was kept.
+'
+' BEHAVIOR
+'   Writes each kept value, then reads it again
+'
+' ERROR POLICY
+'   Does not raise. A write that fails is False, and Err is cleared.
+'
+' DEPENDENCIES
+'   The defined names of this workbook
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.RestoreInputs"
+
+    Dim Index           As Long         'Inputs cursor
+    Dim Cell            As Range        'An input cell
+
+'------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'A write that fails is a failed restoration
+        RestoreInputs = True
+        If Kept = 0 Then Exit Function
+        On Error GoTo Refused
+
+'------------------------------------------------------------------------------
+' RESTORE
+'------------------------------------------------------------------------------
+    'Write each kept value and read it again
+        For Index = LBound(Names) To LBound(Names) + Kept - 1
+            Set Cell = ThisWorkbook.Names(Names(Index)).RefersToRange
+            Cell.Value2 = Saved(Index)
+            If VBA.VarType(Cell.Value2) <> VBA.VarType(Saved(Index)) Then
+                RestoreInputs = False
+            ElseIf Not IsEmpty(Saved(Index)) And Not IsError(Saved(Index)) Then
+                If Cell.Value2 <> Saved(Index) Then RestoreInputs = False
+            End If
+        Next Index
+        Set Cell = Nothing
+
+'------------------------------------------------------------------------------
+' EXIT PROCEDURE
+'------------------------------------------------------------------------------
+    'Exit before the error handler
+        Exit Function
+
+'------------------------------------------------------------------------------
+' ERROR HANDLER
+'------------------------------------------------------------------------------
+Refused:
+    'Excel refused a write
+        Err.Clear
+        Set Cell = Nothing
+        RestoreInputs = False
+
+End Function
 
 Private Function Occurrences(ByVal Text As String, ByVal Part As String) As Long
 

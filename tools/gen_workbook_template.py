@@ -382,8 +382,13 @@ def write_spill(sheet: DemoSheet, row: int) -> int:
         sheet.status(check, at, f'=IF(IFERROR(ERROR.TYPE({at}{anchor})=5,FALSE),"NO VBA",'
                                 f"IFERROR(IF(AND(ROWS({own})=ROWS({source}),{own}={reference}),"
                                 '"OK","FAIL"),"FAIL"))')
+    # Every row of each spill range carries its format, so that the spilled values
+    # below the anchor show as dates where the column holds dates.
+    formats = [DEMO_SPILL_DATE, *(DEMO_SPILL_DATE if item.date else DEMO_SPILL
+                                  for item in spill.columns)]
     for extra in range(anchor + 1, anchor + spill.rows):
-        sheet.heights.setdefault(extra, 0.0)
+        sheet.put(extra, *(Cell(offset(SIDE_FIRST, index), "", style)
+                           for index, style in enumerate(formats)), height=0.0)
     return anchor + spill.rows - 1
 
 
