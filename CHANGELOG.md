@@ -203,6 +203,22 @@ Use only the categories an entry needs.
   conversion that depends on regional settings. The production source already
   satisfies all of them; no VBA changed
   ([#15](https://github.com/danielep71/K-PRICING/issues/15)).
+- The workbook's menus: a **K-PRICING** Ribbon tab,
+  `src/workbook/customUI14.xml`, which every build now writes into the
+  workbook, and a **KPR Dates** toolbar for an Excel that does not show the tab,
+  installed and removed from the macro list. Both offer the same actions,
+  through `M_Actions`: insert one of the 22 functions in the active cell with
+  Excel's Function Arguments dialog, register or clear their help in the
+  Insert Function dialog and, in a development build only, run the project
+  suites. The callbacks are in `M_Ribbon`, the toolbar in `M_CommandBars`.
+  **Repository integrity** fails when the Ribbon names a callback that
+  `M_Ribbon` does not declare with Office's signature, or a tag that is no
+  action of `M_Actions` (`ribbon`). A new project suite, `ui`, checks the
+  menus' list of functions, their actions, the cells where a function is not
+  inserted (a cell of a table among them), the Ribbon's menu and the
+  toolbar's lifecycle; it is in the evidence policy and has not run in Excel.
+  No button has been clicked in Excel yet; the certification run does that
+  ([#17](https://github.com/danielep71/K-PRICING/issues/17)).
 - The workbook's layout. The [workbook contract](docs/methodology/WORKBOOK_CONTRACT.md)
   now states its one sheet, **Home**: the build stamp, what the workbook
   provides and does not cover, how to use it, and a link to every sheet. It

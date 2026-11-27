@@ -198,6 +198,7 @@ It runs these checks, in this order. `OWNER/REPOSITORY` is the repository that
 | `accuracy` | `python tools/check_accuracy.py` |
 | `workbook-template` | `python tools/gen_workbook_template.py --check` |
 | `workbook-protection` | `python tools/check_workbook_protection.py` |
+| `ribbon` | `python tools/check_ribbon.py` |
 | `changelog` | `python tools/check_changelog.py --repository OWNER/REPOSITORY` |
 | `generated-docs` | `python tools/render_docs.py --check` |
 | `restated-counts` | `python tools/check_restated_counts.py` |

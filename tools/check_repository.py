@@ -480,6 +480,7 @@ def checks(context: Context) -> list[Check]:
         Check("accuracy", [python, "tools/check_accuracy.py"]),
         Check("workbook-template", [python, "tools/gen_workbook_template.py", "--check"]),
         Check("workbook-protection", [python, "tools/check_workbook_protection.py"]),
+        Check("ribbon", [python, "tools/check_ribbon.py"]),
         Check("changelog", changelog),
         Check("generated-docs", [python, "tools/render_docs.py", "--check"]),
         Check("restated-counts", [python, "tools/check_restated_counts.py"]),

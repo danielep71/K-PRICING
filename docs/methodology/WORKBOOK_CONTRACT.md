@@ -42,7 +42,9 @@ These defaults hold unless a decision below replaces one:
   `Application.Caller` and the `Date1904` of the caller's own workbook;
   `M_Register` only gives the 22 functions of its own workbook their
   Insert Function descriptions (`Application.MacroOptions`); none addresses a
-  sheet. Core, classes and the facade never touch a
+  sheet. `M_Actions` writes only the cell the user made active, one formula
+  at a time ([operations](#operations)), `M_CommandBars` only its own toolbar
+  and `M_Ribbon` nothing. Core, classes and the facade never touch a
   workbook object: the facade passes a Range argument to `M_Ranges` unread,
   and its one call to the Excel object model is `Application.Volatile` in
   `KPR_Dates_HostDateSystem`.
@@ -182,9 +184,19 @@ its number of rows varies.
 
 ## Operations
 
-The workbook has no operation yet: its worksheet functions are evaluated by
-Excel and write no sheet. The first entry point is listed here, in a table
-with the columns *Entry point*, *Reads*, *Writes* and *Requires*.
+The worksheet functions are evaluated by Excel and write no sheet. The
+operations are the actions of the menus: the **K-PRICING** Ribbon tab and the
+**KPR Dates** toolbar call the same entry points of `M_Actions`, with the
+action text that each control stores.
+
+| Entry point | Reads | Writes | Requires |
+| --- | --- | --- | --- |
+| `M_Actions.InsertFunction` | The active cell | One formula in the active cell, `=<function>()`, through the Function Arguments dialog; a cancelled dialog gives the cell back its content | A cell selected, outside a table, where Excel would copy the formula to the whole column, and not locked on a protected sheet |
+| `M_Actions.RegisterHelp` | Nothing | The category, description and argument descriptions that Excel keeps for the 22 functions until it closes | Nothing |
+| `M_Actions.ClearHelp` | Nothing | The same options, returned to the User Defined category with no description | Nothing |
+| `M_Actions.RunTests` | The project suites | Scratch workbooks that each suite closes, and each suite's log in the Immediate window | A development build |
+| `M_CommandBars.InstallToolbar`, `RemoveToolbar` | Nothing | The **KPR Dates** toolbar, temporary: Excel discards it when it closes | Nothing |
+
 
 - Each entry point is an Excel adapter procedure that calls the facade; it
   holds no regulatory formula.
@@ -229,7 +241,10 @@ The build writes, from one commit:
   A working tree with changes, or a build whose `--override` replaces
   modules, is stamped as not evidence-grade;
 - the VBA components of that commit, as the
-  [installation guide](../../INSTALLATION.md) lists them.
+  [installation guide](../../INSTALLATION.md) lists them;
+- the Ribbon tab, `src/workbook/customUI14.xml`, as the package's
+  `customUI/customUI14.xml` part, in every configuration. Its Development
+  group shows only in a development build.
 
 It writes no data and no results. A production build has no `Test` sheet, test
 module or example; a development build adds them.
@@ -329,4 +344,5 @@ compares neither the password nor protection that VBA sets at run time with
 | 2026-11-27 | The workbook has one sheet, Home, of role Reference; no sheet is hidden | The 22 worksheet functions write no sheet, so there is nothing to input, store or show beyond what the workbook is and how it was built | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
 | 2026-11-27 | `tools/gen_workbook_template.py` generates `src/workbook/Template.xlsx`; it is never saved from Excel | The same source always gives the same bytes, a change is reviewed as a diff of the script, and no personal document metadata can enter it | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
 | 2026-11-27 | Navigation is by cell hyperlinks: Home lists every sheet, and every other sheet links back to Home from `D1` | Cell links work on a protected sheet and need no shape, macro or drawing part, and the template's source states every link | [#16](https://github.com/danielep71/K-PRICING/issues/16) |
+| 2026-11-27 | The menus are a Ribbon tab and a toolbar that run the same actions of `M_Actions`; the toolbar is installed from the macro list, never on open | The tab needs Office 2010 or later and a policy that allows custom tabs; the toolbar covers the rest, and installing it on open would show the same buttons twice where the tab works | [#17](https://github.com/danielep71/K-PRICING/issues/17) |
 | 2026-11-27 | No sheet is protected unless a decision here says so | Protection is a choice I make per sheet, with its reason; by default users may type anywhere, including the functions on Home | [#16](https://github.com/danielep71/K-PRICING/issues/16) |

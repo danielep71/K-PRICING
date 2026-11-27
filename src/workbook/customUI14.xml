@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  The workbook's Ribbon tab, for Office 2010 and later (customUI/2009/07).
+  tools/devbuild/build_workbook.py writes it into every build as
+  customUI/customUI14.xml. Every callback is a Public Sub of
+  src/workbook/M_Ribbon.bas; every tag is an action text of
+  src/workbook/M_Actions.bas. tools/check_ribbon.py checks both.
+-->
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui">
+  <ribbon>
+    <tabs>
+      <tab id="KPR_Tab" label="K-PRICING" keytip="KP">
+        <group id="KPR_GroupDates" label="Date functions">
+          <dynamicMenu id="KPR_DatesFunctions"
+                       label="Functions"
+                       imageMso="FunctionWizard"
+                       size="large"
+                       screentip="Insert a date function"
+                       supertip="Put a KPR_Dates_ function in the active cell and open Excel's Function Arguments dialog for it."
+                       invalidateContentOnDrop="true"
+                       getContent="RibbonGetFunctions"/>
+        </group>
+        <group id="KPR_GroupSetup" label="Setup">
+          <button id="KPR_RegisterHelp"
+                  label="Register function help"
+                  imageMso="Refresh"
+                  size="large"
+                  tag="setup:register"
+                  screentip="Register function help"
+                  supertip="Show the 22 functions in the Insert Function dialog under the KPR Dates category, with a description of each argument."
+                  onAction="RibbonOnAction"/>
+          <button id="KPR_ClearHelp"
+                  label="Clear function help"
+                  imageMso="Delete"
+                  size="large"
+                  tag="setup:clear"
+                  screentip="Clear function help"
+                  supertip="Return the 22 functions to the User Defined category with no description. The functions stay callable."
+                  onAction="RibbonOnAction"/>
+        </group>
+        <group id="KPR_GroupDevelopment" label="Development"
+               getVisible="RibbonGetDevelopmentVisible">
+          <button id="KPR_RunTests"
+                  label="Run tests"
+                  imageMso="MacroPlay"
+                  size="large"
+                  tag="dev:tests"
+                  screentip="Run the project suites"
+                  supertip="Development build only. Runs the project's test suites and shows one result per suite. It is not an evidence run."
+                  onAction="RibbonOnAction"/>
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>

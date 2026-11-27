@@ -47,7 +47,11 @@
     {"name": "excel-oracle", "source": "tests/modules/TEST_ExcelOracle.bas",
      "certification_entry_point": "CertifyExcelOracle", "expected_cases": 21,
      "expected_assertions": 437, "log": "excel-oracle.log",
-     "certification_log": "excel-oracle-certification.log"}
+     "certification_log": "excel-oracle-certification.log"},
+    {"name": "ui", "source": "tests/modules/TEST_Ui.bas",
+     "certification_entry_point": "CertifyUi", "runner": "RunUiTests",
+     "expected_cases": 5, "expected_assertions": 31, "log": "ui.log",
+     "certification_log": "ui-certification.log"}
   ],
   "modes": [
     {"mode": "NORMAL", "log": "examples.log", "must_pass": true},
