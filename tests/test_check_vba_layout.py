@@ -190,6 +190,11 @@ class BodyTest(unittest.TestCase):
         self.assertEqual(body(compact), [])
         self.assertTrue(body(FULL.replace(section("INITIALIZE"), section("SET UP"))))
 
+    def test_a_continued_declaration_is_read_as_one_statement(self) -> None:
+        text = FULL.replace("    Dim Found           As Long                            'Matches so far\n",
+                            "    Dim Found As Long, _\n        Other As Long\n\n")
+        self.assertEqual(body(text), [])
+
     def test_string_contents_do_not_count_towards_the_line_length(self) -> None:
         text = FULL.replace('"a"', '"' + "a" * 150 + '"')
         self.assertEqual(body(text), [])

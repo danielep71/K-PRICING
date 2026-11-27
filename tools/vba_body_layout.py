@@ -239,7 +239,8 @@ def alignment_findings(path: str, lines: Sequence[str], first: int,
 
 @dataclass(frozen=True)
 class Body:
-    """One procedure's body: its sections and its statements, as 0-based line indexes."""
+    """One procedure's body: its sections and its logical statements, continuation lines
+    joined, each at the 0-based index of its first line."""
     path: str
     what: str
     procedure: Procedure
@@ -352,8 +353,9 @@ def body_findings(path: str, component: str, lines: Sequence[str],
     _, first = header_span(lines, procedure)
     body = Body(path, f"procedure {procedure.name}", procedure,
                 sections(lines, first, procedure.end),
-                [(index, code_of(lines[index])) for index in range(first, procedure.end)
-                 if code_of(lines[index])])
+                [(first + start - 1, code.strip()) for start, _, kind, code
+                 in logical_units(list(lines[first:procedure.end]), blank_strings=True)
+                 if kind == "code" and code.strip()])
     return (spacing_findings(body, lines) + declare_findings(body, lines, component)
             + handler_findings(body) + name_findings(body))
 
