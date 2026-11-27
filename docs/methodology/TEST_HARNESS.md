@@ -178,10 +178,11 @@ point, compares the outputs with the case's expected values within the case's
 tolerance, and restores the sheets. It needs the input and result areas of the
 [workbook contract](WORKBOOK_CONTRACT.md), which the repository does not lay
 out yet, so it ships no runner. The suite's runner calls one case procedure per
-test case, `Case<Name>`, which follows this skeleton; it uses the contract's
-illustrative `Inputs_Settings` area and `M_Run.RunCalculation` entry point,
-and the constant `SETTING_ROWS`, the number of rows the contract fixes for
-that area (one):
+test case, `Case<Name>`, which follows this skeleton. It uses an
+illustrative settings area, `Inputs_Settings`, laid out as the contract's
+[areas](WORKBOOK_CONTRACT.md#areas) describe, an illustrative entry point,
+`M_Run.RunCalculation`, and the constant `SETTING_ROWS`, the number of rows
+the contract would fix for that area (one):
 
 ```vb
 Private Sub CaseExample()

@@ -203,6 +203,18 @@ Use only the categories an entry needs.
   conversion that depends on regional settings. The production source already
   satisfies all of them; no VBA changed
   ([#15](https://github.com/danielep71/K-PRICING/issues/15)).
+- The workbook's layout. The [workbook contract](docs/methodology/WORKBOOK_CONTRACT.md)
+  now states its one sheet, **Home**: the build stamp, what the workbook
+  provides and does not cover, how to use it, and a link to every sheet. It
+  also states the title band, the navigation by cell links, the three stamp
+  names and the protection, without a password. `src/workbook/Template.xlsx`
+  is generated from source by `tools/gen_workbook_template.py`, with no VBA
+  project and no document properties; the build starts from it, and
+  **Repository integrity** fails when it differs from its source
+  (`workbook-template`) or from its protection matrix,
+  `docs/methodology/workbook-protection.json`. The template was not opened in
+  Excel; the certification run does that
+  ([#16](https://github.com/danielep71/K-PRICING/issues/16)).
 - `IMPL-01` in the source register: Excel's own worksheet functions, as the
   Excel oracle calls them, in Excel 16.0 build 20527, 64-bit. The 416 expected
   values the oracle confirmed in Excel are `independent`: each cites

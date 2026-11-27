@@ -580,10 +580,13 @@ class BindingTest(unittest.TestCase):
             source = zipfile.ZipFile(io.BytesIO(workbook_bytes(COMMIT)))
             parts = {name: source.read(name) for name in source.namelist()}
             sheet = parts["xl/worksheets/sheet1.xml"].decode()
-            inline = f'<c r="B3" t="inlineStr"><is><t xml:space="preserve">{COMMIT}</t></is></c>'
+            layout = build_workbook.load_layout(SOURCE)
+            cell = next(item.cell for item in layout.names if item.name == "build_commit")
+            inline = (f'<c r="{cell}" t="inlineStr"><is><t xml:space="preserve">{COMMIT}</t>'
+                      "</is></c>")
             self.assertIn(inline, sheet)
             parts["xl/worksheets/sheet1.xml"] = sheet.replace(
-                inline, '<c r="B3" t="s"><v>0</v></c>').encode()
+                inline, f'<c r="{cell}" t="s"><v>0</v></c>').encode()
             parts["xl/sharedStrings.xml"] = (
                 '<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
                 f"<si><t>{COMMIT}</t></si></sst>").encode()

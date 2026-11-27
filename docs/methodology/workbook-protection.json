@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "sheets": {
+    "shHome": {
+      "protection": {"sheet": true, "objects": true, "scenarios": true},
+      "output": ["A1:C21"]
+    }
+  }
+}
