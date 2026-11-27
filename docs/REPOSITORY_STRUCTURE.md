@@ -26,7 +26,7 @@ them are already set in `.gitattributes`, `.editorconfig` and `.gitignore`.
 | `src/core/` | Calculations and pure validation, host-independent standard modules | Present, with `CORE_Err`, `CORE_Parse`, `CORE_Dates` and `CORE_Array` |
 | `src/classes/` | Host-independent classes, if the design needs them | Reserved |
 | `src/modules/` | The public facade: the supported entry points | Present, with `KPR_Dates`, the 22 worksheet functions |
-| `src/workbook/` | Excel adapters, `ThisWorkbook` and sheet document modules, and the optional macro-free `Template.xlsx`, laid out as the [workbook contract](methodology/WORKBOOK_CONTRACT.md) defines | Present, with the adapters `M_Ranges`, `M_Host` and `M_Register` and `Template.xlsx`, which `tools/gen_workbook_template.py` generates |
+| `src/workbook/` | Excel adapters, `ThisWorkbook` and sheet document modules, the Ribbon XML `customUI14.xml`, and the optional macro-free `Template.xlsx`, laid out as the [workbook contract](methodology/WORKBOOK_CONTRACT.md) defines | Present, with the adapters `M_Ranges`, `M_Host`, `M_Register`, `M_Actions`, `M_Ribbon` and `M_CommandBars`, the Ribbon `customUI14.xml`, which `tools/check_ribbon.py` checks, and `Template.xlsx`, which `tools/gen_workbook_template.py` generates |
 | `src/forms/` | UserForms, each `.frm` with its `.frx` | Reserved |
 | `tests/` | Python tests of the repository tooling (`test_*.py`) | Present |
 | `tests/modules/` | VBA test modules: the [test harness](methodology/TEST_HARNESS.md), its example suite, relation tests, case runners and volume benchmarks | Present, with the harness, the example suite and the illustrative relation tests |

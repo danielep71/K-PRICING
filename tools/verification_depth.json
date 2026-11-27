@@ -340,6 +340,17 @@
       "state": "green"
     },
     {
+      "check": "ribbon",
+      "checker": "python tools/check_ribbon.py",
+      "proofs": [
+        "tests.test_check_ribbon.RefusalTest.test_a_missing_callback_fails",
+        "tests.test_check_ribbon.RefusalTest.test_a_callback_with_the_wrong_signature_fails",
+        "tests.test_check_ribbon.RefusalTest.test_an_unknown_action_tag_fails"
+      ],
+      "negative_claim": "a callback that M_Ribbon does not declare, a callback with another signature than Office's, and a tag that is no action of M_Actions fail the check",
+      "state": "green"
+    },
+    {
       "check": "changelog",
       "checker": "python tools/check_changelog.py --repository OWNER/REPOSITORY",
       "proofs": [

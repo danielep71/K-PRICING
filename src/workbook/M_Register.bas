@@ -24,9 +24,11 @@ Option Private Module
 '
 ' BEHAVIOR
 '   Provides:
-'     - RegisterFunctions    registers the 22 functions under the category CATEGORY_NAME
-'     - UnregisterFunctions  returns the 22 functions to the User Defined category with no
-'                            description
+'     - RegisterFunctions        registers the 22 functions under the category CATEGORY_NAME
+'     - UnregisterFunctions      returns the 22 functions to the User Defined category with no
+'                                description
+'     - RegisteredName           the name of one function, by its position
+'     - RegisteredArgumentCount  the number of arguments of one function, by its position
 '   Both are repeatable: every call sets the same options again, so no call adds an entry.
 '   The descriptions are the purposes and the argument texts of the facade's documentation,
 '   which restate calculation contracts CALC-02 to CALC-10.
@@ -48,7 +50,7 @@ Option Private Module
 '   - Option Private Module keeps every member out of the Excel function list
 '
 ' UPDATED
-'   2026-11-26
+'   2026-11-27
 '------------------------------------------------------------------------------
 
 '------------------------------------------------------------------------------
@@ -201,6 +203,112 @@ Public Function UnregisterFunctions() As Long
                 UnregisterFunctions = UnregisterFunctions + 1
             End If
         Next Index
+
+End Function
+
+Public Function RegisteredName(ByVal Index As Long) As String
+
+'
+'------------------------------------------------------------------------------
+'                           NAME A REGISTERED FUNCTION
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns the name of the function at one position of the registration list.
+'
+' WHY THIS EXISTS
+'   The menus of M_Actions list the functions this module registers, so the list is written
+'   once, in Describe.
+'
+' INPUTS
+'   Index
+'     The position of the function, 1 to FUNCTION_COUNT.
+'
+' RETURNS
+'   String
+'     The function name, such as KPR_Dates_EndOfMonth; an empty text for a position outside
+'     1 to FUNCTION_COUNT.
+'
+' BEHAVIOR
+'   Reads the name from Describe.
+'
+' ERROR POLICY
+'   Does not raise.
+'
+' DEPENDENCIES
+'   Describe
+'
+' NOTES
+'   None
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim Summary         As String       'Description of the function, not used
+    Dim ArgTexts        As Variant      'Argument descriptions, not used
+
+'------------------------------------------------------------------------------
+' DESCRIBE
+'------------------------------------------------------------------------------
+    'Read the name at that position
+        Describe Index, RegisteredName, Summary, ArgTexts
+
+End Function
+
+Public Function RegisteredArgumentCount(ByVal Index As Long) As Long
+
+'
+'------------------------------------------------------------------------------
+'                       COUNT THE ARGUMENTS OF A FUNCTION
+'------------------------------------------------------------------------------
+' PURPOSE
+'   Returns the number of arguments of the function at one position of the registration list.
+'
+' WHY THIS EXISTS
+'   M_Actions opens the Function Arguments dialog only for a function that has arguments.
+'
+' INPUTS
+'   Index
+'     The position of the function, 1 to FUNCTION_COUNT.
+'
+' RETURNS
+'   Long
+'     The number of arguments, optional ones included; 0 for a function with none and for a
+'     position outside 1 to FUNCTION_COUNT.
+'
+' BEHAVIOR
+'   Counts the argument descriptions Describe gives, one per argument.
+'
+' ERROR POLICY
+'   Does not raise.
+'
+' DEPENDENCIES
+'   Describe
+'
+' NOTES
+'   tests/test_register_contract.py keeps one description per argument of the signature
+'
+' UPDATED
+'   2026-11-27
+'------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Dim FunctionName    As String       'Name of the function, not used
+    Dim Summary         As String       'Description of the function, not used
+    Dim ArgTexts        As Variant      'Argument descriptions, Empty for none
+
+'------------------------------------------------------------------------------
+' COUNT
+'------------------------------------------------------------------------------
+    'Count one argument per description
+        Describe Index, FunctionName, Summary, ArgTexts
+        If IsEmpty(ArgTexts) Then Exit Function
+        RegisteredArgumentCount = UBound(ArgTexts) - LBound(ArgTexts) + 1
 
 End Function
 

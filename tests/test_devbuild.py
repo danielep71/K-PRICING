@@ -29,6 +29,7 @@ import unittest.mock
 import zipfile
 from pathlib import Path
 from typing import Any
+from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools" / "devbuild"))
@@ -838,6 +839,65 @@ class TemplateBuild(unittest.TestCase):
             self.assertEqual(build_workbook.main([str(Path(temporary) / "W.xlsm"), "--root",
                                                   str(root), "--configuration", "production"]), 0)
         self.assertIn(f"layout: {build_workbook.TEMPLATE}", output.getvalue())
+
+
+class RibbonBuild(unittest.TestCase):
+    """Builds that carry src/workbook/customUI14.xml as the package's Ribbon part."""
+
+    ribbon = (b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+              b'<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui"/>\n')
+
+    def build(self, files: dict[str, bytes]) -> bytes:
+        with git_tree({**SYNTHETIC_CONFIG, **files}) as root, \
+                tempfile.TemporaryDirectory() as temporary:
+            target = Path(temporary) / "W.xlsm"
+            build_workbook.build(root, "production", target)
+            return target.read_bytes()
+
+    def assert_ribbon(self, data: bytes, ribbon: bytes) -> None:
+        with zipfile.ZipFile(io.BytesIO(data)) as built:
+            self.assertEqual(built.read(build_workbook.CUSTOM_UI_PART), ribbon)
+            relationships = ElementTree.fromstring(built.read("_rels/.rels"))
+            targets = [item.get("Target") for item in relationships
+                       if item.get("Type") == build_workbook.RIBBON_TYPE]
+            self.assertEqual(targets, [build_workbook.CUSTOM_UI_PART])
+            ids = [item.get("Id") for item in relationships]
+            self.assertEqual(len(ids), len(set(ids)))
+            self.assertRegex(built.read("[Content_Types].xml").decode(),
+                             r'<Default Extension="xml" ContentType="application/xml"/>')
+
+    def test_a_build_of_blank_sheets_carries_the_ribbon(self) -> None:
+        self.assert_ribbon(self.build({build_workbook.CUSTOM_UI: self.ribbon}), self.ribbon)
+
+    def test_a_build_from_the_template_carries_the_ribbon(self) -> None:
+        data = self.build({build_workbook.TEMPLATE: workbook_template.template(),
+                           build_workbook.CUSTOM_UI: self.ribbon})
+        self.assert_ribbon(data, self.ribbon)
+
+    def test_without_the_file_the_build_has_no_ribbon(self) -> None:
+        for files in ({}, {build_workbook.TEMPLATE: workbook_template.template()}):
+            with self.subTest(template=bool(files)), \
+                    zipfile.ZipFile(io.BytesIO(self.build(files))) as built:
+                self.assertNotIn(build_workbook.CUSTOM_UI_PART, built.namelist())
+                self.assertNotIn(build_workbook.RIBBON_TYPE, built.read("_rels/.rels").decode())
+
+    def test_a_template_with_a_ribbon_of_its_own_stops_the_build(self) -> None:
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(io.BytesIO(workbook_template.template())) as source, \
+                zipfile.ZipFile(buffer, "w") as copy:
+            for info in source.infolist():
+                copy.writestr(info, source.read(info))
+            copy.writestr(build_workbook.CUSTOM_UI_PART, self.ribbon)
+        with self.assertRaisesRegex(build_workbook.BuildError, "the Ribbon comes from"):
+            self.build({build_workbook.TEMPLATE: buffer.getvalue(),
+                        build_workbook.CUSTOM_UI: self.ribbon})
+
+    def test_the_repository_build_carries_its_ribbon(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="devbuild-") as temporary:
+            target = Path(temporary) / "Workbook.xlsm"
+            build_workbook.build(ROOT, "production", target)
+            self.assert_ribbon(target.read_bytes(),
+                               (ROOT / build_workbook.CUSTOM_UI).read_bytes())
 
 
 class Manifest(unittest.TestCase):

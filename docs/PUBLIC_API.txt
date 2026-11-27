@@ -162,6 +162,46 @@ CORE_Parse	Const	WINDOW_MIN_SERIAL
 # SIG	CORE_Parse	Const	WINDOW_MIN_SERIAL	Public Const WINDOW_MIN_SERIAL As Double = 61#
 CORE_Parse	Const	WINDOW_MIN_YEAR
 # SIG	CORE_Parse	Const	WINDOW_MIN_YEAR	Public Const WINDOW_MIN_YEAR As Long = 1900
+M_Actions	Const	ACTION_CLEAR
+# SIG	M_Actions	Const	ACTION_CLEAR	Public Const ACTION_CLEAR As String = "setup:clear"
+M_Actions	Const	ACTION_FUNCTION
+# SIG	M_Actions	Const	ACTION_FUNCTION	Public Const ACTION_FUNCTION As String = "fn:"
+M_Actions	Const	ACTION_REGISTER
+# SIG	M_Actions	Const	ACTION_REGISTER	Public Const ACTION_REGISTER As String = "setup:register"
+M_Actions	Const	ACTION_TESTS
+# SIG	M_Actions	Const	ACTION_TESTS	Public Const ACTION_TESTS As String = "dev:tests"
+M_Actions	Function	ActionKnown
+# SIG	M_Actions	Function	ActionKnown	Public Function ActionKnown(ByVal Action As String) As Boolean
+M_Actions	Sub	ClearHelp
+# SIG	M_Actions	Sub	ClearHelp	Public Sub ClearHelp()
+M_Actions	Function	FunctionNames
+# SIG	M_Actions	Function	FunctionNames	Public Function FunctionNames() As Variant
+M_Actions	Sub	InsertFunction
+# SIG	M_Actions	Sub	InsertFunction	Public Sub InsertFunction(ByVal Chosen As String)
+M_Actions	Sub	RegisterHelp
+# SIG	M_Actions	Sub	RegisterHelp	Public Sub RegisterHelp()
+M_Actions	Sub	RunAction
+# SIG	M_Actions	Sub	RunAction	Public Sub RunAction(ByVal Action As String)
+M_Actions	Sub	RunTests
+# SIG	M_Actions	Sub	RunTests	Public Sub RunTests()
+M_Actions	Function	TestsAvailable
+# SIG	M_Actions	Function	TestsAvailable	Public Function TestsAvailable() As Boolean
+M_Actions	Const	UI_TITLE
+# SIG	M_Actions	Const	UI_TITLE	Public Const UI_TITLE As String = "K-PRICING"
+M_CommandBars	Sub	InstallToolbar
+# SIG	M_CommandBars	Sub	InstallToolbar	Public Sub InstallToolbar()
+M_CommandBars	Sub	RemoveToolbar
+# SIG	M_CommandBars	Sub	RemoveToolbar	Public Sub RemoveToolbar()
+M_CommandBars	Const	TOOLBAR_NAME
+# SIG	M_CommandBars	Const	TOOLBAR_NAME	Public Const TOOLBAR_NAME As String = "KPR Dates"
+M_CommandBars	Const	TOOLBAR_TAG
+# SIG	M_CommandBars	Const	TOOLBAR_TAG	Public Const TOOLBAR_TAG As String = "KPR_UI"
+M_CommandBars	Sub	ToolbarClick
+# SIG	M_CommandBars	Sub	ToolbarClick	Public Sub ToolbarClick()
+M_CommandBars	Sub	TryInstallToolbar
+# SIG	M_CommandBars	Sub	TryInstallToolbar	Public Sub TryInstallToolbar(ByRef Installed As Boolean, ByRef Report As String)
+M_CommandBars	Sub	TryRemoveToolbar
+# SIG	M_CommandBars	Sub	TryRemoveToolbar	Public Sub TryRemoveToolbar(ByRef Removed As Boolean)
 M_Host	Function	TryCheckHost
 # SIG	M_Host	Function	TryCheckHost	Public Function TryCheckHost(ByRef Condition As KPRCondition) As Boolean
 M_Host	Function	TryReadHostDateSystem
@@ -176,7 +216,19 @@ M_Ranges	Function	TryReadScalar
 # SIG	M_Ranges	Function	TryReadScalar	Public Function TryReadScalar(ByVal ValueIn As Variant, ByRef ScalarOut As Variant) As Boolean
 M_Register	Const	FUNCTION_COUNT
 # SIG	M_Register	Const	FUNCTION_COUNT	Public Const FUNCTION_COUNT As Long = 22
+M_Register	Function	RegisteredArgumentCount
+# SIG	M_Register	Function	RegisteredArgumentCount	Public Function RegisteredArgumentCount(ByVal Index As Long) As Long
+M_Register	Function	RegisteredName
+# SIG	M_Register	Function	RegisteredName	Public Function RegisteredName(ByVal Index As Long) As String
 M_Register	Function	RegisterFunctions
 # SIG	M_Register	Function	RegisterFunctions	Public Function RegisterFunctions() As Long
 M_Register	Function	UnregisterFunctions
 # SIG	M_Register	Function	UnregisterFunctions	Public Function UnregisterFunctions() As Long
+M_Ribbon	Sub	BuildFunctionMenu
+# SIG	M_Ribbon	Sub	BuildFunctionMenu	Public Sub BuildFunctionMenu(ByRef Xml As String)
+M_Ribbon	Sub	RibbonGetDevelopmentVisible
+# SIG	M_Ribbon	Sub	RibbonGetDevelopmentVisible	Public Sub RibbonGetDevelopmentVisible(ByVal Control As IRibbonControl, ByRef Visible As Variant)
+M_Ribbon	Sub	RibbonGetFunctions
+# SIG	M_Ribbon	Sub	RibbonGetFunctions	Public Sub RibbonGetFunctions(ByVal Control As IRibbonControl, ByRef Content As Variant)
+M_Ribbon	Sub	RibbonOnAction
+# SIG	M_Ribbon	Sub	RibbonOnAction	Public Sub RibbonOnAction(ByVal Control As IRibbonControl)

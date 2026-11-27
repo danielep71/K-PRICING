@@ -23,6 +23,10 @@ main part macro-enabled and adds the VBA project and its relationship. A
 development build appends each Test sheet blank, so Test sheets come last in
 the configuration. Every other part of the template is copied unchanged.
 
+When src/workbook/customUI14.xml exists, every build carries it as the
+package's Ribbon part, customUI/customUI14.xml, with its relationship from
+the package; tools/check_ribbon.py checks it against its VBA callbacks.
+
 Its VBA project is written from source by vba_project.py:
 the standard modules (.bas) and class modules (.cls) of the configuration's
 directories, plus a document module for ThisWorkbook and for each sheet. A
@@ -82,6 +86,11 @@ ROOT = Path(__file__).resolve().parents[2]
 CONFIG = "tools/devbuild/workbook.json"
 DOCUMENT_HOME = "src/workbook"
 TEMPLATE = "src/workbook/Template.xlsx"
+# The Ribbon of the workbook, and the part and relationship that carry it in
+# a package: customUI14 is Office 2010's part, with the 2007 extensibility type.
+CUSTOM_UI = "src/workbook/customUI14.xml"
+CUSTOM_UI_PART = "customUI/customUI14.xml"
+RIBBON_TYPE = "http://schemas.microsoft.com/office/2007/relationships/ui/extensibility"
 CLASS_HOME = "src/classes"
 DEVELOPMENT = "development"
 # Sheet roles of the workbook contract; Test sheets exist only in a development build.
@@ -522,7 +531,8 @@ STYLES = (f'{XML_HEADER}<styleSheet xmlns="{MAIN}">'
           'xfId="0" builtinId="0"/></cellStyles></styleSheet>')
 
 
-def package(layout: Layout, build: Build, vba_bin: bytes) -> bytes:
+def package(layout: Layout, build: Build, vba_bin: bytes, ribbon: bytes | None = None
+            ) -> bytes:
     """The .xlsm package: the same bytes for the same input."""
     count = len(layout.sheets)
     overrides = "".join(
@@ -557,9 +567,30 @@ def package(layout: Layout, build: Build, vba_bin: bytes) -> bytes:
     for index, sheet in enumerate(layout.sheets, 1):
         parts[f"xl/worksheets/sheet{index}.xml"] = worksheet_xml(
             sheet.code_name, sheet_cells(layout, build, sheet.code_name))
+    if ribbon is not None:
+        parts["_rels/.rels"] = with_ribbon(parts["_rels/.rels"])
     blobs: dict[str, bytes] = {name: text.encode("utf-8") for name, text in parts.items()}
     blobs[VBA_PART] = vba_bin
+    if ribbon is not None:
+        blobs[CUSTOM_UI_PART] = ribbon
     return zip_package(blobs)
+
+
+def with_ribbon(relationships: str) -> str:
+    """The package's relationships with one more, to the Ribbon part."""
+    taken = {item.get("Id", "") for item in ElementTree.fromstring(relationships).iter(
+        f"{{{PACKAGE_RELATIONSHIPS}}}Relationship")}
+    return insert_before(relationships, "</Relationships>",
+                         f'<Relationship Id="{unused_id("rIdRibbon", taken)}" '
+                         f'Type="{RIBBON_TYPE}" Target="{CUSTOM_UI_PART}"/>')
+
+
+def xml_default(types: str) -> str:
+    """The content types with a Default for the xml extension, which the Ribbon part takes."""
+    if re.search(r'<Default\b[^>]*\bExtension="xml"', types, re.I):
+        return types
+    return insert_before(types, "</Types>",
+                         '<Default Extension="xml" ContentType="application/xml"/>')
 
 
 def zip_package(blobs: dict[str, bytes]) -> bytes:
@@ -852,7 +883,7 @@ def macro_enabled(types: str) -> str:
 
 
 def template_package(parts: dict[str, bytes], layout: Layout, build: Build,
-                     vba_bin: bytes) -> bytes:
+                     vba_bin: bytes, ribbon: bytes | None = None) -> bytes:
     """The .xlsm built from a copy of the template: the same bytes for the same input."""
     problems = template_problems(layout, parts) + main_part_problems(parts)
     if problems:
@@ -879,10 +910,18 @@ def template_package(parts: dict[str, bytes], layout: Layout, build: Build,
         f'<Relationship Id="{unused_id("rIdVBA", ids)}" Type="{VBA_TYPE}" '
         'Target="vbaProject.bin"/>')
     edited[CONTENT_TYPES] = macro_enabled(edited[CONTENT_TYPES])
+    if ribbon is not None:
+        if CUSTOM_UI_PART in parts:
+            raise BuildError(f"{TEMPLATE}: already has {CUSTOM_UI_PART}; the Ribbon comes from "
+                             f"{CUSTOM_UI}")
+        edited["_rels/.rels"] = with_ribbon(part_text(parts, "_rels/.rels"))
+        edited[CONTENT_TYPES] = xml_default(edited[CONTENT_TYPES])
     blobs = {name: edited[name].encode("utf-8") if name in edited else data
              for name, data in parts.items()}
     blobs.update((name, text.encode("utf-8")) for name, text in added.items())
     blobs[VBA_PART] = vba_bin
+    if ribbon is not None:
+        blobs[CUSTOM_UI_PART] = ribbon
     return zip_package(blobs)
 
 
@@ -920,7 +959,9 @@ def build(root: Path, configuration: str, target: Path, *,
     project_id = "{" + str(uuid.uuid5(uuid.NAMESPACE_URL,
                                       f"workbook-build:{commit}:{configuration}")).upper() + "}"
     vba_bin = build_vba_project(modules, project_id)
-    data = template_package(read_template(root / TEMPLATE), layout, result, vba_bin)         if result.template else package(layout, result, vba_bin)
+    ribbon = (root / CUSTOM_UI).read_bytes() if (root / CUSTOM_UI).is_file() else None
+    data = (template_package(read_template(root / TEMPLATE), layout, result, vba_bin, ribbon)
+            if result.template else package(layout, result, vba_bin, ribbon))
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_bytes(data)
     return result
