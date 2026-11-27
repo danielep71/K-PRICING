@@ -38,9 +38,14 @@ The workbook has two sheets:
 It also adds a **K-PRICING** tab to the Ribbon, described
 [below](#the-ribbon-tab-and-the-toolbar).
 
-The functions live in this workbook. They work in a worksheet of this
-workbook while it is open with macros enabled; a function written in another
-workbook shows `#NAME?` there.
+The functions live in this workbook and work only while it is open with macros
+enabled. In a worksheet of this workbook, write the name as it is, such as
+`=KPR_Dates_EndOfMonth(A1)`. In a worksheet of another open workbook, put this
+workbook's name in front, such as
+`='K-PRICING.xlsm'!KPR_Dates_EndOfMonth(A1)`, with the file name in quotes; the
+**Functions** menu of the Ribbon writes that prefix for you. Without it, the
+other workbook shows `#NAME?`. The date system that counts is the one of the
+workbook that holds the formula.
 
 **Supported host.** Microsoft 365 Excel on Windows, desktop version, 64-bit.
 Mac, Excel for the web and older perpetual versions are not supported. The
@@ -96,8 +101,9 @@ developers does, and also shows a *Development* group in the tab.
 
 ## Use a function
 
-Type `=KPR_Dates_` in a cell and pick a function, or use the
-[Ribbon](#the-ribbon-tab-and-the-toolbar). Examples, with fixed dates:
+Type `=KPR_Dates_` in a cell of this workbook and pick a function, or use the
+[Ribbon](#the-ribbon-tab-and-the-toolbar), which also works in another open
+workbook. Examples, with fixed dates:
 
 | Formula | Result |
 | --- | --- |
@@ -283,7 +289,7 @@ The **K-PRICING** tab appears when the workbook is open with macros enabled.
 
 | Control | What it does |
 | --- | --- |
-| **Functions** (*Date functions* group) | A menu of the 22 functions. Choosing one puts `=<function>()` in the active cell and opens Excel's **Function Arguments** dialog for it. Cancelling the dialog gives the cell back its content. It refuses a cell inside an Excel table, where Excel would copy the formula to the whole column, and a locked cell on a protected sheet |
+| **Functions** (*Date functions* group) | A menu of the 22 functions. Choosing one puts `=<function>()` in the active cell, with this workbook's name in front when the cell belongs to another workbook, and opens Excel's **Function Arguments** dialog for it. Cancelling the dialog gives the cell back its content. It refuses a cell inside an Excel table, where Excel would copy the formula to the whole column, and a locked cell on a protected sheet |
 | **Register function help** (*Setup* group) | Shows the 22 functions in the **Insert Function** dialog under the *KPR Dates* category, with a description of each argument. Excel keeps this until it closes |
 | **Clear function help** (*Setup* group) | Returns the 22 functions to the *User Defined* category with no description. They stay callable |
 | **Run tests** (*Development* group) | Only in a development build: runs the project's test suites. It is not an evidence run |
@@ -334,7 +340,7 @@ their statuses are `FAIL`. The sheet calculates when the workbook opens.
 
 | You see | Check |
 | --- | --- |
-| `#NAME?` for a `KPR_Dates_` function | Macros are disabled, or the formula is in another workbook. Enable content in this workbook |
+| `#NAME?` for a `KPR_Dates_` function | Macros are disabled, this workbook is closed, or the formula sits in another workbook without this workbook's name in front. Enable content, keep this workbook open, and insert the function with the **Functions** menu |
 | `#N/A` from every function that has a value argument | The workbook is on the 1904 date system: **File → Options → Advanced**, under *When calculating this workbook*, shows *Use 1904 date system* ticked. Excel does not convert the dates already in a workbook when you change it, so do not untick it to make the error go away; use the functions in a workbook on the 1900 date system |
 | `#VALUE!` on a date you typed | Excel may have stored it as text in another form. Write it as `YYYY-MM-DD` text, or enter a real date |
 | `#VALUE!` on `Opt_KeepEOM` or another option | It must be `TRUE` or `FALSE`, not `1` or text |
