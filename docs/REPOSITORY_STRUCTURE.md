@@ -25,7 +25,7 @@ them are already set in `.gitattributes`, `.editorconfig` and `.gitignore`.
 | `docs/user-manual/` | Optional manual for workbook recipients, one folder per released version (`docs/user-manual/X.Y.Z/MANUAL.md`), built to the PDF attached to the release ([user manual](../RELEASING.md#user-manual)) | Present, with `0.2.0` |
 | `src/core/` | Calculations and pure validation, host-independent standard modules | Present, with `CORE_Err`, `CORE_Parse`, `CORE_Dates` and `CORE_Array` |
 | `src/classes/` | Host-independent classes, if the design needs them | Reserved |
-| `src/modules/` | The public facade: the supported entry points | Present, with `KPR_Dates`, the 22 worksheet functions |
+| `src/modules/` | The public facade: the supported entry points | Present, with `KPR_DATES_DAYS`, the 22 worksheet functions |
 | `src/workbook/` | Excel adapters, `ThisWorkbook` and sheet document modules, the Ribbon XML `customUI14.xml`, and the optional macro-free `Template.xlsx`, laid out as the [workbook contract](methodology/WORKBOOK_CONTRACT.md) defines | Present, with the adapters `M_Ranges`, `M_Host`, `M_Register`, `M_Actions`, `M_Ribbon` and `M_CommandBars`, the Ribbon `customUI14.xml`, which `tools/check_ribbon.py` checks, and `Template.xlsx`, with its sheets Home and Dates Demo, which `tools/gen_workbook_template.py` generates, the demo from `tools/demo_dates.py` |
 | `src/forms/` | UserForms, each `.frm` with its `.frx` | Reserved |
 | `tests/` | Python tests of the repository tooling (`test_*.py`) | Present |
@@ -150,7 +150,7 @@ same pull request, to:
 - the tests.
 
 The supported entry points are the 22 `KPR_Dates_*` worksheet functions of
-`src/modules/KPR_Dates.bas`; their contract is in the
+`src/modules/KPR_DATES_DAYS.bas`; their contract is in the
 [calculation contracts](methodology/CALCULATION_CONTRACTS.md).
 
 ## Native declarations

@@ -190,7 +190,7 @@ def classify(fixture: dict[str, Any], expected: dict[str, Any],
 
 def cases(root: Path, model: ModuleType) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """(covered, excluded): every worksheet-function case, by function in inventory order."""
-    order = re.findall(r"^KPR_Dates\tFunction\t(\w+)$",
+    order = re.findall(r"^KPR_DATES_DAYS\tFunction\t(\w+)$",
                        (root / base.API).read_text(encoding="utf-8"), re.M)
     covered, excluded = [], []
     for path in sorted((root / base.FIXTURES).glob("*.json")):
@@ -449,7 +449,7 @@ def coverage(root: Path) -> dict[str, Any]:
 def coverage_tables(root: Path) -> str:
     """The Markdown tables of the coverage, as docs/methodology/EXCEL_ORACLE.md holds them."""
     covered, excluded = cases(root, base.load_model(root))
-    order = re.findall(r"^KPR_Dates\tFunction\t(\w+)$",
+    order = re.findall(r"^KPR_DATES_DAYS\tFunction\t(\w+)$",
                        (root / base.API).read_text(encoding="utf-8"), re.M)
     lines = ["| Function | Covered | Excluded |", "| --- | --- | --- |"]
     for function in order:

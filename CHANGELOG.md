@@ -115,7 +115,7 @@ Use only the categories an entry needs.
   before those two corrections, the split engine gave the same results as the
   engine it replaces on 24 argument shapes. Nothing was run in Excel
   ([#7](https://github.com/danielep71/K-PRICING/issues/7)).
-- The 22 `KPR_Dates_*` worksheet functions, in the facade `KPR_Dates` in
+- The 22 `KPR_Dates_*` worksheet functions, in the facade `KPR_DATES_DAYS` in
   `src/modules/`, with the names, signatures, argument order and defaults
   that `docs/PUBLIC_API.txt` lists as the supported API. Each function checks
   the calling workbook (the adapter `M_Host` refuses the 1904 date system),
@@ -308,6 +308,14 @@ Use only the categories an entry needs.
 
 ### Changed
 
+- The facade module of the 22 date functions is `KPR_DATES_DAYS`, no longer
+  `KPR_Dates`, so that the planned `KPR_DATES_BUSINESS_DAYS` and
+  `KPR_DATES_CALENDARS` sit beside it. The worksheet functions keep their
+  names and signatures; a VBA caller that names the module, as in
+  `KPR_Dates.KPR_Dates_AddDays`, uses the new name. The
+  [house style](docs/VBA_HOUSE_STYLE.md#naming-and-visibility) states the
+  facade naming rule, and `tools/check_vba_source.py` enforces it. Nothing was
+  run in Excel ([#61](https://github.com/danielep71/K-PRICING/issues/61)).
 - The public API inventory is reconciled with the code: the 22 `KPR_Dates_*`
   functions are the `[supported]` tier, with their exact signatures; the other
   60 public declarations of the core and the adapters stay `[project-public]`,

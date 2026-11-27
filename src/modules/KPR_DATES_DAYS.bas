@@ -1,10 +1,10 @@
-Attribute VB_Name = "KPR_Dates"
+Attribute VB_Name = "KPR_DATES_DAYS"
 
 Option Explicit
 
 '
 '------------------------------------------------------------------------------
-' MODULE: KPR_Dates
+' MODULE: KPR_DATES_DAYS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   The worksheet functions of the date layer: the 22 KPR_Dates_* functions, the supported API.
@@ -153,7 +153,7 @@ Public Function KPR_Dates_DayOfWeek( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_DayOfWeek"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_DayOfWeek"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -209,7 +209,7 @@ Public Function KPR_Dates_DaysInMonth( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_DaysInMonth"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_DaysInMonth"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -265,7 +265,7 @@ Public Function KPR_Dates_DaysInYear( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_DaysInYear"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_DaysInYear"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -321,7 +321,7 @@ Public Function KPR_Dates_BeginOfMonth( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_BeginOfMonth"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_BeginOfMonth"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -377,7 +377,7 @@ Public Function KPR_Dates_EndOfMonth( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_EndOfMonth"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_EndOfMonth"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -434,7 +434,7 @@ Public Function KPR_Dates_BeginOfQuarter( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_BeginOfQuarter"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_BeginOfQuarter"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -490,7 +490,7 @@ Public Function KPR_Dates_EndOfQuarter( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_EndOfQuarter"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_EndOfQuarter"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -547,7 +547,7 @@ Public Function KPR_Dates_BeginOfYear( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_BeginOfYear"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_BeginOfYear"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -603,7 +603,7 @@ Public Function KPR_Dates_EndOfYear( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_EndOfYear"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_EndOfYear"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -659,7 +659,7 @@ Public Function KPR_Dates_IsMonthEnd( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_IsMonthEnd"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_IsMonthEnd"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -715,7 +715,7 @@ Public Function KPR_Dates_IsQuarterEnd( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_IsQuarterEnd"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_IsQuarterEnd"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -771,7 +771,7 @@ Public Function KPR_Dates_IsYearEnd( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_IsYearEnd"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_IsYearEnd"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -827,7 +827,7 @@ Public Function KPR_Dates_IsLeapYear( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_IsLeapYear"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_IsLeapYear"
 
     Dim Values(1 To 1)  As Variant  'Value arguments, in signature order
 
@@ -888,7 +888,7 @@ Public Function KPR_Dates_AddDays( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_AddDays"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_AddDays"
 
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
@@ -950,7 +950,7 @@ Public Function KPR_Dates_AddWeeks( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_AddWeeks"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_AddWeeks"
 
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
@@ -1017,7 +1017,7 @@ Public Function KPR_Dates_AddMonths( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_AddMonths"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_AddMonths"
 
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
@@ -1084,7 +1084,7 @@ Public Function KPR_Dates_AddYears( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_AddYears"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_AddYears"
 
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
@@ -1159,7 +1159,7 @@ Public Function KPR_Dates_NthWeekdayOfMonth( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_NthWeekdayOfMonth"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_NthWeekdayOfMonth"
 
     Dim Values(1 To 4)  As Variant  'Value arguments, in signature order
 
@@ -1232,7 +1232,7 @@ Public Function KPR_Dates_LastWeekdayOfMonth( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_LastWeekdayOfMonth"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_LastWeekdayOfMonth"
 
     Dim Values(1 To 3)  As Variant  'Value arguments, in signature order
 
@@ -1300,7 +1300,7 @@ Public Function KPR_Dates_PillarFromDates( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_PillarFromDates"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_PillarFromDates"
 
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
@@ -1362,7 +1362,7 @@ Public Function KPR_Dates_DateFromPillar( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_DateFromPillar"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_DateFromPillar"
 
     Dim Values(1 To 2)  As Variant  'Value arguments, in signature order
 
@@ -1416,7 +1416,7 @@ Public Function KPR_Dates_HostDateSystem() As Variant
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.KPR_Dates_HostDateSystem"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.KPR_Dates_HostDateSystem"
 
     Dim DateSystem      As Long         '1900 or 1904
     Dim Condition       As KPRCondition 'Host condition, when it cannot be read
@@ -1567,7 +1567,7 @@ Private Function EvaluateCall( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.EvaluateCall"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.EvaluateCall"
 
     Dim Count           As Long              'Number of value arguments
     Dim Kinds()         As KPRArgShape       'Shape kind of each value argument
@@ -1759,7 +1759,7 @@ Private Function TryResolveControl( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.TryResolveControl"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.TryResolveControl"
 
     Dim ScalarOut       As Variant      'The control's single element
     Dim Condition       As KPRCondition 'Condition of a rejected control
@@ -1983,7 +1983,7 @@ Private Function EvaluateElement( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.EvaluateElement"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.EvaluateElement"
 
     Dim D1              As Date         'First date argument
     Dim D2              As Date         'Second date argument
@@ -2169,7 +2169,7 @@ Private Function TryElementDate( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.TryElementDate"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.TryElementDate"
 
     Dim ScalarOut       As Variant      'The element's single value
     Dim Condition       As KPRCondition 'Condition of a rejected value
@@ -2249,7 +2249,7 @@ Private Function TryElementLong( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.TryElementLong"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.TryElementLong"
 
     Dim ScalarOut       As Variant      'The element's single value
     Dim Condition       As KPRCondition 'Condition of a rejected value
@@ -2334,7 +2334,7 @@ Private Function TryElementDomain( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.TryElementDomain"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.TryElementDomain"
 
     Dim Condition       As KPRCondition 'Domain condition
 
@@ -2462,7 +2462,7 @@ Private Function TryElementPillar( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
-    Const PROC_NAME     As String = "KPR_Dates.TryElementPillar"
+    Const PROC_NAME     As String = "KPR_DATES_DAYS.TryElementPillar"
 
     Dim ScalarOut       As Variant      'The element's single value
     Dim Condition       As KPRCondition 'Condition of a rejected value

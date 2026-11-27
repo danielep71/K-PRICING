@@ -276,6 +276,21 @@ class SourceTest(unittest.TestCase):
                 source = CORE.replace("CORE_Validation", Path(path).stem)
                 self.assertFinding({path: source}, f"is named {rule}")
 
+    def test_an_upper_case_facade_example_sets_the_rule(self) -> None:
+        style = ("| Public facade module | `DEMO_` plus the layer and the subject, upper case |"
+                 " `DEMO_DATES_DAYS` |\n")
+
+        def facade(name: str) -> dict[str, str | bytes]:
+            return {f"src/modules/{name}.bas": FACADE.replace("DEMO_Functions", name),
+                    "docs/VBA_HOUSE_STYLE.md": style}
+
+        self.assertEqual(self.findings(facade("DEMO_DATES_DAYS")), [])
+        for name in ("DEMO_Functions", "DEMO_DATES", "DEMO_Dates_Days"):
+            with self.subTest(name=name):
+                self.assertFinding(facade(name), "is named DEMO_<LAYER>_<SUBJECT>")
+        mixed = {**facade("DEMO_Functions"), "docs/VBA_HOUSE_STYLE.md": DEMO_STYLE}
+        self.assertEqual(self.findings(mixed), [])
+
     def test_form_resource_rules(self) -> None:
         without = {k: v for k, v in VALID.items() if not k.endswith(".frx")}
         self.assertFinding(without, "form resource frmRunOptions.frx is not tracked")

@@ -35,7 +35,7 @@ Option Private Module
 '   TEST_Harness.ERR_TEST_DIRTY_START
 '
 ' DEPENDENCIES
-'   KPR_Dates, M_Ranges, M_Register, CORE_Array, CORE_Err, TEST_WorksheetSupport,
+'   KPR_DATES_DAYS, M_Ranges, M_Register, CORE_Array, CORE_Err, TEST_WorksheetSupport,
 '   TEST_DateCaseSupport, TEST_Harness; the Excel object model
 '
 ' NOTES

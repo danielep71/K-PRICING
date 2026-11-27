@@ -8,7 +8,7 @@ Option Private Module
 ' MODULE: TEST_Dates
 '------------------------------------------------------------------------------
 ' PURPOSE
-'   Tests of the KPR_Dates facade: one call of each of the 22 functions, every condition it can
+'   Tests of the KPR_DATES_DAYS facade: one call of each of the 22 functions, every condition it can
 '   meet from VBA, the array rules and the optional controls
 '
 ' WHY THIS EXISTS
@@ -33,7 +33,7 @@ Option Private Module
 '   TEST_Harness.ERR_TEST_DIRTY_START
 '
 ' DEPENDENCIES
-'   KPR_Dates, TEST_Harness
+'   KPR_DATES_DAYS, TEST_Harness
 '
 ' NOTES
 '   In a development workbook holding the modules of src/ and tests/modules/, type
@@ -258,7 +258,7 @@ Private Sub CaseScalarResults()
 '   TEST_Harness.RecordCaseError and does not stop the run
 '
 ' DEPENDENCIES
-'   KPR_Dates, TEST_Harness
+'   KPR_DATES_DAYS, TEST_Harness
 '
 ' NOTES
 '   None
@@ -355,7 +355,7 @@ Private Sub CaseConditions()
 '   TEST_Harness.RecordCaseError and does not stop the run
 '
 ' DEPENDENCIES
-'   KPR_Dates, TEST_Harness
+'   KPR_DATES_DAYS, TEST_Harness
 '
 ' NOTES
 '   None
@@ -472,7 +472,7 @@ Private Sub CaseArrays()
 '   TEST_Harness.RecordCaseError and does not stop the run
 '
 ' DEPENDENCIES
-'   KPR_Dates, TEST_Harness
+'   KPR_DATES_DAYS, TEST_Harness
 '
 ' NOTES
 '   None
@@ -573,7 +573,7 @@ Private Sub CaseControls()
 '   TEST_Harness.RecordCaseError and does not stop the run
 '
 ' DEPENDENCIES
-'   KPR_Dates, TEST_Harness
+'   KPR_DATES_DAYS, TEST_Harness
 '
 ' NOTES
 '   None
