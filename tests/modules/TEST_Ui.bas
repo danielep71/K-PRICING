@@ -75,7 +75,7 @@ Public Sub RunUiTests()
 
 '
 '------------------------------------------------------------------------------
-'                                RUN UI TESTS
+'                                 RUN UI TESTS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Run every case in a fixed order between BeginRun and EndRun. A passing run ends with
@@ -112,17 +112,23 @@ Public Sub RunUiTests()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.RunUiTests"
+
     Dim ErrNumber       As Long     'Runner error number; 0 for none
     Dim ErrSource       As String   'Runner error source
     Dim ErrDescription  As String   'Runner error description
 
 '------------------------------------------------------------------------------
-' RUN CASES
+' INITIALIZE
 '------------------------------------------------------------------------------
     'Start the run; a refused start propagates directly
         TEST_Harness.BeginRun SUITE_NAME, "NORMAL", EXPECTED_CASES, EXPECTED_ASSERTIONS
     'Send an error that escapes a case to the runner handler
         On Error GoTo RunFailed
+
+'------------------------------------------------------------------------------
+' RUN CASES
+'------------------------------------------------------------------------------
     'Run every case in a fixed order
         CaseFunctionList
         CaseActions
@@ -156,7 +162,6 @@ End Sub
 Public Sub CertifyUi( _
     ByVal Folder As String, _
     ByVal Fixtures As String)
-
 '
 '------------------------------------------------------------------------------
 '                              CERTIFY THE SUITE
@@ -196,6 +201,8 @@ Public Sub CertifyUi( _
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME             As String = "TEST_Ui.CertifyUi"
+
     Dim RunErrorNumber          As Long     'Error that ended the run; 0 for none
     Dim RunErrorDescription     As String   'Its description
 
@@ -231,7 +238,7 @@ Private Sub CaseFunctionList()
 
 '
 '------------------------------------------------------------------------------
-'                        CHECK THE LIST OF FUNCTIONS
+'                         CHECK THE LIST OF FUNCTIONS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   The menus list the 22 functions M_Register registers, in its order. 2 assertions.
@@ -264,6 +271,8 @@ Private Sub CaseFunctionList()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.CaseFunctionList"
+
     Dim Names           As Variant      'M_Actions.FunctionNames
     Dim Index           As Long         'Position in the list
     Dim Differences     As String       'Positions whose name differs
@@ -308,7 +317,7 @@ Private Sub CaseActions()
 
 '
 '------------------------------------------------------------------------------
-'                          CHECK THE ACTION TEXTS
+'                            CHECK THE ACTION TEXTS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   M_Actions knows the action of every function and of every fixed menu item, and refuses
@@ -343,6 +352,8 @@ Private Sub CaseActions()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.CaseActions"
+
     Dim Item            As Variant      'Cursor over names and texts
     Dim Unknown         As String       'Function actions refused
     Dim Accepted        As String       'Malformed texts accepted
@@ -401,7 +412,7 @@ Private Sub CaseRibbonMenu()
 
 '
 '------------------------------------------------------------------------------
-'                        CHECK THE RIBBON'S MENU XML
+'                         CHECK THE RIBBON'S MENU XML
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   The Functions menu of the Ribbon is a customUI menu with one button per function, each
@@ -436,6 +447,8 @@ Private Sub CaseRibbonMenu()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.CaseRibbonMenu"
+
     Dim Xml             As String       'The menu XML
     Dim Item            As Variant      'Function names cursor
     Dim Missing         As String       'Functions without their button
@@ -487,7 +500,7 @@ Private Sub CaseToolbar()
 
 '
 '------------------------------------------------------------------------------
-'                       CHECK THE TOOLBAR'S LIFECYCLE
+'                        CHECK THE TOOLBAR'S LIFECYCLE
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   The toolbar installs with one known action per button, a second install adds nothing,
@@ -524,6 +537,8 @@ Private Sub CaseToolbar()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.CaseToolbar"
+
     Dim HadToolbar      As Boolean      'The toolbar was installed before the case
     Dim Done            As Boolean      'Outcome of an install or a removal
     Dim Report          As String       'Why an install failed
@@ -623,7 +638,7 @@ Private Function Occurrences(ByVal Text As String, ByVal Part As String) As Long
 
 '
 '------------------------------------------------------------------------------
-'                          COUNT A PART OF A TEXT
+'                            COUNT A PART OF A TEXT
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns how many times a part occurs in a text, without overlap.
@@ -661,6 +676,8 @@ Private Function Occurrences(ByVal Text As String, ByVal Part As String) As Long
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.Occurrences"
+
     Dim Position        As Long         'Where the next search starts
 
 '------------------------------------------------------------------------------
@@ -679,7 +696,7 @@ Private Function OwnedCount() As Long
 
 '
 '------------------------------------------------------------------------------
-'                       COUNT WHAT THE TOOLBAR OWNS
+'                         COUNT WHAT THE TOOLBAR OWNS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the number of bars named, and of controls tagged, as the toolbar's.
@@ -715,6 +732,8 @@ Private Function OwnedCount() As Long
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.OwnedCount"
+
     Dim Bar             As Object       'CommandBars cursor
     Dim Found           As Object       'FindControls result, Nothing when none
 
@@ -737,7 +756,7 @@ Private Function ToolbarVisible() As Boolean
 
 '
 '------------------------------------------------------------------------------
-'                         READ WHETHER THE TOOLBAR SHOWS
+'                        READ WHETHER THE TOOLBAR SHOWS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   True when the toolbar exists and is visible.
@@ -783,7 +802,7 @@ Private Function ToolbarActions() As Collection
 
 '
 '------------------------------------------------------------------------------
-'                     COLLECT THE ACTIONS OF THE TOOLBAR
+'                      COLLECT THE ACTIONS OF THE TOOLBAR
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the Parameter of every button of the toolbar, menus searched in order.
@@ -817,6 +836,8 @@ Private Function ToolbarActions() As Collection
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Ui.ToolbarActions"
+
     Dim Found           As Collection   'The action texts
     Dim Bar             As Object       'The toolbar
     Dim Menu            As Object       'Menu cursor
@@ -849,7 +870,7 @@ Private Function SelectionText() As String
 
 '
 '------------------------------------------------------------------------------
-'                           DESCRIBE THE SELECTION
+'                            DESCRIBE THE SELECTION
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the selection's external address, or its type when it is not a Range.

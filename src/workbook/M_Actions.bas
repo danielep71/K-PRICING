@@ -161,6 +161,12 @@ Public Sub InsertFunction(ByVal Chosen As String)
     Dim Restored        As Boolean      'The cell got its content back
 
 '------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Report a failure instead of raising it to the menu
+        On Error GoTo ErrorHandler
+
+'------------------------------------------------------------------------------
 ' VALIDATE INPUTS
 '------------------------------------------------------------------------------
     'Refuse before touching a cell: a wrong target must not lose content
@@ -178,12 +184,6 @@ Public Sub InsertFunction(ByVal Chosen As String)
             Notify "The active cell is locked on a protected sheet.", vbExclamation
             Exit Sub
         End If
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Report a failure instead of raising it to the menu
-        On Error GoTo ErrorHandler
 
 '------------------------------------------------------------------------------
 ' INSERT
@@ -236,7 +236,7 @@ Public Sub RegisterHelp()
 
 '
 '------------------------------------------------------------------------------
-'                        REGISTER THE HELP OF THE FUNCTIONS
+'                      REGISTER THE HELP OF THE FUNCTIONS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Registers the 22 functions in the Insert Function dialog and says how many Excel accepted.
@@ -278,7 +278,7 @@ Public Sub ClearHelp()
 
 '
 '------------------------------------------------------------------------------
-'                         CLEAR THE HELP OF THE FUNCTIONS
+'                       CLEAR THE HELP OF THE FUNCTIONS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the 22 functions to the User Defined category with no description, and says how
@@ -321,7 +321,7 @@ Public Sub RunTests()
 
 '
 '------------------------------------------------------------------------------
-'                           RUN THE PROJECT SUITES
+'                            RUN THE PROJECT SUITES
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Development build only: runs the project's test suites and shows their results.
@@ -364,6 +364,12 @@ Public Sub RunTests()
     Dim ErrDescription  As String       'Its description
 
 '------------------------------------------------------------------------------
+' INITIALIZE
+'------------------------------------------------------------------------------
+    'Report a failure instead of raising it to the menu
+        On Error GoTo ErrorHandler
+
+'------------------------------------------------------------------------------
 ' VALIDATE INPUTS
 '------------------------------------------------------------------------------
     'Stop when the test modules are not part of this build
@@ -371,12 +377,6 @@ Public Sub RunTests()
             Notify "The test modules are not part of this build.", vbExclamation
             Exit Sub
         End If
-
-'------------------------------------------------------------------------------
-' INITIALIZE
-'------------------------------------------------------------------------------
-    'Report a failure instead of raising it to the menu
-        On Error GoTo ErrorHandler
 
 '------------------------------------------------------------------------------
 ' RUN
@@ -475,7 +475,7 @@ Public Function FunctionNames() As Variant
 
 '
 '------------------------------------------------------------------------------
-'                            LIST THE FUNCTION NAMES
+'                           LIST THE FUNCTION NAMES
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the names of the 22 functions, in registration order, for a Functions menu.
@@ -509,6 +509,8 @@ Public Function FunctionNames() As Variant
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Actions.FunctionNames"
+
     Dim Names()         As String       'The names
     Dim Index           As Long         'Position in the registration list
 
@@ -584,7 +586,7 @@ Public Function TestsAvailable() As Boolean
 
 '
 '------------------------------------------------------------------------------
-'                        FIND THE TEST MODULES IN THE BUILD
+'                      FIND THE TEST MODULES IN THE BUILD
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   True when the test modules are part of this build.
@@ -614,6 +616,11 @@ Public Function TestsAvailable() As Boolean
 ' UPDATED
 '   2026-11-27
 '------------------------------------------------------------------------------
+
+'------------------------------------------------------------------------------
+' DECLARE
+'------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Actions.TestsAvailable"
 
 '------------------------------------------------------------------------------
 ' INITIALIZE
@@ -655,7 +662,7 @@ Private Function IsFunctionAction(ByVal Action As String) As Boolean
 
 '
 '------------------------------------------------------------------------------
-'                        RECOGNIZE A FUNCTION ACTION
+'                         RECOGNIZE A FUNCTION ACTION
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   True when an action text is ACTION_FUNCTION followed by one of the 22 names.
@@ -737,6 +744,8 @@ Private Function FunctionIndex(ByVal Chosen As String) As Long
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Actions.FunctionIndex"
+
     Dim Index           As Long         'Position in the registration list
 
 '------------------------------------------------------------------------------
@@ -888,6 +897,8 @@ Private Sub SaveCell(ByVal Cell As Range, ByRef Saved As CellContent)
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Actions.SaveCell"
+
     Dim Probe           As Object       'The cell, late bound, for Formula2
     Dim ErrNumber       As Long         'Error of the Formula2 read; 0 for none
 
@@ -916,7 +927,7 @@ Private Sub WriteFormula(ByVal Cell As Range, ByVal Formula As String)
 
 '
 '------------------------------------------------------------------------------
-'                             WRITE A FORMULA
+'                               WRITE A FORMULA
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Writes a formula into a cell, through Formula2 where Excel has it.
@@ -953,6 +964,8 @@ Private Sub WriteFormula(ByVal Cell As Range, ByVal Formula As String)
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Actions.WriteFormula"
+
     Dim Probe           As Object       'The cell, late bound, for Formula2
     Dim ErrNumber       As Long         'Error of the Formula2 write; 0 for none
 
@@ -974,7 +987,7 @@ Private Function TryRestoreCell(ByVal Cell As Range, ByRef Saved As CellContent)
 
 '
 '------------------------------------------------------------------------------
-'                          GIVE A CELL ITS CONTENT BACK
+'                         GIVE A CELL ITS CONTENT BACK
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Writes back what SaveCell recorded, and says whether it succeeded.
@@ -1014,6 +1027,8 @@ Private Function TryRestoreCell(ByVal Cell As Range, ByRef Saved As CellContent)
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Actions.TryRestoreCell"
+
     Dim Probe           As Object       'The cell, late bound, for Formula2
 
 '------------------------------------------------------------------------------
@@ -1064,7 +1079,7 @@ Private Sub ReportHelp(ByVal Accepted As Long, ByVal Outcome As String)
 
 '
 '------------------------------------------------------------------------------
-'                        REPORT A REGISTRATION COUNT
+'                         REPORT A REGISTRATION COUNT
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Tells the user how many of the 22 functions Excel accepted.
@@ -1115,7 +1130,7 @@ Private Sub Notify(ByVal Message As String, ByVal Style As VbMsgBoxStyle)
 
 '
 '------------------------------------------------------------------------------
-'                              TELL THE USER
+'                                TELL THE USER
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Shows one message box with the menus' title.

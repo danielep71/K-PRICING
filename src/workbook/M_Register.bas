@@ -210,7 +210,7 @@ Public Function RegisteredName(ByVal Index As Long) As String
 
 '
 '------------------------------------------------------------------------------
-'                           NAME A REGISTERED FUNCTION
+'                          NAME A REGISTERED FUNCTION
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the name of the function at one position of the registration list.
@@ -247,6 +247,8 @@ Public Function RegisteredName(ByVal Index As Long) As String
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Register.RegisteredName"
+
     Dim Summary         As String       'Description of the function, not used
     Dim ArgTexts        As Variant      'Argument descriptions, not used
 
@@ -262,7 +264,7 @@ Public Function RegisteredArgumentCount(ByVal Index As Long) As Long
 
 '
 '------------------------------------------------------------------------------
-'                       COUNT THE ARGUMENTS OF A FUNCTION
+'                      COUNT THE ARGUMENTS OF A FUNCTION
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the number of arguments of the function at one position of the registration list.
@@ -298,6 +300,8 @@ Public Function RegisteredArgumentCount(ByVal Index As Long) As Long
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Register.RegisteredArgumentCount"
+
     Dim FunctionName    As String       'Name of the function, not used
     Dim Summary         As String       'Description of the function, not used
     Dim ArgTexts        As Variant      'Argument descriptions, Empty for none

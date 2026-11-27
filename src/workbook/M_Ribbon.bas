@@ -75,7 +75,7 @@ Public Sub RibbonOnAction(ByVal Control As IRibbonControl)
 
 '
 '------------------------------------------------------------------------------
-'                           RUN A BUTTON'S ACTION
+'                            RUN A BUTTON'S ACTION
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Runs the action the clicked button's tag names.
@@ -119,7 +119,7 @@ Public Sub RibbonGetFunctions(ByVal Control As IRibbonControl, ByRef Content As 
 
 '
 '------------------------------------------------------------------------------
-'                         BUILD THE FUNCTIONS MENU
+'                           BUILD THE FUNCTIONS MENU
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the content of the Functions menu: one button per function.
@@ -157,6 +157,8 @@ Public Sub RibbonGetFunctions(ByVal Control As IRibbonControl, ByRef Content As 
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Ribbon.RibbonGetFunctions"
+
     Dim Xml             As String       'The menu XML
 
 '------------------------------------------------------------------------------
@@ -226,7 +228,7 @@ Public Sub BuildFunctionMenu(ByRef Xml As String)
 
 '
 '------------------------------------------------------------------------------
-'                        WRITE THE FUNCTIONS MENU XML
+'                         WRITE THE FUNCTIONS MENU XML
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the XML of the Functions menu: one button per function, in registration order.
@@ -263,6 +265,8 @@ Public Sub BuildFunctionMenu(ByRef Xml As String)
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_Ribbon.BuildFunctionMenu"
+
     Dim Names           As Variant      'The function names
     Dim Item            As Variant      'Names cursor
     Dim Body            As String       'The buttons
@@ -306,10 +310,9 @@ Private Function MenuButton( _
     ByVal Id As String, _
     ByVal Label As String, _
     ByVal Action As String) As String
-
 '
 '------------------------------------------------------------------------------
-'                            WRITE A MENU BUTTON
+'                             WRITE A MENU BUTTON
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns one button element of a dynamic menu.
@@ -360,7 +363,7 @@ Private Function XmlText(ByVal Text As String) As String
 
 '
 '------------------------------------------------------------------------------
-'                          ESCAPE AN ATTRIBUTE TEXT
+'                           ESCAPE AN ATTRIBUTE TEXT
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns a text that can stand between double quotes in an XML attribute.

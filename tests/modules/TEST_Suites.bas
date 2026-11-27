@@ -78,7 +78,7 @@ Public Function SuitesLoaded() As Boolean
 
 '
 '------------------------------------------------------------------------------
-'                         SAY THAT THE TESTS ARE LOADED
+'                        SAY THAT THE TESTS ARE LOADED
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns True, so that M_Actions can tell a development build from a production one
@@ -122,7 +122,7 @@ Public Function RunProjectSuites() As String
 
 '
 '------------------------------------------------------------------------------
-'                           RUN THE PROJECT SUITES
+'                            RUN THE PROJECT SUITES
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Runs every project suite in the policy's order and returns a report: RESULT=PASS or
@@ -162,6 +162,8 @@ Public Function RunProjectSuites() As String
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "TEST_Suites.RunProjectSuites"
+
     Dim Entries         As Variant      'The SUITES entries
     Dim Index           As Long         'Entries cursor
     Dim Suite           As String       'Name of the suite

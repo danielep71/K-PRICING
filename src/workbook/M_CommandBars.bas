@@ -83,7 +83,7 @@ Public Sub InstallToolbar()
 
 '
 '------------------------------------------------------------------------------
-'                            INSTALL THE TOOLBAR
+'                             INSTALL THE TOOLBAR
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Installs the toolbar from the macro list, and says why when that failed.
@@ -116,6 +116,8 @@ Public Sub InstallToolbar()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_CommandBars.InstallToolbar"
+
     Dim Installed       As Boolean      'The toolbar is installed
     Dim Report          As String       'Why it was not
 
@@ -135,7 +137,7 @@ Public Sub RemoveToolbar()
 
 '
 '------------------------------------------------------------------------------
-'                             REMOVE THE TOOLBAR
+'                              REMOVE THE TOOLBAR
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Removes the toolbar from the macro list, and says so when a control remained.
@@ -168,6 +170,8 @@ Public Sub RemoveToolbar()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_CommandBars.RemoveToolbar"
+
     Dim Removed         As Boolean      'Nothing of the toolbar remains
 
 '------------------------------------------------------------------------------
@@ -186,7 +190,7 @@ Public Sub ToolbarClick()
 
 '
 '------------------------------------------------------------------------------
-'                          RUN A TOOLBAR BUTTON'S ACTION
+'                        RUN A TOOLBAR BUTTON'S ACTION
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Runs the action stored in the Parameter of the clicked button.
@@ -220,6 +224,8 @@ Public Sub ToolbarClick()
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_CommandBars.ToolbarClick"
+
     Dim Clicked         As Object       'The clicked control, or Nothing outside a click
     Dim Action          As String       'Its Parameter
 
@@ -244,7 +250,7 @@ Public Sub TryInstallToolbar(ByRef Installed As Boolean, ByRef Report As String)
 
 '
 '------------------------------------------------------------------------------
-'                         BUILD THE TOOLBAR, QUIETLY
+'                          BUILD THE TOOLBAR, QUIETLY
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Installs the toolbar and returns the outcome, without a message.
@@ -283,6 +289,8 @@ Public Sub TryInstallToolbar(ByRef Installed As Boolean, ByRef Report As String)
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_CommandBars.TryInstallToolbar"
+
     Dim Bar             As Object       'The new toolbar
     Dim Menu            As Object       'The menu being filled
     Dim Item            As Variant      'Function names cursor
@@ -402,6 +410,8 @@ Public Sub TryRemoveToolbar(ByRef Removed As Boolean)
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_CommandBars.TryRemoveToolbar"
+
     Dim Owned           As Object       'A bar or a control of the toolbar
     Dim Guard           As Long         'Loop bound
 
@@ -438,7 +448,7 @@ Private Function AddPopup(ByVal Controls As Object, ByVal Caption As String) As 
 
 '
 '------------------------------------------------------------------------------
-'                              ADD A MENU
+'                                  ADD A MENU
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Adds a temporary popup, tagged as the toolbar's, and returns it.
@@ -476,6 +486,8 @@ Private Function AddPopup(ByVal Controls As Object, ByVal Caption As String) As 
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_CommandBars.AddPopup"
+
     Dim Popup           As Object       'The new popup
 
 '------------------------------------------------------------------------------
@@ -494,7 +506,7 @@ Private Sub AddButton(ByVal Controls As Object, ByVal Caption As String, ByVal A
 
 '
 '------------------------------------------------------------------------------
-'                             ADD A MENU BUTTON
+'                              ADD A MENU BUTTON
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Adds a temporary caption button that runs one action when clicked.
@@ -536,6 +548,8 @@ Private Sub AddButton(ByVal Controls As Object, ByVal Caption As String, ByVal A
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_CommandBars.AddButton"
+
     Dim Button          As Object       'The new button
 
 '------------------------------------------------------------------------------
@@ -556,7 +570,7 @@ Private Function FindBar() As Object
 
 '
 '------------------------------------------------------------------------------
-'                              FIND THE TOOLBAR
+'                               FIND THE TOOLBAR
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the bar named TOOLBAR_NAME, or Nothing.
@@ -602,7 +616,7 @@ Private Function FindTagged() As Object
 
 '
 '------------------------------------------------------------------------------
-'                           FIND A TAGGED CONTROL
+'                            FIND A TAGGED CONTROL
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns one control tagged TOOLBAR_TAG, or Nothing.
@@ -648,7 +662,7 @@ Private Function TryDelete(ByVal Owned As Object) As Boolean
 
 '
 '------------------------------------------------------------------------------
-'                           DELETE A BAR OR A CONTROL
+'                          DELETE A BAR OR A CONTROL
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Deletes one bar or control and says whether Office accepted.
@@ -683,6 +697,8 @@ Private Function TryDelete(ByVal Owned As Object) As Boolean
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_CommandBars.TryDelete"
+
     Dim ErrNumber       As Long         'Error of the deletion; 0 for none
 
 '------------------------------------------------------------------------------
@@ -701,7 +717,7 @@ Private Function OwnedCount() As Long
 
 '
 '------------------------------------------------------------------------------
-'                     COUNT WHAT THE TOOLBAR STILL OWNS
+'                      COUNT WHAT THE TOOLBAR STILL OWNS
 '------------------------------------------------------------------------------
 ' PURPOSE
 '   Returns the number of bars named TOOLBAR_NAME and of controls tagged TOOLBAR_TAG.
@@ -736,6 +752,8 @@ Private Function OwnedCount() As Long
 '------------------------------------------------------------------------------
 ' DECLARE
 '------------------------------------------------------------------------------
+    Const PROC_NAME     As String = "M_CommandBars.OwnedCount"
+
     Dim Bar             As Object       'CommandBars cursor
     Dim Found           As Object       'FindControls result, Nothing when none
     Dim Count           As Long         'Running total
